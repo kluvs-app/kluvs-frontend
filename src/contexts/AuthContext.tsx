@@ -72,37 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Create new member record for new users using Edge Function
-  const createNewMember = async (user: User): Promise<Member | null> => {
-    try {
-      const memberName = user.user_metadata?.full_name || 
-                        user.user_metadata?.name || 
-                        user.email?.split('@')[0] || 
-                        'New Member'
-      
-      console.log('🆕 Creating new member via Edge Function:', memberName)
-      
-      const requestBody = {
-        name: memberName,
-        points: 0,
-        books_read: 0,
-        user_id: user.id
-      }
-      
-      const { data, error } = await supabase.functions.invoke('member', {
-        method: 'POST',
-        body: requestBody
-      })
-      
-      if (error) throw error
-      
-      console.log('✅ Created new member via Edge Function:', data)
-      return data.member || data // Handle different response formats
-    } catch (error) {
-      console.error('💥 Error creating member via Edge Function:', error)
-      return null
-    }
-  }
 
   // Refresh member data - needed for profile updates
   const refreshMemberData = async (): Promise<void> => {
@@ -139,21 +108,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('🔄 Starting member lookup...')
 
-      // Look up member by user_id
+      // Look up member by user_id (created by database trigger on signup)
       const memberData = await findMemberByUserId(newUser.id)
 
       console.log('🎯 Member lookup completed:', memberData)
-
-      // If no member found, create one for new users
-      if (!memberData) {
-        console.log('🆕 No member found, creating new one...')
-        const newMemberData = await createNewMember(newUser)
-        console.log('✨ New member created:', newMemberData)
-        setMember(newMemberData)
-      } else {
-        console.log('✅ Setting existing member:', memberData)
-        setMember(memberData)
-      }
+      setMember(memberData)
     } catch (error) {
       console.error('💥 Error in handleUserChange:', error)
       setMember(null)

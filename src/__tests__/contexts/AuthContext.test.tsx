@@ -175,14 +175,12 @@ describe('AuthContext', () => {
       expect(result.current.member).toEqual(mockRegularMember)
     })
 
-    it('should handle member not found', async () => {
+    it('should handle member not found gracefully', async () => {
       const mockUser = createMockUser({ id: 'new-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
 
-      // First call returns null (member not found), second call returns created member
-      mockSupabase.functions.invoke
-        .mockResolvedValueOnce({ data: null, error: null }) // GET member - not found
-        .mockResolvedValueOnce({ data: { member: mockRegularMember }, error: null }) // POST member - create
+      // Member lookup returns null (member record doesn't exist yet - shouldn't happen in normal flow)
+      mockSupabase.functions.invoke.mockResolvedValueOnce({ data: null, error: null })
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
@@ -192,16 +190,10 @@ describe('AuthContext', () => {
         expect(result.current.loading).toBe(false)
       })
 
-      // Should have called POST to create member
-      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
-        'member',
-        expect.objectContaining({
-          method: 'POST',
-          body: expect.objectContaining({
-            user_id: 'new-user-id',
-          }),
-        })
-      )
+      // Member should be null since lookup returned null
+      expect(result.current.member).toBeNull()
+      // Should only call GET to lookup, no POST to create
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledTimes(1)
     })
 
     it('should handle Edge Function errors gracefully', async () => {
@@ -223,66 +215,6 @@ describe('AuthContext', () => {
     })
   })
 
-  describe('createNewMember', () => {
-    it('should create member with user metadata', async () => {
-      const mockUser = createMockUser({
-        id: 'new-user-id',
-        user_metadata: { full_name: 'John Doe' },
-      })
-      setupAuthMocks(mockSupabase, mockUser)
-
-      mockSupabase.functions.invoke
-        .mockResolvedValueOnce({ data: null, error: null }) // GET - not found
-        .mockResolvedValueOnce({ data: { member: mockRegularMember }, error: null }) // POST - create
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: AuthProvider,
-      })
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-
-      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
-        'member',
-        expect.objectContaining({
-          method: 'POST',
-          body: expect.objectContaining({
-            name: 'John Doe',
-            points: 0,
-            books_read: 0,
-            user_id: 'new-user-id',
-          }),
-        })
-      )
-    })
-
-    it('should fallback to email username if no full_name', async () => {
-      const mockUser = createMockUser({
-        id: 'new-user-id',
-        email: 'testuser@example.com',
-        user_metadata: {},
-      })
-      setupAuthMocks(mockSupabase, mockUser)
-
-      mockSupabase.functions.invoke
-        .mockResolvedValueOnce({ data: null, error: null })
-        .mockResolvedValueOnce({ data: { member: mockRegularMember }, error: null })
-
-      renderHook(() => useAuth(), { wrapper: AuthProvider })
-
-      await waitFor(() => {
-        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
-          'member',
-          expect.objectContaining({
-            body: expect.objectContaining({
-              name: 'testuser',
-            }),
-          })
-        )
-      })
-    })
-  })
 
   describe('signInWithDiscord', () => {
     it('should call Supabase OAuth with Discord provider', async () => {
