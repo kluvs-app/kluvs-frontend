@@ -80,7 +80,7 @@ const adminCommands = [
   { name: '!club_create', description: 'Create a new book club' },
   { name: '!club_update', description: 'Update club name or channel' },
   { name: '!club_delete', description: 'Delete the club' },
-  { name: '!session_create', description: 'Create a reading session with book and author' },
+  { name: '!session_create', description: 'Create a reading session' },
   { name: '!session_update', description: 'Update due date or book details' },
   { name: '!session_delete', description: 'Delete the active session' },
   { name: '!member_add', description: 'Add a member to the club' },
