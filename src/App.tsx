@@ -7,6 +7,8 @@ import LandingPage from './pages/LandingPage'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfUse from './pages/TermsOfUse'
 import DataDeletion from './pages/DataDeletion'
+import DiscordPage from './pages/DiscordPage'
+import ScrollToTop from './components/ScrollToTop'
 
 function AppContent() {
   const { user, loading } = useAuth()
@@ -34,11 +36,13 @@ function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfUse />} />
           <Route path="/delete-account" element={<DataDeletion />} />
+          <Route path="/discord" element={<DiscordPage />} />
           <Route
             path="/app/*"
             element={

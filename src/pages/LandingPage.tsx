@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import Footer from '../components/Footer'
+import DiscordIcon from '../components/icons/DiscordIcon'
 
 function BookIcon() {
   return (
@@ -106,6 +108,17 @@ export default function LandingPage() {
               App Store
             </a>
           </div>
+
+          {/* Discord bot link */}
+          <div className="flex justify-center mt-3">
+            <Link
+              to="/discord"
+              className="flex items-center justify-center gap-3 bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-raised)] text-[var(--color-text-primary)] border border-[var(--color-divider)] rounded-btn px-6 py-3 font-medium text-body transition-colors"
+            >
+              <DiscordIcon className="w-5 h-5 text-white" />
+              Discord Bot
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -201,26 +214,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[var(--color-divider)] px-6 py-8 text-center space-y-2">
-        <p className="text-helper text-[var(--color-text-secondary)]">
-          © 2026 Kluvs. All rights reserved.
-        </p>
-        <p className="text-helper space-x-3">
-          <Link
-            to="/privacy"
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors"
-          >
-            Privacy Policy
-          </Link>
-          <span className="text-[var(--color-divider)]">·</span>
-          <Link
-            to="/terms"
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors"
-          >
-            Terms of Use
-          </Link>
-        </p>
-      </footer>
+      <Footer />
 
     </div>
   )
