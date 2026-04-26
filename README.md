@@ -72,6 +72,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ### Development Mode
 
 ```bash
+# Build locally
 npm run dev
 ```
 
