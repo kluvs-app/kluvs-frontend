@@ -22,11 +22,11 @@ describe('DiscordPage', () => {
       expect(logos.length).toBeGreaterThan(0)
     })
 
-    it('should render the "Open App" nav link pointing to /app', () => {
+    it('should render the Kluvs nav link pointing to /', () => {
       renderDiscordPage()
-      const link = screen.getByRole('link', { name: /open app/i })
-      expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', '/app')
+      const links = screen.getAllByRole('link')
+      const homeLink = links.find(l => l.getAttribute('href') === '/')
+      expect(homeLink).toBeInTheDocument()
     })
 
     it('should render the hero heading', () => {
@@ -58,9 +58,9 @@ describe('DiscordPage', () => {
   })
 
   describe('Feature Highlights', () => {
-    it('should render the Multi-Server Support feature card', () => {
+    it('should render the One Club per Channel feature card', () => {
       renderDiscordPage()
-      expect(screen.getByRole('heading', { name: /multi-server support/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /one club per channel/i })).toBeInTheDocument()
     })
 
     it('should render the Session Tracking feature card', () => {
