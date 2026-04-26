@@ -118,7 +118,7 @@ export default function DiscordPage() {
             <DiscordIcon />
           </div>
           <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
-            Your book club's<br />Discord companion.
+            Your Book Club's<br />favorite Discord companion.
           </h1>
           <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
             The Kluvs bot brings session tracking, member management, and AI-powered book summaries directly into your Discord server.
