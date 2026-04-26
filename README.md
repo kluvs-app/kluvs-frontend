@@ -69,7 +69,7 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
 ### 3. Backend Setup
 
-This frontend requires the [kluvs-api](https://github.com/yourusername/kluvs-api) backend to be deployed as Supabase Edge Functions.
+This frontend requires the [kluvs-backend](https://github.com/yourusername/kluvs-backend) backend to be deployed as Supabase Edge Functions.
 
 **Backend compatibility:**
 - Compatible with migrations up to: `20251130205915_add_metadata_fields.sql`
@@ -285,7 +285,7 @@ npm run test:run
   - Common tasks and patterns
   - Backend API compatibility
 
-- **[Backend API](https://github.com/yourusername/kluvs-api)** - RESTful Edge Functions
+- **[Backend API](https://github.com/yourusername/kluvs-backend)** - RESTful Edge Functions
   - API endpoints documentation
   - Database schema
   - Setup instructions
