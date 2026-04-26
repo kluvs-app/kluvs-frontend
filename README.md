@@ -1,7 +1,7 @@
 # Kluvs: Frontend
 
-[![CI](https://github.com/ivangarzab/kluvs-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/ivangarzab/kluvs-frontend/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/ivangarzab/kluvs-frontend/branch/main/graph/badge.svg)](https://codecov.io/gh/ivangarzab/kluvs-frontend)
+[![CI](https://github.com/kluvs-app/kluvs-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/kluvs-app/kluvs-frontend/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/kluvs-app/kluvs-frontend/branch/main/graph/badge.svg)](https://codecov.io/gh/kluvs-app/kluvs-frontend)
 
 A React + TypeScript web application for managing book clubs across multiple Discord servers. Track reading sessions, discussions, members, and club activities with OAuth authentication.
 
@@ -67,19 +67,12 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
 > **Note:** Never commit `.env.local` or `.env.production` files to Git. They're already in `.gitignore`.
 
-### 3. Backend Setup
-
-This frontend requires the [kluvs-api](https://github.com/yourusername/kluvs-api) backend to be deployed as Supabase Edge Functions.
-
-**Backend compatibility:**
-- Compatible with migrations up to: `20251130205915_add_metadata_fields.sql`
-- See [CLAUDE.md](CLAUDE.md#backend-api-compatibility) for sync details
-
 ## 🏃 Running the App
 
 ### Development Mode
 
 ```bash
+# Build locally
 npm run dev
 ```
 
@@ -285,7 +278,7 @@ npm run test:run
   - Common tasks and patterns
   - Backend API compatibility
 
-- **[Backend API](https://github.com/yourusername/kluvs-api)** - RESTful Edge Functions
+- **[Backend API](https://github.com/kluvs-app/kluvs-backend)** - RESTful Edge Functions
   - API endpoints documentation
   - Database schema
   - Setup instructions
