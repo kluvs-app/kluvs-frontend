@@ -47,8 +47,8 @@ function DiscordIcon() {
 const features = [
   {
     icon: <GlobeIcon />,
-    title: 'Multi-Server Support',
-    description: 'Manage book clubs across multiple Discord servers from a single bot. Each server gets its own clubs, sessions, and members.',
+    title: 'One Club per Channel',
+    description: 'Every channel can have its own independent club, complete with sessions, members, and discussions.',
   },
   {
     icon: <BookIcon />,
@@ -58,7 +58,7 @@ const features = [
   {
     icon: <SparkleIcon />,
     title: 'AI Summaries',
-    description: 'Get AI-generated book summaries powered by GPT straight in your Discord channel — no browser required.',
+    description: 'Get AI-generated book summaries powered by modern LLMs straight in your Discord channel.',
   },
   {
     icon: <CalendarIcon />,
@@ -70,17 +70,18 @@ const features = [
 const userCommands = [
   { name: '/help', description: 'Getting started guide' },
   { name: '/usage', description: 'View all available commands' },
-  { name: '/session', description: 'Show all session details' },
+  { name: '/join', description: 'Join the book club in this channel' },
+  { name: '/leave', description: 'Leave the book club in this channel' },
   { name: '/book', description: 'Show current book details' },
+  { name: '/session', description: 'Show all session details' },
   { name: '/duedate', description: 'Show the session due date' },
   { name: '/discussions', description: 'View scheduled discussion topics' },
   { name: '/book_summary', description: 'AI-generated book summary' },
-  { name: '/join', description: 'Join the book club in this channel' },
-  { name: '/leave', description: 'Leave the book club in this channel' },
 ]
 
 const adminCommands = [
   { name: '!setup', description: 'First-run wizard: register server and create a club' },
+  { name: '!admin_help', description: 'Show the full admin command reference' },
   { name: '!club_create', description: 'Create a new book club' },
   { name: '!club_update', description: 'Update club name or channel' },
   { name: '!club_delete', description: 'Delete the club' },
@@ -90,7 +91,6 @@ const adminCommands = [
   { name: '!member_add', description: 'Add a member to the club' },
   { name: '!member_remove', description: 'Remove a member from the club' },
   { name: '!member_role', description: 'Set a member\'s role (admin or member)' },
-  { name: '!admin_help', description: 'Show the full admin command reference' },
 ]
 
 export default function DiscordPage() {
@@ -98,34 +98,19 @@ export default function DiscordPage() {
     <div className="min-h-screen bg-[var(--color-bg)]">
 
       {/* Nav */}
-      <nav className="sticky top-0 z-40 border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <nav className="sticky top-0 z-40 border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-6 py-4 flex items-center">
+        <Link to="/" className="flex items-center gap-3">
           <img src="/ic-mark.svg" alt="Kluvs" className="h-8 w-8" />
           <span className="text-section-heading text-[var(--color-text-primary)]">Kluvs</span>
-        </div>
-        <Link
-          to="/app"
-          className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-body font-medium transition-colors"
-        >
-          Open App
         </Link>
       </nav>
 
       {/* Hero */}
       <section className="px-6 py-24 text-center">
         <div className="max-w-2xl mx-auto">
-          <div className="h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-8" style={{ backgroundColor: '#5865F2' }}>
-            <DiscordIcon />
-          </div>
-          <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
-            Your Book Club's<br />favorite Discord companion.
-          </h1>
-          <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
-            The Kluvs bot brings session tracking, member management, and AI-powered book summaries directly into your Discord server.
-          </p>
 
           {/* CTA row 1 — primary action */}
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-8">
             <a
               href={INVITE_URL}
               target="_blank"
@@ -138,6 +123,13 @@ export default function DiscordPage() {
               Add to Server
             </a>
           </div>
+
+          <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
+            Your Book Club's<br />favorite Discord companion.
+          </h1>
+          <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
+            The Kluvs bot brings session tracking, member management, and AI-powered book summaries directly into your Discord server.
+          </p>
 
           {/* CTA row 2 — secondary actions */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -214,7 +206,7 @@ export default function DiscordPage() {
             {/* Admin commands */}
             <div>
               <h3 className="text-card-heading text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-primary inline-block" />
+                <span className="h-2 w-2 rounded-full bg-tertiary inline-block" />
                 Admin Commands
               </h3>
               <div className="space-y-2">
