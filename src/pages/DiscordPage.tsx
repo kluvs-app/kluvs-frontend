@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Header from '../components/Header'
 import Footer from '../components/Footer'
 import DiscordIcon from '../components/icons/DiscordIcon'
 
@@ -91,14 +91,7 @@ const adminCommands = [
 export default function DiscordPage() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
-
-      {/* Nav */}
-      <nav className="sticky top-0 z-40 border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-6 py-4 flex items-center">
-        <Link to="/" className="flex items-center gap-3">
-          <img src="/ic-mark.svg" alt="Kluvs" className="h-8 w-8" />
-          <span className="text-section-heading text-[var(--color-text-primary)]">Kluvs</span>
-        </Link>
-      </nav>
+      <Header />
 
       {/* Hero */}
       <section className="px-6 py-24 text-center">

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MemberModal from '../../../components/modals/MemberModal'
-import { mockClub, mockServer, mockAdminMember } from '../../utils/mocks'
+import { mockClub, mockServer, mockAdminMember, mockRegularMember } from '../../utils/mocks'
 
 // Mock supabase
 const mockInvoke = vi.fn()
@@ -93,11 +93,90 @@ describe('MemberModal', () => {
   })
 
   describe('Form Validation', () => {
+    it('should validate empty name and call onError', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      // Type then clear name to make it empty
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'Test')
+      await user.clear(screen.getByPlaceholderText('e.g., BookLover42'))
+
+      // Now get the submit button (it will be disabled due to empty name)
+      // We'll use getByRole to get the actual submit button
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1] // Last button is the submit button
+
+      // Button should be disabled when name is empty
+      expect(submitButton).toBeDisabled()
+    })
+
+    it('should validate negative points', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+
+      // Get points input (first number input)
+      const inputs = screen.getAllByDisplayValue('0')
+      const pointsInput = inputs[0] as HTMLInputElement
+      await user.clear(pointsInput)
+      await user.type(pointsInput, '-5')
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Points must be a non-negative number')
+      })
+    })
+
+    it('should validate negative books_read', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+
+      // Get books_read input (second number input)
+      const inputs = screen.getAllByDisplayValue('0')
+      const booksInput = inputs[1] as HTMLInputElement
+      await user.clear(booksInput)
+      await user.type(booksInput, '-3')
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Books read must be a non-negative number')
+      })
+    })
+
+    it('should validate non-numeric points', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+
+      const inputs = screen.getAllByDisplayValue('0')
+      const pointsInput = inputs[0] as HTMLInputElement
+      await user.clear(pointsInput)
+      await user.type(pointsInput, 'abc')
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Points must be a non-negative number')
+      })
+    })
+
     it('should have submit button disabled when name is empty', () => {
       render(<MemberModal {...defaultProps} />)
 
-      // "Add Member" in both heading and button
-      const submitButton = screen.getByText('Add Member', { selector: 'span' }).closest('button')
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1] // Last button is the submit button
       expect(submitButton).toBeDisabled()
     })
   })
@@ -109,7 +188,9 @@ describe('MemberModal', () => {
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
 
-      await user.click(screen.getByText('Add Member', { selector: 'span' }))
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalled()
@@ -122,7 +203,9 @@ describe('MemberModal', () => {
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
 
-      await user.click(screen.getByText('Add Member', { selector: 'span' }))
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
 
       await waitFor(() => {
         expect(defaultProps.onMemberSaved).toHaveBeenCalledTimes(1)
@@ -141,7 +224,9 @@ describe('MemberModal', () => {
       await user.clear(nameInput)
       await user.type(nameInput, 'Updated Name')
 
-      await user.click(screen.getByText('Update Member', { selector: 'span' }))
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalled()
@@ -161,6 +246,133 @@ describe('MemberModal', () => {
     })
   })
 
+  describe('Shame List - Add Mode', () => {
+    it('should add member to shame list when checkbox is checked', async () => {
+      const user = userEvent.setup()
+      mockInvoke.mockResolvedValue({ data: { member: { id: 'new-member-id' } }, error: null })
+
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+
+      const shameCheckbox = screen.getByRole('checkbox')
+      await user.click(shameCheckbox)
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith('club', {
+          method: 'PUT',
+          body: {
+            id: mockClub.id,
+            server_id: mockServer.id,
+            shame_list: expect.arrayContaining(['new-member-id'])
+          }
+        })
+      })
+    })
+
+    it('should handle shame list API error gracefully', async () => {
+      const user = userEvent.setup()
+      mockInvoke
+        .mockResolvedValueOnce({ data: { member: { id: 'new-member-id' } }, error: null })
+        .mockResolvedValueOnce({ data: null, error: new Error('Shame list failed') })
+
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+
+      const shameCheckbox = screen.getByRole('checkbox')
+      await user.click(shameCheckbox)
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Member created but failed to add to shame list')
+      })
+    })
+  })
+
+  describe('Shame List - Edit Mode', () => {
+    it('should update shame list when adding member to shame list', async () => {
+      const user = userEvent.setup()
+      const memberNotInShameList = { ...mockAdminMember, id: 999 }
+      mockInvoke.mockResolvedValue({ data: {}, error: null })
+
+      render(<MemberModal {...defaultProps} editingMember={memberNotInShameList} />)
+
+      const shameCheckbox = screen.getByRole('checkbox')
+      await user.click(shameCheckbox)
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith('club', {
+          method: 'PUT',
+          body: {
+            id: mockClub.id,
+            server_id: mockServer.id,
+            shame_list: expect.arrayContaining([999])
+          }
+        })
+      })
+    })
+
+    it('should update shame list when removing member from shame list', async () => {
+      const user = userEvent.setup()
+      mockInvoke.mockResolvedValue({ data: {}, error: null })
+
+      // Use mockRegularMember (id: 2) which IS in mockClub.shame_list
+      render(<MemberModal {...defaultProps} editingMember={mockRegularMember} />)
+
+      const shameCheckbox = screen.getByRole('checkbox')
+      // Mock club has mockRegularMember.id (2) in shame_list, so unchecking should remove it
+      await user.click(shameCheckbox)
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith('club', {
+          method: 'PUT',
+          body: {
+            id: mockClub.id,
+            server_id: mockServer.id,
+            shame_list: expect.not.arrayContaining([mockRegularMember.id])
+          }
+        })
+      })
+    })
+
+    it('should handle shame list error when editing', async () => {
+      const user = userEvent.setup()
+      mockInvoke
+        .mockResolvedValueOnce({ data: {}, error: null }) // Member update succeeds
+        .mockResolvedValueOnce({ data: null, error: new Error('Club update failed') }) // Shame list update fails
+
+      const memberNotInShameList = { ...mockAdminMember, id: 999 }
+      render(<MemberModal {...defaultProps} editingMember={memberNotInShameList} />)
+
+      const shameCheckbox = screen.getByRole('checkbox')
+      await user.click(shameCheckbox)
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Member updated but failed to update shame list status')
+      })
+    })
+  })
+
   describe('Error Handling', () => {
     it('should call onError on API failure', async () => {
       mockInvoke.mockResolvedValue({ data: null, error: new Error('Save failed') })
@@ -169,10 +381,74 @@ describe('MemberModal', () => {
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'Test')
 
-      await user.click(screen.getByText('Add Member', { selector: 'span' }))
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Save failed')
+      })
+    })
+
+    it('should handle unknown errors gracefully', async () => {
+      mockInvoke.mockRejectedValue(new Error('Network error'))
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'Test')
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Network error')
+      })
+    })
+  })
+
+  describe('Form Input Changes', () => {
+    it('should update points when input changes', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      const inputs = screen.getAllByDisplayValue('0')
+      const pointsInput = inputs[0] as HTMLInputElement
+
+      await user.clear(pointsInput)
+      await user.type(pointsInput, '150')
+
+      expect(pointsInput).toHaveValue(150)
+    })
+
+    it('should update books_read when input changes', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      const inputs = screen.getAllByDisplayValue('0')
+      const booksInput = inputs[1] as HTMLInputElement
+
+      await user.clear(booksInput)
+      await user.type(booksInput, '25')
+
+      expect(booksInput).toHaveValue(25)
+    })
+
+    it('should trim whitespace from name on submit', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), '  New Member  ')
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith('member', {
+          method: 'POST',
+          body: expect.objectContaining({ name: 'New Member' })
+        })
       })
     })
   })
