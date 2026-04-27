@@ -3,7 +3,7 @@ import { VERSION } from '../version'
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-[var(--color-divider)] px-6 py-8 text-center space-y-2">
+    <footer className="relative border-t border-[var(--color-divider)] px-6 py-8 space-y-2 text-center">
       <p className="text-helper text-[var(--color-text-secondary)]">
         © 2026 Kluvs. All rights reserved.
       </p>
@@ -22,7 +22,7 @@ export default function Footer() {
           Terms of Use
         </Link>
       </p>
-      <p className="absolute bottom-0 right-0 px-6 py-2 text-helper text-[var(--color-text-secondary)] opacity-50">
+      <p className="absolute bottom-2 right-6 text-helper text-[var(--color-text-secondary)] opacity-50">
         v{VERSION}
       </p>
     </footer>
