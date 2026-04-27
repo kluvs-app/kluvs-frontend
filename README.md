@@ -113,12 +113,12 @@ npm run test:coverage
 
 ### Test Coverage
 
-Current coverage: **87 tests** across 4 test suites
+Current coverage: **469 tests** across 25 test files
 
-- ✅ AuthContext: 18 tests (authentication flows)
-- ✅ ClubsDashboard: 14 tests (main page logic)
-- ✅ AddClubModal: 30 tests (modal workflows)
-- ✅ MembersTable: 25 tests (role-based rendering)
+- ✅ Core: AuthContext, ClubsDashboard, LoginPage, LandingPage
+- ✅ Components: Header, Footer, Sidebar, TopNavbar, CurrentReadingCard, DiscussionsTimeline, MembersTable, ThemeToggle
+- ✅ Modals: AddClubModal, DeleteClubModal, EditProfileModal, SignOutModal, DiscussionModal, NewSessionModal, EditBookModal, MemberModal, and more
+- ✅ Pages: LandingPage, PrivacyPolicy, TermsOfUse, DataDeletion, DiscordPage
 
 Coverage goals: 80%+ statements/functions/lines, 75%+ branches
 
@@ -146,34 +146,52 @@ See [CLAUDE.md - Testing Section](CLAUDE.md#testing) for guidelines on writing t
 ```
 kluvs-frontend/
 ├── src/
-│   ├── components/          # React components
-│   │   ├── modals/         # Modal dialogs
+│   ├── components/                 # React components
+│   │   ├── modals/                # Modal dialogs (AddClub, DeleteClub, EditProfile, etc.)
+│   │   ├── layout/                # Layout components (Sidebar, TopNavbar)
+│   │   ├── Header.tsx             # Shared header (public pages)
+│   │   ├── Footer.tsx             # Shared footer (all pages)
 │   │   ├── ClubsSidebar.tsx
 │   │   ├── CurrentReadingCard.tsx
 │   │   ├── DiscussionsTimeline.tsx
-│   │   └── MembersTable.tsx
-│   ├── contexts/           # React contexts
-│   │   └── AuthContext.tsx # Authentication state
-│   ├── types/              # TypeScript type definitions
+│   │   ├── MembersTable.tsx
+│   │   └── ThemeToggle.tsx        # Dark/light theme toggle
+│   ├── content/                   # Markdown content files
+│   │   ├── privacy-policy.md
+│   │   ├── terms-of-use.md
+│   │   └── data-deletion.md
+│   ├── contexts/                  # React contexts
+│   │   └── AuthContext.tsx        # Authentication state
+│   ├── pages/                     # Page components
+│   │   ├── LandingPage.tsx
+│   │   ├── ClubsDashboard.tsx
+│   │   ├── LoginPage.tsx
+│   │   ├── PrivacyPolicy.tsx
+│   │   ├── TermsOfUse.tsx
+│   │   ├── DataDeletion.tsx
+│   │   └── DiscordPage.tsx
+│   ├── types/                     # TypeScript type definitions
 │   │   └── index.ts
-│   ├── __tests__/          # Test files
+│   ├── __tests__/                 # Test files (25 test files, 469 tests)
 │   │   ├── setup.ts
-│   │   ├── utils/          # Test utilities & mocks
-│   │   ├── contexts/       # Context tests
-│   │   ├── components/     # Component tests
-│   │   └── ClubsDashboard.test.tsx
-│   ├── App.tsx             # Root component
-│   ├── ClubsDashboard.tsx  # Main dashboard
-│   ├── LoginPage.tsx       # OAuth login
-│   └── supabase.ts         # Supabase client config
-├── public/                 # Static assets
-├── .env.local             # Local environment vars (create this)
-├── .env.production        # Production env vars
-├── package.json           # Dependencies & scripts
-├── vite.config.ts         # Vite configuration
-├── vitest.config.ts       # Test configuration
-├── tailwind.config.js     # Tailwind CSS config
-└── tsconfig.json          # TypeScript config
+│   │   ├── utils/                 # Test utilities & mocks
+│   │   ├── contexts/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   └── [component].test.tsx
+│   ├── App.tsx                    # Root component & routing
+│   ├── supabase.ts                # Supabase client config
+│   └── version.ts                 # Version string
+├── .husky/                        # Git hooks
+│   └── pre-push                   # Runs validation on push
+├── public/                        # Static assets
+├── .env.local                     # Local environment vars (create this)
+├── .env.production                # Production env vars
+├── package.json                   # Dependencies & scripts
+├── vite.config.ts                 # Vite configuration
+├── vitest.config.ts               # Test configuration
+├── tailwind.config.js             # Tailwind CSS config
+└── tsconfig.json                  # TypeScript config
 ```
 
 ## 🔐 Authentication
@@ -199,10 +217,13 @@ User roles are managed via the backend API. Contact an admin to upgrade your rol
 
 - **Framework:** React 19 with TypeScript
 - **Build Tool:** Vite 6
-- **Styling:** Tailwind CSS 3
+- **Styling:** Tailwind CSS 3 + `@tailwindcss/typography`
+- **Markdown:** `react-markdown` for rendering legal pages
+- **Routing:** React Router v7
 - **Backend:** Supabase (Edge Functions + Auth)
 - **Testing:** Vitest + React Testing Library
 - **Linting:** ESLint with TypeScript support
+- **Pre-commit Hooks:** Husky (runs validation on push)
 
 ## 🚢 Deployment
 
@@ -293,13 +314,13 @@ npm run test:run
 
 ### Code Quality Checks
 
-All PRs must pass:
+All PRs must pass (via Husky pre-push hook):
 - ✅ ESLint (no errors)
 - ✅ TypeScript type checking (no errors)
-- ✅ Tests (87 tests must pass)
+- ✅ Tests (469 tests must pass across 25 test files)
 - ✅ Build (must compile successfully)
 
-Run `npm run validate` to check all of these locally.
+Run `npm run validate` to check all of these locally before pushing.
 
 ## 📝 License
 
