@@ -114,7 +114,8 @@ describe('Header', () => {
       const appButton = screen.getByRole('link', { name: /Open App/i })
 
       // Logo should come before app button in DOM
-      const logoIndex = Array.from(header.children).indexOf(logo)
+      expect(logo).toBeInTheDocument()
+      const logoIndex = Array.from(header.children).indexOf(logo as Element)
       const buttonIndex = Array.from(header.children).indexOf(appButton)
       expect(logoIndex).toBeLessThan(buttonIndex)
     })
