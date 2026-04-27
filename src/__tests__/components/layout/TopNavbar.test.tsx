@@ -29,7 +29,7 @@ vi.mock('../../../components/modals/SignOutModal', () => ({
   default: ({ isOpen, onClose }: any) => isOpen ? <div data-testid="sign-out-modal" role="dialog"><button onClick={onClose}>Close</button>Sign Out Modal</div> : null,
 }))
 vi.mock('../../../components/modals/EditProfileModal', () => ({
-  default: ({ isOpen, onProfileUpdated, _onClose, _onError, _currentMember }: any) => isOpen ? <div data-testid="edit-profile-modal" role="dialog"><button onClick={() => onProfileUpdated()}>Close</button>Edit Profile Modal</div> : null,
+  default: ({ isOpen, onProfileUpdated }: any) => isOpen ? <div data-testid="edit-profile-modal" role="dialog"><button onClick={() => onProfileUpdated()}>Close</button>Edit Profile Modal</div> : null,
 }))
 
 describe('TopNavbar', () => {
