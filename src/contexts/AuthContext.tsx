@@ -42,7 +42,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Retries handle race condition where database trigger may not have completed yet
   const findMemberByUserId = async (userId: string): Promise<Member | null> => {
     const maxRetries = 3
-    const baseDelay = 500 // ms
+    // Use shorter delays in tests to avoid slow test runs
+    const baseDelay = process.env.VITEST ? 1 : 500 // ms
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {

@@ -176,7 +176,31 @@ describe('AuthContext', () => {
       expect(result.current.member).toEqual(mockRegularMember)
     })
 
+    it('should retry member lookup on null response', async () => {
+      const mockUser = createMockUser({ id: 'new-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
 
+      // First attempt returns null, second finds member (simulating trigger delay)
+      mockSupabase.functions.invoke
+        .mockResolvedValueOnce({ data: null, error: null })
+        .mockResolvedValueOnce({ data: mockRegularMember, error: null })
+
+      const { result } = renderHook(() => useAuth(), {
+        wrapper: AuthProvider,
+      })
+
+      await waitFor(
+        () => {
+          expect(result.current.loading).toBe(false)
+        },
+        { timeout: 3000 }
+      )
+
+      // Should find member after retry
+      expect(result.current.member).toEqual(mockRegularMember)
+      // Should have called GET twice (initial + 1 retry)
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledTimes(2)
+    })
 
     it('should handle Edge Function errors gracefully', async () => {
       const mockUser = createMockUser()
