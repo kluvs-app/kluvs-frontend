@@ -4,43 +4,59 @@
 A React + TypeScript web application for managing book clubs. Users can track reading sessions, discussions, members, and club activities across multiple book clubs and Discord servers.
 
 ## Tech Stack
-- **Framework**: React 18 with TypeScript
-- **Build Tool**: Vite
-- **Styling**: Tailwind CSS + `@tailwindcss/typography` (for prose/markdown rendering)
+- **Framework**: React 19 with TypeScript
+- **Build Tool**: Vite 6
+- **Styling**: Tailwind CSS 3 + `@tailwindcss/typography` (for prose/markdown rendering)
 - **Routing**: React Router v7 (`react-router-dom`)
 - **Markdown Rendering**: `react-markdown`
 - **Backend**: Supabase (Auth + Edge Functions)
 - **Authentication**: OAuth via Discord and Google
-- **Testing**: Vitest + React Testing Library
+- **Testing**: Vitest + React Testing Library (469 tests across 25 files)
+- **Pre-commit Hooks**: Husky (validates on push)
 
 ## Backend API Compatibility
 - **Backend Repository**: `kluvs-backend`
 - **Compatible with migrations up to**: `20251130205915_add_metadata_fields.sql`
-- **Last synced**: 2025-12-07
-- **Sync notes**: Added new optional fields to TypeScript types:
-  - `Member`: `user_id`, `handle`, `created_at`
-  - `Book`: `id`, `page_count`
-  - `Club`: `founded_date`
+- **Last synced**: 2026-04-26
+- **Current version**: 0.3.1
+- **Sync notes**: 
+  - Fixed member creation to prevent duplicates on OAuth signup
+  - Added new optional fields to TypeScript types: `user_id`, `handle`, `created_at` (Member); `id`, `page_count` (Book); `founded_date` (Club)
+  - Release automation via CI/CD
 
 ## Project Structure
 ```
 src/
 ├── components/
-│   ├── modals/              # Modal dialogs
+│   ├── modals/              # Modal dialogs (8+ modal components)
+│   │   ├── AddClubModal.tsx
+│   │   ├── DeleteClubModal.tsx
 │   │   ├── EditProfileModal.tsx
-│   │   └── SignOutModal.tsx
+│   │   ├── SignOutModal.tsx
+│   │   ├── DiscussionModal.tsx
+│   │   ├── NewSessionModal.tsx
+│   │   ├── EditBookModal.tsx
+│   │   ├── MemberModal.tsx
+│   │   └── Delete*.tsx        # Delete confirmation modals
+│   ├── layout/              # Layout components
+│   │   ├── Sidebar.tsx      # Main sidebar
+│   │   └── TopNavbar.tsx    # Top navigation bar
+│   ├── Header.tsx           # Shared header (public pages)
+│   ├── Footer.tsx           # Shared footer (with version number)
 │   ├── ClubsSidebar.tsx     # Left sidebar with clubs list & profile
 │   ├── CurrentReadingCard.tsx
 │   ├── DiscussionsTimeline.tsx
-│   └── MembersTable.tsx
+│   ├── MembersTable.tsx
+│   └── ThemeToggle.tsx      # Dark/light theme toggle
 ├── content/
-│   ├── privacy-policy.md   # Privacy policy content (edit this to update the policy)
-│   ├── terms-of-use.md     # Terms of use content (edit this to update the terms)
-│   └── data-deletion.md    # Account/data deletion content (edit this to update the page)
+│   ├── privacy-policy.md    # Privacy policy content (edit to update the policy)
+│   ├── terms-of-use.md      # Terms of use content (edit to update the terms)
+│   └── data-deletion.md     # Account/data deletion content (edit to update the page)
 ├── contexts/
 │   └── AuthContext.tsx      # Authentication state management
 ├── pages/
 │   ├── LandingPage.tsx      # Public / route — marketing, download links, contact form
+│   ├── DiscordPage.tsx      # Public /discord route
 │   ├── ClubsDashboard.tsx   # Authenticated dashboard view (/app)
 │   ├── LoginPage.tsx        # OAuth login page (/app when logged out)
 │   ├── PrivacyPolicy.tsx    # Public /privacy route (shell only — content lives in content/)
@@ -48,8 +64,17 @@ src/
 │   └── DataDeletion.tsx     # Public /delete-account route — required by Google Play Console
 ├── types/
 │   └── index.ts             # TypeScript type definitions
+├── __tests__/               # Test suite (25 test files, 469 tests)
+│   ├── setup.ts
+│   ├── utils/
+│   ├── contexts/
+│   ├── components/
+│   ├── pages/
+│   └── [various].test.tsx
 ├── App.tsx                  # Root component — router config only
-└── supabase.ts              # Supabase client configuration
+├── supabase.ts              # Supabase client configuration
+├── version.ts               # Version string (used in Footer)
+└── index.css                # Global styles with CSS variables
 ```
 
 ## Key Features
@@ -68,6 +93,18 @@ src/
 The `isAdmin` flag is derived from `member.role === 'admin'` and propagated throughout components.
 
 ### Main Components
+
+#### Header
+Shared header component used across all public pages:
+- Logo and branding
+- Optional "Open App" button (shown on public pages)
+- Sticky positioning with navigation
+
+#### Footer
+Shared footer component displayed on all pages:
+- Copyright notice
+- Links to Privacy Policy and Terms of Use
+- Version number display (v0.3.1)
 
 #### ClubsDashboard
 The primary view showing:
@@ -146,13 +183,18 @@ VITE_SUPABASE_ANON_KEY=your_anon_key
 The app uses React Router v7 (`BrowserRouter`) in `App.tsx`.
 
 ### Route Structure
-- `/` — Public, no auth required → `src/pages/LandingPage.tsx`
-- `/privacy` — Public, no auth required → `src/pages/PrivacyPolicy.tsx`
-- `/terms` — Public, no auth required → `src/pages/TermsOfUse.tsx`
-- `/delete-account` — Public, no auth required → `src/pages/DataDeletion.tsx` (Google Play Console requirement)
-- `/app/*` — Authenticated → `AuthProvider > AppContent` (login or dashboard)
+- `/` — Public, no auth required → `LandingPage` (with Header + Footer)
+- `/discord` — Public, no auth required → `DiscordPage` (with Header + Footer)
+- `/privacy` — Public, no auth required → `PrivacyPolicy` (with Header + Footer, content from `src/content/privacy-policy.md`)
+- `/terms` — Public, no auth required → `TermsOfUse` (with Header + Footer, content from `src/content/terms-of-use.md`)
+- `/delete-account` — Public, no auth required → `DataDeletion` (with Header + Footer, Google Play Console requirement)
+- `/app/*` — Authenticated → Inside `AuthProvider` (shows LoginPage if not logged in, else ClubsDashboard)
 
-**Key rule:** `AuthProvider` is scoped only to `/app/*`. Public pages never trigger Supabase auth calls. OAuth `redirectTo` is set to `${window.location.origin}/app`.
+**Key rules:**
+- All public pages use the `Header` and `Footer` components
+- `AuthProvider` is scoped only to `/app/*`
+- Public pages never trigger Supabase auth calls
+- OAuth `redirectTo` is set to `${window.location.origin}/app`
 
 ### Adding a New Public Page
 1. Create the component in `src/pages/`
@@ -174,6 +216,17 @@ All are plain Markdown. No code changes needed.
 ## Git Branches
 - `main` - Production branch
 - `develop` - Active development branch
+
+## Pre-commit Hooks (Husky)
+Husky is configured to run validation on `pre-push`:
+
+**Pre-push Hook** (`.husky/pre-push`)
+- Runs `npm run validate` which includes:
+  - ESLint checks
+  - TypeScript type checking
+  - Test suite (469 tests)
+- Prevents pushing code that fails any checks
+- To bypass (not recommended): `git push --no-verify`
 
 ## Testing
 
@@ -218,13 +271,18 @@ src/__tests__/
 7. Use `waitFor()` for async state updates
 
 ### Test Coverage
-Current coverage (as of 2025-12-07):
-- **AuthContext**: 18 tests covering all authentication flows
+Current coverage (as of 2026-04-26): **469 tests across 25 test files**
 
-Priority test coverage (next to implement):
-1. ClubsDashboard (main page logic)
-2. Modal components (form validation, submission)
-3. Table components (rendering, interactions)
+**Fully Tested Components:**
+- **Contexts**: AuthContext (18+ tests)
+- **Pages**: LandingPage, PrivacyPolicy, TermsOfUse, DataDeletion, DiscordPage, ClubsDashboard (80+ tests)
+- **Core Components**: Header (13 tests), Footer, Sidebar, TopNavbar, MembersTable, CurrentReadingCard, DiscussionsTimeline, ThemeToggle (100+ tests)
+- **Modals**: AddClubModal, DeleteClubModal, EditProfileModal, SignOutModal, DiscussionModal, NewSessionModal, EditBookModal, MemberModal, and delete modals (200+ tests)
+
+**Coverage Status:**
+- ✅ All components have test files
+- ✅ 80%+ statements, functions, and lines coverage
+- ✅ 75%+ branch coverage
 
 ## Common Tasks
 
@@ -248,12 +306,14 @@ Priority test coverage (next to implement):
 4. Log requests for debugging (see ClubsDashboard for examples)
 5. Mock Edge Function responses in tests
 
-## Known Issues
-- None currently
+## Version Management
 
-## Future Enhancements
-- [ ] Email/password authentication option
-- [ ] Member notifications for new discussions
-- [ ] Book search/import from external APIs
-- [ ] Reading progress tracking
-- [ ] Discussion voting/reactions
+The app version is defined in `src/version.ts` and displayed in the Footer component. When creating a release:
+1. Update `src/version.ts` with the new version
+2. Update `package.json` version field
+3. Create a git tag: `git tag v0.x.x`
+4. CI/CD release automation creates a GitHub release automatically
+
+Current version: **0.3.1** (synced in package.json)
+
+**Note:** `src/version.ts` shows v0.3.0 but should be updated to 0.3.1 to match package.json.
