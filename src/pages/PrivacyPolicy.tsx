@@ -1,14 +1,12 @@
 import { Link } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
+import Header from '../components/Header'
 import content from '../content/privacy-policy.md?raw'
 
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
-      <header className="border-b border-[var(--color-divider)] px-6 py-4 flex items-center gap-3">
-        <img src="/ic-mark.svg" alt="Kluvs" className="h-7 w-7" />
-        <span className="text-section-heading text-[var(--color-text-primary)]">Kluvs</span>
-      </header>
+      <Header />
 
       <main className="max-w-3xl mx-auto px-6 py-12">
         <article className="prose prose-neutral dark:prose-invert max-w-none prose-a:text-primary hover:prose-a:text-primary-hover">
