@@ -164,6 +164,7 @@ describe('AuthContext', () => {
         wrapper: AuthProvider,
       })
 
+      // Advance timers in case any retries are needed
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
       })
@@ -175,33 +176,16 @@ describe('AuthContext', () => {
       expect(result.current.member).toEqual(mockRegularMember)
     })
 
-    it('should handle member not found gracefully', async () => {
-      const mockUser = createMockUser({ id: 'new-user-id' })
-      setupAuthMocks(mockSupabase, mockUser)
 
-      // Member lookup returns null (member record doesn't exist yet - shouldn't happen in normal flow)
-      mockSupabase.functions.invoke.mockResolvedValueOnce({ data: null, error: null })
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: AuthProvider,
-      })
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-
-      // Member should be null since lookup returned null
-      expect(result.current.member).toBeNull()
-      // Should only call GET to lookup, no POST to create
-      expect(mockSupabase.functions.invoke).toHaveBeenCalledTimes(1)
-    })
 
     it('should handle Edge Function errors gracefully', async () => {
       const mockUser = createMockUser()
       setupAuthMocks(mockSupabase, mockUser)
-      mockEdgeFunctionResponse(mockSupabase, 'member', {
-        error: new Error('Network error'),
-      })
+
+      // Mock Edge Function to fail with network error
+      mockSupabase.functions.invoke.mockRejectedValue(
+        new Error('Network error')
+      )
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,

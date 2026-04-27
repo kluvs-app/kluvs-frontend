@@ -38,38 +38,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check if user is admin
   const isAdmin = member?.role === 'admin'
 
-  // Look up member data by user_id using Edge Function
+  // Look up member data by user_id using Edge Function with retry logic
+  // Retries handle race condition where database trigger may not have completed yet
   const findMemberByUserId = async (userId: string): Promise<Member | null> => {
-    try {
-      console.log('🔍 Looking up member for user_id via Edge Function:', userId)
-      
-      // Wait for session to be ready
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      
-      if (sessionError || !session) {
-        console.log('❌ No active session for Edge Function call')
+    const maxRetries = 3
+    const baseDelay = 500 // ms
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        if (attempt === 0) {
+          console.log('🔍 Looking up member for user_id via Edge Function:', userId)
+        } else {
+          console.log(`🔄 Member lookup attempt ${attempt + 1}/${maxRetries}`)
+        }
+
+        // Wait for session to be ready
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+        if (sessionError || !session) {
+          console.log('❌ No active session for Edge Function call')
+          return null
+        }
+
+        console.log('✅ Session ready, calling Edge Function')
+
+        const { data, error } = await supabase.functions.invoke(`member?user_id=${encodeURIComponent(userId)}`, {
+          method: 'GET'
+        })
+
+        console.log('📡 Edge Function response:', { data, error })
+
+        if (error) {
+          console.error('❌ Edge Function error:', error)
+          return null
+        }
+
+        // Member found
+        if (data) {
+          console.log('✅ Found member via Edge Function:', data)
+          return data
+        }
+
+        // Member not found yet - may be race condition with database trigger
+        if (attempt < maxRetries - 1) {
+          const delay = baseDelay * Math.pow(2, attempt)
+          console.log(`⏳ Member not found, retrying in ${delay}ms (database trigger may still be executing)...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+      } catch (error) {
+        console.error('💥 Exception in member lookup:', error)
         return null
       }
-      
-      console.log('✅ Session ready, calling Edge Function')
-      
-      const { data, error } = await supabase.functions.invoke(`member?user_id=${encodeURIComponent(userId)}`, {
-        method: 'GET'
-      })
-      
-      console.log('📡 Edge Function response:', { data, error })
-      
-      if (error) {
-        console.error('❌ Edge Function error:', error)
-        return null
-      }
-      
-      console.log('✅ Found member via Edge Function:', data)
-      return data
-    } catch (error) {
-      console.error('💥 Exception in member lookup:', error)
-      return null
     }
+
+    console.log('❌ Member not found after all retry attempts')
+    return null
   }
 
 
