@@ -164,6 +164,7 @@ describe('AuthContext', () => {
         wrapper: AuthProvider,
       })
 
+      // Advance timers in case any retries are needed
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
       })
@@ -175,41 +176,40 @@ describe('AuthContext', () => {
       expect(result.current.member).toEqual(mockRegularMember)
     })
 
-    it('should handle member not found', async () => {
+    it('should retry member lookup on null response', async () => {
       const mockUser = createMockUser({ id: 'new-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
 
-      // First call returns null (member not found), second call returns created member
+      // First attempt returns null, second finds member (simulating trigger delay)
       mockSupabase.functions.invoke
-        .mockResolvedValueOnce({ data: null, error: null }) // GET member - not found
-        .mockResolvedValueOnce({ data: { member: mockRegularMember }, error: null }) // POST member - create
+        .mockResolvedValueOnce({ data: null, error: null })
+        .mockResolvedValueOnce({ data: mockRegularMember, error: null })
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
       })
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-
-      // Should have called POST to create member
-      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
-        'member',
-        expect.objectContaining({
-          method: 'POST',
-          body: expect.objectContaining({
-            user_id: 'new-user-id',
-          }),
-        })
+      await waitFor(
+        () => {
+          expect(result.current.loading).toBe(false)
+        },
+        { timeout: 3000 }
       )
+
+      // Should find member after retry
+      expect(result.current.member).toEqual(mockRegularMember)
+      // Should have called GET twice (initial + 1 retry)
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledTimes(2)
     })
 
     it('should handle Edge Function errors gracefully', async () => {
       const mockUser = createMockUser()
       setupAuthMocks(mockSupabase, mockUser)
-      mockEdgeFunctionResponse(mockSupabase, 'member', {
-        error: new Error('Network error'),
-      })
+
+      // Mock Edge Function to fail with network error
+      mockSupabase.functions.invoke.mockRejectedValue(
+        new Error('Network error')
+      )
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: AuthProvider,
@@ -223,66 +223,6 @@ describe('AuthContext', () => {
     })
   })
 
-  describe('createNewMember', () => {
-    it('should create member with user metadata', async () => {
-      const mockUser = createMockUser({
-        id: 'new-user-id',
-        user_metadata: { full_name: 'John Doe' },
-      })
-      setupAuthMocks(mockSupabase, mockUser)
-
-      mockSupabase.functions.invoke
-        .mockResolvedValueOnce({ data: null, error: null }) // GET - not found
-        .mockResolvedValueOnce({ data: { member: mockRegularMember }, error: null }) // POST - create
-
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: AuthProvider,
-      })
-
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
-
-      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
-        'member',
-        expect.objectContaining({
-          method: 'POST',
-          body: expect.objectContaining({
-            name: 'John Doe',
-            points: 0,
-            books_read: 0,
-            user_id: 'new-user-id',
-          }),
-        })
-      )
-    })
-
-    it('should fallback to email username if no full_name', async () => {
-      const mockUser = createMockUser({
-        id: 'new-user-id',
-        email: 'testuser@example.com',
-        user_metadata: {},
-      })
-      setupAuthMocks(mockSupabase, mockUser)
-
-      mockSupabase.functions.invoke
-        .mockResolvedValueOnce({ data: null, error: null })
-        .mockResolvedValueOnce({ data: { member: mockRegularMember }, error: null })
-
-      renderHook(() => useAuth(), { wrapper: AuthProvider })
-
-      await waitFor(() => {
-        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
-          'member',
-          expect.objectContaining({
-            body: expect.objectContaining({
-              name: 'testuser',
-            }),
-          })
-        )
-      })
-    })
-  })
 
   describe('signInWithDiscord', () => {
     it('should call Supabase OAuth with Discord provider', async () => {
