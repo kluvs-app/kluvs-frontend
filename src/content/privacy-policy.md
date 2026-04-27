@@ -64,4 +64,4 @@ Depending on your location, you may have the following rights regarding your per
 
 If you have questions or comments about this Privacy Policy, please contact us at:
 
-**Ivan Graza** ivangb6@gmail.com
+**Ivan Garza** [kluvs-app@gmail.com](mailto:kluvs-app@gmail.com)

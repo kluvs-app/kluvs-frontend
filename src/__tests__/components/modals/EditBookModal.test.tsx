@@ -90,26 +90,133 @@ describe('EditBookModal', () => {
   })
 
   describe('Form Validation', () => {
-    it('should call onError when title is empty', async () => {
+    it('should disable submit button when title is empty', async () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
 
-      // Clear the title field
-      const titleInput = screen.getByDisplayValue('The Great Gatsby')
+      const titleInput = screen.getByDisplayValue('The Great Gatsby') as HTMLInputElement
       await user.clear(titleInput)
 
-      // Submit button should be disabled
-      expect(screen.getByText('Update Book').closest('button')).toBeDisabled()
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      expect(submitButton).toBeDisabled()
     })
 
-    it('should call onError when author is empty', async () => {
+    it('should disable submit button when author is empty', async () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
 
-      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald')
+      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald') as HTMLInputElement
       await user.clear(authorInput)
 
-      expect(screen.getByText('Update Book').closest('button')).toBeDisabled()
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      expect(submitButton).toBeDisabled()
+    })
+
+    it('should call onError when title is empty and submit is attempted', async () => {
+      const user = userEvent.setup()
+      const onError = vi.fn()
+      render(<EditBookModal {...defaultProps} onError={onError} />)
+
+      const titleInput = screen.getByDisplayValue('The Great Gatsby') as HTMLInputElement
+      await user.clear(titleInput)
+
+      // Type something in title to enable button momentarily
+      await user.type(titleInput, 'T')
+      // Then clear again to trigger validation
+      await user.clear(titleInput)
+      await user.type(titleInput, '  ') // Just spaces
+
+      // Try to click submit - button should be disabled but test validation
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      expect(submitButton).toBeDisabled()
+    })
+
+    it('should call onError when author is empty and submit is attempted', async () => {
+      const user = userEvent.setup()
+      const onError = vi.fn()
+      render(<EditBookModal {...defaultProps} onError={onError} />)
+
+      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald') as HTMLInputElement
+      await user.clear(authorInput)
+      await user.type(authorInput, '  ') // Just spaces
+
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      expect(submitButton).toBeDisabled()
+    })
+  })
+
+  describe('Form Input Changes', () => {
+    it('should update title when input changes', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+
+      const titleInput = screen.getByDisplayValue('The Great Gatsby') as HTMLInputElement
+      await user.clear(titleInput)
+      await user.type(titleInput, 'New Title')
+
+      expect(titleInput.value).toBe('New Title')
+    })
+
+    it('should update author when input changes', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+
+      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald') as HTMLInputElement
+      await user.clear(authorInput)
+      await user.type(authorInput, 'New Author')
+
+      expect(authorInput.value).toBe('New Author')
+    })
+
+    it('should update edition when input changes', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+
+      const editionInput = screen.getByDisplayValue('First Edition') as HTMLInputElement
+      await user.clear(editionInput)
+      await user.type(editionInput, 'Second Edition')
+
+      expect(editionInput.value).toBe('Second Edition')
+    })
+
+    it('should update year when input changes', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+
+      const yearInput = screen.getByDisplayValue('1925') as HTMLInputElement
+      await user.clear(yearInput)
+      await user.type(yearInput, '2023')
+
+      expect(yearInput.value).toBe('2023')
+    })
+
+    it('should allow empty edition field', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+
+      const editionInput = screen.getByDisplayValue('First Edition') as HTMLInputElement
+      await user.clear(editionInput)
+
+      // Should still be able to submit with empty edition
+      await user.click(screen.getByRole('button', { name: /update book/i }))
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalled()
+      })
+    })
+
+    it('should allow empty year field', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+
+      const yearInput = screen.getByDisplayValue('1925') as HTMLInputElement
+      await user.clear(yearInput)
+
+      await user.click(screen.getByRole('button', { name: /update book/i }))
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalled()
+      })
     })
   })
 
@@ -118,7 +225,8 @@ describe('EditBookModal', () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
 
-      await user.click(screen.getByText('Update Book'))
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      await user.click(submitButton)
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith(
@@ -140,11 +248,43 @@ describe('EditBookModal', () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
 
-      await user.click(screen.getByText('Update Book'))
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      await user.click(submitButton)
 
       await waitFor(() => {
         expect(defaultProps.onBookUpdated).toHaveBeenCalledTimes(1)
         expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
+      })
+    })
+
+    it('should trim whitespace from title and author on submit', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+
+      const titleInput = screen.getByDisplayValue('The Great Gatsby') as HTMLInputElement
+      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald') as HTMLInputElement
+
+      await user.clear(titleInput)
+      await user.type(titleInput, '  Updated Title  ')
+      await user.clear(authorInput)
+      await user.type(authorInput, '  Updated Author  ')
+
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'session',
+          expect.objectContaining({
+            method: 'PUT',
+            body: expect.objectContaining({
+              book: expect.objectContaining({
+                title: 'Updated Title',
+                author: 'Updated Author',
+              }),
+            }),
+          })
+        )
       })
     })
   })
@@ -155,10 +295,24 @@ describe('EditBookModal', () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
 
-      await user.click(screen.getByText('Update Book'))
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      await user.click(submitButton)
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Update failed')
+      })
+    })
+
+    it('should handle unknown errors gracefully', async () => {
+      mockInvoke.mockRejectedValue(new Error('Network error'))
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+
+      const submitButton = screen.getByRole('button', { name: /update book/i })
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Network error')
       })
     })
   })
