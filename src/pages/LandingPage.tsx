@@ -67,7 +67,7 @@ export default function LandingPage() {
         <div className="max-w-2xl mx-auto">
           <img src="/ic-mark.svg" alt="" className="h-20 w-20 mx-auto mb-8" />
           <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
-            Your book club,<br />organized.
+            Your Book Club,<br />organized.
           </h1>
           <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
             Kluvs helps book clubs track reading sessions, manage discussions, and keep members engaged — all in one place.
