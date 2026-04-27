@@ -77,19 +77,15 @@ describe('TermsOfUse', () => {
 
     it('should display a contact email', () => {
       renderTermsOfUse()
-      expect(screen.getByText(/ivangb6@gmail\.com/i)).toBeInTheDocument()
+      expect(screen.getByText(/kluvs-app@gmail\.com/i)).toBeInTheDocument()
     })
   })
 
   describe('Navigation', () => {
-    it('should render the Back to Kluvs link', () => {
+    it('should have a clickable Kluvs logo in the header', () => {
       renderTermsOfUse()
-      expect(screen.getByRole('link', { name: /Back to Kluvs/i })).toBeInTheDocument()
-    })
-
-    it('should have the Back to Kluvs link pointing to /', () => {
-      renderTermsOfUse()
-      expect(screen.getByRole('link', { name: /Back to Kluvs/i })).toHaveAttribute('href', '/')
+      const logo = screen.getByAltText('Kluvs').closest('a')
+      expect(logo).toHaveAttribute('href', '/')
     })
   })
 })
