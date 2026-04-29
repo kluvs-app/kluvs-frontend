@@ -33,9 +33,9 @@ describe('LandingPage', () => {
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     })
 
-    it('should render the "Open App" nav link pointing to /app', () => {
+    it('should render the "Dashboard" nav link pointing to /app', () => {
       renderLandingPage()
-      const link = screen.getByRole('link', { name: /open app/i })
+      const link = screen.getByRole('link', { name: /dashboard/i })
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute('href', '/app')
     })
