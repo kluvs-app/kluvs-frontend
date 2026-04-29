@@ -33,6 +33,14 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }))
 
+// Mock ResizeObserver (used by KluvsHexBackground)
+class MockResizeObserver {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
+global.ResizeObserver = MockResizeObserver as any
+
 // Mock crypto.randomUUID (used in AddClubModal)
 Object.defineProperty(global, 'crypto', {
   value: {

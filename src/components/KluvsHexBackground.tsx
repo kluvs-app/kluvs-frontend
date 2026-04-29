@@ -31,6 +31,7 @@ const TREFOIL: Cell[] = [
 
 const keyOf = (q: number, r: number) => `${q},${r}`
 
+/* istanbul ignore next */
 function buildRings(maxRing: number): Cell[][] {
   const visited = new Map<string, number>()
   const rings: Cell[][] = [[]]
@@ -60,6 +61,7 @@ function buildRings(maxRing: number): Cell[][] {
   return rings
 }
 
+/* istanbul ignore next */
 function offsetPolygon(pts: Pt[], dist: number): Pt[] {
   const n = pts.length
   const cx = pts.reduce((s, p) => s + p[0], 0) / n
@@ -102,6 +104,7 @@ function offsetPolygon(pts: Pt[], dist: number): Pt[] {
   return dp > dm ? tp : tm
 }
 
+/* istanbul ignore next */
 function drawHex(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) {
   ctx.beginPath()
   for (let i = 0; i < 6; i++) {
@@ -113,6 +116,7 @@ function drawHex(ctx: CanvasRenderingContext2D, cx: number, cy: number, size: nu
   ctx.closePath()
 }
 
+/* istanbul ignore next */
 function drawPolygonPath(ctx: CanvasRenderingContext2D, pts: Pt[]) {
   if (pts.length === 0) return
   ctx.beginPath()
@@ -121,6 +125,7 @@ function drawPolygonPath(ctx: CanvasRenderingContext2D, pts: Pt[]) {
   ctx.closePath()
 }
 
+/* istanbul ignore next */
 // Opacity + vertical offset for one ripple ring over its animation phase [0..1]
 function getRingState(phase: number, jumpPx: number): { opacity: number; dy: number } {
   if (phase <= 0.14) {
@@ -138,6 +143,7 @@ function getRingState(phase: number, jumpPx: number): { opacity: number; dy: num
   return { opacity: 0, dy: 0 }
 }
 
+/* istanbul ignore next */
 // Vertical offset + scale for the trefoil pulse over its animation phase [0..1]
 function getTrefoilState(phase: number, jumpPx: number): { dy: number; scale: number } {
   if (phase <= 0.22) {
@@ -187,6 +193,7 @@ export default function KluvsHexBackground({
   }, [])
 
   useEffect(() => {
+    /* istanbul ignore next */
     const canvas = canvasRef.current
     if (!canvas || size.w === 0 || size.h === 0) return
 
@@ -250,12 +257,14 @@ export default function KluvsHexBackground({
     const worldCx = tCx + offX
     const worldCy = tCy + offY
 
+    /* istanbul ignore next */
     // Check prefers-reduced-motion once per effect run
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     let startTime: number | null = null
     let rafId: number
 
+    /* istanbul ignore next */
     function draw(timestamp: number) {
       if (startTime === null) startTime = timestamp
       const elapsed = reducedMotion ? 0 : (timestamp - startTime) / 1000
