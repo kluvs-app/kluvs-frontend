@@ -17,7 +17,7 @@ export default function Header({ showOpenAppButton = false }: HeaderProps) {
           to="/app"
           className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-body font-medium transition-colors"
         >
-          Open App
+          Dashboard
         </Link>
       )}
     </header>

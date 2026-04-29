@@ -63,37 +63,37 @@ describe('Header', () => {
     })
   })
 
-  describe('Open App Button', () => {
-    it('should not display Open App button by default', () => {
+  describe('Dashboard Button', () => {
+    it('should not display Dashboard button by default', () => {
       renderHeader()
 
-      expect(screen.queryByRole('link', { name: /Open App/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Dashboard/i })).not.toBeInTheDocument()
     })
 
-    it('should display Open App button when showOpenAppButton is true', () => {
+    it('should display Dashboard button when showOpenAppButton is true', () => {
       renderHeader({ showOpenAppButton: true })
 
-      const button = screen.getByRole('link', { name: /Open App/i })
+      const button = screen.getByRole('link', { name: /Dashboard/i })
       expect(button).toBeInTheDocument()
     })
 
-    it('should not display Open App button when showOpenAppButton is false', () => {
+    it('should not display Dashboard button when showOpenAppButton is false', () => {
       renderHeader({ showOpenAppButton: false })
 
-      expect(screen.queryByRole('link', { name: /Open App/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Dashboard/i })).not.toBeInTheDocument()
     })
 
     it('should link to /app', () => {
       renderHeader({ showOpenAppButton: true })
 
-      const button = screen.getByRole('link', { name: /Open App/i })
+      const button = screen.getByRole('link', { name: /Dashboard/i })
       expect(button).toHaveAttribute('href', '/app')
     })
 
     it('should have proper styling', () => {
       renderHeader({ showOpenAppButton: true })
 
-      const button = screen.getByRole('link', { name: /Open App/i })
+      const button = screen.getByRole('link', { name: /Dashboard/i })
       expect(button).toHaveClass('bg-primary', 'text-white', 'font-medium', 'transition-colors')
     })
   })
@@ -111,7 +111,7 @@ describe('Header', () => {
 
       const header = screen.getByRole('banner')
       const logo = screen.getByAltText('Kluvs').closest('a')
-      const appButton = screen.getByRole('link', { name: /Open App/i })
+      const appButton = screen.getByRole('link', { name: /Dashboard/i })
 
       // Logo should come before app button in DOM
       expect(logo).toBeInTheDocument()
