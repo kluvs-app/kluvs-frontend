@@ -2,6 +2,10 @@ import { expect, afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import * as matchers from '@testing-library/jest-dom/matchers'
 
+// Mock Supabase environment variables before any modules are loaded
+import.meta.env.VITE_SUPABASE_URL = 'https://test.supabase.co'
+import.meta.env.VITE_SUPABASE_ANON_KEY = 'test-anon-key'
+
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers)
 
@@ -32,6 +36,14 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
+
+// Mock ResizeObserver (used by KluvsHexBackground)
+class MockResizeObserver {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
+global.ResizeObserver = MockResizeObserver as any
 
 // Mock crypto.randomUUID (used in AddClubModal)
 Object.defineProperty(global, 'crypto', {
