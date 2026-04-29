@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import DiscordIcon from '../components/icons/DiscordIcon'
+import KluvsHexBackground from '../components/KluvsHexBackground'
 
 function BookIcon() {
   return (
@@ -63,13 +64,14 @@ export default function LandingPage() {
       <Header showOpenAppButton={true} />
 
       {/* Hero */}
-      <section className="px-6 py-24 text-center">
+      <section className="relative isolate overflow-hidden min-h-[640px] px-6 pb-24 text-center">
+        <KluvsHexBackground />
+        <div className="relative z-10 pt-[260px]">
         <div className="max-w-2xl mx-auto">
-          <img src="/ic-mark.svg" alt="" className="h-20 w-20 mx-auto mb-8" />
-          <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
+          <h1 className="text-5xl font-bold text-white mb-6 leading-tight">
             Your Book Club,<br />organized.
           </h1>
-          <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
+          <p className="text-body-lg text-white/70 mb-10 max-w-lg mx-auto">
             Kluvs helps book clubs track reading sessions, manage discussions, and keep members engaged — all in one place.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -107,6 +109,7 @@ export default function LandingPage() {
               Discord Bot
             </Link>
           </div>
+        </div>
         </div>
       </section>
 
