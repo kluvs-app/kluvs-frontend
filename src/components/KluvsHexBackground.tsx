@@ -155,8 +155,8 @@ function getTrefoilState(phase: number, jumpPx: number): { dy: number; scale: nu
 
 export default function KluvsHexBackground({
   accentColor = '#D16D30',
-  bgFill = '#1a1a1c',
-  bgContour = '#2a2a2d',
+  bgFill = '#0a0a0a',
+  bgContour = '#1a1a1a',
   cellSize = 32,
   logoTopPx = 96,
   ringGap = 0.10,
