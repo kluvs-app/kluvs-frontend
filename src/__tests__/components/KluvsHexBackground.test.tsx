@@ -7,7 +7,6 @@ import KluvsHexBackground from '../../components/KluvsHexBackground'
 
 describe('KluvsHexBackground', () => {
   let mockCanvasContext: any
-  let mockResizeObserverCallback: FrameRequestCallback | null = null
 
   beforeEach(() => {
     // Create a comprehensive mock canvas context
