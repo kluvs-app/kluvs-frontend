@@ -103,7 +103,7 @@ export default function LandingPage() {
           <div className="flex justify-center mt-3">
             <Link
               to="/discord"
-              className="flex items-center justify-center gap-3 bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-raised)] text-[var(--color-text-primary)] border border-[var(--color-divider)] rounded-btn px-6 py-3 font-medium text-body transition-colors"
+              className="flex items-center justify-center gap-3 bg-[var(--color-bg-elevated)] hover:bg-[var(--color-bg-raised)] text-[var(--color-text-primary)] border border-[var(--color-divider)] rounded-btn px-6 py-3 font-medium text-body transition-colors w-full sm:w-auto"
             >
               <DiscordIcon className="w-5 h-5 text-white" />
               Discord Bot
