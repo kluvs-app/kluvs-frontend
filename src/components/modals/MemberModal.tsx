@@ -14,7 +14,6 @@ interface MemberModalProps {
 
 interface MemberFormData {
   name: string
-  points: string
   books_read: string
   on_shame_list: boolean
 }
@@ -31,7 +30,6 @@ export default function MemberModal({
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<MemberFormData>({
     name: '',
-    points: '0',
     books_read: '0',
     on_shame_list: false
   })
@@ -46,7 +44,6 @@ export default function MemberModal({
         const isOnShameList = selectedClub.shame_list.includes(editingMember.id)
         setFormData({
           name: editingMember.name,
-          points: String(editingMember.points),
           books_read: String(editingMember.books_read),
           on_shame_list: isOnShameList
         })
@@ -54,7 +51,6 @@ export default function MemberModal({
         // Add mode - reset to defaults
         setFormData({
           name: '',
-          points: '0',
           books_read: '0',
           on_shame_list: false
         })
@@ -68,13 +64,7 @@ export default function MemberModal({
       return false
     }
 
-    const points = parseInt(formData.points)
     const booksRead = parseInt(formData.books_read)
-
-    if (isNaN(points) || points < 0) {
-      onError('Points must be a non-negative number')
-      return false
-    }
 
     if (isNaN(booksRead) || booksRead < 0) {
       onError('Books read must be a non-negative number')
@@ -93,7 +83,6 @@ export default function MemberModal({
 
       const memberData = {
         name: formData.name.trim(),
-        points: parseInt(formData.points),
         books_read: parseInt(formData.books_read)
       }
 
@@ -173,7 +162,7 @@ export default function MemberModal({
       }
 
       // Reset form and close modal
-      setFormData({ name: '', points: '0', books_read: '0', on_shame_list: false })
+      setFormData({ name: '', books_read: '0', on_shame_list: false })
       onClose()
 
       // Notify parent component of successful save
@@ -192,7 +181,7 @@ export default function MemberModal({
   }
 
   const handleClose = () => {
-    setFormData({ name: '', points: '0', books_read: '0', on_shame_list: false })
+    setFormData({ name: '', books_read: '0', on_shame_list: false })
     onError('') // Clear errors when closing
     onClose()
   }
@@ -255,25 +244,6 @@ export default function MemberModal({
               disabled={loading}
               maxLength={100}
             />
-          </div>
-
-          {/* Points Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Points
-            </label>
-            <input
-              type="number"
-              value={formData.points}
-              onChange={(e) => setFormData(prev => ({ ...prev, points: e.target.value }))}
-              placeholder="0"
-              min="0"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-            />
-            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
-              Member's current point total
-            </p>
           </div>
 
           {/* Books Read Field */}

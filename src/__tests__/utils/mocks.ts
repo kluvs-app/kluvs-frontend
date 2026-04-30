@@ -10,7 +10,6 @@ export const mockAdminMember: Member = {
   user_id: 'admin-user-id',
   name: 'Admin User',
   handle: 'admin_handle',
-  points: 100,
   books_read: 10,
   clubs: [adminClub1, adminClub2],
   created_at: '2024-01-01T00:00:00Z',
@@ -21,7 +20,6 @@ export const mockRegularMember: Member = {
   user_id: 'regular-user-id',
   name: 'Regular User',
   handle: 'regular_handle',
-  points: 50,
   books_read: 5,
   clubs: [memberClub1],
   created_at: '2024-01-15T00:00:00Z',
@@ -31,7 +29,6 @@ export const mockMember3: Member = {
   id: 3,
   user_id: 'user-3-id',
   name: 'Jane Smith',
-  points: 75,
   books_read: 7,
   clubs: [memberClub1],
 }

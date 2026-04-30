@@ -21,7 +21,6 @@ vi.mock('../../../contexts/AuthContext', () => ({
       id: 1,
       user_id: 'admin-user-id',
       name: 'Admin User',
-      points: 100,
       books_read: 10,
       clubs: [{ id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }],
     },

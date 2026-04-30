@@ -49,7 +49,6 @@ export default function MembersTable({
           <thead>
             <tr className="border-b border-[var(--color-divider)] bg-[var(--color-bg-elevated)]">
               <th className="text-left py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Reader</th>
-              <th className="text-center py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Points</th>
               <th className="text-center py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Books Read</th>
               <th className="text-left py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Status</th>
             </tr>
@@ -101,11 +100,6 @@ export default function MembersTable({
                       </div>
                     )}
                   </div>
-                </td>
-                <td className="py-4 px-6 text-center">
-                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-body font-semibold">
-                    {member.points} pts
-                  </span>
                 </td>
                 <td className="py-4 px-6 text-center">
                   <span className="text-[var(--color-text-primary)] font-medium">{member.books_read}</span>
