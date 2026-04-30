@@ -10,10 +10,11 @@ interface TopNavbarProps {
   selectedServer: string
   onServerChange: (serverId: string) => void
   onMenuToggle?: () => void
+  isAdmin: boolean
 }
 
-export default function TopNavbar({ servers, selectedServer, onServerChange, onMenuToggle }: TopNavbarProps) {
-  const { member, refreshMemberData, isAdmin } = useAuth()
+export default function TopNavbar({ servers, selectedServer, onServerChange, onMenuToggle, isAdmin }: TopNavbarProps) {
+  const { member, refreshMemberData } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)

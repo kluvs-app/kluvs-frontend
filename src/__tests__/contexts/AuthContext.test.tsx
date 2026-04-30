@@ -76,7 +76,7 @@ describe('AuthContext', () => {
       expect(result.current).toHaveProperty('user')
       expect(result.current).toHaveProperty('member')
       expect(result.current).toHaveProperty('loading')
-      expect(result.current).toHaveProperty('isAdmin')
+      expect(result.current).toHaveProperty('getRoleForClub')
       expect(result.current).toHaveProperty('signInWithDiscord')
       expect(result.current).toHaveProperty('signInWithGoogle')
       expect(result.current).toHaveProperty('signOut')
@@ -93,12 +93,12 @@ describe('AuthContext', () => {
       expect(result.current.loading).toBe(true)
       expect(result.current.user).toBeNull()
       expect(result.current.member).toBeNull()
-      expect(result.current.isAdmin).toBe(false)
+      expect(result.current.getRoleForClub('any-id')).toBeNull()
     })
   })
 
-  describe('isAdmin computed property', () => {
-    it('should return true when member role is admin', async () => {
+  describe('getRoleForClub', () => {
+    it('should return admin role for a club the member is admin of', async () => {
       const mockUser = createMockUser({ id: 'admin-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', {
@@ -113,11 +113,10 @@ describe('AuthContext', () => {
         expect(result.current.loading).toBe(false)
       })
 
-      expect(result.current.isAdmin).toBe(true)
-      expect(result.current.member?.role).toBe('admin')
+      expect(result.current.getRoleForClub('club-1')).toBe('admin')
     })
 
-    it('should return false when member role is member', async () => {
+    it('should return member role for a club the member is not admin of', async () => {
       const mockUser = createMockUser({ id: 'regular-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', {
@@ -132,11 +131,10 @@ describe('AuthContext', () => {
         expect(result.current.loading).toBe(false)
       })
 
-      expect(result.current.isAdmin).toBe(false)
-      expect(result.current.member?.role).toBe('member')
+      expect(result.current.getRoleForClub('club-1')).toBe('member')
     })
 
-    it('should return false when no member exists', async () => {
+    it('should return null when no member exists', async () => {
       setupAuthMocks(mockSupabase, null)
 
       const { result } = renderHook(() => useAuth(), {
@@ -147,8 +145,26 @@ describe('AuthContext', () => {
         expect(result.current.loading).toBe(false)
       })
 
-      expect(result.current.isAdmin).toBe(false)
+      expect(result.current.getRoleForClub('club-1')).toBeNull()
       expect(result.current.member).toBeNull()
+    })
+
+    it('should return null for an unknown club id', async () => {
+      const mockUser = createMockUser({ id: 'admin-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', {
+        data: mockAdminMember,
+      })
+
+      const { result } = renderHook(() => useAuth(), {
+        wrapper: AuthProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      expect(result.current.getRoleForClub('unknown-club')).toBeNull()
     })
   })
 
@@ -559,7 +575,7 @@ describe('AuthContext', () => {
         expect(result.current.user).not.toBeNull()
       })
 
-      expect(result.current.isAdmin).toBe(true)
+      expect(result.current.getRoleForClub('club-1')).toBe('admin')
     })
 
     it('should not call handleUserChange before initialization', async () => {
@@ -600,7 +616,7 @@ describe('AuthContext', () => {
         { timeout: 3000 }
       )
 
-      expect(result.current.member?.role).toBe('admin')
+      expect(result.current.getRoleForClub('club-1')).toBe('admin')
       // Should have called invoke 3 times (3 retry attempts)
       expect(mockSupabase.functions.invoke).toHaveBeenCalledTimes(3)
     })
