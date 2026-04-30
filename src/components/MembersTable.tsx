@@ -60,19 +60,21 @@ export default function MembersTable({
                 <td className="py-4 px-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      {member.avatar_path ? (
-                        <img
-                          src={supabase.storage.from('member_avatars').getPublicUrl(member.avatar_path).data.publicUrl}
-                          alt={member.name}
-                          className="h-9 w-9 rounded-full object-cover mr-3"
-                        />
-                      ) : (
-                        <div className="h-9 w-9 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                      <div className="relative h-9 w-9 mr-3">
+                        <div className="h-9 w-9 bg-primary/10 rounded-full flex items-center justify-center">
                           <span className="text-primary font-semibold text-sm">
                             {member.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                      )}
+                        {member.avatar_path && (
+                          <img
+                            src={supabase.storage.from('member-avatars').getPublicUrl(member.avatar_path).data.publicUrl}
+                            alt={member.name}
+                            className="absolute inset-0 h-9 w-9 rounded-full object-cover"
+                            onError={(e) => { e.currentTarget.style.display = 'none' }}
+                          />
+                        )}
+                      </div>
                       <span className="text-[var(--color-text-primary)] font-medium">{member.name}</span>
                     </div>
 

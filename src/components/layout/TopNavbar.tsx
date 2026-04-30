@@ -71,17 +71,19 @@ export default function TopNavbar({ servers, selectedServer, onServerChange, onM
                 aria-expanded={showUserMenu}
                 aria-haspopup="true"
               >
-                {member?.avatar_path ? (
-                  <img
-                    src={supabase.storage.from('member_avatars').getPublicUrl(member.avatar_path).data.publicUrl}
-                    alt={member.name}
-                    className="h-7 w-7 rounded-full object-cover"
-                  />
-                ) : (
+                <div className="relative h-7 w-7">
                   <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
                     {member?.name?.[0]?.toUpperCase() || '?'}
                   </div>
-                )}
+                  {member?.avatar_path && (
+                    <img
+                      src={supabase.storage.from('member-avatars').getPublicUrl(member.avatar_path).data.publicUrl}
+                      alt={member.name}
+                      className="absolute inset-0 h-7 w-7 rounded-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                    />
+                  )}
+                </div>
                 <span className="hidden sm:inline text-[var(--color-text-primary)] font-medium">
                   {member?.name || 'User'}
                 </span>

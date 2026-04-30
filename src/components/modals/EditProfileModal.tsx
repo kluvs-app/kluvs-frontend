@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
 
 function getAvatarUrl(avatarPath: string): string {
-  const { data } = supabase.storage.from('member_avatars').getPublicUrl(avatarPath)
+  const { data } = supabase.storage.from('member-avatars').getPublicUrl(avatarPath)
   return data.publicUrl
 }
 
