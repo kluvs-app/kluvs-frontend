@@ -62,7 +62,6 @@ describe('MemberModal', () => {
       render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
 
       expect(screen.getByDisplayValue('Admin User')).toBeInTheDocument()
-      expect(screen.getByDisplayValue('100')).toBeInTheDocument()
       expect(screen.getByDisplayValue('10')).toBeInTheDocument()
     })
   })
@@ -110,36 +109,14 @@ describe('MemberModal', () => {
       expect(submitButton).toBeDisabled()
     })
 
-    it('should validate negative points', async () => {
-      const user = userEvent.setup()
-      render(<MemberModal {...defaultProps} />)
-
-      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
-
-      // Get points input (first number input)
-      const inputs = screen.getAllByDisplayValue('0')
-      const pointsInput = inputs[0] as HTMLInputElement
-      await user.clear(pointsInput)
-      await user.type(pointsInput, '-5')
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
-
-      await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Points must be a non-negative number')
-      })
-    })
-
     it('should validate negative books_read', async () => {
       const user = userEvent.setup()
       render(<MemberModal {...defaultProps} />)
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
 
-      // Get books_read input (second number input)
       const inputs = screen.getAllByDisplayValue('0')
-      const booksInput = inputs[1] as HTMLInputElement
+      const booksInput = inputs[0] as HTMLInputElement
       await user.clear(booksInput)
       await user.type(booksInput, '-3')
 
@@ -149,26 +126,6 @@ describe('MemberModal', () => {
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Books read must be a non-negative number')
-      })
-    })
-
-    it('should validate non-numeric points', async () => {
-      const user = userEvent.setup()
-      render(<MemberModal {...defaultProps} />)
-
-      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
-
-      const inputs = screen.getAllByDisplayValue('0')
-      const pointsInput = inputs[0] as HTMLInputElement
-      await user.clear(pointsInput)
-      await user.type(pointsInput, 'abc')
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
-
-      await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Points must be a non-negative number')
       })
     })
 
@@ -408,25 +365,12 @@ describe('MemberModal', () => {
   })
 
   describe('Form Input Changes', () => {
-    it('should update points when input changes', async () => {
-      const user = userEvent.setup()
-      render(<MemberModal {...defaultProps} />)
-
-      const inputs = screen.getAllByDisplayValue('0')
-      const pointsInput = inputs[0] as HTMLInputElement
-
-      await user.clear(pointsInput)
-      await user.type(pointsInput, '150')
-
-      expect(pointsInput).toHaveValue(150)
-    })
-
     it('should update books_read when input changes', async () => {
       const user = userEvent.setup()
       render(<MemberModal {...defaultProps} />)
 
       const inputs = screen.getAllByDisplayValue('0')
-      const booksInput = inputs[1] as HTMLInputElement
+      const booksInput = inputs[0] as HTMLInputElement
 
       await user.clear(booksInput)
       await user.type(booksInput, '25')

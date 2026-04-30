@@ -334,7 +334,7 @@ describe('AuthContext', () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
 
-      const updatedMember = { ...mockRegularMember, points: 999 }
+      const updatedMember = { ...mockRegularMember, books_read: 999 }
       mockSupabase.functions.invoke
         .mockResolvedValueOnce({ data: mockRegularMember, error: null }) // Initial load
         .mockResolvedValueOnce({ data: updatedMember, error: null }) // Refresh
@@ -344,14 +344,14 @@ describe('AuthContext', () => {
       })
 
       await waitFor(() => {
-        expect(result.current.member?.points).toBe(50)
+        expect(result.current.member?.books_read).toBe(5)
       })
 
       // Refresh member data
       await result.current.refreshMemberData()
 
       await waitFor(() => {
-        expect(result.current.member?.points).toBe(999)
+        expect(result.current.member?.books_read).toBe(999)
       })
     })
 
