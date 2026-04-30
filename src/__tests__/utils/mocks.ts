@@ -13,6 +13,8 @@ export const mockAdminMember: Member = {
   books_read: 10,
   clubs: [adminClub1, adminClub2],
   created_at: '2024-01-01T00:00:00Z',
+  discord_id: '111222333444555666',
+  avatar_path: 'avatars/admin-user.jpg',
 }
 
 export const mockRegularMember: Member = {
@@ -23,6 +25,7 @@ export const mockRegularMember: Member = {
   books_read: 5,
   clubs: [memberClub1],
   created_at: '2024-01-15T00:00:00Z',
+  discord_id: null,
 }
 
 export const mockMember3: Member = {

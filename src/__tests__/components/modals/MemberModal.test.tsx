@@ -64,6 +64,18 @@ describe('MemberModal', () => {
       expect(screen.getByDisplayValue('Admin User')).toBeInTheDocument()
       expect(screen.getByDisplayValue('10')).toBeInTheDocument()
     })
+
+    it('should pre-populate discord_id in edit mode', () => {
+      render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
+
+      expect(screen.getByDisplayValue('111222333444555666')).toBeInTheDocument()
+    })
+
+    it('should show empty discord_id for member without one', () => {
+      render(<MemberModal {...defaultProps} editingMember={mockRegularMember} />)
+
+      expect(screen.getByPlaceholderText('e.g., 123456789012345678')).toHaveValue('')
+    })
   })
 
   describe('Accessibility', () => {
@@ -187,6 +199,47 @@ describe('MemberModal', () => {
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalled()
+      })
+    })
+
+    it('should include discord_id in PUT payload', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'member',
+          expect.objectContaining({
+            method: 'PUT',
+            body: expect.objectContaining({ discord_id: '111222333444555666' }),
+          })
+        )
+      })
+    })
+
+    it('should send discord_id as null when field is cleared', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
+
+      const discordInput = screen.getByDisplayValue('111222333444555666')
+      await user.clear(discordInput)
+
+      const buttons = screen.getAllByRole('button')
+      const submitButton = buttons[buttons.length - 1]
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'member',
+          expect.objectContaining({
+            method: 'PUT',
+            body: expect.objectContaining({ discord_id: null }),
+          })
+        )
       })
     })
   })
