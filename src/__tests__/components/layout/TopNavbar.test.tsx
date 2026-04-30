@@ -12,10 +12,8 @@ vi.mock('../../../contexts/AuthContext', () => ({
     member: {
       id: 1,
       name: 'Test User',
-      role: 'admin',
     },
     refreshMemberData: mockRefreshMemberData,
-    isAdmin: true,
   }),
 }))
 
@@ -37,6 +35,7 @@ describe('TopNavbar', () => {
     servers: [mockServer],
     selectedServer: mockServer.id,
     onServerChange: vi.fn(),
+    isAdmin: true,
   }
 
   beforeEach(() => {
@@ -94,20 +93,9 @@ describe('TopNavbar', () => {
     })
 
     it('should hide server selector when user is not admin even with multiple servers', () => {
-      // Mock non-admin user
-      const mockUseAuthModule = vi.hoisted(() => ({
-        useAuth: vi.fn(() => ({
-          member: { id: 1, name: 'Regular User', role: 'member' },
-          refreshMemberData: vi.fn(),
-          isAdmin: false,
-        })),
-      }))
+      render(<TopNavbar {...defaultProps} servers={[mockServer, mockServer2]} isAdmin={false} />)
 
-      vi.resetModules()
-      vi.doMock('../../../contexts/AuthContext', () => mockUseAuthModule)
-
-      // Note: Since we can't easily change mocks mid-test, we test via conditional rendering
-      // The component logic shows: {servers.length > 1 && isAdmin && <select>}
+      expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
     })
   })
 

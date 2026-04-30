@@ -1,4 +1,8 @@
-import type { Server, Club, Member, Session, Discussion, Book } from '../../types'
+import type { Server, Club, Member, MemberClub, Session, Discussion, Book } from '../../types'
+
+const adminClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }
+const adminClub2: MemberClub = { id: 'club-2', name: 'Sci-Fi Readers', discord_channel: 'sci-fi', server_id: 'server-1', role: 'admin' }
+const memberClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'member' }
 
 // Mock Members
 export const mockAdminMember: Member = {
@@ -8,8 +12,7 @@ export const mockAdminMember: Member = {
   handle: 'admin_handle',
   points: 100,
   books_read: 10,
-  clubs: ['club-1', 'club-2'],
-  role: 'admin',
+  clubs: [adminClub1, adminClub2],
   created_at: '2024-01-01T00:00:00Z',
 }
 
@@ -20,8 +23,7 @@ export const mockRegularMember: Member = {
   handle: 'regular_handle',
   points: 50,
   books_read: 5,
-  clubs: ['club-1'],
-  role: 'member',
+  clubs: [memberClub1],
   created_at: '2024-01-15T00:00:00Z',
 }
 
@@ -31,8 +33,7 @@ export const mockMember3: Member = {
   name: 'Jane Smith',
   points: 75,
   books_read: 7,
-  clubs: ['club-1'],
-  role: 'member',
+  clubs: [memberClub1],
 }
 
 // Mock Books

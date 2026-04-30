@@ -2,13 +2,13 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
-import type { Member } from '../types'
+import type { Member, UserRole } from '../types'
 
 interface AuthContextType {
   user: User | null
   member: Member | null
   loading: boolean
-  isAdmin: boolean
+  getRoleForClub: (clubId: string) => UserRole | null
   signInWithDiscord: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
@@ -34,16 +34,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   // Use ref for immediate synchronous tracking of processing state
   const processingUserIdRef = useRef<string | null>(null)
-  
-  // Check if user is admin
-  const isAdmin = member?.role === 'admin'
+
+  const getRoleForClub = useCallback((clubId: string): UserRole | null => {
+    return member?.clubs.find(c => c.id === clubId)?.role ?? null
+  }, [member])
 
   // Look up member data by user_id using Edge Function with retry logic
   // Retries handle race condition where database trigger may not have completed yet
   const findMemberByUserId = async (userId: string): Promise<Member | null> => {
     const maxRetries = 3
     // Use shorter delays in tests to avoid slow test runs
-    const baseDelay = process.env.VITEST ? 1 : 500 // ms
+    const baseDelay = import.meta.env.VITEST ? 1 : 500 // ms
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
@@ -223,7 +224,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     member,
     loading,
-    isAdmin,
+    getRoleForClub,
     signInWithDiscord,
     signInWithGoogle,
     signOut,
