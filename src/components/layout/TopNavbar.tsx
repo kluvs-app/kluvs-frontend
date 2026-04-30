@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../supabase'
 import ThemeToggle from '../ThemeToggle'
 import SignOutModal from '../modals/SignOutModal'
 import EditProfileModal from '../modals/EditProfileModal'
@@ -70,9 +71,17 @@ export default function TopNavbar({ servers, selectedServer, onServerChange, onM
                 aria-expanded={showUserMenu}
                 aria-haspopup="true"
               >
-                <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                  {member?.name?.[0]?.toUpperCase() || '?'}
-                </div>
+                {member?.avatar_path ? (
+                  <img
+                    src={supabase.storage.from('member_avatars').getPublicUrl(member.avatar_path).data.publicUrl}
+                    alt={member.name}
+                    className="h-7 w-7 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+                    {member?.name?.[0]?.toUpperCase() || '?'}
+                  </div>
+                )}
                 <span className="hidden sm:inline text-[var(--color-text-primary)] font-medium">
                   {member?.name || 'User'}
                 </span>

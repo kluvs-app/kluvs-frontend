@@ -16,6 +16,7 @@ interface MemberFormData {
   name: string
   books_read: string
   on_shame_list: boolean
+  discord_id: string
 }
 
 export default function MemberModal({
@@ -31,7 +32,8 @@ export default function MemberModal({
   const [formData, setFormData] = useState<MemberFormData>({
     name: '',
     books_read: '0',
-    on_shame_list: false
+    on_shame_list: false,
+    discord_id: ''
   })
 
   const isEditing = !!editingMember
@@ -45,14 +47,16 @@ export default function MemberModal({
         setFormData({
           name: editingMember.name,
           books_read: String(editingMember.books_read),
-          on_shame_list: isOnShameList
+          on_shame_list: isOnShameList,
+          discord_id: editingMember.discord_id ?? ''
         })
       } else {
         // Add mode - reset to defaults
         setFormData({
           name: '',
           books_read: '0',
-          on_shame_list: false
+          on_shame_list: false,
+          discord_id: ''
         })
       }
     }
@@ -83,7 +87,8 @@ export default function MemberModal({
 
       const memberData = {
         name: formData.name.trim(),
-        books_read: parseInt(formData.books_read)
+        books_read: parseInt(formData.books_read),
+        discord_id: formData.discord_id.trim() || null
       }
 
       if (isEditing && editingMember) {
@@ -162,7 +167,7 @@ export default function MemberModal({
       }
 
       // Reset form and close modal
-      setFormData({ name: '', books_read: '0', on_shame_list: false })
+      setFormData({ name: '', books_read: '0', on_shame_list: false, discord_id: '' })
       onClose()
 
       // Notify parent component of successful save
@@ -181,7 +186,7 @@ export default function MemberModal({
   }
 
   const handleClose = () => {
-    setFormData({ name: '', books_read: '0', on_shame_list: false })
+    setFormData({ name: '', books_read: '0', on_shame_list: false, discord_id: '' })
     onError('') // Clear errors when closing
     onClose()
   }
@@ -262,6 +267,25 @@ export default function MemberModal({
             />
             <p className="text-[var(--color-text-secondary)] text-xs mt-1">
               Number of books completed
+            </p>
+          </div>
+
+          {/* Discord ID Field */}
+          <div>
+            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
+              Discord ID
+            </label>
+            <input
+              type="text"
+              value={formData.discord_id}
+              onChange={(e) => setFormData(prev => ({ ...prev, discord_id: e.target.value }))}
+              placeholder="e.g., 123456789012345678"
+              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              disabled={loading}
+              maxLength={30}
+            />
+            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
+              Discord snowflake ID — leave blank to clear
             </p>
           </div>
 
