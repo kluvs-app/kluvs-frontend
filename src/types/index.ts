@@ -55,7 +55,6 @@ export interface Member {
   user_id?: string
   name: string
   handle?: string
-  points: number
   books_read: number
   clubs: MemberClub[]
   created_at?: string

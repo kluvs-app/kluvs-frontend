@@ -48,7 +48,6 @@ export default function EditProfileModal({
       const requestBody = {
         id: member.id,
         name: name.trim(),
-        points: member.points,
         books_read: member.books_read
       }
 
@@ -146,9 +145,6 @@ export default function EditProfileModal({
               <div className="flex items-center space-x-4 text-sm text-[var(--color-text-secondary)]">
                 <span className="flex items-center">
                   {member.books_read} books
-                </span>
-                <span className="flex items-center">
-                  {member.points} pts
                 </span>
               </div>
               <p className="text-[var(--color-text-secondary)] text-xs">Read-only stats</p>
