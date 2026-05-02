@@ -16,7 +16,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   }
 })
 
-export function getAvatarUrl(avatarPath: string | null | undefined): string {
-  const { data } = supabase.storage.from('member-avatars').getPublicUrl(avatarPath ?? '')
+export function getAvatarUrl(avatarPath: string): string {
+  const { data } = supabase.storage.from('member-avatars').getPublicUrl(avatarPath)
   return data.publicUrl
 }

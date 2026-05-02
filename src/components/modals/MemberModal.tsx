@@ -287,7 +287,7 @@ export default function MemberModal({
               placeholder="e.g., 123456789012345678"
               className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               disabled={loading}
-              maxLength={30}
+              maxLength={19}
             />
             <p className="text-[var(--color-text-secondary)] text-xs mt-1">
               Discord snowflake ID — leave blank to clear

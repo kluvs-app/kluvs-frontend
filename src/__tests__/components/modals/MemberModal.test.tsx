@@ -139,6 +139,36 @@ describe('MemberModal', () => {
 
       expect(screen.getByRole('button', { name: 'Add Member' })).toBeDisabled()
     })
+
+    it('should call onError when discord_id is invalid format', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+      await user.type(screen.getByPlaceholderText('e.g., 123456789012345678'), 'not-a-snowflake')
+
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Discord ID must be a 17–19 digit number')
+      })
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+
+    it('should call onError when discord_id is too short', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+      await user.type(screen.getByPlaceholderText('e.g., 123456789012345678'), '12345')
+
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Discord ID must be a 17–19 digit number')
+      })
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
   })
 
   describe('Form Submission - Add', () => {

@@ -85,8 +85,8 @@ export default function EditProfileModal({
   }
 
   const handleClose = () => {
-    setName(member?.name || '')
-    setDiscordId(member?.discord_id ?? '')
+    setName(currentMember?.name || '')
+    setDiscordId(currentMember?.discord_id ?? '')
     onError('') // Clear errors when closing
     onClose()
   }
@@ -161,7 +161,7 @@ export default function EditProfileModal({
               placeholder="e.g., 123456789012345678"
               className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               disabled={loading}
-              maxLength={30}
+              maxLength={19}
             />
             <p className="text-[var(--color-text-secondary)] text-xs mt-1">
               Your Discord snowflake ID — leave blank to clear
