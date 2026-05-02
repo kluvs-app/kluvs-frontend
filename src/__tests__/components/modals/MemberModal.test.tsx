@@ -64,6 +64,18 @@ describe('MemberModal', () => {
       expect(screen.getByDisplayValue('Admin User')).toBeInTheDocument()
       expect(screen.getByDisplayValue('10')).toBeInTheDocument()
     })
+
+    it('should pre-populate discord_id in edit mode', () => {
+      render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
+
+      expect(screen.getByDisplayValue('111222333444555666')).toBeInTheDocument()
+    })
+
+    it('should show empty discord_id for member without one', () => {
+      render(<MemberModal {...defaultProps} editingMember={mockRegularMember} />)
+
+      expect(screen.getByPlaceholderText('e.g., 123456789012345678')).toHaveValue('')
+    })
   })
 
   describe('Accessibility', () => {
@@ -100,12 +112,7 @@ describe('MemberModal', () => {
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'Test')
       await user.clear(screen.getByPlaceholderText('e.g., BookLover42'))
 
-      // Now get the submit button (it will be disabled due to empty name)
-      // We'll use getByRole to get the actual submit button
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1] // Last button is the submit button
-
-      // Button should be disabled when name is empty
+      const submitButton = screen.getByRole('button', { name: 'Add Member' })
       expect(submitButton).toBeDisabled()
     })
 
@@ -120,9 +127,7 @@ describe('MemberModal', () => {
       await user.clear(booksInput)
       await user.type(booksInput, '-3')
 
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Books read must be a non-negative number')
@@ -132,9 +137,37 @@ describe('MemberModal', () => {
     it('should have submit button disabled when name is empty', () => {
       render(<MemberModal {...defaultProps} />)
 
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1] // Last button is the submit button
-      expect(submitButton).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Add Member' })).toBeDisabled()
+    })
+
+    it('should call onError when discord_id is invalid format', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+      await user.type(screen.getByPlaceholderText('e.g., 123456789012345678'), 'not-a-snowflake')
+
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Discord ID must be a 17–19 digit number')
+      })
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+
+    it('should call onError when discord_id is too short', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
+      await user.type(screen.getByPlaceholderText('e.g., 123456789012345678'), '12345')
+
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Discord ID must be a 17–19 digit number')
+      })
+      expect(mockInvoke).not.toHaveBeenCalled()
     })
   })
 
@@ -144,10 +177,7 @@ describe('MemberModal', () => {
       render(<MemberModal {...defaultProps} />)
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalled()
@@ -159,10 +189,7 @@ describe('MemberModal', () => {
       render(<MemberModal {...defaultProps} />)
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
 
       await waitFor(() => {
         expect(defaultProps.onMemberSaved).toHaveBeenCalledTimes(1)
@@ -180,13 +207,46 @@ describe('MemberModal', () => {
       const nameInput = screen.getByDisplayValue('Admin User')
       await user.clear(nameInput)
       await user.type(nameInput, 'Updated Name')
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalled()
+      })
+    })
+
+    it('should include discord_id in PUT payload', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
+
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'member',
+          expect.objectContaining({
+            method: 'PUT',
+            body: expect.objectContaining({ discord_id: '111222333444555666' }),
+          })
+        )
+      })
+    })
+
+    it('should send discord_id as null when field is cleared', async () => {
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
+
+      const discordInput = screen.getByDisplayValue('111222333444555666')
+      await user.clear(discordInput)
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'member',
+          expect.objectContaining({
+            method: 'PUT',
+            body: expect.objectContaining({ discord_id: null }),
+          })
+        )
       })
     })
   })
@@ -214,10 +274,7 @@ describe('MemberModal', () => {
 
       const shameCheckbox = screen.getByRole('checkbox')
       await user.click(shameCheckbox)
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith('club', {
@@ -243,10 +300,7 @@ describe('MemberModal', () => {
 
       const shameCheckbox = screen.getByRole('checkbox')
       await user.click(shameCheckbox)
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Member created but failed to add to shame list')
@@ -264,10 +318,7 @@ describe('MemberModal', () => {
 
       const shameCheckbox = screen.getByRole('checkbox')
       await user.click(shameCheckbox)
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith('club', {
@@ -291,10 +342,7 @@ describe('MemberModal', () => {
       const shameCheckbox = screen.getByRole('checkbox')
       // Mock club has mockRegularMember.id (2) in shame_list, so unchecking should remove it
       await user.click(shameCheckbox)
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith('club', {
@@ -319,10 +367,7 @@ describe('MemberModal', () => {
 
       const shameCheckbox = screen.getByRole('checkbox')
       await user.click(shameCheckbox)
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Member updated but failed to update shame list status')
@@ -337,10 +382,7 @@ describe('MemberModal', () => {
       render(<MemberModal {...defaultProps} />)
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'Test')
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Save failed')
@@ -353,10 +395,7 @@ describe('MemberModal', () => {
       render(<MemberModal {...defaultProps} />)
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'Test')
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Network error')
@@ -383,10 +422,7 @@ describe('MemberModal', () => {
       render(<MemberModal {...defaultProps} />)
 
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), '  New Member  ')
-
-      const buttons = screen.getAllByRole('button')
-      const submitButton = buttons[buttons.length - 1]
-      await user.click(submitButton)
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith('member', {
