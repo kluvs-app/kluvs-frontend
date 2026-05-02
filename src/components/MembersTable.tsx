@@ -1,3 +1,4 @@
+import { getAvatarUrl } from '../supabase'
 import type { Club, Member } from '../types'
 
 interface MembersTableProps {
@@ -49,7 +50,6 @@ export default function MembersTable({
           <thead>
             <tr className="border-b border-[var(--color-divider)] bg-[var(--color-bg-elevated)]">
               <th className="text-left py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Reader</th>
-              <th className="text-center py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Points</th>
               <th className="text-center py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Books Read</th>
               <th className="text-left py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Status</th>
             </tr>
@@ -60,10 +60,20 @@ export default function MembersTable({
                 <td className="py-4 px-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
-                      <div className="h-9 w-9 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-                        <span className="text-primary font-semibold text-sm">
-                          {member.name.charAt(0).toUpperCase()}
-                        </span>
+                      <div className="relative h-9 w-9 mr-3">
+                        <div className="h-9 w-9 bg-primary/10 rounded-full flex items-center justify-center">
+                          <span className="text-primary font-semibold text-sm">
+                            {member.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        {member.avatar_path && (
+                          <img
+                            src={getAvatarUrl(member.avatar_path)}
+                            alt={member.name}
+                            className="absolute inset-0 h-9 w-9 rounded-full object-cover"
+                            onError={(e) => { e.currentTarget.style.display = 'none' }}
+                          />
+                        )}
                       </div>
                       <span className="text-[var(--color-text-primary)] font-medium">{member.name}</span>
                     </div>
@@ -101,11 +111,6 @@ export default function MembersTable({
                       </div>
                     )}
                   </div>
-                </td>
-                <td className="py-4 px-6 text-center">
-                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-body font-semibold">
-                    {member.points} pts
-                  </span>
                 </td>
                 <td className="py-4 px-6 text-center">
                   <span className="text-[var(--color-text-primary)] font-medium">{member.books_read}</span>

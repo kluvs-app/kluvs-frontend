@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { getAvatarUrl } from '../../supabase'
 import ThemeToggle from '../ThemeToggle'
 import SignOutModal from '../modals/SignOutModal'
 import EditProfileModal from '../modals/EditProfileModal'
@@ -10,10 +11,11 @@ interface TopNavbarProps {
   selectedServer: string
   onServerChange: (serverId: string) => void
   onMenuToggle?: () => void
+  isAdmin: boolean
 }
 
-export default function TopNavbar({ servers, selectedServer, onServerChange, onMenuToggle }: TopNavbarProps) {
-  const { member, refreshMemberData, isAdmin } = useAuth()
+export default function TopNavbar({ servers, selectedServer, onServerChange, onMenuToggle, isAdmin }: TopNavbarProps) {
+  const { member, refreshMemberData } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
@@ -69,8 +71,18 @@ export default function TopNavbar({ servers, selectedServer, onServerChange, onM
                 aria-expanded={showUserMenu}
                 aria-haspopup="true"
               >
-                <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                  {member?.name?.[0]?.toUpperCase() || '?'}
+                <div className="relative h-7 w-7">
+                  <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+                    {member?.name?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  {member?.avatar_path && (
+                    <img
+                      src={getAvatarUrl(member.avatar_path)}
+                      alt={member.name}
+                      className="absolute inset-0 h-7 w-7 rounded-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                    />
+                  )}
                 </div>
                 <span className="hidden sm:inline text-[var(--color-text-primary)] font-medium">
                   {member?.name || 'User'}

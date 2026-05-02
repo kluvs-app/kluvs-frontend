@@ -40,16 +40,24 @@ export interface Book {
   page_count?: number
 }
 
-export type UserRole = 'admin' | 'member'
+export type UserRole = 'owner' | 'admin' | 'member'
+
+export interface MemberClub {
+  id: string
+  name: string
+  discord_channel: string
+  server_id: string
+  role: UserRole
+}
 
 export interface Member {
   id: number
   user_id?: string
   name: string
   handle?: string
-  points: number
   books_read: number
-  clubs: string[]
-  role: UserRole
+  clubs: MemberClub[]
   created_at?: string
+  discord_id?: string | null
+  avatar_path?: string | null
 }

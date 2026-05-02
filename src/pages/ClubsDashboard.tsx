@@ -23,7 +23,9 @@ export default function ClubsDashboard() {
   const [loading, setLoading] = useState(true)
   const [clubLoading, setClubLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { isAdmin } = useAuth()
+  const { getRoleForClub } = useAuth()
+  const clubRole = selectedClub ? getRoleForClub(selectedClub.id) : null
+  const isAdmin = clubRole === 'admin' || clubRole === 'owner'
 
   // Add Club Modal State
   const [showAddClubModal, setShowAddClubModal] = useState(false)
@@ -226,6 +228,7 @@ export default function ClubsDashboard() {
           setSelectedClub(null)
         }}
         onMenuToggle={() => setSidebarOpen(prev => !prev)}
+        isAdmin={isAdmin}
       />
 
       {/* Sidebar + Main Content */}

@@ -26,7 +26,6 @@ describe('MembersTable', () => {
       render(<MembersTable {...defaultProps} />)
 
       expect(screen.getByText('Reader')).toBeInTheDocument()
-      expect(screen.getByText('Points')).toBeInTheDocument()
       expect(screen.getByText('Books Read')).toBeInTheDocument()
       expect(screen.getByText('Status')).toBeInTheDocument()
     })
@@ -48,9 +47,7 @@ describe('MembersTable', () => {
     it('should display member stats correctly', () => {
       render(<MembersTable {...defaultProps} />)
 
-      // Check first member stats - note the format includes " pts"
       const firstMember = mockClub.members[0]
-      expect(screen.getByText(`${firstMember.points} pts`)).toBeInTheDocument()
       expect(screen.getByText(firstMember.books_read.toString())).toBeInTheDocument()
     })
 
@@ -231,15 +228,6 @@ describe('MembersTable', () => {
   })
 
   describe('Member Data Display', () => {
-    it('should display points with correct formatting', () => {
-      render(<MembersTable {...defaultProps} />)
-
-      mockClub.members.forEach(member => {
-        // Points are displayed as "X pts"
-        expect(screen.getByText(`${member.points} pts`)).toBeInTheDocument()
-      })
-    })
-
     it('should display books read count', () => {
       render(<MembersTable {...defaultProps} />)
 

@@ -14,9 +14,9 @@ interface MemberModalProps {
 
 interface MemberFormData {
   name: string
-  points: string
   books_read: string
   on_shame_list: boolean
+  discord_id: string
 }
 
 export default function MemberModal({
@@ -31,9 +31,9 @@ export default function MemberModal({
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<MemberFormData>({
     name: '',
-    points: '0',
     books_read: '0',
-    on_shame_list: false
+    on_shame_list: false,
+    discord_id: ''
   })
 
   const isEditing = !!editingMember
@@ -46,17 +46,17 @@ export default function MemberModal({
         const isOnShameList = selectedClub.shame_list.includes(editingMember.id)
         setFormData({
           name: editingMember.name,
-          points: String(editingMember.points),
           books_read: String(editingMember.books_read),
-          on_shame_list: isOnShameList
+          on_shame_list: isOnShameList,
+          discord_id: editingMember.discord_id ?? ''
         })
       } else {
         // Add mode - reset to defaults
         setFormData({
           name: '',
-          points: '0',
           books_read: '0',
-          on_shame_list: false
+          on_shame_list: false,
+          discord_id: ''
         })
       }
     }
@@ -68,16 +68,15 @@ export default function MemberModal({
       return false
     }
 
-    const points = parseInt(formData.points)
     const booksRead = parseInt(formData.books_read)
-
-    if (isNaN(points) || points < 0) {
-      onError('Points must be a non-negative number')
-      return false
-    }
 
     if (isNaN(booksRead) || booksRead < 0) {
       onError('Books read must be a non-negative number')
+      return false
+    }
+
+    if (formData.discord_id.trim() && !/^\d{17,19}$/.test(formData.discord_id.trim())) {
+      onError('Discord ID must be a 17–19 digit number')
       return false
     }
 
@@ -93,8 +92,8 @@ export default function MemberModal({
 
       const memberData = {
         name: formData.name.trim(),
-        points: parseInt(formData.points),
-        books_read: parseInt(formData.books_read)
+        books_read: parseInt(formData.books_read),
+        discord_id: formData.discord_id.trim() || null
       }
 
       if (isEditing && editingMember) {
@@ -173,7 +172,7 @@ export default function MemberModal({
       }
 
       // Reset form and close modal
-      setFormData({ name: '', points: '0', books_read: '0', on_shame_list: false })
+      setFormData({ name: '', books_read: '0', on_shame_list: false, discord_id: '' })
       onClose()
 
       // Notify parent component of successful save
@@ -192,7 +191,7 @@ export default function MemberModal({
   }
 
   const handleClose = () => {
-    setFormData({ name: '', points: '0', books_read: '0', on_shame_list: false })
+    setFormData({ name: '', books_read: '0', on_shame_list: false, discord_id: '' })
     onError('') // Clear errors when closing
     onClose()
   }
@@ -257,25 +256,6 @@ export default function MemberModal({
             />
           </div>
 
-          {/* Points Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Points
-            </label>
-            <input
-              type="number"
-              value={formData.points}
-              onChange={(e) => setFormData(prev => ({ ...prev, points: e.target.value }))}
-              placeholder="0"
-              min="0"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-            />
-            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
-              Member's current point total
-            </p>
-          </div>
-
           {/* Books Read Field */}
           <div>
             <label className="block text-[var(--color-text-primary)] font-medium mb-2">
@@ -292,6 +272,25 @@ export default function MemberModal({
             />
             <p className="text-[var(--color-text-secondary)] text-xs mt-1">
               Number of books completed
+            </p>
+          </div>
+
+          {/* Discord ID Field */}
+          <div>
+            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
+              Discord ID
+            </label>
+            <input
+              type="text"
+              value={formData.discord_id}
+              onChange={(e) => setFormData(prev => ({ ...prev, discord_id: e.target.value }))}
+              placeholder="e.g., 123456789012345678"
+              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              disabled={loading}
+              maxLength={19}
+            />
+            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
+              Discord snowflake ID — leave blank to clear
             </p>
           </div>
 

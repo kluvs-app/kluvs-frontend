@@ -1,4 +1,8 @@
-import type { Server, Club, Member, Session, Discussion, Book } from '../../types'
+import type { Server, Club, Member, MemberClub, Session, Discussion, Book } from '../../types'
+
+const adminClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }
+const adminClub2: MemberClub = { id: 'club-2', name: 'Sci-Fi Readers', discord_channel: 'sci-fi', server_id: 'server-1', role: 'admin' }
+const memberClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'member' }
 
 // Mock Members
 export const mockAdminMember: Member = {
@@ -6,11 +10,11 @@ export const mockAdminMember: Member = {
   user_id: 'admin-user-id',
   name: 'Admin User',
   handle: 'admin_handle',
-  points: 100,
   books_read: 10,
-  clubs: ['club-1', 'club-2'],
-  role: 'admin',
+  clubs: [adminClub1, adminClub2],
   created_at: '2024-01-01T00:00:00Z',
+  discord_id: '111222333444555666',
+  avatar_path: 'avatars/admin-user.jpg',
 }
 
 export const mockRegularMember: Member = {
@@ -18,21 +22,18 @@ export const mockRegularMember: Member = {
   user_id: 'regular-user-id',
   name: 'Regular User',
   handle: 'regular_handle',
-  points: 50,
   books_read: 5,
-  clubs: ['club-1'],
-  role: 'member',
+  clubs: [memberClub1],
   created_at: '2024-01-15T00:00:00Z',
+  discord_id: null,
 }
 
 export const mockMember3: Member = {
   id: 3,
   user_id: 'user-3-id',
   name: 'Jane Smith',
-  points: 75,
   books_read: 7,
-  clubs: ['club-1'],
-  role: 'member',
+  clubs: [memberClub1],
 }
 
 // Mock Books

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { supabase, getAvatarUrl } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
 
@@ -21,17 +21,24 @@ export default function EditProfileModal({
   const { member } = useAuth()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
+  const [discordId, setDiscordId] = useState<string>('')
 
   // Pre-populate form when modal opens
   useEffect(() => {
     if (isOpen && currentMember) {
-      setName(currentMember.name)  // Use the fresh data passed from parent
+      setName(currentMember.name)
+      setDiscordId(currentMember.discord_id ?? '')
     }
   }, [isOpen, currentMember])
 
   const handleSubmit = async () => {
     if (!name.trim()) {
       onError('Name is required')
+      return
+    }
+
+    if (discordId.trim() && !/^\d{17,19}$/.test(discordId.trim())) {
+      onError('Discord ID must be a 17–19 digit number')
       return
     }
 
@@ -44,12 +51,11 @@ export default function EditProfileModal({
       setLoading(true)
       onError('') // Clear any existing errors
 
-      // Use the EXACT same pattern as MemberModal
       const requestBody = {
         id: member.id,
         name: name.trim(),
-        points: member.points,
-        books_read: member.books_read
+        books_read: member.books_read,
+        discord_id: discordId.trim() || null
       }
 
       console.log('Updating member with:', requestBody)
@@ -79,7 +85,8 @@ export default function EditProfileModal({
   }
 
   const handleClose = () => {
-    setName(member?.name || '')
+    setName(currentMember?.name || '')
+    setDiscordId(currentMember?.discord_id ?? '')
     onError('') // Clear errors when closing
     onClose()
   }
@@ -94,6 +101,8 @@ export default function EditProfileModal({
 
   if (!isOpen || !member) return null
 
+  const hasChanges = name.trim() !== member.name || (discordId.trim() || null) !== (member.discord_id ?? null)
+
   return (
     <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title-edit-profile">
       <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-6 w-full max-w-md">
@@ -105,7 +114,7 @@ export default function EditProfileModal({
             </div>
             <div>
               <h2 id="modal-title-edit-profile" className="text-card-heading text-[var(--color-text-primary)]">Edit Profile</h2>
-              <p className="text-helper text-[var(--color-text-secondary)]">Update your display name</p>
+              <p className="text-helper text-[var(--color-text-secondary)]">Update your profile details</p>
             </div>
           </div>
           <button
@@ -140,15 +149,48 @@ export default function EditProfileModal({
             </p>
           </div>
 
+          {/* Discord ID Field */}
+          <div>
+            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
+              Discord ID
+            </label>
+            <input
+              type="text"
+              value={discordId}
+              onChange={(e) => setDiscordId(e.target.value)}
+              placeholder="e.g., 123456789012345678"
+              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              disabled={loading}
+              maxLength={19}
+            />
+            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
+              Your Discord snowflake ID — leave blank to clear
+            </p>
+          </div>
+
+          {/* Avatar Display */}
+          {currentMember?.avatar_path && (
+            <div>
+              <label className="block text-[var(--color-text-primary)] font-medium mb-2">
+                Avatar
+              </label>
+              <div className="flex items-center space-x-3">
+                <img
+                  src={getAvatarUrl(currentMember.avatar_path)}
+                  alt="Member avatar"
+                  className="w-16 h-16 rounded-full object-cover border border-[var(--color-divider)]"
+                />
+                <p className="text-[var(--color-text-secondary)] text-xs">Avatar is managed externally</p>
+              </div>
+            </div>
+          )}
+
           {/* Current Stats Display */}
           <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4 text-sm text-[var(--color-text-secondary)]">
                 <span className="flex items-center">
                   {member.books_read} books
-                </span>
-                <span className="flex items-center">
-                  {member.points} pts
                 </span>
               </div>
               <p className="text-[var(--color-text-secondary)] text-xs">Read-only stats</p>
@@ -168,7 +210,7 @@ export default function EditProfileModal({
 
           <button
             onClick={handleSubmit}
-            disabled={loading || !name.trim() || name.trim() === member.name}
+            disabled={loading || !name.trim() || !hasChanges}
             className="bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium transition-colors flex items-center space-x-2"
           >
             {loading ? (
