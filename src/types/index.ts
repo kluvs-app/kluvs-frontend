@@ -59,5 +59,5 @@ export interface Member {
   clubs: MemberClub[]
   created_at?: string
   discord_id?: string | null
-  avatar_path?: string
+  avatar_path?: string | null
 }

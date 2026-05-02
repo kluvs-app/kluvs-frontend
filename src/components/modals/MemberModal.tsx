@@ -75,6 +75,11 @@ export default function MemberModal({
       return false
     }
 
+    if (formData.discord_id.trim() && !/^\d{17,19}$/.test(formData.discord_id.trim())) {
+      onError('Discord ID must be a 17–19 digit number')
+      return false
+    }
+
     return true
   }
 

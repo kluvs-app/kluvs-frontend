@@ -3,8 +3,8 @@ import { supabase } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
 
-function getAvatarUrl(avatarPath: string): string {
-  const { data } = supabase.storage.from('member-avatars').getPublicUrl(avatarPath)
+function getAvatarUrl(avatarPath: string | null): string {
+  const { data } = supabase.storage.from('member-avatars').getPublicUrl(avatarPath ?? '')
   return data.publicUrl
 }
 
@@ -39,6 +39,11 @@ export default function EditProfileModal({
   const handleSubmit = async () => {
     if (!name.trim()) {
       onError('Name is required')
+      return
+    }
+
+    if (discordId.trim() && !/^\d{17,19}$/.test(discordId.trim())) {
+      onError('Discord ID must be a 17–19 digit number')
       return
     }
 
@@ -100,6 +105,8 @@ export default function EditProfileModal({
   }, [isOpen, loading])
 
   if (!isOpen || !member) return null
+
+  const hasChanges = name.trim() !== member.name || (discordId.trim() || null) !== (member.discord_id ?? null)
 
   return (
     <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title-edit-profile">
@@ -174,7 +181,7 @@ export default function EditProfileModal({
               </label>
               <div className="flex items-center space-x-3">
                 <img
-                  src={getAvatarUrl(currentMember.avatar_path!)}
+                  src={getAvatarUrl(currentMember.avatar_path)}
                   alt="Member avatar"
                   className="w-16 h-16 rounded-full object-cover border border-[var(--color-divider)]"
                 />
@@ -208,7 +215,7 @@ export default function EditProfileModal({
 
           <button
             onClick={handleSubmit}
-            disabled={loading || !name.trim() || (name.trim() === member.name && (discordId.trim() || null) === (member.discord_id ?? null))}
+            disabled={loading || !name.trim() || !hasChanges}
             className="bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium transition-colors flex items-center space-x-2"
           >
             {loading ? (
