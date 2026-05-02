@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { supabase, getAvatarUrl } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
-
-function getAvatarUrl(avatarPath: string | null): string {
-  const { data } = supabase.storage.from('member-avatars').getPublicUrl(avatarPath ?? '')
-  return data.publicUrl
-}
 
 interface EditProfileModalProps {
   isOpen: boolean

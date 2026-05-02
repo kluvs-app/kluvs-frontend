@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { supabase } from '../../supabase'
+import { getAvatarUrl } from '../../supabase'
 import ThemeToggle from '../ThemeToggle'
 import SignOutModal from '../modals/SignOutModal'
 import EditProfileModal from '../modals/EditProfileModal'
@@ -77,7 +77,7 @@ export default function TopNavbar({ servers, selectedServer, onServerChange, onM
                   </div>
                   {member?.avatar_path && (
                     <img
-                      src={supabase.storage.from('member-avatars').getPublicUrl(member.avatar_path).data.publicUrl}
+                      src={getAvatarUrl(member.avatar_path)}
                       alt={member.name}
                       className="absolute inset-0 h-7 w-7 rounded-full object-cover"
                       onError={(e) => { e.currentTarget.style.display = 'none' }}

@@ -1,4 +1,4 @@
-import { supabase } from '../supabase'
+import { getAvatarUrl } from '../supabase'
 import type { Club, Member } from '../types'
 
 interface MembersTableProps {
@@ -68,7 +68,7 @@ export default function MembersTable({
                         </div>
                         {member.avatar_path && (
                           <img
-                            src={supabase.storage.from('member-avatars').getPublicUrl(member.avatar_path).data.publicUrl}
+                            src={getAvatarUrl(member.avatar_path)}
                             alt={member.name}
                             className="absolute inset-0 h-9 w-9 rounded-full object-cover"
                             onError={(e) => { e.currentTarget.style.display = 'none' }}

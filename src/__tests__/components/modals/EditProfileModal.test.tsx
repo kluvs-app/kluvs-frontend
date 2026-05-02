@@ -11,12 +11,8 @@ vi.mock('../../../supabase', () => ({
     functions: {
       invoke: (...args: any[]) => mockInvoke(...args),
     },
-    storage: {
-      from: () => ({
-        getPublicUrl: (path: string) => ({ data: { publicUrl: `https://storage.example.com/${path}` } }),
-      }),
-    },
   },
+  getAvatarUrl: (path: string) => `https://storage.example.com/${path}`,
 }))
 
 // Mock useAuth (EditProfileModal uses member from useAuth for submission)
