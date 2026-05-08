@@ -34,7 +34,7 @@ export default function MembersTable({
       </div>
 
       {/* Flat list */}
-      <div>
+      <div className="overflow-y-auto max-h-96">
         {selectedClub.members.map(member => (
           <div
             key={member.id}
