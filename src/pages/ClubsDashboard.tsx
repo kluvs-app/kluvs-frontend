@@ -280,6 +280,12 @@ export default function ClubsDashboard() {
               {/* Club Header */}
               <div className="mb-4">
                 <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
+                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                  {[
+                    `${selectedClub.members.length} member${selectedClub.members.length !== 1 ? 's' : ''}`,
+                    selectedClub.founded_date && `Founded in ${new Date(selectedClub.founded_date).getFullYear()}`
+                  ].filter(Boolean).join(' · ')}
+                </p>
               </div>
 
               {/* Tab Bar */}
@@ -306,21 +312,6 @@ export default function ClubsDashboard() {
               {/* Tab: General */}
               {activeTab === 'general' && (
                 <div className="divide-y divide-[var(--color-divider)]">
-                  {/* Club metadata */}
-                  <div className="pb-5">
-                    <p className="text-body text-[var(--color-text-secondary)]">
-                      {selectedClub.members.length} member{selectedClub.members.length !== 1 ? 's' : ''}
-                    </p>
-                    {selectedClub.discord_channel && (
-                      <p className="text-body text-[var(--color-text-secondary)] mt-0.5">#{selectedClub.discord_channel}</p>
-                    )}
-                    {selectedClub.founded_date && (
-                      <p className="text-body text-[var(--color-text-secondary)] mt-0.5">
-                        Founded in {new Date(selectedClub.founded_date).getFullYear()}
-                      </p>
-                    )}
-                  </div>
-
                   {/* Current Book */}
                   <div className="py-5">
                     <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
