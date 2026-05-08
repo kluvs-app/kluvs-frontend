@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getAvatarUrl } from '../../supabase'
 import ThemeToggle from '../ThemeToggle'
@@ -22,10 +23,12 @@ export default function TopNavbar({ onMenuToggle, isAdmin }: TopNavbarProps) {
         <div className="h-full px-4 sm:px-6 flex items-center justify-between">
           {/* Left: Logo, Brand & Hamburger */}
           <div className="flex items-center gap-3">
-            <img src="/ic-mark.svg" alt="Kluvs" className="h-8 w-8" />
-            <h1 className="text-section-heading text-[var(--color-text-primary)]">
-              Kluvs
-            </h1>
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/ic-mark.svg" alt="Kluvs" className="h-8 w-8" />
+              <h1 className="text-section-heading text-[var(--color-text-primary)]">
+                Kluvs
+              </h1>
+            </Link>
             {onMenuToggle && (
               <button
                 onClick={onMenuToggle}
