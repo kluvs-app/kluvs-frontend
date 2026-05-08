@@ -288,6 +288,17 @@ export default function ClubsDashboard() {
             </div>
           ) : selectedClub ? (
             <div>
+              {/* Mobile back link */}
+              <button
+                onClick={() => setSelectedClub(null)}
+                className="lg:hidden flex items-center gap-1.5 text-sm text-primary font-medium mb-4"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                Clubs
+              </button>
+
               {/* Club Header */}
               <div className="mb-4">
                 <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
@@ -320,6 +331,8 @@ export default function ClubsDashboard() {
                 </nav>
               </div>
 
+              {/* Tab panels */}
+              <div key={activeTab} className="tab-panel">
               {/* Tab: General */}
               {activeTab === 'general' && (
                 <div className="divide-y divide-[var(--color-divider)]">
@@ -418,6 +431,7 @@ export default function ClubsDashboard() {
                   onDeleteMember={handleDeleteMember}
                 />
               )}
+              </div>{/* end tab-panel */}
             </div>
           ) : (
             /* No club selected state */
