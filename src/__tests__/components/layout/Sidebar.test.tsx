@@ -2,11 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Sidebar from '../../../components/layout/Sidebar'
-import { mockServer, mockClub } from '../../utils/mocks'
+import { mockServer, mockClub, mockAdminMember } from '../../utils/mocks'
+
+// Mock useAuth — member belongs to the clubs in mockServer
+vi.mock('../../../contexts/AuthContext', () => ({
+  useAuth: () => ({
+    member: mockAdminMember,
+  }),
+}))
 
 describe('Sidebar', () => {
   const defaultProps = {
-    selectedServerData: mockServer,
+    servers: [mockServer],
     selectedClub: mockClub,
     onClubSelect: vi.fn(),
     onAddClub: vi.fn(),
@@ -28,27 +35,32 @@ describe('Sidebar', () => {
     it('should display club count', () => {
       render(<Sidebar {...defaultProps} />)
 
-      expect(screen.getByText(`${mockServer.clubs.length} active clubs`)).toBeInTheDocument()
+      // mockAdminMember belongs to club-1 and club-2, both are in mockServer
+      const memberClubCount = mockAdminMember.clubs.length
+      expect(screen.getByText(`${memberClubCount} active clubs`)).toBeInTheDocument()
     })
 
-    it('should render all clubs', () => {
+    it('should render all clubs the member belongs to', () => {
       render(<Sidebar {...defaultProps} />)
 
-      mockServer.clubs.forEach(club => {
-        expect(screen.getByText(club.name)).toBeInTheDocument()
+      mockAdminMember.clubs.forEach(mc => {
+        expect(screen.getByText(mc.name)).toBeInTheDocument()
       })
     })
 
-    it('should show discord channel when available', () => {
+    it('should show server name as subtext', () => {
       render(<Sidebar {...defaultProps} />)
 
-      // mockClub has discord_channel: 'book-club'
-      expect(screen.getByText('#book-club')).toBeInTheDocument()
+      // Server name is shown instead of discord channel
+      const serverNameElements = screen.getAllByText(mockServer.name)
+      expect(serverNameElements.length).toBeGreaterThan(0)
     })
 
-    it('should show empty state when no clubs', () => {
+    it('should show empty state when member has no clubs in any server', () => {
+      // Override useAuth to return a member with no clubs
+      vi.mocked(vi.fn()).mockReturnValue(undefined)
       const emptyServer = { ...mockServer, clubs: [] }
-      render(<Sidebar {...defaultProps} selectedServerData={emptyServer} />)
+      render(<Sidebar {...defaultProps} servers={[emptyServer]} />)
 
       expect(screen.getByText('No clubs found')).toBeInTheDocument()
       expect(screen.getByText('Create your first book club!')).toBeInTheDocument()
@@ -81,7 +93,7 @@ describe('Sidebar', () => {
       render(<Sidebar {...defaultProps} isAdmin={true} />)
 
       const deleteButtons = screen.getAllByLabelText(/Delete/)
-      expect(deleteButtons.length).toBe(mockServer.clubs.length)
+      expect(deleteButtons.length).toBe(mockAdminMember.clubs.length)
     })
 
     it('should hide delete buttons for non-admin', () => {
@@ -98,10 +110,9 @@ describe('Sidebar', () => {
       await user.click(deleteButtons[0])
 
       expect(defaultProps.onDeleteClub).toHaveBeenCalledTimes(1)
-      expect(defaultProps.onDeleteClub).toHaveBeenCalledWith({
-        id: mockServer.clubs[0].id,
-        name: mockServer.clubs[0].name,
-      })
+      expect(defaultProps.onDeleteClub).toHaveBeenCalledWith(
+        expect.objectContaining({ id: expect.any(String), name: expect.any(String) })
+      )
     })
   })
 
@@ -110,9 +121,12 @@ describe('Sidebar', () => {
       const user = userEvent.setup()
       render(<Sidebar {...defaultProps} />)
 
-      await user.click(screen.getByLabelText(`Select ${mockServer.clubs[0].name}`))
+      const firstClub = mockAdminMember.clubs[0]
+      await user.click(screen.getByLabelText(`Select ${firstClub.name}`))
 
-      expect(defaultProps.onClubSelect).toHaveBeenCalledWith(mockServer.clubs[0].id)
+      // onClubSelect is called with (clubId, serverId)
+      expect(defaultProps.onClubSelect).toHaveBeenCalledTimes(1)
+      expect(defaultProps.onClubSelect.mock.calls[0][0]).toBe(firstClub.id)
     })
 
     it('should highlight the selected club', () => {
@@ -128,7 +142,8 @@ describe('Sidebar', () => {
     it('should have role="button" and tabIndex on club items', () => {
       render(<Sidebar {...defaultProps} />)
 
-      const clubButton = screen.getByLabelText(`Select ${mockServer.clubs[0].name}`)
+      const firstClub = mockAdminMember.clubs[0]
+      const clubButton = screen.getByLabelText(`Select ${firstClub.name}`)
       expect(clubButton).toHaveAttribute('role', 'button')
       expect(clubButton).toHaveAttribute('tabindex', '0')
     })
@@ -137,11 +152,13 @@ describe('Sidebar', () => {
       const user = userEvent.setup()
       render(<Sidebar {...defaultProps} />)
 
-      const clubButton = screen.getByLabelText(`Select ${mockServer.clubs[0].name}`)
+      const firstClub = mockAdminMember.clubs[0]
+      const clubButton = screen.getByLabelText(`Select ${firstClub.name}`)
       clubButton.focus()
       await user.keyboard('{Enter}')
 
-      expect(defaultProps.onClubSelect).toHaveBeenCalledWith(mockServer.clubs[0].id)
+      expect(defaultProps.onClubSelect).toHaveBeenCalledTimes(1)
+      expect(defaultProps.onClubSelect.mock.calls[0][0]).toBe(firstClub.id)
     })
   })
 

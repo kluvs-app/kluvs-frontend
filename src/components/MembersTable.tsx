@@ -17,120 +17,96 @@ export default function MembersTable({
   onDeleteMember
 }: MembersTableProps) {
   return (
-    <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] overflow-hidden">
-      {/* Header */}
-      <div className="p-6 border-b border-[var(--color-divider)]">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-section-heading text-[var(--color-text-primary)] flex items-center">
-              <svg className="w-5 h-5 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128H5.228A2 2 0 013 17.208V5.618a2 2 0 01.932-1.695l4.146-2.59A2 2 0 019.265 1h5.47a2 2 0 011.187.333l4.146 2.59A2 2 0 0121 5.618v1.757M15 19.128l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              Club Members ({selectedClub.members.length})
-            </h3>
-            <p className="text-helper text-[var(--color-text-secondary)] mt-1">Reading community overview</p>
-          </div>
+    <>
+      {/* Section heading */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-section-heading text-[var(--color-text-primary)]">
+          Members ({selectedClub.members.length})
+        </h3>
+        {isAdmin && (
+          <button
+            onClick={onAddMember}
+            className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
+          >
+            Add Member
+          </button>
+        )}
+      </div>
 
-          {/* Add Member Button */}
-          {isAdmin && (
-            <div className="hidden md:flex">
-              <button
-                onClick={onAddMember}
-                className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
-              >
-                Add Member
-              </button>
+      {/* Flat list */}
+      <div className="overflow-y-auto max-h-96">
+        {selectedClub.members.map(member => (
+          <div
+            key={member.id}
+            className="flex items-center gap-4 py-3.5 border-b border-[var(--color-divider)] last:border-b-0 group"
+          >
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary font-bold text-base">
+                  {member.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              {member.avatar_path && (
+                <img
+                  src={getAvatarUrl(member.avatar_path)}
+                  alt={member.name}
+                  className="absolute inset-0 h-11 w-11 rounded-full object-cover"
+                  onError={(e) => { e.currentTarget.style.display = 'none' }}
+                />
+              )}
             </div>
-          )}
-        </div>
+
+            {/* Name + handle */}
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-[var(--color-text-primary)] text-sm leading-tight">
+                {member.name}
+              </p>
+              {(member.handle || member.discord_id) && (
+                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                  {(() => {
+                    const raw = member.handle || member.discord_id || ''
+                    return raw.startsWith('@') ? raw : `@${raw}`
+                  })()}
+                </p>
+              )}
+            </div>
+
+            {/* Right side: pts + admin actions */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] font-medium tabular-nums">
+                {member.books_read}
+                <svg className="w-4 h-4 flex-shrink-0" viewBox="0 -960 960 960" fill="currentColor">
+                  <path d="M290.96-60.78q-62.53 0-106.35-43.83-43.83-43.82-43.83-106.35v-538.08q0-62.53 43.83-106.35 43.82-43.83 106.35-43.83h528.26v638.44q-20.76 0-35.29 14.53-14.54 14.53-14.54 35.29 0 20.76 14.54 35.3 14.53 14.53 35.29 14.53v100.35H290.96Zm30.17-300.92h100.35v-437.17H321.13v437.17Zm-30.17 200.57h387.13q-4.18-11.79-6.61-24-2.44-12.22-2.44-26.01 0-12.99 2.09-25.48 2.09-12.5 6.96-24.16H290.96q-21.6 0-35.71 14.53-14.12 14.53-14.12 35.29 0 21.6 14.12 35.71 14.11 14.12 35.71 14.12Z" />
+                </svg>
+              </span>
+
+              {isAdmin && (
+                <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onEditMember(member) }}
+                    className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] p-1.5 rounded transition-colors"
+                    aria-label={`Edit ${member.name}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onDeleteMember(member) }}
+                    className="text-danger hover:text-danger-hover p-1.5 rounded transition-colors"
+                    aria-label={`Delete ${member.name}`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-[var(--color-divider)] bg-[var(--color-bg-elevated)]">
-              <th className="text-left py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Reader</th>
-              <th className="text-center py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Books Read</th>
-              <th className="text-left py-3 px-6 text-helper text-[var(--color-text-secondary)] font-semibold uppercase tracking-wider">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedClub.members.map(member => (
-              <tr key={member.id} className="border-b border-[var(--color-divider)] last:border-b-0 hover:bg-[var(--color-bg-elevated)] transition-colors group">
-                <td className="py-4 px-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="relative h-9 w-9 mr-3">
-                        <div className="h-9 w-9 bg-primary/10 rounded-full flex items-center justify-center">
-                          <span className="text-primary font-semibold text-sm">
-                            {member.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        {member.avatar_path && (
-                          <img
-                            src={getAvatarUrl(member.avatar_path)}
-                            alt={member.name}
-                            className="absolute inset-0 h-9 w-9 rounded-full object-cover"
-                            onError={(e) => { e.currentTarget.style.display = 'none' }}
-                          />
-                        )}
-                      </div>
-                      <span className="text-[var(--color-text-primary)] font-medium">{member.name}</span>
-                    </div>
-
-                    {/* Edit/Delete buttons - appear on hover */}
-                    {isAdmin && (
-                      <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onEditMember(member)
-                          }}
-                          className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] p-1.5 rounded transition-colors"
-                          title="Edit member"
-                          aria-label={`Edit ${member.name}`}
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-                          </svg>
-                        </button>
-
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onDeleteMember(member)
-                          }}
-                          className="text-danger hover:text-danger-hover p-1.5 rounded transition-colors"
-                          title="Delete member"
-                          aria-label={`Delete ${member.name}`}
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className="py-4 px-6 text-center">
-                  <span className="text-[var(--color-text-primary)] font-medium">{member.books_read}</span>
-                </td>
-                <td className="py-4 px-6">
-                  {selectedClub.shame_list.includes(member.id) ? (
-                    <span className="bg-danger/10 text-danger px-3 py-1 rounded-full text-helper-sm font-semibold inline-flex items-center w-fit">
-                      Shame List
-                    </span>
-                  ) : (
-                    <span className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-helper-sm font-semibold inline-flex items-center w-fit">
-                      Good Standing
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </>
   )
 }

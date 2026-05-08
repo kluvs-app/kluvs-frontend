@@ -11,9 +11,9 @@ import DeleteDiscussionModal from '../components/modals/DeleteDiscussionModal'
 import DeleteClubModal from '../components/modals/DeleteClubModal'
 import TopNavbar from '../components/layout/TopNavbar'
 import Sidebar from '../components/layout/Sidebar'
-import CurrentReadingCard from '../components/CurrentReadingCard'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import MembersTable from '../components/MembersTable'
+import BookInfo from '../components/BookInfo'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function ClubsDashboard() {
@@ -23,9 +23,19 @@ export default function ClubsDashboard() {
   const [loading, setLoading] = useState(true)
   const [clubLoading, setClubLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { getRoleForClub } = useAuth()
+  const { getRoleForClub, member } = useAuth()
   const clubRole = selectedClub ? getRoleForClub(selectedClub.id) : null
   const isAdmin = clubRole === 'admin' || clubRole === 'owner'
+
+  const memberClubIds = new Set(member?.clubs.map(c => c.id) ?? [])
+  const myClubs = servers.flatMap(server =>
+    server.clubs
+      .filter(club => memberClubIds.has(club.id))
+      .map(club => {
+        const mc = member?.clubs.find(c => c.id === club.id)
+        return { ...club, serverId: server.id, serverName: server.name, role: mc?.role }
+      })
+  )
 
   // Add Club Modal State
   const [showAddClubModal, setShowAddClubModal] = useState(false)
@@ -59,11 +69,19 @@ export default function ClubsDashboard() {
   // Sidebar mobile state
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  // Tab state for selected club view
+  const [activeTab, setActiveTab] = useState<'general' | 'session' | 'members'>('general')
+
   // Fetch servers on component mount
   useEffect(() => {
     fetchServers(false) // Don't preserve selection on initial load
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Reset to General tab whenever a different club is selected
+  useEffect(() => {
+    setActiveTab('general')
+  }, [selectedClub?.id])
 
   const fetchServers = async (preserveSelection = true) => {
     try {
@@ -108,16 +126,17 @@ export default function ClubsDashboard() {
     }
   }
 
-  const fetchClubDetails = async (clubId: string) => {
+  const fetchClubDetails = async (clubId: string, serverId?: string) => {
+    const serverIdToUse = serverId ?? selectedServer
     try {
       console.log('🏢 [CLUB-FETCH] Starting fetchClubDetails for clubId:', clubId)
-      console.log('🏢 [CLUB-FETCH] Selected server:', selectedServer)
+      console.log('🏢 [CLUB-FETCH] Selected server:', serverIdToUse)
 
       setClubLoading(true) // Start loading
       setError(null)
 
       // Build URL with query parameters since Edge Function expects GET with query params
-      const functionName = `club?id=${encodeURIComponent(clubId)}&server_id=${encodeURIComponent(selectedServer)}`
+      const functionName = `club?id=${encodeURIComponent(clubId)}&server_id=${encodeURIComponent(serverIdToUse)}`
       console.log('🏢 [CLUB-FETCH] Calling Edge Function with URL:', functionName)
 
       const { data, error } = await supabase.functions.invoke(functionName, {
@@ -205,6 +224,12 @@ export default function ClubsDashboard() {
 
   const selectedServerData = servers.find(s => s.id === selectedServer)
 
+  const nextDiscussion = selectedClub?.active_session
+    ? [...selectedClub.active_session.discussions]
+        .filter(d => new Date(d.date) > new Date())
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] ?? null
+    : null
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
@@ -221,24 +246,18 @@ export default function ClubsDashboard() {
     <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Top Navigation */}
       <TopNavbar
-        servers={servers}
-        selectedServer={selectedServer}
-        onServerChange={(serverId) => {
-          setSelectedServer(serverId)
-          setSelectedClub(null)
-        }}
         onMenuToggle={() => setSidebarOpen(prev => !prev)}
-        isAdmin={isAdmin}
       />
 
       {/* Sidebar + Main Content */}
       <div className="flex pt-16">
         <Sidebar
-          selectedServerData={selectedServerData}
+          servers={servers}
           selectedClub={selectedClub}
-          onClubSelect={(clubId) => {
+          onClubSelect={(clubId, serverId) => {
             setSidebarOpen(false)
-            fetchClubDetails(clubId)
+            setSelectedServer(serverId)
+            fetchClubDetails(clubId, serverId)
           }}
           onAddClub={() => setShowAddClubModal(true)}
           onDeleteClub={confirmDeleteClub}
@@ -267,60 +286,197 @@ export default function ClubsDashboard() {
               </div>
             </div>
           ) : selectedClub ? (
-            <div className="space-y-6">
-              {/* Club Info */}
-              <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
-                    {selectedClub.discord_channel && (
-                      <p className="text-[var(--color-text-secondary)] mt-1 font-medium">Discord: #{selectedClub.discord_channel}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[var(--color-text-secondary)] text-sm font-medium">Server ID</p>
-                    <p className="text-[var(--color-text-primary)] font-mono text-sm bg-[var(--color-bg-elevated)] px-2 py-1 rounded">{selectedClub.server_id}</p>
-                  </div>
-                </div>
+            <div>
+              {/* Mobile back link */}
+              <button
+                onClick={() => setSelectedClub(null)}
+                className="lg:hidden flex items-center gap-1.5 text-sm text-primary font-medium mb-4"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+                Clubs
+              </button>
+
+              {/* Club Header */}
+              <div className="mb-4">
+                <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
+                <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                  {[
+                    `${selectedClub.members.length} member${selectedClub.members.length !== 1 ? 's' : ''}`,
+                    selectedClub.founded_date && `Founded in ${new Date(selectedClub.founded_date).getFullYear()}`
+                  ].filter(Boolean).join(' · ')}
+                </p>
               </div>
 
-              {/* Hero Current Reading Card */}
-              <CurrentReadingCard
-                selectedClub={selectedClub}
-                isAdmin={isAdmin}
-                onEditBook={() => setShowEditBookModal(true)}
-                onNewSession={() => setShowNewSessionModal(true)}
-              />
+              {/* Tab Bar */}
+              <div className="border-b border-[var(--color-divider)] mb-5">
+                <nav className="-mb-px flex">
+                  {[
+                    { id: 'general', label: 'General' },
+                    { id: 'session', label: 'Active Session' },
+                    { id: 'members', label: 'Members' },
+                  ].map(({ id, label }) => (
+                    <button
+                      key={id}
+                      onClick={() => setActiveTab(id as typeof activeTab)}
+                      className={`px-4 py-2.5 text-sm font-semibold text-primary border-b-2 transition-colors ${
+                        activeTab === id ? 'border-primary' : 'border-transparent'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </nav>
+              </div>
 
-              {/* Discussions Timeline */}
-              <DiscussionsTimeline
-                selectedClub={selectedClub}
-                isAdmin={isAdmin}
-                onAddDiscussion={handleAddDiscussion}
-                onEditDiscussion={handleEditDiscussion}
-                onDeleteDiscussion={handleDeleteDiscussion}
-              />
+              {/* Tab panels */}
+              <div key={activeTab} className="tab-panel">
+              {/* Tab: General */}
+              {activeTab === 'general' && (
+                <div className="divide-y divide-[var(--color-divider)]">
+                  {/* Current Book */}
+                  <div className="pb-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
+                    {selectedClub.active_session ? (
+                      <BookInfo
+                        book={selectedClub.active_session.book}
+                        dueDate={selectedClub.active_session.due_date}
+                      />
+                    ) : (
+                      <>
+                        <p className="text-body text-[var(--color-text-secondary)] italic">No active reading session</p>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setShowNewSessionModal(true)}
+                            className="mt-3 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
+                          >
+                            Start Session
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
 
-              {/* Members Table */}
-              <MembersTable
-                selectedClub={selectedClub}
-                isAdmin={isAdmin}
-                onAddMember={handleAddMember}
-                onEditMember={handleEditMember}
-                onDeleteMember={handleDeleteMember}
-              />
+                  {/* Next Discussion */}
+                  <div className="pt-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
+                    {nextDiscussion ? (
+                      <>
+                        <h4 className="font-semibold text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
+                        <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                          {[
+                            nextDiscussion.location,
+                            new Date(nextDiscussion.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                          ].filter(Boolean).join(' · ')}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-body text-[var(--color-text-secondary)] italic">No upcoming discussion</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab: Active Session */}
+              {activeTab === 'session' && (
+                <div>
+                  {selectedClub.active_session ? (
+                    <div className="divide-y divide-[var(--color-divider)]">
+                      {/* Book info */}
+                      <div className="pb-6">
+                        <BookInfo
+                          book={selectedClub.active_session.book}
+                          dueDate={selectedClub.active_session.due_date}
+                          isAdmin={isAdmin}
+                          onEditBook={() => setShowEditBookModal(true)}
+                          onNewSession={() => setShowNewSessionModal(true)}
+                        />
+                      </div>
+                      {/* Timeline */}
+                      <div className="pt-6">
+                        <DiscussionsTimeline
+                          selectedClub={selectedClub}
+                          isAdmin={isAdmin}
+                          onAddDiscussion={handleAddDiscussion}
+                          onEditDiscussion={handleEditDiscussion}
+                          onDeleteDiscussion={handleDeleteDiscussion}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-[var(--color-text-secondary)]">No active reading session</p>
+                      {isAdmin && (
+                        <button
+                          onClick={() => setShowNewSessionModal(true)}
+                          className="mt-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
+                        >
+                          Start Session
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Tab: Members */}
+              {activeTab === 'members' && (
+                <MembersTable
+                  selectedClub={selectedClub}
+                  isAdmin={isAdmin}
+                  onAddMember={handleAddMember}
+                  onEditMember={handleEditMember}
+                  onDeleteMember={handleDeleteMember}
+                />
+              )}
+              </div>{/* end tab-panel */}
             </div>
           ) : (
             /* No club selected state */
-            <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-12 text-center">
-              <div className="max-w-md mx-auto">
-                <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                  </svg>
+            <div>
+              {/* Mobile: inline club list */}
+              <div className="lg:hidden">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Your Clubs</p>
+                <div>
+                  {myClubs.map(club => (
+                    <div
+                      key={club.id}
+                      onClick={() => {
+                        setSelectedServer(club.serverId)
+                        fetchClubDetails(club.id, club.serverId)
+                      }}
+                      className="flex items-center justify-between py-4 border-b border-[var(--color-divider)] last:border-b-0 cursor-pointer group"
+                    >
+                      <div>
+                        <p className="font-semibold text-[var(--color-text-primary)] group-hover:text-primary transition-colors">
+                          {club.name}
+                        </p>
+                        <p className="text-helper text-[var(--color-text-secondary)] mt-0.5">{club.serverName}</p>
+                      </div>
+                      {club.role && club.role !== 'member' && (
+                        <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full capitalize ${
+                          club.role === 'owner' ? 'bg-[#F0BF05]/15 text-[#F0BF05]' : 'bg-tertiary/10 text-tertiary'
+                        }`}>
+                          {club.role}
+                        </span>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <h3 className="text-section-heading text-[var(--color-text-primary)] mb-3">Select a Book Club</h3>
-                <p className="text-[var(--color-text-secondary)]">Choose a club from the sidebar to explore its members, current reading session, and upcoming discussions.</p>
+              </div>
+
+              {/* Desktop: sidebar prompt */}
+              <div className="hidden lg:block bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-12 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-primary" viewBox="0 -960 960 960" fill="currentColor">
+                      <path d="M264.65-107 48.74-480l215.91-373h430.7l215.91 373-215.91 373h-430.7Z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-section-heading text-[var(--color-text-primary)] mb-3">Select a Book Club</h3>
+                  <p className="text-[var(--color-text-secondary)]">Choose a club from the sidebar to explore its members, current reading session, and upcoming discussions.</p>
+                </div>
               </div>
             </div>
           )}
