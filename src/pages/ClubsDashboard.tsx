@@ -59,11 +59,19 @@ export default function ClubsDashboard() {
   // Sidebar mobile state
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  // Tab state for selected club view
+  const [activeTab, setActiveTab] = useState<'general' | 'session' | 'members'>('general')
+
   // Fetch servers on component mount
   useEffect(() => {
     fetchServers(false) // Don't preserve selection on initial load
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Reset to General tab whenever a different club is selected
+  useEffect(() => {
+    setActiveTab('general')
+  }, [selectedClub?.id])
 
   const fetchServers = async (preserveSelection = true) => {
     try {
@@ -205,6 +213,12 @@ export default function ClubsDashboard() {
 
   const selectedServerData = servers.find(s => s.id === selectedServer)
 
+  const nextDiscussion = selectedClub?.active_session
+    ? [...selectedClub.active_session.discussions]
+        .filter(d => new Date(d.date) > new Date())
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] ?? null
+    : null
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
@@ -267,48 +281,141 @@ export default function ClubsDashboard() {
               </div>
             </div>
           ) : selectedClub ? (
-            <div className="space-y-6">
-              {/* Club Info */}
-              <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
-                    {selectedClub.discord_channel && (
-                      <p className="text-[var(--color-text-secondary)] mt-1 font-medium">Discord: #{selectedClub.discord_channel}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[var(--color-text-secondary)] text-sm font-medium">Server ID</p>
-                    <p className="text-[var(--color-text-primary)] font-mono text-sm bg-[var(--color-bg-elevated)] px-2 py-1 rounded">{selectedClub.server_id}</p>
-                  </div>
-                </div>
+            <div>
+              {/* Club Header */}
+              <div className="mb-4">
+                <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
+                <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
+                  {[
+                    selectedClub.discord_channel && `#${selectedClub.discord_channel}`,
+                    selectedClub.founded_date && `Est. ${new Date(selectedClub.founded_date).getFullYear()}`,
+                    `${selectedClub.members.length} member${selectedClub.members.length !== 1 ? 's' : ''}`
+                  ].filter(Boolean).join(' · ')}
+                </p>
               </div>
 
-              {/* Hero Current Reading Card */}
-              <CurrentReadingCard
-                selectedClub={selectedClub}
-                isAdmin={isAdmin}
-                onEditBook={() => setShowEditBookModal(true)}
-                onNewSession={() => setShowNewSessionModal(true)}
-              />
+              {/* Tab Bar */}
+              <div className="border-b border-[var(--color-divider)] mb-5">
+                <nav className="-mb-px flex">
+                  {[
+                    { id: 'general', label: 'General' },
+                    { id: 'session', label: 'Active Session' },
+                    { id: 'members', label: 'Members' },
+                  ].map(({ id, label }) => (
+                    <button
+                      key={id}
+                      onClick={() => setActiveTab(id as typeof activeTab)}
+                      className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                        activeTab === id
+                          ? 'border-primary text-primary'
+                          : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </nav>
+              </div>
 
-              {/* Discussions Timeline */}
-              <DiscussionsTimeline
-                selectedClub={selectedClub}
-                isAdmin={isAdmin}
-                onAddDiscussion={handleAddDiscussion}
-                onEditDiscussion={handleEditDiscussion}
-                onDeleteDiscussion={handleDeleteDiscussion}
-              />
+              {/* Tab: General */}
+              {activeTab === 'general' && (
+                <div className="space-y-4">
+                  {selectedClub.active_session ? (
+                    <>
+                      {/* Current Book */}
+                      <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-5">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
+                        <h3 className="text-card-heading text-[var(--color-text-primary)]">{selectedClub.active_session.book.title}</h3>
+                        <p className="text-body text-[var(--color-text-secondary)] mt-1">
+                          {selectedClub.active_session.book.author}
+                          {selectedClub.active_session.book.year && ` · ${selectedClub.active_session.book.year}`}
+                          {selectedClub.active_session.book.page_count && ` · ${selectedClub.active_session.book.page_count} pages`}
+                        </p>
+                        {selectedClub.active_session.due_date && (
+                          <p className="text-sm text-primary font-medium mt-3">
+                            Due {new Date(selectedClub.active_session.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        )}
+                        {isAdmin && (
+                          <div className="flex gap-2 mt-4">
+                            <button
+                              onClick={() => setShowEditBookModal(true)}
+                              className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
+                            >
+                              Edit Book
+                            </button>
+                            <button
+                              onClick={() => setShowNewSessionModal(true)}
+                              className="text-sm bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
+                            >
+                              New Session
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
-              {/* Members Table */}
-              <MembersTable
-                selectedClub={selectedClub}
-                isAdmin={isAdmin}
-                onAddMember={handleAddMember}
-                onEditMember={handleEditMember}
-                onDeleteMember={handleDeleteMember}
-              />
+                      {/* Next Discussion */}
+                      {nextDiscussion && (
+                        <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-5">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
+                          <h4 className="font-semibold text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
+                          <div className="flex items-center gap-1.5 mt-1.5 text-sm text-[var(--color-text-secondary)]">
+                            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                            </svg>
+                            <span>{nextDiscussion.location || 'Location TBD'}</span>
+                            <span>·</span>
+                            <span>{new Date(nextDiscussion.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-8 text-center">
+                      <p className="text-[var(--color-text-secondary)]">No active reading session</p>
+                      {isAdmin && (
+                        <button
+                          onClick={() => setShowNewSessionModal(true)}
+                          className="mt-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
+                        >
+                          Start Session
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Tab: Active Session */}
+              {activeTab === 'session' && (
+                <div className="space-y-5">
+                  <CurrentReadingCard
+                    selectedClub={selectedClub}
+                    isAdmin={isAdmin}
+                    onEditBook={() => setShowEditBookModal(true)}
+                    onNewSession={() => setShowNewSessionModal(true)}
+                  />
+                  <DiscussionsTimeline
+                    selectedClub={selectedClub}
+                    isAdmin={isAdmin}
+                    onAddDiscussion={handleAddDiscussion}
+                    onEditDiscussion={handleEditDiscussion}
+                    onDeleteDiscussion={handleDeleteDiscussion}
+                  />
+                </div>
+              )}
+
+              {/* Tab: Members */}
+              {activeTab === 'members' && (
+                <MembersTable
+                  selectedClub={selectedClub}
+                  isAdmin={isAdmin}
+                  onAddMember={handleAddMember}
+                  onEditMember={handleEditMember}
+                  onDeleteMember={handleDeleteMember}
+                />
+              )}
             </div>
           ) : (
             /* No club selected state */
