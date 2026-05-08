@@ -78,12 +78,12 @@ export default function DiscussionsTimeline({
         <p className="text-body text-[var(--color-text-secondary)] italic">No discussions scheduled</p>
       ) : (
         <>
-          {/* Mobile: vertical timeline — 36px copper circles matching design spec */}
-          <div className="lg:hidden relative pl-12">
+          {/* Mobile: vertical timeline */}
+          <div className="lg:hidden relative pl-10">
             {/* Vertical copper connector line */}
             <div
-              className="absolute top-[18px] bottom-[18px] w-[1.5px]"
-              style={{ left: '18px', background: 'rgba(209,110,48,0.30)' }}
+              className="absolute top-[14px] bottom-[14px] w-[1.5px]"
+              style={{ left: '14px', background: 'rgba(209,110,48,0.50)' }}
             />
 
             {sortedDiscussions.map((discussion, index) => {
@@ -92,31 +92,31 @@ export default function DiscussionsTimeline({
               const dateInfo = formatDate(discussion.date)
 
               return (
-                <div key={discussion.id} className="relative mb-6 last:mb-0">
-                  {/* 36px copper circle node */}
+                <div key={discussion.id} className="group relative mb-6 last:mb-0">
+                  {/* 28px copper circle node */}
                   <div
-                    className="absolute flex items-center justify-center w-9 h-9 rounded-full"
+                    className="absolute flex items-center justify-center w-7 h-7 rounded-full"
                     style={{
-                      left: '-48px',
-                      top: 0,
+                      left: '-40px',
+                      top: '14px',
                       background: isPast
-                        ? 'rgba(209,110,48,0.45)'
+                        ? '#B85A22'
                         : isNext
                         ? '#D16D30'
                         : 'var(--color-bg-elevated)',
                       border: (!isPast && !isNext) ? '1px solid var(--color-divider)' : 'none',
-                      boxShadow: isNext ? '0 0 0 4px rgba(209,110,48,0.18)' : 'none'
+                      boxShadow: isNext ? '0 0 0 3px rgba(209,110,48,0.25)' : 'none'
                     }}
                   >
                     {(isPast || isNext) && (
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className={`flex items-start justify-between gap-2 ${isPast ? 'opacity-70' : ''}`}>
+                  <div className={`flex items-start justify-between gap-2 rounded-card px-2 py-2 -mx-2 -my-2 transition-colors group-hover:bg-[var(--color-bg-raised)] ${isPast ? 'opacity-70' : ''}`}>
                     <div className="min-w-0">
                       <h4 className={`font-semibold leading-snug ${
                         isPast ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-text-primary)]'
@@ -187,12 +187,12 @@ export default function DiscussionsTimeline({
                     className="discussion-card flex-shrink-0 w-64 relative"
                     style={{ scrollSnapAlign: 'center' }}
                   >
-                    <div className={`group rounded-card p-4 border transition-colors relative ${
+                    <div className={`group rounded-card p-4 border transition-all relative hover:-translate-y-0.5 hover:shadow-md ${
                       isPast
                         ? 'bg-[var(--color-bg-elevated)] border-[var(--color-divider)] opacity-60'
                         : isNext
-                        ? 'bg-primary/5 border-primary/30 border-l-4 border-l-primary'
-                        : 'bg-[var(--color-bg)] border-[var(--color-divider)] hover:border-primary/30'
+                        ? 'bg-primary/5 border-primary/30 border-l-4 border-l-primary hover:border-primary/60'
+                        : 'bg-[var(--color-bg)] border-[var(--color-divider)] hover:border-primary/30 hover:bg-[var(--color-bg-raised)]'
                     }`}>
 
                       {isAdmin && (
