@@ -13,6 +13,7 @@ import TopNavbar from '../components/layout/TopNavbar'
 import Sidebar from '../components/layout/Sidebar'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import MembersTable from '../components/MembersTable'
+import BookInfo from '../components/BookInfo'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function ClubsDashboard() {
@@ -313,38 +314,13 @@ export default function ClubsDashboard() {
               {activeTab === 'general' && (
                 <div className="divide-y divide-[var(--color-divider)]">
                   {/* Current Book */}
-                  <div className="py-5">
+                  <div className="pb-5">
                     <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
                     {selectedClub.active_session ? (
-                      <>
-                        <h3 className="text-card-heading text-[var(--color-text-primary)]">{selectedClub.active_session.book.title}</h3>
-                        <p className="text-body text-[var(--color-text-secondary)] mt-1">
-                          {selectedClub.active_session.book.author}
-                          {selectedClub.active_session.book.year && ` · ${selectedClub.active_session.book.year}`}
-                          {selectedClub.active_session.book.page_count && ` · ${selectedClub.active_session.book.page_count} pages`}
-                        </p>
-                        {selectedClub.active_session.due_date && (
-                          <p className="text-sm text-primary font-medium mt-2">
-                            Due {new Date(selectedClub.active_session.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                          </p>
-                        )}
-                        {isAdmin && (
-                          <div className="flex gap-2 mt-4">
-                            <button
-                              onClick={() => setShowEditBookModal(true)}
-                              className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
-                            >
-                              Edit Book
-                            </button>
-                            <button
-                              onClick={() => setShowNewSessionModal(true)}
-                              className="text-sm bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
-                            >
-                              New Session
-                            </button>
-                          </div>
-                        )}
-                      </>
+                      <BookInfo
+                        book={selectedClub.active_session.book}
+                        dueDate={selectedClub.active_session.due_date}
+                      />
                     ) : (
                       <>
                         <p className="text-body text-[var(--color-text-secondary)] italic">No active reading session</p>
@@ -387,34 +363,13 @@ export default function ClubsDashboard() {
                     <div className="divide-y divide-[var(--color-divider)]">
                       {/* Book info */}
                       <div className="pb-6">
-                        <h3 className="text-card-heading text-[var(--color-text-primary)]">
-                          {selectedClub.active_session.book.title}
-                        </h3>
-                        <p className="text-body text-[var(--color-text-secondary)] mt-1">
-                          by {selectedClub.active_session.book.author}
-                        </p>
-                        {selectedClub.active_session.due_date && (
-                          <p className="text-body text-[var(--color-text-secondary)] mt-1">
-                            <span className="font-semibold text-[var(--color-text-primary)]">Due Date:</span>
-                            {' '}{new Date(selectedClub.active_session.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                          </p>
-                        )}
-                        {isAdmin && (
-                          <div className="flex gap-2 mt-4">
-                            <button
-                              onClick={() => setShowEditBookModal(true)}
-                              className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
-                            >
-                              Edit Book
-                            </button>
-                            <button
-                              onClick={() => setShowNewSessionModal(true)}
-                              className="text-sm bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
-                            >
-                              New Session
-                            </button>
-                          </div>
-                        )}
+                        <BookInfo
+                          book={selectedClub.active_session.book}
+                          dueDate={selectedClub.active_session.due_date}
+                          isAdmin={isAdmin}
+                          onEditBook={() => setShowEditBookModal(true)}
+                          onNewSession={() => setShowNewSessionModal(true)}
+                        />
                       </div>
                       {/* Timeline */}
                       <div className="pt-6">
