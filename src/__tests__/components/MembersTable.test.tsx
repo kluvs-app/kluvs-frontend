@@ -4,6 +4,12 @@ import userEvent from '@testing-library/user-event'
 import MembersTable from '../../components/MembersTable'
 import { mockClub, mockAdminMember, mockRegularMember } from '../utils/mocks'
 
+// Mock supabase to avoid import errors from getAvatarUrl
+vi.mock('../../supabase', () => ({
+  supabase: {},
+  getAvatarUrl: (path: string) => `https://example.com/${path}`,
+}))
+
 describe('MembersTable', () => {
   const mockOnAddMember = vi.fn()
   const mockOnEditMember = vi.fn()
@@ -22,18 +28,10 @@ describe('MembersTable', () => {
   })
 
   describe('Rendering', () => {
-    it('should render table headers', () => {
-      render(<MembersTable {...defaultProps} />)
-
-      expect(screen.getByText('Reader')).toBeInTheDocument()
-      expect(screen.getByText('Books Read')).toBeInTheDocument()
-      expect(screen.getByText('Status')).toBeInTheDocument()
-    })
-
     it('should display member count in header', () => {
       render(<MembersTable {...defaultProps} />)
 
-      expect(screen.getByText(`Club Members (${mockClub.members.length})`)).toBeInTheDocument()
+      expect(screen.getByText(`Members (${mockClub.members.length})`)).toBeInTheDocument()
     })
 
     it('should render all members', () => {
@@ -49,16 +47,6 @@ describe('MembersTable', () => {
 
       const firstMember = mockClub.members[0]
       expect(screen.getByText(firstMember.books_read.toString())).toBeInTheDocument()
-    })
-
-    it('should show shame list indicator for members in shame list', () => {
-      render(<MembersTable {...defaultProps} />)
-
-      // mockClub.shame_list contains [2, 3], so member with id=2 and id=3 should show shame indicator
-      const shameMembers = mockClub.members.filter(m => mockClub.shame_list.includes(m.id))
-
-      // Shame indicator should appear (implementation may vary, checking for presence)
-      expect(shameMembers.length).toBeGreaterThan(0)
     })
   })
 
@@ -78,32 +66,30 @@ describe('MembersTable', () => {
     it('should show edit buttons for admin', () => {
       render(<MembersTable {...defaultProps} isAdmin={true} />)
 
-      // Edit buttons use emoji ✏️ but have title="Edit member"
-      const editButtons = screen.getAllByTitle('Edit member')
+      // Edit buttons use aria-label="Edit <name>"
+      const editButtons = screen.getAllByLabelText(/^Edit /)
       expect(editButtons.length).toBe(mockClub.members.length)
     })
 
     it('should hide edit buttons for non-admin', () => {
       render(<MembersTable {...defaultProps} isAdmin={false} />)
 
-      // Edit buttons should not be present
-      const editButtons = screen.queryAllByTitle('Edit member')
+      const editButtons = screen.queryAllByLabelText(/^Edit /)
       expect(editButtons.length).toBe(0)
     })
 
     it('should show delete buttons for admin', () => {
       render(<MembersTable {...defaultProps} isAdmin={true} />)
 
-      // Delete buttons use emoji 🗑️ but have title="Delete member"
-      const deleteButtons = screen.getAllByTitle('Delete member')
+      // Delete buttons use aria-label="Delete <name>"
+      const deleteButtons = screen.getAllByLabelText(/^Delete /)
       expect(deleteButtons.length).toBe(mockClub.members.length)
     })
 
     it('should hide delete buttons for non-admin', () => {
       render(<MembersTable {...defaultProps} isAdmin={false} />)
 
-      // Delete buttons should not be present
-      const deleteButtons = screen.queryAllByTitle('Delete member')
+      const deleteButtons = screen.queryAllByLabelText(/^Delete /)
       expect(deleteButtons.length).toBe(0)
     })
   })
@@ -123,7 +109,7 @@ describe('MembersTable', () => {
       const user = userEvent.setup()
       render(<MembersTable {...defaultProps} isAdmin={true} />)
 
-      const editButtons = screen.getAllByTitle('Edit member')
+      const editButtons = screen.getAllByLabelText(/^Edit /)
       await user.click(editButtons[0])
 
       // Should be called with the first member
@@ -135,7 +121,7 @@ describe('MembersTable', () => {
       const user = userEvent.setup()
       render(<MembersTable {...defaultProps} isAdmin={true} />)
 
-      const deleteButtons = screen.getAllByTitle('Delete member')
+      const deleteButtons = screen.getAllByLabelText(/^Delete /)
       await user.click(deleteButtons[0])
 
       // Should be called with the first member
@@ -147,7 +133,7 @@ describe('MembersTable', () => {
       const user = userEvent.setup()
       render(<MembersTable {...defaultProps} isAdmin={true} />)
 
-      const editButtons = screen.getAllByTitle('Edit member')
+      const editButtons = screen.getAllByLabelText(/^Edit /)
 
       // Click first member's edit button
       await user.click(editButtons[0])
@@ -170,12 +156,12 @@ describe('MembersTable', () => {
 
       render(<MembersTable {...defaultProps} selectedClub={emptyClub} />)
 
-      expect(screen.getByText('Club Members (0)')).toBeInTheDocument()
+      expect(screen.getByText('Members (0)')).toBeInTheDocument()
     })
   })
 
   describe('Member Status Display', () => {
-    it('should show admin badge for admin members', () => {
+    it('should show admin member name', () => {
       const clubWithAdmin = {
         ...mockClub,
         members: [mockAdminMember],
@@ -183,11 +169,10 @@ describe('MembersTable', () => {
 
       render(<MembersTable {...defaultProps} selectedClub={clubWithAdmin} />)
 
-      // Check for admin indicator (implementation may vary)
       expect(screen.getByText(mockAdminMember.name)).toBeInTheDocument()
     })
 
-    it('should display regular members without admin badge', () => {
+    it('should display regular members', () => {
       const clubWithRegular = {
         ...mockClub,
         members: [mockRegularMember],
@@ -196,24 +181,6 @@ describe('MembersTable', () => {
       render(<MembersTable {...defaultProps} selectedClub={clubWithRegular} />)
 
       expect(screen.getByText(mockRegularMember.name)).toBeInTheDocument()
-    })
-  })
-
-  describe('Visual Elements', () => {
-    it('should render table structure correctly', () => {
-      render(<MembersTable {...defaultProps} />)
-
-      // Check for table element
-      const table = screen.getByRole('table')
-      expect(table).toBeInTheDocument()
-    })
-
-    it('should render one row per member', () => {
-      render(<MembersTable {...defaultProps} />)
-
-      const rows = screen.getAllByRole('row')
-      // +1 for header row
-      expect(rows.length).toBe(mockClub.members.length + 1)
     })
   })
 
@@ -238,23 +205,12 @@ describe('MembersTable', () => {
   })
 
   describe('Accessibility', () => {
-    it('should have accessible table structure', () => {
-      render(<MembersTable {...defaultProps} />)
-
-      // Table should have proper role
-      expect(screen.getByRole('table')).toBeInTheDocument()
-
-      // Should have header cells
-      const headers = screen.getAllByRole('columnheader')
-      expect(headers.length).toBeGreaterThan(0)
-    })
-
-    it('should have accessible action buttons', () => {
+    it('should have accessible action buttons with aria-labels', () => {
       render(<MembersTable {...defaultProps} isAdmin={true} />)
 
-      // Edit and delete buttons have title attributes
-      const editButtons = screen.getAllByTitle('Edit member')
-      const deleteButtons = screen.getAllByTitle('Delete member')
+      // Edit and delete buttons have aria-label attributes
+      const editButtons = screen.getAllByLabelText(/^Edit /)
+      const deleteButtons = screen.getAllByLabelText(/^Delete /)
 
       expect(editButtons.length).toBeGreaterThan(0)
       expect(deleteButtons.length).toBeGreaterThan(0)

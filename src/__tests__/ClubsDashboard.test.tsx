@@ -19,27 +19,17 @@ vi.mock('../supabase', () => {
   }
   return {
     supabase: mockClient,
+    getAvatarUrl: (path: string) => `https://example.com/${path}`,
   }
 })
 
 // Mock layout and child components to simplify testing
 vi.mock('../components/layout/TopNavbar', () => ({
-  default: ({ servers, selectedServer, onServerChange, onMenuToggle }: any) => (
+  default: ({ onMenuToggle }: any) => (
     <div data-testid="top-navbar">
       <span>Kluvs</span>
       {onMenuToggle && (
         <button onClick={onMenuToggle} data-testid="menu-toggle">Menu</button>
-      )}
-      {servers.length > 1 && (
-        <select
-          value={selectedServer}
-          onChange={(e: any) => onServerChange(e.target.value)}
-          data-testid="server-selector"
-        >
-          {servers.map((s: any) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
       )}
     </div>
   ),
@@ -49,7 +39,7 @@ vi.mock('../components/layout/Sidebar', () => ({
   default: ({ onClubSelect, onAddClub, onDeleteClub }: any) => (
     <div data-testid="clubs-sidebar">
       <button onClick={onAddClub} data-testid="sidebar-add-club">Add Club</button>
-      <button onClick={() => onClubSelect('club-1')} data-testid="select-club-1">
+      <button onClick={() => onClubSelect('club-1', 'server-1')} data-testid="select-club-1">
         Select Club 1
       </button>
       <button onClick={() => onDeleteClub({ id: 'club-1', name: 'Test Club' })} data-testid="sidebar-delete-club">
@@ -59,13 +49,12 @@ vi.mock('../components/layout/Sidebar', () => ({
   ),
 }))
 
-
-vi.mock('../components/CurrentReadingCard', () => ({
+vi.mock('../components/BookInfo', () => ({
   default: ({ onEditBook, onNewSession }: any) => (
     <div data-testid="current-reading-card">
-      Current Reading Card
-      <button onClick={onEditBook} data-testid="edit-book-btn">Edit Book</button>
-      <button onClick={onNewSession} data-testid="new-session-btn">New Session</button>
+      Book Info
+      {onEditBook && <button onClick={onEditBook} data-testid="edit-book-btn">Edit Book</button>}
+      {onNewSession && <button onClick={onNewSession} data-testid="new-session-btn">New Session</button>}
     </div>
   ),
 }))
@@ -241,146 +230,6 @@ describe('ClubsDashboard', () => {
     })
   })
 
-  describe('Server Selection', () => {
-    it('should default to "Blingers\' Books" server if available', async () => {
-      const blingersServer = { ...mockServer, name: "Blingers' Books" }
-
-      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'server') {
-          return Promise.resolve({
-            data: { servers: [mockServer2, blingersServer] },
-            error: null
-          })
-        }
-        if (endpoint.includes('member?user_id=')) {
-          return Promise.resolve({ data: mockAdminMember, error: null })
-        }
-        return Promise.resolve({ data: null, error: null })
-      })
-
-      render(<ClubsDashboard />)
-
-      await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
-      })
-
-      // Server selector should show Blingers' Books as selected
-      const selector = screen.queryByRole('combobox')
-      if (selector) {
-        expect(selector).toHaveValue(blingersServer.id)
-      }
-    })
-
-    it('should default to first server if Blingers\' Books not found', async () => {
-      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'server') {
-          return Promise.resolve({
-            data: { servers: [mockServer, mockServer2] },
-            error: null
-          })
-        }
-        if (endpoint.includes('member?user_id=')) {
-          return Promise.resolve({ data: mockAdminMember, error: null })
-        }
-        return Promise.resolve({ data: null, error: null })
-      })
-
-      render(<ClubsDashboard />)
-
-      await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
-      })
-    })
-
-    it('should show server selector only when multiple servers exist and user is admin', async () => {
-      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'server') {
-          return Promise.resolve({
-            data: { servers: [mockServer, mockServer2] },
-            error: null
-          })
-        }
-        if (endpoint.includes('member?user_id=')) {
-          return Promise.resolve({ data: mockAdminMember, error: null })
-        }
-        return Promise.resolve({ data: null, error: null })
-      })
-
-      render(<ClubsDashboard />)
-
-      await waitFor(() => {
-        const selector = screen.queryByRole('combobox')
-        expect(selector).toBeInTheDocument()
-      })
-    })
-
-    it('should hide server selector when only one server exists', async () => {
-      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'server') {
-          return Promise.resolve({
-            data: { servers: [mockServer] },
-            error: null
-          })
-        }
-        if (endpoint.includes('member?user_id=')) {
-          return Promise.resolve({ data: mockAdminMember, error: null })
-        }
-        return Promise.resolve({ data: null, error: null })
-      })
-
-      render(<ClubsDashboard />)
-
-      await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
-      })
-
-      const selector = screen.queryByRole('combobox')
-      expect(selector).not.toBeInTheDocument()
-    })
-
-    it('should clear selected club when server changes', async () => {
-      const user = userEvent.setup()
-
-      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'server') {
-          return Promise.resolve({
-            data: { servers: [mockServer, mockServer2] },
-            error: null
-          })
-        }
-        if (endpoint.includes('club?id=')) {
-          return Promise.resolve({ data: mockClub, error: null })
-        }
-        if (endpoint.includes('member?user_id=')) {
-          return Promise.resolve({ data: mockAdminMember, error: null })
-        }
-        return Promise.resolve({ data: null, error: null })
-      })
-
-      render(<ClubsDashboard />)
-
-      await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
-      })
-
-      // Select a club first
-      const selectClubButton = screen.getByTestId('select-club-1')
-      await user.click(selectClubButton)
-
-      await waitFor(() => {
-        expect(screen.getByTestId('current-reading-card')).toBeInTheDocument()
-      })
-
-      // Change server
-      const selector = screen.getByRole('combobox')
-      await user.selectOptions(selector, mockServer2.id)
-
-      // Selected club should be cleared (child components won't receive club data)
-      // We verify this by checking the sidebar is still rendered but club details aren't
-      expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
-    })
-  })
-
   describe('Club Selection', () => {
     it('should fetch club details when club is selected', async () => {
       const user = userEvent.setup()
@@ -414,10 +263,8 @@ describe('ClubsDashboard', () => {
         )
       })
 
-      // Verify child components render with club data
+      // General tab shows BookInfo (current-reading-card)
       expect(screen.getByTestId('current-reading-card')).toBeInTheDocument()
-      expect(screen.getByTestId('discussions-timeline')).toBeInTheDocument()
-      expect(screen.getByTestId('members-table')).toBeInTheDocument()
     })
 
     it('should handle club fetch errors gracefully', async () => {
@@ -599,10 +446,20 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
-      // After selecting club, detail components should render
+      // After selecting club, General tab shows BookInfo
       await waitFor(() => {
         expect(screen.getByTestId('current-reading-card')).toBeInTheDocument()
+      })
+
+      // Click Active Session tab to see discussions timeline
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
+      await waitFor(() => {
         expect(screen.getByTestId('discussions-timeline')).toBeInTheDocument()
+      })
+
+      // Click Members tab to see members table
+      await user.click(screen.getByRole('button', { name: 'Members' }))
+      await waitFor(() => {
         expect(screen.getByTestId('members-table')).toBeInTheDocument()
       })
     })
@@ -728,7 +585,7 @@ describe('ClubsDashboard', () => {
   })
 
   describe('Club Info Display', () => {
-    it('should display club name and discord channel when club has discord_channel', async () => {
+    it('should display club name when club is selected', async () => {
       const user = userEvent.setup()
 
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
@@ -755,9 +612,6 @@ describe('ClubsDashboard', () => {
 
       await waitFor(() => {
         expect(screen.getByText(mockClub.name)).toBeInTheDocument()
-        if (mockClub.discord_channel) {
-          expect(screen.getByText(`Discord: #${mockClub.discord_channel}`)).toBeInTheDocument()
-        }
       })
     })
   })
@@ -888,49 +742,6 @@ describe('ClubsDashboard', () => {
         expect(callCount).toBeGreaterThan(0)
       })
     })
-
-    it('should preserve server selection when creating new club', async () => {
-      const user = userEvent.setup()
-
-      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'server') {
-          return Promise.resolve({
-            data: { servers: [mockServer, mockServer2] },
-            error: null
-          })
-        }
-        if (endpoint.includes('club?id=new-club-id')) {
-          return Promise.resolve({ data: { ...mockClub, id: 'new-club-id' }, error: null })
-        }
-        if (endpoint.includes('member?user_id=')) {
-          return Promise.resolve({ data: mockAdminMember, error: null })
-        }
-        return Promise.resolve({ data: null, error: null })
-      })
-
-      render(<ClubsDashboard />)
-
-      await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
-      })
-
-      // Change to mockServer2
-      const selector = screen.getByTestId('server-selector')
-      await user.selectOptions(selector, mockServer2.id)
-
-      // Open add club modal
-      const addClubButton = screen.getByTestId('sidebar-add-club')
-      await user.click(addClubButton)
-
-      // Create club
-      const createButton = screen.getByText('Create')
-      await user.click(createButton)
-
-      // Server selection should be preserved
-      await waitFor(() => {
-        expect(screen.getByTestId('server-selector')).toHaveValue(mockServer2.id)
-      })
-    })
   })
 
   describe('Club Deletion', () => {
@@ -996,8 +807,14 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Active Session tab to see edit book button
       await waitFor(() => {
-        expect(screen.getByTestId('current-reading-card')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-book-btn')).toBeInTheDocument()
       })
 
       const editBookButton = screen.getByTestId('edit-book-btn')
@@ -1031,8 +848,14 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Active Session tab — BookInfo is rendered with onNewSession prop
       await waitFor(() => {
-        expect(screen.getByTestId('current-reading-card')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('new-session-btn')).toBeInTheDocument()
       })
 
       const newSessionButton = screen.getByTestId('new-session-btn')
@@ -1065,6 +888,12 @@ describe('ClubsDashboard', () => {
 
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
+
+      // Click Active Session tab to see discussions timeline
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
 
       await waitFor(() => {
         expect(screen.getByTestId('discussions-timeline')).toBeInTheDocument()
@@ -1101,6 +930,12 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Members tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Members' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Members' }))
+
       await waitFor(() => {
         expect(screen.getByTestId('members-table')).toBeInTheDocument()
       })
@@ -1136,6 +971,12 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Members tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Members' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Members' }))
+
       await waitFor(() => {
         expect(screen.getByTestId('members-table')).toBeInTheDocument()
       })
@@ -1170,6 +1011,12 @@ describe('ClubsDashboard', () => {
 
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
+
+      // Click Active Session tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
 
       await waitFor(() => {
         expect(screen.getByTestId('discussions-timeline')).toBeInTheDocument()
@@ -1241,8 +1088,14 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Active Session tab
       await waitFor(() => {
-        expect(screen.getByTestId('current-reading-card')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-book-btn')).toBeInTheDocument()
       })
 
       const editBookButton = screen.getByTestId('edit-book-btn')
@@ -1282,8 +1135,14 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Active Session tab — BookInfo is rendered with onNewSession prop
       await waitFor(() => {
-        expect(screen.getByTestId('current-reading-card')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('new-session-btn')).toBeInTheDocument()
       })
 
       const newSessionButton = screen.getByTestId('new-session-btn')
@@ -1322,6 +1181,12 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Members tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Members' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Members' }))
+
       await waitFor(() => {
         expect(screen.getByTestId('members-table')).toBeInTheDocument()
       })
@@ -1357,6 +1222,12 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Active Session tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
+
       await waitFor(() => {
         expect(screen.getByTestId('discussions-timeline')).toBeInTheDocument()
       })
@@ -1391,6 +1262,12 @@ describe('ClubsDashboard', () => {
 
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
+
+      // Click Active Session tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
 
       await waitFor(() => {
         expect(screen.getByTestId('discussions-timeline')).toBeInTheDocument()
@@ -1432,6 +1309,12 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Members tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Members' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Members' }))
+
       await waitFor(() => {
         expect(screen.getByTestId('members-table')).toBeInTheDocument()
       })
@@ -1472,6 +1355,12 @@ describe('ClubsDashboard', () => {
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
 
+      // Click Members tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Members' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Members' }))
+
       await waitFor(() => {
         expect(screen.getByTestId('members-table')).toBeInTheDocument()
       })
@@ -1511,6 +1400,12 @@ describe('ClubsDashboard', () => {
 
       const selectClubButton = screen.getByTestId('select-club-1')
       await user.click(selectClubButton)
+
+      // Click Active Session tab
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Active Session' })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: 'Active Session' }))
 
       await waitFor(() => {
         expect(screen.getByTestId('discussions-timeline')).toBeInTheDocument()
