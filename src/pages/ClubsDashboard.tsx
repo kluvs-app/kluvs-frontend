@@ -11,7 +11,6 @@ import DeleteDiscussionModal from '../components/modals/DeleteDiscussionModal'
 import DeleteClubModal from '../components/modals/DeleteClubModal'
 import TopNavbar from '../components/layout/TopNavbar'
 import Sidebar from '../components/layout/Sidebar'
-import CurrentReadingCard from '../components/CurrentReadingCard'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import MembersTable from '../components/MembersTable'
 import { useAuth } from '../contexts/AuthContext'
@@ -116,16 +115,17 @@ export default function ClubsDashboard() {
     }
   }
 
-  const fetchClubDetails = async (clubId: string) => {
+  const fetchClubDetails = async (clubId: string, serverId?: string) => {
+    const serverIdToUse = serverId ?? selectedServer
     try {
       console.log('🏢 [CLUB-FETCH] Starting fetchClubDetails for clubId:', clubId)
-      console.log('🏢 [CLUB-FETCH] Selected server:', selectedServer)
+      console.log('🏢 [CLUB-FETCH] Selected server:', serverIdToUse)
 
       setClubLoading(true) // Start loading
       setError(null)
 
       // Build URL with query parameters since Edge Function expects GET with query params
-      const functionName = `club?id=${encodeURIComponent(clubId)}&server_id=${encodeURIComponent(selectedServer)}`
+      const functionName = `club?id=${encodeURIComponent(clubId)}&server_id=${encodeURIComponent(serverIdToUse)}`
       console.log('🏢 [CLUB-FETCH] Calling Edge Function with URL:', functionName)
 
       const { data, error } = await supabase.functions.invoke(functionName, {
@@ -235,12 +235,6 @@ export default function ClubsDashboard() {
     <div className="min-h-screen bg-[var(--color-bg)]">
       {/* Top Navigation */}
       <TopNavbar
-        servers={servers}
-        selectedServer={selectedServer}
-        onServerChange={(serverId) => {
-          setSelectedServer(serverId)
-          setSelectedClub(null)
-        }}
         onMenuToggle={() => setSidebarOpen(prev => !prev)}
         isAdmin={isAdmin}
       />
@@ -248,11 +242,12 @@ export default function ClubsDashboard() {
       {/* Sidebar + Main Content */}
       <div className="flex pt-16">
         <Sidebar
-          selectedServerData={selectedServerData}
+          servers={servers}
           selectedClub={selectedClub}
-          onClubSelect={(clubId) => {
+          onClubSelect={(clubId, serverId) => {
             setSidebarOpen(false)
-            fetchClubDetails(clubId)
+            setSelectedServer(serverId)
+            fetchClubDetails(clubId, serverId)
           }}
           onAddClub={() => setShowAddClubModal(true)}
           onDeleteClub={confirmDeleteClub}
@@ -285,13 +280,6 @@ export default function ClubsDashboard() {
               {/* Club Header */}
               <div className="mb-4">
                 <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
-                <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
-                  {[
-                    selectedClub.discord_channel && `#${selectedClub.discord_channel}`,
-                    selectedClub.founded_date && `Est. ${new Date(selectedClub.founded_date).getFullYear()}`,
-                    `${selectedClub.members.length} member${selectedClub.members.length !== 1 ? 's' : ''}`
-                  ].filter(Boolean).join(' · ')}
-                </p>
               </div>
 
               {/* Tab Bar */}
@@ -305,10 +293,8 @@ export default function ClubsDashboard() {
                     <button
                       key={id}
                       onClick={() => setActiveTab(id as typeof activeTab)}
-                      className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                        activeTab === id
-                          ? 'border-primary text-primary'
-                          : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                      className={`px-4 py-2.5 text-sm font-semibold text-primary border-b-2 transition-colors ${
+                        activeTab === id ? 'border-primary' : 'border-transparent'
                       }`}
                     >
                       {label}
@@ -319,12 +305,27 @@ export default function ClubsDashboard() {
 
               {/* Tab: General */}
               {activeTab === 'general' && (
-                <div className="space-y-4">
-                  {selectedClub.active_session ? (
-                    <>
-                      {/* Current Book */}
-                      <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-5">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
+                <div className="divide-y divide-[var(--color-divider)]">
+                  {/* Club metadata */}
+                  <div className="pb-5">
+                    <p className="text-body text-[var(--color-text-secondary)]">
+                      {selectedClub.members.length} member{selectedClub.members.length !== 1 ? 's' : ''}
+                    </p>
+                    {selectedClub.discord_channel && (
+                      <p className="text-body text-[var(--color-text-secondary)] mt-0.5">#{selectedClub.discord_channel}</p>
+                    )}
+                    {selectedClub.founded_date && (
+                      <p className="text-body text-[var(--color-text-secondary)] mt-0.5">
+                        Founded in {new Date(selectedClub.founded_date).getFullYear()}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Current Book */}
+                  <div className="py-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
+                    {selectedClub.active_session ? (
+                      <>
                         <h3 className="text-card-heading text-[var(--color-text-primary)]">{selectedClub.active_session.book.title}</h3>
                         <p className="text-body text-[var(--color-text-secondary)] mt-1">
                           {selectedClub.active_session.book.author}
@@ -332,7 +333,7 @@ export default function ClubsDashboard() {
                           {selectedClub.active_session.book.page_count && ` · ${selectedClub.active_session.book.page_count} pages`}
                         </p>
                         {selectedClub.active_session.due_date && (
-                          <p className="text-sm text-primary font-medium mt-3">
+                          <p className="text-sm text-primary font-medium mt-2">
                             Due {new Date(selectedClub.active_session.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                           </p>
                         )}
@@ -352,27 +353,91 @@ export default function ClubsDashboard() {
                             </button>
                           </div>
                         )}
-                      </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-body text-[var(--color-text-secondary)] italic">No active reading session</p>
+                        {isAdmin && (
+                          <button
+                            onClick={() => setShowNewSessionModal(true)}
+                            className="mt-3 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
+                          >
+                            Start Session
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
 
-                      {/* Next Discussion */}
-                      {nextDiscussion && (
-                        <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-5">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
-                          <h4 className="font-semibold text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
-                          <div className="flex items-center gap-1.5 mt-1.5 text-sm text-[var(--color-text-secondary)]">
-                            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                            </svg>
-                            <span>{nextDiscussion.location || 'Location TBD'}</span>
-                            <span>·</span>
-                            <span>{new Date(nextDiscussion.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  {/* Next Discussion */}
+                  <div className="pt-5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
+                    {nextDiscussion ? (
+                      <>
+                        <h4 className="font-semibold text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
+                        <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+                          {[
+                            nextDiscussion.location,
+                            new Date(nextDiscussion.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                          ].filter(Boolean).join(' · ')}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-body text-[var(--color-text-secondary)] italic">No upcoming discussion</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab: Active Session */}
+              {activeTab === 'session' && (
+                <div>
+                  {selectedClub.active_session ? (
+                    <div className="divide-y divide-[var(--color-divider)]">
+                      {/* Book info */}
+                      <div className="pb-6">
+                        <h3 className="text-card-heading text-[var(--color-text-primary)]">
+                          {selectedClub.active_session.book.title}
+                        </h3>
+                        <p className="text-body text-[var(--color-text-secondary)] mt-1">
+                          by {selectedClub.active_session.book.author}
+                        </p>
+                        {selectedClub.active_session.due_date && (
+                          <p className="text-body text-[var(--color-text-secondary)] mt-1">
+                            <span className="font-semibold text-[var(--color-text-primary)]">Due Date:</span>
+                            {' '}{new Date(selectedClub.active_session.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        )}
+                        {isAdmin && (
+                          <div className="flex gap-2 mt-4">
+                            <button
+                              onClick={() => setShowEditBookModal(true)}
+                              className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
+                            >
+                              Edit Book
+                            </button>
+                            <button
+                              onClick={() => setShowNewSessionModal(true)}
+                              className="text-sm bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
+                            >
+                              New Session
+                            </button>
                           </div>
-                        </div>
-                      )}
-                    </>
+                        )}
+                      </div>
+                      {/* Timeline */}
+                      <div className="pt-6">
+                        <DiscussionsTimeline
+                          selectedClub={selectedClub}
+                          isAdmin={isAdmin}
+                          onAddDiscussion={handleAddDiscussion}
+                          onEditDiscussion={handleEditDiscussion}
+                          onDeleteDiscussion={handleDeleteDiscussion}
+                        />
+                      </div>
+                    </div>
                   ) : (
-                    <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-8 text-center">
+                    <div className="text-center py-12">
                       <p className="text-[var(--color-text-secondary)]">No active reading session</p>
                       {isAdmin && (
                         <button
@@ -384,25 +449,6 @@ export default function ClubsDashboard() {
                       )}
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* Tab: Active Session */}
-              {activeTab === 'session' && (
-                <div className="space-y-5">
-                  <CurrentReadingCard
-                    selectedClub={selectedClub}
-                    isAdmin={isAdmin}
-                    onEditBook={() => setShowEditBookModal(true)}
-                    onNewSession={() => setShowNewSessionModal(true)}
-                  />
-                  <DiscussionsTimeline
-                    selectedClub={selectedClub}
-                    isAdmin={isAdmin}
-                    onAddDiscussion={handleAddDiscussion}
-                    onEditDiscussion={handleEditDiscussion}
-                    onDeleteDiscussion={handleDeleteDiscussion}
-                  />
                 </div>
               )}
 
@@ -422,8 +468,9 @@ export default function ClubsDashboard() {
             <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-12 text-center">
               <div className="max-w-md mx-auto">
                 <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                  {/* Hexagon — Clubs icon from Kluvs design system */}
+                  <svg className="w-10 h-10 text-primary" viewBox="0 -960 960 960" fill="currentColor">
+                    <path d="M264.65-107 48.74-480l215.91-373h430.7l215.91 373-215.91 373h-430.7Z" />
                   </svg>
                 </div>
                 <h3 className="text-section-heading text-[var(--color-text-primary)] mb-3">Select a Book Club</h3>
