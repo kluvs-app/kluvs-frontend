@@ -179,7 +179,6 @@ export default function DiscussionsTimeline({
               {sortedDiscussions.map((discussion, index) => {
                 const isPast = isPastDiscussion(discussion.date)
                 const isNext = index === nextDiscussionIndex
-                const dateInfo = formatDate(discussion.date)
 
                 return (
                   <div

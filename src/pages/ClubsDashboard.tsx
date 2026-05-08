@@ -247,7 +247,6 @@ export default function ClubsDashboard() {
       {/* Top Navigation */}
       <TopNavbar
         onMenuToggle={() => setSidebarOpen(prev => !prev)}
-        isAdmin={isAdmin}
       />
 
       {/* Sidebar + Main Content */}

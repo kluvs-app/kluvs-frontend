@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from './utils/test-utils'
 import userEvent from '@testing-library/user-event'
 import ClubsDashboard from '../pages/ClubsDashboard'
-import { mockServer, mockServer2, mockClub, mockAdminMember } from './utils/mocks'
+import { mockServer, mockClub, mockAdminMember } from './utils/mocks'
 
 // Mock the supabase module
 vi.mock('../supabase', () => {

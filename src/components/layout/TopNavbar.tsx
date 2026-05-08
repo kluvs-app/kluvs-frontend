@@ -8,10 +8,9 @@ import EditProfileModal from '../modals/EditProfileModal'
 
 interface TopNavbarProps {
   onMenuToggle?: () => void
-  isAdmin: boolean
 }
 
-export default function TopNavbar({ onMenuToggle, isAdmin }: TopNavbarProps) {
+export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
   const { member, refreshMemberData } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
