@@ -23,9 +23,19 @@ export default function ClubsDashboard() {
   const [loading, setLoading] = useState(true)
   const [clubLoading, setClubLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { getRoleForClub } = useAuth()
+  const { getRoleForClub, member } = useAuth()
   const clubRole = selectedClub ? getRoleForClub(selectedClub.id) : null
   const isAdmin = clubRole === 'admin' || clubRole === 'owner'
+
+  const memberClubIds = new Set(member?.clubs.map(c => c.id) ?? [])
+  const myClubs = servers.flatMap(server =>
+    server.clubs
+      .filter(club => memberClubIds.has(club.id))
+      .map(club => {
+        const mc = member?.clubs.find(c => c.id === club.id)
+        return { ...club, serverId: server.id, serverName: server.name, role: mc?.role }
+      })
+  )
 
   // Add Club Modal State
   const [showAddClubModal, setShowAddClubModal] = useState(false)
@@ -411,16 +421,49 @@ export default function ClubsDashboard() {
             </div>
           ) : (
             /* No club selected state */
-            <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-12 text-center">
-              <div className="max-w-md mx-auto">
-                <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  {/* Hexagon — Clubs icon from Kluvs design system */}
-                  <svg className="w-10 h-10 text-primary" viewBox="0 -960 960 960" fill="currentColor">
-                    <path d="M264.65-107 48.74-480l215.91-373h430.7l215.91 373-215.91 373h-430.7Z" />
-                  </svg>
+            <div>
+              {/* Mobile: inline club list */}
+              <div className="lg:hidden">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Your Clubs</p>
+                <div>
+                  {myClubs.map(club => (
+                    <div
+                      key={club.id}
+                      onClick={() => {
+                        setSelectedServer(club.serverId)
+                        fetchClubDetails(club.id, club.serverId)
+                      }}
+                      className="flex items-center justify-between py-4 border-b border-[var(--color-divider)] last:border-b-0 cursor-pointer group"
+                    >
+                      <div>
+                        <p className="font-semibold text-[var(--color-text-primary)] group-hover:text-primary transition-colors">
+                          {club.name}
+                        </p>
+                        <p className="text-helper text-[var(--color-text-secondary)] mt-0.5">{club.serverName}</p>
+                      </div>
+                      {club.role && club.role !== 'member' && (
+                        <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full capitalize ${
+                          club.role === 'owner' ? 'bg-[#F0BF05]/15 text-[#F0BF05]' : 'bg-tertiary/10 text-tertiary'
+                        }`}>
+                          {club.role}
+                        </span>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <h3 className="text-section-heading text-[var(--color-text-primary)] mb-3">Select a Book Club</h3>
-                <p className="text-[var(--color-text-secondary)]">Choose a club from the sidebar to explore its members, current reading session, and upcoming discussions.</p>
+              </div>
+
+              {/* Desktop: sidebar prompt */}
+              <div className="hidden lg:block bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-12 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="h-20 w-20 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-primary" viewBox="0 -960 960 960" fill="currentColor">
+                      <path d="M264.65-107 48.74-480l215.91-373h430.7l215.91 373-215.91 373h-430.7Z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-section-heading text-[var(--color-text-primary)] mb-3">Select a Book Club</h3>
+                  <p className="text-[var(--color-text-secondary)]">Choose a club from the sidebar to explore its members, current reading session, and upcoming discussions.</p>
+                </div>
               </div>
             </div>
           )}
