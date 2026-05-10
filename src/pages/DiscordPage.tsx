@@ -2,9 +2,9 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import DiscordIcon from '../components/icons/DiscordIcon'
 
-const INVITE_URL = 'https://discord.com/oauth2/authorize?client_id=1327910712454152275'
+const INVITE_URL = 'https://discord.com/oauth2/authorize?client_id=1327360422294192199'
 const SUPPORT_URL = 'https://discord.gg/rCvpNB5pft'
-const TOPGG_URL = '#'
+const TOPGG_URL = 'https://top.gg/bot/1327360422294192199'
 
 function GlobeIcon() {
   return (

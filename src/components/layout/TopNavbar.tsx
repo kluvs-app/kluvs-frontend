@@ -1,20 +1,16 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getAvatarUrl } from '../../supabase'
 import ThemeToggle from '../ThemeToggle'
 import SignOutModal from '../modals/SignOutModal'
 import EditProfileModal from '../modals/EditProfileModal'
-import type { Server } from '../../types'
 
 interface TopNavbarProps {
-  servers: Server[]
-  selectedServer: string
-  onServerChange: (serverId: string) => void
   onMenuToggle?: () => void
-  isAdmin: boolean
 }
 
-export default function TopNavbar({ servers, selectedServer, onServerChange, onMenuToggle, isAdmin }: TopNavbarProps) {
+export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
   const { member, refreshMemberData } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
@@ -26,10 +22,12 @@ export default function TopNavbar({ servers, selectedServer, onServerChange, onM
         <div className="h-full px-4 sm:px-6 flex items-center justify-between">
           {/* Left: Logo, Brand & Hamburger */}
           <div className="flex items-center gap-3">
-            <img src="/ic-mark.svg" alt="Kluvs" className="h-8 w-8" />
-            <h1 className="text-section-heading text-[var(--color-text-primary)]">
-              Kluvs
-            </h1>
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/ic-mark.svg" alt="Kluvs" className="h-8 w-8" />
+              <h1 className="text-section-heading text-[var(--color-text-primary)]">
+                Kluvs
+              </h1>
+            </Link>
             {onMenuToggle && (
               <button
                 onClick={onMenuToggle}
@@ -43,23 +41,8 @@ export default function TopNavbar({ servers, selectedServer, onServerChange, onM
             )}
           </div>
 
-          {/* Right: Server selector, Theme toggle, User */}
+          {/* Right: Theme toggle, User */}
           <div className="flex items-center gap-3">
-            {/* Server Selector (admin only, multiple servers) */}
-            {servers.length > 1 && isAdmin && (
-              <select
-                value={selectedServer}
-                onChange={(e) => onServerChange(e.target.value)}
-                className="bg-[var(--color-input-bg)] text-[var(--color-text-primary)] px-3 py-1.5 rounded-input text-sm border border-[var(--color-input-border)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary cursor-pointer"
-              >
-                {servers.map(server => (
-                  <option key={server.id} value={server.id}>
-                    {server.name}
-                  </option>
-                ))}
-              </select>
-            )}
-
             <ThemeToggle />
 
             {/* User Menu */}
@@ -87,11 +70,6 @@ export default function TopNavbar({ servers, selectedServer, onServerChange, onM
                 <span className="hidden sm:inline text-[var(--color-text-primary)] font-medium">
                   {member?.name || 'User'}
                 </span>
-                {isAdmin && (
-                  <span className="hidden sm:inline px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium">
-                    Admin
-                  </span>
-                )}
               </button>
 
               {/* Dropdown Menu */}

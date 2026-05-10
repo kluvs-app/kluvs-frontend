@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import TopNavbar from '../../../components/layout/TopNavbar'
-import { mockServer, mockServer2 } from '../../utils/mocks'
 
 const mockRefreshMemberData = vi.fn()
 
@@ -32,9 +32,6 @@ vi.mock('../../../components/modals/EditProfileModal', () => ({
 
 describe('TopNavbar', () => {
   const defaultProps = {
-    servers: [mockServer],
-    selectedServer: mockServer.id,
-    onServerChange: vi.fn(),
     isAdmin: true,
   }
 
@@ -44,70 +41,33 @@ describe('TopNavbar', () => {
 
   describe('Rendering', () => {
     it('should display Kluvs brand name', () => {
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       expect(screen.getByText('Kluvs')).toBeInTheDocument()
     })
 
     it('should display user name', () => {
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       expect(screen.getByText('Test User')).toBeInTheDocument()
     })
 
-    it('should display admin badge', () => {
-      render(<TopNavbar {...defaultProps} />)
-
-      expect(screen.getByText('Admin')).toBeInTheDocument()
-    })
-
     it('should render ThemeToggle', () => {
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       expect(screen.getByTestId('theme-toggle')).toBeInTheDocument()
     })
   })
 
-  describe('Server Selector', () => {
-    it('should show server selector when multiple servers exist and user is admin', () => {
-      render(<TopNavbar {...defaultProps} servers={[mockServer, mockServer2]} />)
-
-      expect(screen.getByRole('combobox')).toBeInTheDocument()
-    })
-
-    it('should hide server selector when only one server', () => {
-      render(<TopNavbar {...defaultProps} servers={[mockServer]} />)
-
-      expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
-    })
-
-    it('should call onServerChange when selection changes', async () => {
-      const user = userEvent.setup()
-      const onServerChange = vi.fn()
-      render(<TopNavbar {...defaultProps} servers={[mockServer, mockServer2]} onServerChange={onServerChange} />)
-
-      const selector = screen.getByRole('combobox')
-      await user.selectOptions(selector, mockServer2.id)
-
-      expect(onServerChange).toHaveBeenCalledWith(mockServer2.id)
-    })
-
-    it('should hide server selector when user is not admin even with multiple servers', () => {
-      render(<TopNavbar {...defaultProps} servers={[mockServer, mockServer2]} isAdmin={false} />)
-
-      expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
-    })
-  })
-
   describe('Hamburger Menu', () => {
     it('should show hamburger when onMenuToggle is provided', () => {
-      render(<TopNavbar {...defaultProps} onMenuToggle={vi.fn()} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} onMenuToggle={vi.fn()} /></MemoryRouter>)
 
       expect(screen.getByLabelText('Open navigation menu')).toBeInTheDocument()
     })
 
     it('should not show hamburger when onMenuToggle is not provided', () => {
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       expect(screen.queryByLabelText('Open navigation menu')).not.toBeInTheDocument()
     })
@@ -115,7 +75,7 @@ describe('TopNavbar', () => {
     it('should call onMenuToggle when hamburger is clicked', async () => {
       const onMenuToggle = vi.fn()
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} onMenuToggle={onMenuToggle} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} onMenuToggle={onMenuToggle} /></MemoryRouter>)
 
       await user.click(screen.getByLabelText('Open navigation menu'))
 
@@ -125,7 +85,7 @@ describe('TopNavbar', () => {
 
   describe('User Menu', () => {
     it('should have user menu button with aria attributes', () => {
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       const menuButton = screen.getByLabelText('User menu')
       expect(menuButton).toHaveAttribute('aria-haspopup', 'true')
@@ -134,7 +94,7 @@ describe('TopNavbar', () => {
 
     it('should open user menu on click', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       await user.click(screen.getByLabelText('User menu'))
 
@@ -145,7 +105,7 @@ describe('TopNavbar', () => {
 
     it('should set aria-expanded to true when menu is open', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       await user.click(screen.getByLabelText('User menu'))
 
@@ -154,7 +114,7 @@ describe('TopNavbar', () => {
 
     it('should close menu when clicking backdrop', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       // Open menu
       await user.click(screen.getByLabelText('User menu'))
@@ -169,7 +129,7 @@ describe('TopNavbar', () => {
 
     it('should close menu after clicking Edit Profile', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       await user.click(screen.getByLabelText('User menu'))
       expect(screen.getByRole('menu')).toBeInTheDocument()
@@ -182,7 +142,7 @@ describe('TopNavbar', () => {
 
     it('should open Edit Profile modal from menu', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       await user.click(screen.getByLabelText('User menu'))
       await user.click(screen.getByRole('menuitem', { name: 'Edit Profile' }))
@@ -192,7 +152,7 @@ describe('TopNavbar', () => {
 
     it('should close menu after clicking Sign Out', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       await user.click(screen.getByLabelText('User menu'))
       expect(screen.getByRole('menu')).toBeInTheDocument()
@@ -205,7 +165,7 @@ describe('TopNavbar', () => {
 
     it('should open Sign Out modal from menu', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       await user.click(screen.getByLabelText('User menu'))
       await user.click(screen.getByRole('menuitem', { name: 'Sign Out' }))
@@ -215,7 +175,7 @@ describe('TopNavbar', () => {
 
     it('should call refreshMemberData when EditProfileModal calls onProfileUpdated', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       await user.click(screen.getByLabelText('User menu'))
       await user.click(screen.getByRole('menuitem', { name: 'Edit Profile' }))
@@ -230,7 +190,7 @@ describe('TopNavbar', () => {
 
     it('should toggle menu when clicking same button twice', async () => {
       const user = userEvent.setup()
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       const menuButton = screen.getByLabelText('User menu')
 
@@ -246,7 +206,7 @@ describe('TopNavbar', () => {
 
   describe('User Initial Avatar', () => {
     it('should display first letter of user name', () => {
-      render(<TopNavbar {...defaultProps} />)
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       expect(screen.getByText('T')).toBeInTheDocument() // First letter of "Test User"
     })

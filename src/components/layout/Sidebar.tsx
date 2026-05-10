@@ -1,9 +1,10 @@
+import { useAuth } from '../../contexts/AuthContext'
 import type { Server, Club } from '../../types'
 
 interface SidebarProps {
-  selectedServerData: Server | undefined
+  servers: Server[]
   selectedClub: Club | null
-  onClubSelect: (clubId: string) => void
+  onClubSelect: (clubId: string, serverId: string) => void
   onAddClub: () => void
   onDeleteClub: (club: { id: string; name: string }) => void
   isAdmin: boolean
@@ -12,7 +13,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({
-  selectedServerData,
+  servers,
   selectedClub,
   onClubSelect,
   onAddClub,
@@ -21,6 +22,17 @@ export default function Sidebar({
   mobileOpen,
   onMobileClose,
 }: SidebarProps) {
+  const { member } = useAuth()
+  const memberClubIds = new Set(member?.clubs.map(c => c.id) ?? [])
+
+  const allClubs = servers.flatMap(server =>
+    server.clubs
+      .filter(club => memberClubIds.has(club.id))
+      .map(club => {
+        const memberClub = member?.clubs.find(c => c.id === club.id)
+        return { ...club, serverId: server.id, serverName: server.name, role: memberClub?.role }
+      })
+  )
   const sidebarContent = (
     <>
       {/* Clubs Header */}
@@ -29,7 +41,7 @@ export default function Sidebar({
           <div>
             <h2 className="text-card-heading text-[var(--color-text-primary)]">Clubs</h2>
             <p className="text-helper text-[var(--color-text-secondary)]">
-              {selectedServerData?.clubs.length || 0} active clubs
+              {allClubs.length} active club{allClubs.length !== 1 ? 's' : ''}
             </p>
           </div>
           {isAdmin && (
@@ -45,13 +57,13 @@ export default function Sidebar({
 
       {/* Club List */}
       <div>
-        {selectedServerData?.clubs.length === 0 ? (
+        {allClubs.length === 0 ? (
           <div className="p-6 text-center">
             <p className="text-[var(--color-text-secondary)] font-medium">No clubs found</p>
             <p className="text-[var(--color-text-secondary)] text-helper mt-1">Create your first book club!</p>
           </div>
         ) : (
-          selectedServerData?.clubs.map((club) => (
+          allClubs.map((club) => (
             <div
               key={club.id}
               className={`relative group cursor-pointer transition-colors border-b border-[var(--color-divider)] last:border-b-0 ${
@@ -82,14 +94,11 @@ export default function Sidebar({
                 role="button"
                 tabIndex={0}
                 aria-label={`Select ${club.name}`}
-                onClick={() => {
-                  console.log(`Club selected: ${club.name} (${club.id})`)
-                  onClubSelect(club.id)
-                }}
+                onClick={() => onClubSelect(club.id, club.serverId)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
-                    onClubSelect(club.id)
+                    onClubSelect(club.id, club.serverId)
                   }
                 }}
                 className="p-4"
@@ -97,10 +106,17 @@ export default function Sidebar({
                 <h3 className="font-semibold text-[var(--color-text-primary)] truncate">
                   {club.name}
                 </h3>
-                {club.discord_channel && (
-                  <p className="text-helper text-[var(--color-text-secondary)] mt-0.5">
-                    #{club.discord_channel}
-                  </p>
+                <p className="text-helper text-[var(--color-text-secondary)] mt-0.5 truncate">
+                  {club.serverName}
+                </p>
+                {club.role && club.role !== 'member' && (
+                  <span className={`inline-block mt-1 px-1.5 py-0.5 text-xs font-medium rounded-full capitalize ${
+                    club.role === 'owner'
+                      ? 'bg-[#F0BF05]/15 text-[#F0BF05]'
+                      : 'bg-tertiary/10 text-tertiary'
+                  }`}>
+                    {club.role}
+                  </span>
                 )}
               </div>
             </div>
