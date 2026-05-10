@@ -31,9 +31,7 @@ vi.mock('../../../components/modals/EditProfileModal', () => ({
 }))
 
 describe('TopNavbar', () => {
-  const defaultProps = {
-    isAdmin: true,
-  }
+  const defaultProps = {}
 
   beforeEach(() => {
     vi.clearAllMocks()
