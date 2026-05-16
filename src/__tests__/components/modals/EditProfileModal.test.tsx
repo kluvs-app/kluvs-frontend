@@ -70,10 +70,18 @@ describe('EditProfileModal', () => {
       expect(screen.getByDisplayValue('Admin User')).toBeInTheDocument()
     })
 
-    it('should pre-populate discord_id from currentMember', () => {
+    it('should show Discord Connected status with ID when discord_id is set', () => {
       render(<EditProfileModal {...defaultProps} />)
 
-      expect(screen.getByDisplayValue('111222333444555666')).toBeInTheDocument()
+      expect(screen.getByText('Connected')).toBeInTheDocument()
+      expect(screen.getByText('111222333444555666')).toBeInTheDocument()
+    })
+
+    it('should show Discord not connected message when discord_id is null', () => {
+      const memberWithoutDiscord = { ...defaultProps.currentMember, discord_id: null }
+      render(<EditProfileModal {...defaultProps} currentMember={memberWithoutDiscord} />)
+
+      expect(screen.getByText(/not connected — use "connect to discord"/i)).toBeInTheDocument()
     })
 
     it('should show avatar when member has avatar_path', () => {
@@ -139,37 +147,6 @@ describe('EditProfileModal', () => {
       expect(screen.getByText('Save Changes').closest('button')).toBeDisabled()
     })
 
-    it('should call onError when discord_id is invalid format', async () => {
-      const user = userEvent.setup()
-      render(<EditProfileModal {...defaultProps} />)
-
-      const discordInput = screen.getByDisplayValue('111222333444555666')
-      await user.clear(discordInput)
-      await user.type(discordInput, 'not-a-snowflake')
-
-      await user.click(screen.getByText('Save Changes'))
-
-      await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Discord ID must be a 17–19 digit number')
-      })
-      expect(mockInvoke).not.toHaveBeenCalled()
-    })
-
-    it('should call onError when discord_id is too short', async () => {
-      const user = userEvent.setup()
-      render(<EditProfileModal {...defaultProps} />)
-
-      const discordInput = screen.getByDisplayValue('111222333444555666')
-      await user.clear(discordInput)
-      await user.type(discordInput, '12345')
-
-      await user.click(screen.getByText('Save Changes'))
-
-      await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Discord ID must be a 17–19 digit number')
-      })
-      expect(mockInvoke).not.toHaveBeenCalled()
-    })
   })
 
   describe('Form Submission', () => {
@@ -191,37 +168,12 @@ describe('EditProfileModal', () => {
             method: 'PUT',
             body: expect.objectContaining({
               name: 'New Name',
-              discord_id: '111222333444555666',
             }),
           })
         )
       })
     })
 
-    it('should send discord_id as null when field is cleared', async () => {
-      const user = userEvent.setup()
-      render(<EditProfileModal {...defaultProps} />)
-
-      const discordInput = screen.getByPlaceholderText('e.g., 123456789012345678')
-      await user.clear(discordInput)
-
-      // Change name to enable Save (name must differ from current)
-      const nameInput = screen.getByDisplayValue('Admin User')
-      await user.clear(nameInput)
-      await user.type(nameInput, 'New Name')
-
-      await user.click(screen.getByText('Save Changes'))
-
-      await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalledWith(
-          'member',
-          expect.objectContaining({
-            method: 'PUT',
-            body: expect.objectContaining({ discord_id: null }),
-          })
-        )
-      })
-    })
 
     it('should call onProfileUpdated on success', async () => {
       const user = userEvent.setup()

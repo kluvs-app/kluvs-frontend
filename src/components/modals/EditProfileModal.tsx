@@ -21,24 +21,17 @@ export default function EditProfileModal({
   const { member } = useAuth()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
-  const [discordId, setDiscordId] = useState<string>('')
 
   // Pre-populate form when modal opens
   useEffect(() => {
     if (isOpen && currentMember) {
       setName(currentMember.name)
-      setDiscordId(currentMember.discord_id ?? '')
     }
   }, [isOpen, currentMember])
 
   const handleSubmit = async () => {
     if (!name.trim()) {
       onError('Name is required')
-      return
-    }
-
-    if (discordId.trim() && !/^\d{17,19}$/.test(discordId.trim())) {
-      onError('Discord ID must be a 17–19 digit number')
       return
     }
 
@@ -54,8 +47,7 @@ export default function EditProfileModal({
       const requestBody = {
         id: member.id,
         name: name.trim(),
-        books_read: member.books_read,
-        discord_id: discordId.trim() || null
+        books_read: member.books_read
       }
 
       console.log('Updating member with:', requestBody)
@@ -86,7 +78,6 @@ export default function EditProfileModal({
 
   const handleClose = () => {
     setName(currentMember?.name || '')
-    setDiscordId(currentMember?.discord_id ?? '')
     onError('') // Clear errors when closing
     onClose()
   }
@@ -101,7 +92,7 @@ export default function EditProfileModal({
 
   if (!isOpen || !member) return null
 
-  const hasChanges = name.trim() !== member.name || (discordId.trim() || null) !== (member.discord_id ?? null)
+  const hasChanges = name.trim() !== member.name
 
   return (
     <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title-edit-profile">
@@ -149,23 +140,24 @@ export default function EditProfileModal({
             </p>
           </div>
 
-          {/* Discord ID Field */}
+          {/* Discord Connection Status (read-only) */}
           <div>
             <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Discord ID
+              Discord
             </label>
-            <input
-              type="text"
-              value={discordId}
-              onChange={(e) => setDiscordId(e.target.value)}
-              placeholder="e.g., 123456789012345678"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={19}
-            />
-            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
-              Your Discord snowflake ID — leave blank to clear
-            </p>
+            {currentMember?.discord_id ? (
+              <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input">
+                <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
+                <div className="flex-1">
+                  <span className="text-secondary font-medium text-sm">Connected</span>
+                  <p className="text-[var(--color-text-secondary)] text-xs mt-0.5 font-mono">{currentMember.discord_id}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="px-4 py-3 bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input">
+                <span className="text-[var(--color-text-secondary)] text-sm">Not connected — use "Connect to Discord" from the menu</span>
+              </div>
+            )}
           </div>
 
           {/* Avatar Display */}
