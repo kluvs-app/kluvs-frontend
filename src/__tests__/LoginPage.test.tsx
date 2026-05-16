@@ -8,11 +8,15 @@ import { ThemeProvider } from '../contexts/ThemeContext'
 // Mock useAuth
 const mockSignInWithDiscord = vi.fn()
 const mockSignInWithGoogle = vi.fn()
+const mockSignInWithEmail = vi.fn()
+const mockSignUpWithEmail = vi.fn()
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
     loading: false,
     signInWithDiscord: mockSignInWithDiscord,
     signInWithGoogle: mockSignInWithGoogle,
+    signInWithEmail: mockSignInWithEmail,
+    signUpWithEmail: mockSignUpWithEmail,
   }),
 }))
 
@@ -31,6 +35,8 @@ describe('LoginPage', () => {
     vi.clearAllMocks()
     mockSignInWithDiscord.mockResolvedValue(undefined)
     mockSignInWithGoogle.mockResolvedValue(undefined)
+    mockSignInWithEmail.mockResolvedValue(undefined)
+    mockSignUpWithEmail.mockResolvedValue({ needsConfirmation: false })
   })
 
   describe('Rendering', () => {
@@ -150,6 +156,214 @@ describe('LoginPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Continue with Google')).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('Email Sign In', () => {
+    it('should render email and password input fields', () => {
+      renderLoginPage()
+
+      expect(screen.getByPlaceholderText('Email address')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Password')).toBeInTheDocument()
+    })
+
+    it('should render Sign In button by default', () => {
+      renderLoginPage()
+
+      expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument()
+    })
+
+    it('should call signInWithEmail on form submit', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const emailInput = screen.getByPlaceholderText('Email address')
+      const passwordInput = screen.getByPlaceholderText('Password')
+      const signInButton = screen.getByRole('button', { name: 'Sign In' })
+
+      await user.type(emailInput, 'user@example.com')
+      await user.type(passwordInput, 'password123')
+      await user.click(signInButton)
+
+      expect(mockSignInWithEmail).toHaveBeenCalledWith('user@example.com', 'password123')
+    })
+
+    it('should show loading state during email sign in', async () => {
+      mockSignInWithEmail.mockImplementation(() => new Promise(() => {}))
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const emailInput = screen.getByPlaceholderText('Email address')
+      const passwordInput = screen.getByPlaceholderText('Password')
+      const signInButton = screen.getByRole('button', { name: 'Sign In' })
+
+      await user.type(emailInput, 'user@example.com')
+      await user.type(passwordInput, 'password123')
+      await user.click(signInButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Signing in...')).toBeInTheDocument()
+      })
+    })
+
+    it('should disable form fields during email sign in', async () => {
+      mockSignInWithEmail.mockImplementation(() => new Promise(() => {}))
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const emailInput = screen.getByPlaceholderText('Email address') as HTMLInputElement
+      const passwordInput = screen.getByPlaceholderText('Password') as HTMLInputElement
+      const signInButton = screen.getByRole('button', { name: 'Sign In' }) as HTMLButtonElement
+
+      await user.type(emailInput, 'user@example.com')
+      await user.type(passwordInput, 'password123')
+      await user.click(signInButton)
+
+      await waitFor(() => {
+        expect(emailInput.disabled).toBe(true)
+        expect(passwordInput.disabled).toBe(true)
+        expect(signInButton.disabled).toBe(true)
+      })
+    })
+
+    it('should display error message on sign in failure', async () => {
+      mockSignInWithEmail.mockRejectedValue(new Error('Invalid credentials'))
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const emailInput = screen.getByPlaceholderText('Email address')
+      const passwordInput = screen.getByPlaceholderText('Password')
+      const signInButton = screen.getByRole('button', { name: 'Sign In' })
+
+      await user.type(emailInput, 'user@example.com')
+      await user.type(passwordInput, 'wrongpassword')
+      await user.click(signInButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
+      })
+    })
+
+    it('should clear error when retrying', async () => {
+      mockSignInWithEmail.mockRejectedValueOnce(new Error('Invalid credentials'))
+      mockSignInWithEmail.mockResolvedValueOnce(undefined)
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const emailInput = screen.getByPlaceholderText('Email address')
+      const passwordInput = screen.getByPlaceholderText('Password')
+      const signInButton = screen.getByRole('button', { name: 'Sign In' })
+
+      // First attempt with error
+      await user.type(emailInput, 'user@example.com')
+      await user.type(passwordInput, 'wrongpassword')
+      await user.click(signInButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
+      })
+
+      // Second attempt - error should disappear
+      await user.clear(passwordInput)
+      await user.type(passwordInput, 'correctpassword')
+      await user.click(signInButton)
+
+      await waitFor(() => {
+        expect(screen.queryByText('Invalid credentials')).not.toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('Email Sign Up', () => {
+    it('should toggle to sign up mode when clicking toggle link', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const toggleLink = screen.getByText("Don't have an account? Sign up")
+      await user.click(toggleLink)
+
+      expect(screen.getByRole('button', { name: 'Create Account' })).toBeInTheDocument()
+    })
+
+    it('should toggle back to sign in mode', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const signUpToggle = screen.getByText("Don't have an account? Sign up")
+      await user.click(signUpToggle)
+
+      const signInToggle = screen.getByText('Already have an account? Sign in')
+      await user.click(signInToggle)
+
+      expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument()
+    })
+
+    it('should call signUpWithEmail on sign up submit', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const signUpToggle = screen.getByText("Don't have an account? Sign up")
+      await user.click(signUpToggle)
+
+      const emailInput = screen.getByPlaceholderText('Email address')
+      const passwordInput = screen.getByPlaceholderText('Password')
+      const createButton = screen.getByRole('button', { name: 'Create Account' })
+
+      await user.type(emailInput, 'newuser@example.com')
+      await user.type(passwordInput, 'password123')
+      await user.click(createButton)
+
+      expect(mockSignUpWithEmail).toHaveBeenCalledWith('newuser@example.com', 'password123')
+    })
+
+    it('should show confirmation message when needsConfirmation is true', async () => {
+      mockSignUpWithEmail.mockResolvedValueOnce({ needsConfirmation: true })
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const signUpToggle = screen.getByText("Don't have an account? Sign up")
+      await user.click(signUpToggle)
+
+      const emailInput = screen.getByPlaceholderText('Email address')
+      const passwordInput = screen.getByPlaceholderText('Password')
+      const createButton = screen.getByRole('button', { name: 'Create Account' })
+
+      await user.type(emailInput, 'user@example.com')
+      await user.type(passwordInput, 'password123')
+      await user.click(createButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Check your inbox')).toBeInTheDocument()
+        expect(screen.getByText(/We sent a confirmation link to/)).toBeInTheDocument()
+      })
+    })
+
+    it('should allow trying another email after confirmation', async () => {
+      mockSignUpWithEmail.mockResolvedValueOnce({ needsConfirmation: true })
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      const signUpToggle = screen.getByText("Don't have an account? Sign up")
+      await user.click(signUpToggle)
+
+      const emailInput = screen.getByPlaceholderText('Email address')
+      const passwordInput = screen.getByPlaceholderText('Password')
+      const createButton = screen.getByRole('button', { name: 'Create Account' })
+
+      await user.type(emailInput, 'user@example.com')
+      await user.type(passwordInput, 'password123')
+      await user.click(createButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Check your inbox')).toBeInTheDocument()
+      })
+
+      const tryAnotherButton = screen.getByRole('button', { name: 'Try another email' })
+      await user.click(tryAnotherButton)
+
+      // Form should reappear
+      expect(screen.getByPlaceholderText('Email address')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('Password')).toBeInTheDocument()
     })
   })
 })

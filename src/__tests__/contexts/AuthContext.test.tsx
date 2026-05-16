@@ -10,6 +10,8 @@ vi.mock('../../supabase', () => {
     auth: {
       getSession: vi.fn(),
       signInWithOAuth: vi.fn(),
+      signInWithPassword: vi.fn(),
+      signUp: vi.fn(),
       signOut: vi.fn(),
       onAuthStateChange: vi.fn(),
     },
@@ -40,6 +42,14 @@ describe('AuthContext', () => {
     })
     mockSupabase.auth.signInWithOAuth.mockResolvedValue({
       data: { provider: 'discord', url: 'https://discord.com/oauth' },
+      error: null,
+    })
+    mockSupabase.auth.signInWithPassword.mockResolvedValue({
+      data: { user: createMockUser(), session: {} },
+      error: null,
+    })
+    mockSupabase.auth.signUp.mockResolvedValue({
+      data: { user: createMockUser(), session: {} },
       error: null,
     })
     mockSupabase.auth.signOut.mockResolvedValue({ error: null })
@@ -79,6 +89,8 @@ describe('AuthContext', () => {
       expect(result.current).toHaveProperty('getRoleForClub')
       expect(result.current).toHaveProperty('signInWithDiscord')
       expect(result.current).toHaveProperty('signInWithGoogle')
+      expect(result.current).toHaveProperty('signInWithEmail')
+      expect(result.current).toHaveProperty('signUpWithEmail')
       expect(result.current).toHaveProperty('signOut')
       expect(result.current).toHaveProperty('refreshMemberData')
     })
@@ -296,6 +308,120 @@ describe('AuthContext', () => {
           redirectTo: window.location.origin + '/app',
         },
       })
+    })
+  })
+
+  describe('signInWithEmail', () => {
+    it('should call Supabase signInWithPassword with email and password', async () => {
+      const { result } = renderHook(() => useAuth(), {
+        wrapper: AuthProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await result.current.signInWithEmail('user@example.com', 'password123')
+
+      expect(mockSupabase.auth.signInWithPassword).toHaveBeenCalledWith({
+        email: 'user@example.com',
+        password: 'password123',
+      })
+    })
+
+    it('should throw error on sign in failure', async () => {
+      mockSupabase.auth.signInWithPassword.mockResolvedValueOnce({
+        data: null,
+        error: new Error('Invalid credentials'),
+      })
+
+      const { result } = renderHook(() => useAuth(), {
+        wrapper: AuthProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await expect(
+        result.current.signInWithEmail('user@example.com', 'wrongpassword')
+      ).rejects.toThrow('Invalid credentials')
+    })
+  })
+
+  describe('signUpWithEmail', () => {
+    it('should call Supabase signUp with email and password', async () => {
+      const { result } = renderHook(() => useAuth(), {
+        wrapper: AuthProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await result.current.signUpWithEmail('newuser@example.com', 'password123')
+
+      expect(mockSupabase.auth.signUp).toHaveBeenCalledWith({
+        email: 'newuser@example.com',
+        password: 'password123',
+      })
+    })
+
+    it('should return needsConfirmation true when session is null', async () => {
+      mockSupabase.auth.signUp.mockResolvedValueOnce({
+        data: { user: createMockUser(), session: null },
+        error: null,
+      })
+
+      const { result } = renderHook(() => useAuth(), {
+        wrapper: AuthProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      const response = await result.current.signUpWithEmail('user@example.com', 'password123')
+
+      expect(response.needsConfirmation).toBe(true)
+    })
+
+    it('should return needsConfirmation false when session exists', async () => {
+      mockSupabase.auth.signUp.mockResolvedValueOnce({
+        data: { user: createMockUser(), session: { access_token: 'token' } },
+        error: null,
+      })
+
+      const { result } = renderHook(() => useAuth(), {
+        wrapper: AuthProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      const response = await result.current.signUpWithEmail('user@example.com', 'password123')
+
+      expect(response.needsConfirmation).toBe(false)
+    })
+
+    it('should throw error on sign up failure', async () => {
+      mockSupabase.auth.signUp.mockResolvedValueOnce({
+        data: null,
+        error: new Error('Email already exists'),
+      })
+
+      const { result } = renderHook(() => useAuth(), {
+        wrapper: AuthProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await expect(
+        result.current.signUpWithEmail('existing@example.com', 'password123')
+      ).rejects.toThrow('Email already exists')
     })
   })
 
