@@ -59,14 +59,9 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
       <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-6 w-full max-w-md">
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-discord/10 rounded-lg flex items-center justify-center">
-              <img src="/ic-discord.svg" alt="" className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 id="modal-title-discord-link" className="text-card-heading text-[var(--color-text-primary)]">Connect Discord</h2>
-              <p className="text-helper text-[var(--color-text-secondary)]">Link your Discord account</p>
-            </div>
+          <div>
+            <h2 id="modal-title-discord-link" className="text-card-heading text-[var(--color-text-primary)]">Connect Discord</h2>
+            <p className="text-helper text-[var(--color-text-secondary)]">Link your Discord account</p>
           </div>
           <button
             onClick={handleClose}

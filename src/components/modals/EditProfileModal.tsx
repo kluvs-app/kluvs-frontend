@@ -99,14 +99,9 @@ export default function EditProfileModal({
       <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-6 w-full max-w-md">
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-            </div>
-            <div>
-              <h2 id="modal-title-edit-profile" className="text-card-heading text-[var(--color-text-primary)]">Edit Profile</h2>
-              <p className="text-helper text-[var(--color-text-secondary)]">Update your profile details</p>
-            </div>
+          <div>
+            <h2 id="modal-title-edit-profile" className="text-card-heading text-[var(--color-text-primary)]">Edit Profile</h2>
+            <p className="text-helper text-[var(--color-text-secondary)]">Update your profile details</p>
           </div>
           <button
             onClick={handleClose}
@@ -140,26 +135,6 @@ export default function EditProfileModal({
             </p>
           </div>
 
-          {/* Discord Connection Status (read-only) */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Discord
-            </label>
-            {currentMember?.discord_id ? (
-              <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input">
-                <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
-                <div className="flex-1">
-                  <span className="text-secondary font-medium text-sm">Connected</span>
-                  <p className="text-[var(--color-text-secondary)] text-xs mt-0.5 font-mono">{currentMember.discord_id}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="px-4 py-3 bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input">
-                <span className="text-[var(--color-text-secondary)] text-sm">Not connected — use "Connect to Discord" from the menu</span>
-              </div>
-            )}
-          </div>
-
           {/* Avatar Display */}
           {currentMember?.avatar_path && (
             <div>
@@ -173,6 +148,22 @@ export default function EditProfileModal({
                   className="w-16 h-16 rounded-full object-cover border border-[var(--color-divider)]"
                 />
                 <p className="text-[var(--color-text-secondary)] text-xs">Avatar is managed externally</p>
+              </div>
+            </div>
+          )}
+
+          {/* Discord Connection Status (read-only, only shown when connected) */}
+          {currentMember?.discord_id && (
+            <div>
+              <label className="block text-[var(--color-text-primary)] font-medium mb-2">
+                Discord
+              </label>
+              <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input">
+                <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
+                <div className="flex-1">
+                  <span className="text-secondary font-medium text-sm">Connected</span>
+                  <p className="text-[var(--color-text-secondary)] text-xs mt-0.5 font-mono">{currentMember.discord_id}</p>
+                </div>
               </div>
             </div>
           )}
