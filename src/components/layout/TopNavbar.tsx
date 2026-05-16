@@ -5,6 +5,7 @@ import { getAvatarUrl } from '../../supabase'
 import ThemeToggle from '../ThemeToggle'
 import SignOutModal from '../modals/SignOutModal'
 import EditProfileModal from '../modals/EditProfileModal'
+import DiscordLinkModal from '../modals/DiscordLinkModal'
 
 interface TopNavbarProps {
   onMenuToggle?: () => void
@@ -15,6 +16,7 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [showDiscordLinkModal, setShowDiscordLinkModal] = useState(false)
 
   return (
     <>
@@ -77,6 +79,19 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} aria-hidden="true" />
                   <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-card shadow-lg py-1" role="menu">
+                    {!member?.discord_id && (
+                      <button
+                        role="menuitem"
+                        onClick={() => {
+                          setShowDiscordLinkModal(true)
+                          setShowUserMenu(false)
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-discord hover:bg-[var(--color-bg-elevated)] transition-colors flex items-center gap-2"
+                      >
+                        <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
+                        Connect to Discord
+                      </button>
+                    )}
                     <button
                       role="menuitem"
                       onClick={() => {
@@ -120,6 +135,10 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
         }}
         onError={(error) => console.error('Profile update error:', error)}
         currentMember={member}
+      />
+      <DiscordLinkModal
+        isOpen={showDiscordLinkModal}
+        onClose={() => setShowDiscordLinkModal(false)}
       />
     </>
   )
