@@ -3,26 +3,14 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import DiscordLinkModal from '../../../components/modals/DiscordLinkModal'
 
-const mockInvoke = vi.fn()
 const mockLinkIdentity = vi.fn()
-const mockRefreshMemberData = vi.fn()
 
 vi.mock('../../../supabase', () => ({
   supabase: {
     auth: {
       linkIdentity: (...args: any[]) => mockLinkIdentity(...args),
     },
-    functions: {
-      invoke: (...args: any[]) => mockInvoke(...args),
-    },
   },
-}))
-
-vi.mock('../../../contexts/AuthContext', () => ({
-  useAuth: () => ({
-    member: { id: 1, name: 'Test User', discord_id: null, books_read: 5, clubs: [] },
-    refreshMemberData: mockRefreshMemberData,
-  }),
 }))
 
 describe('DiscordLinkModal', () => {
@@ -34,8 +22,6 @@ describe('DiscordLinkModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockLinkIdentity.mockResolvedValue({ error: null })
-    mockInvoke.mockResolvedValue({ error: null })
-    mockRefreshMemberData.mockResolvedValue(undefined)
   })
 
   describe('Rendering', () => {
@@ -81,28 +67,16 @@ describe('DiscordLinkModal', () => {
   })
 
   describe('OAuth Flow', () => {
-    it('should call linkIdentity and link-discord function on button click', async () => {
+    it('should call linkIdentity with discord provider and redirectTo on button click', async () => {
       const user = userEvent.setup()
       render(<DiscordLinkModal {...defaultProps} />)
 
       const button = screen.getByRole('button', { name: /sign in with discord/i })
       await user.click(button)
 
-      expect(mockLinkIdentity).toHaveBeenCalledWith({ provider: 'discord' })
-      expect(mockInvoke).toHaveBeenCalledWith('link-discord', { method: 'POST' })
-    })
-
-    it('should call refreshMemberData and onClose on successful linking', async () => {
-      const user = userEvent.setup()
-      const onClose = vi.fn()
-      render(<DiscordLinkModal {...defaultProps} onClose={onClose} />)
-
-      const button = screen.getByRole('button', { name: /sign in with discord/i })
-      await user.click(button)
-
-      await waitFor(() => {
-        expect(mockRefreshMemberData).toHaveBeenCalled()
-        expect(onClose).toHaveBeenCalled()
+      expect(mockLinkIdentity).toHaveBeenCalledWith({
+        provider: 'discord',
+        options: { redirectTo: `${window.location.origin}/app` }
       })
     })
 
@@ -142,19 +116,6 @@ describe('DiscordLinkModal', () => {
 
       await waitFor(() => {
         expect(screen.getByText('OAuth failed')).toBeInTheDocument()
-      })
-    })
-
-    it('should show error message on link-discord function failure', async () => {
-      const user = userEvent.setup()
-      mockInvoke.mockResolvedValue({ error: new Error('Function failed') })
-
-      render(<DiscordLinkModal {...defaultProps} />)
-      const button = screen.getByRole('button', { name: /sign in with discord/i })
-      await user.click(button)
-
-      await waitFor(() => {
-        expect(screen.getByText('Function failed')).toBeInTheDocument()
       })
     })
 

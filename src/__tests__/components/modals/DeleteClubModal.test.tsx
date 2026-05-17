@@ -12,6 +12,7 @@ vi.mock('../../../supabase', () => ({
       invoke: (...args: any[]) => mockInvoke(...args),
     },
   },
+  invokeFunction: (...args: any[]) => mockInvoke(...args),
 }))
 
 describe('DeleteClubModal', () => {

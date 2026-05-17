@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { invokeFunction } from '../../supabase'
 import type { Club } from '../../types'
 
 interface NewSessionModalProps {
@@ -72,7 +72,7 @@ export default function NewSessionModal({
 
       console.log('Creating new session:', requestBody)
 
-      const { data, error } = await supabase.functions.invoke('session', {
+      const { data, error } = await invokeFunction('session', {
         method: 'POST',
         body: requestBody
       })
