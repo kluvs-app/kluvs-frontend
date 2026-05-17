@@ -87,7 +87,7 @@ export default function LoginPage() {
           <Link to="/" aria-label="Back to home">
             <img src="/ic-mark.svg" alt="Kluvs" className="h-16 w-16 mx-auto mb-6 hover:opacity-80 transition-opacity" />
           </Link>
-          <h1 className="text-page-heading text-[var(--color-text-primary)] mb-2">
+          <h1 className="text-page-heading font-serif text-[var(--color-text-primary)] mb-2">
             Welcome to your Kluvs
           </h1>
           <p className="text-[var(--color-text-secondary)] text-body-lg">
@@ -204,7 +204,7 @@ export default function LoginPage() {
               <p className="text-center text-[var(--color-text-primary)] font-medium">
                 Check your inbox
               </p>
-              <p className="text-center text-[var(--color-text-secondary)] text-body-sm mt-2">
+              <p className="text-center text-[var(--color-text-secondary)] text-helper mt-2">
                 We sent a confirmation link to <strong>{email}</strong>
               </p>
               <button
@@ -213,7 +213,7 @@ export default function LoginPage() {
                   setEmail('')
                   setPassword('')
                 }}
-                className="w-full mt-4 text-center text-primary hover:opacity-80 font-medium text-body-sm"
+                className="w-full mt-4 text-center text-primary hover:opacity-80 font-medium text-helper"
               >
                 Try another email
               </button>
