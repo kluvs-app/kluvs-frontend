@@ -69,23 +69,36 @@ const userCommands = [
   { name: '/leave', description: 'Leave the book club in this channel' },
   { name: '/book', description: 'Show current book details' },
   { name: '/session', description: 'Show all session details' },
-  { name: '/duedate', description: 'Show the session due date' },
+  { name: '/due_date', description: 'Show the session due date' },
   { name: '/discussions', description: 'View scheduled discussion topics' },
   { name: '/book_summary', description: 'AI-generated book summary' },
+  { name: '/support', description: 'Get help in the community server' },
+  { name: '/donate', description: 'Support the Kluvs project' },
+  { name: '/vote', description: 'Vote for Kluvs on top.gg' },
+  { name: '/bug', description: 'Report a bug to the team' },
+  { name: '/feedback', description: 'Send feedback to the team' },
 ]
 
 const adminCommands = [
-  { name: '!setup', description: 'First-run wizard: register server and create a club' },
-  { name: '!admin_help', description: 'Show the full admin command reference' },
-  { name: '!club_create', description: 'Create a new book club' },
-  { name: '!club_update', description: 'Update club name or channel' },
-  { name: '!club_delete', description: 'Delete the club' },
-  { name: '!session_create', description: 'Create a reading session' },
-  { name: '!session_update', description: 'Update due date or book details' },
-  { name: '!session_delete', description: 'Delete the active session' },
-  { name: '!member_add', description: 'Add a member to the club' },
-  { name: '!member_remove', description: 'Remove a member from the club' },
-  { name: '!member_role', description: 'Set a member\'s role (admin or member)' },
+  { name: '/setup', description: 'First-run wizard: register server and create a club' },
+  { name: '/admin_help', description: 'Show the full admin command reference' },
+  { name: '/server_register', description: 'Register this Discord server' },
+  { name: '/server_update', description: 'Update the server name' },
+  { name: '/server_delete', description: 'Delete server and all data' },
+  { name: '/club_create', description: 'Create a new book club' },
+  { name: '/club_update', description: 'Update club name or channel' },
+  { name: '/club_delete', description: 'Delete the club' },
+  { name: '/member_add', description: 'Add a member to the club' },
+  { name: '/member_remove', description: 'Remove a member from the club' },
+  { name: '/member_role', description: 'Set a member\'s role (admin or member)' },
+  { name: '/session_create', description: 'Create a reading session' },
+  { name: '/session_update', description: 'Update due date or book details' },
+  { name: '/session_delete', description: 'Delete the active session' },
+  { name: '/discussion_add', description: 'Add a discussion and create a Discord event' },
+  { name: '/discussion_update', description: 'Update an existing discussion' },
+  { name: '/discussion_delete', description: 'Delete a discussion' },
+  { name: '/discussion_sync', description: 'Create Discord events for discussions missing one' },
+  { name: '/version', description: 'Show the current bot version' },
 ]
 
 export default function DiscordPage() {
@@ -170,7 +183,7 @@ export default function DiscordPage() {
             Commands
           </h2>
           <p className="text-body text-[var(--color-text-secondary)] text-center mb-12">
-            Slash commands are available to all members. Admin commands (prefix <code className="bg-[var(--color-bg-raised)] px-1.5 py-0.5 rounded text-sm font-mono">!</code>) require the guild owner or club admin role.
+            All commands use Discord's slash command system. Admin commands require the guild owner or club admin role.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
