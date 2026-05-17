@@ -19,6 +19,7 @@ vi.mock('../supabase', () => {
   }
   return {
     supabase: mockClient,
+    invokeFunction: (...args: any[]) => mockClient.functions.invoke(...args),
     getAvatarUrl: (path: string) => `https://example.com/${path}`,
   }
 })

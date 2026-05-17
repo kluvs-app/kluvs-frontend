@@ -21,6 +21,7 @@ vi.mock('../../supabase', () => {
   }
   return {
     supabase: mockClient,
+    invokeFunction: (...args: any[]) => mockClient.functions.invoke(...args),
   }
 })
 
@@ -617,7 +618,7 @@ describe('AuthContext', () => {
   })
 
   describe('Error Handling - Sign Out', () => {
-    it('should handle sign out errors', async () => {
+    it('should clear local state even when sign out returns an error', async () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', {
@@ -636,10 +637,15 @@ describe('AuthContext', () => {
         expect(result.current.user).not.toBeNull()
       })
 
-      await expect(result.current.signOut()).rejects.toThrow('Sign out failed')
+      await result.current.signOut()
+
+      await waitFor(() => {
+        expect(result.current.user).toBeNull()
+        expect(result.current.member).toBeNull()
+      })
     })
 
-    it('should handle unexpected error in sign out', async () => {
+    it('should clear local state even when sign out throws unexpectedly', async () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', {
@@ -656,7 +662,12 @@ describe('AuthContext', () => {
         expect(result.current.user).not.toBeNull()
       })
 
-      await expect(result.current.signOut()).rejects.toThrow('Unexpected error')
+      await result.current.signOut()
+
+      await waitFor(() => {
+        expect(result.current.user).toBeNull()
+        expect(result.current.member).toBeNull()
+      })
     })
   })
 

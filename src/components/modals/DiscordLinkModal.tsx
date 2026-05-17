@@ -16,7 +16,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
       setOauthError('')
 
       // linkIdentity initiates an OAuth redirect — execution stops here.
-      // The link-discord edge function is called in AuthContext on IDENTITY_LINKED.
+      // discord_id is set by a backend trigger on auth.identities INSERT.
       const { error } = await supabase.auth.linkIdentity({
         provider: 'discord',
         options: { redirectTo: `${window.location.origin}/app` }
