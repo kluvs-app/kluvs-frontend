@@ -42,13 +42,11 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
       const { data, error } = await invokeFunction<Book[] | { books?: Book[] }>(`book?q=${encodeURIComponent(q.trim())}`, {
         method: 'GET',
       })
-      console.log('[BookSearchInput] search response:', { data, error })
       if (error) throw error
       const books = Array.isArray(data) ? data : (data as { books?: Book[] })?.books ?? []
       setResults(books)
       setShowDropdown(true)
-    } catch (err) {
-      console.error('[BookSearchInput] search error:', err)
+    } catch {
       setSearchError('Search failed. Please try again.')
       setResults([])
     } finally {
@@ -83,14 +81,12 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
           external_google_id: book.external_google_id,
         },
       })
-      console.log('[BookSearchInput] register response:', { data, error })
       if (error) throw error
       const registered = (data && 'title' in data ? data : (data as { book?: Book })?.book) as Book
       const finalBook = registered ?? book
       setSelectedBook(finalBook)
       onSelect(finalBook.id!, finalBook)
-    } catch (err) {
-      console.error('[BookSearchInput] register error:', err)
+    } catch {
       // If the book already has an id (came pre-registered), still use it
       if (book.id != null) {
         onSelect(book.id, book)
