@@ -44,4 +44,9 @@
     color: var(--color-text-primary);
     transition: background-color 0.2s ease, color 0.2s ease;
   }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) saturate(100%) invert(47%) sepia(62%) saturate(600%) hue-rotate(349deg) brightness(95%) contrast(92%);
+    cursor: pointer;
+  }
 }
