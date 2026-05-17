@@ -153,9 +153,9 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
             aria-autocomplete="list"
             aria-expanded={showDropdown}
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)]">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
             {searching || registering ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-[var(--color-text-secondary)] border-t-transparent" aria-label="Searching" />
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" aria-label="Searching" />
             ) : (
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
