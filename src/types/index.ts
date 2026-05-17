@@ -38,6 +38,8 @@ export interface Book {
   year?: number
   isbn?: string
   page_count?: number
+  image_url?: string
+  external_google_id?: string
 }
 
 export type UserRole = 'owner' | 'admin' | 'member'
