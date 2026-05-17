@@ -5,6 +5,7 @@ import { getAvatarUrl } from '../../supabase'
 import ThemeToggle from '../ThemeToggle'
 import SignOutModal from '../modals/SignOutModal'
 import EditProfileModal from '../modals/EditProfileModal'
+import DiscordLinkModal from '../modals/DiscordLinkModal'
 
 interface TopNavbarProps {
   onMenuToggle?: () => void
@@ -15,6 +16,7 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [showDiscordLinkModal, setShowDiscordLinkModal] = useState(false)
 
   return (
     <>
@@ -87,6 +89,18 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
                     >
                       Edit Profile
                     </button>
+                    {!member?.discord_id && (
+                      <button
+                        role="menuitem"
+                        onClick={() => {
+                          setShowDiscordLinkModal(true)
+                          setShowUserMenu(false)
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-white hover:bg-[var(--color-bg-elevated)] transition-colors"
+                      >
+                        Connect to Discord
+                      </button>
+                    )}
                     <div className="border-t border-[var(--color-divider)] my-1" />
                     <button
                       role="menuitem"
@@ -120,6 +134,10 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
         }}
         onError={(error) => console.error('Profile update error:', error)}
         currentMember={member}
+      />
+      <DiscordLinkModal
+        isOpen={showDiscordLinkModal}
+        onClose={() => setShowDiscordLinkModal(false)}
       />
     </>
   )

@@ -21,24 +21,17 @@ export default function EditProfileModal({
   const { member } = useAuth()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
-  const [discordId, setDiscordId] = useState<string>('')
 
   // Pre-populate form when modal opens
   useEffect(() => {
     if (isOpen && currentMember) {
       setName(currentMember.name)
-      setDiscordId(currentMember.discord_id ?? '')
     }
   }, [isOpen, currentMember])
 
   const handleSubmit = async () => {
     if (!name.trim()) {
       onError('Name is required')
-      return
-    }
-
-    if (discordId.trim() && !/^\d{17,19}$/.test(discordId.trim())) {
-      onError('Discord ID must be a 17–19 digit number')
       return
     }
 
@@ -54,8 +47,7 @@ export default function EditProfileModal({
       const requestBody = {
         id: member.id,
         name: name.trim(),
-        books_read: member.books_read,
-        discord_id: discordId.trim() || null
+        books_read: member.books_read
       }
 
       console.log('Updating member with:', requestBody)
@@ -86,7 +78,6 @@ export default function EditProfileModal({
 
   const handleClose = () => {
     setName(currentMember?.name || '')
-    setDiscordId(currentMember?.discord_id ?? '')
     onError('') // Clear errors when closing
     onClose()
   }
@@ -101,21 +92,16 @@ export default function EditProfileModal({
 
   if (!isOpen || !member) return null
 
-  const hasChanges = name.trim() !== member.name || (discordId.trim() || null) !== (member.discord_id ?? null)
+  const hasChanges = name.trim() !== member.name
 
   return (
     <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title-edit-profile">
       <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-6 w-full max-w-md">
         {/* Modal Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" /></svg>
-            </div>
-            <div>
-              <h2 id="modal-title-edit-profile" className="text-card-heading text-[var(--color-text-primary)]">Edit Profile</h2>
-              <p className="text-helper text-[var(--color-text-secondary)]">Update your profile details</p>
-            </div>
+          <div>
+            <h2 id="modal-title-edit-profile" className="text-card-heading text-[var(--color-text-primary)]">Edit Profile</h2>
+            <p className="text-helper text-[var(--color-text-secondary)]">Update your profile details</p>
           </div>
           <button
             onClick={handleClose}
@@ -149,25 +135,6 @@ export default function EditProfileModal({
             </p>
           </div>
 
-          {/* Discord ID Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Discord ID
-            </label>
-            <input
-              type="text"
-              value={discordId}
-              onChange={(e) => setDiscordId(e.target.value)}
-              placeholder="e.g., 123456789012345678"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={19}
-            />
-            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
-              Your Discord snowflake ID — leave blank to clear
-            </p>
-          </div>
-
           {/* Avatar Display */}
           {currentMember?.avatar_path && (
             <div>
@@ -181,6 +148,22 @@ export default function EditProfileModal({
                   className="w-16 h-16 rounded-full object-cover border border-[var(--color-divider)]"
                 />
                 <p className="text-[var(--color-text-secondary)] text-xs">Avatar is managed externally</p>
+              </div>
+            </div>
+          )}
+
+          {/* Discord Connection Status (read-only, only shown when connected) */}
+          {currentMember?.discord_id && (
+            <div>
+              <label className="block text-[var(--color-text-primary)] font-medium mb-2">
+                Discord
+              </label>
+              <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input">
+                <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
+                <div className="flex-1">
+                  <span className="text-secondary font-medium text-sm">Connected</span>
+                  <p className="text-[var(--color-text-secondary)] text-xs mt-0.5 font-mono">{currentMember.discord_id}</p>
+                </div>
               </div>
             </div>
           )}

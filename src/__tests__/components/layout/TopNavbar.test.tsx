@@ -22,12 +22,15 @@ vi.mock('../../../components/ThemeToggle', () => ({
   default: () => <button data-testid="theme-toggle">Theme</button>,
 }))
 
-// Mock modals (TopNavbar renders SignOutModal and EditProfileModal)
+// Mock modals (TopNavbar renders SignOutModal, EditProfileModal, and DiscordLinkModal)
 vi.mock('../../../components/modals/SignOutModal', () => ({
   default: ({ isOpen, onClose }: any) => isOpen ? <div data-testid="sign-out-modal" role="dialog"><button onClick={onClose}>Close</button>Sign Out Modal</div> : null,
 }))
 vi.mock('../../../components/modals/EditProfileModal', () => ({
   default: ({ isOpen, onProfileUpdated }: any) => isOpen ? <div data-testid="edit-profile-modal" role="dialog"><button onClick={() => onProfileUpdated()}>Close</button>Edit Profile Modal</div> : null,
+}))
+vi.mock('../../../components/modals/DiscordLinkModal', () => ({
+  default: ({ isOpen, onClose }: any) => isOpen ? <div data-testid="discord-link-modal" role="dialog"><button onClick={onClose}>Close</button>Discord Link Modal</div> : null,
 }))
 
 describe('TopNavbar', () => {
@@ -97,6 +100,7 @@ describe('TopNavbar', () => {
       await user.click(screen.getByLabelText('User menu'))
 
       expect(screen.getByRole('menu')).toBeInTheDocument()
+      expect(screen.getByRole('menuitem', { name: /connect to discord/i })).toBeInTheDocument()
       expect(screen.getByRole('menuitem', { name: 'Edit Profile' })).toBeInTheDocument()
       expect(screen.getByRole('menuitem', { name: 'Sign Out' })).toBeInTheDocument()
     })
@@ -169,6 +173,19 @@ describe('TopNavbar', () => {
       await user.click(screen.getByRole('menuitem', { name: 'Sign Out' }))
 
       expect(screen.getByTestId('sign-out-modal')).toBeInTheDocument()
+    })
+
+    it('should close menu and open DiscordLinkModal after clicking Connect to Discord', async () => {
+      const user = userEvent.setup()
+      render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
+
+      await user.click(screen.getByLabelText('User menu'))
+      expect(screen.getByRole('menu')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('menuitem', { name: /connect to discord/i }))
+
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+      expect(screen.getByTestId('discord-link-modal')).toBeInTheDocument()
     })
 
     it('should call refreshMemberData when EditProfileModal calls onProfileUpdated', async () => {
