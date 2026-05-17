@@ -11,6 +11,8 @@ interface AuthContextType {
   getRoleForClub: (clubId: string) => UserRole | null
   signInWithDiscord: () => Promise<void>
   signInWithGoogle: () => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
+  signUpWithEmail: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>
   signOut: () => Promise<void>
   refreshMemberData: () => Promise<void>
 }
@@ -179,6 +181,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Sign in with email and password
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+    } catch (error) {
+      console.error('Error signing in with email:', error)
+      throw error
+    }
+  }
+
+  // Sign up with email and password
+  const signUpWithEmail = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password })
+      if (error) throw error
+      return { needsConfirmation: data.session === null }
+    } catch (error) {
+      console.error('Error signing up with email:', error)
+      throw error
+    }
+  }
+
   const signOut = async () => {
     try {
       console.log('🔓 Signing out...')
@@ -227,6 +252,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getRoleForClub,
     signInWithDiscord,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signOut,
     refreshMemberData,
   }

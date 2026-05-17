@@ -77,11 +77,12 @@ describe('EditProfileModal', () => {
       expect(screen.getByText('111222333444555666')).toBeInTheDocument()
     })
 
-    it('should show Discord not connected message when discord_id is null', () => {
+    it('should hide Discord section when discord_id is null', () => {
       const memberWithoutDiscord = { ...defaultProps.currentMember, discord_id: null }
       render(<EditProfileModal {...defaultProps} currentMember={memberWithoutDiscord} />)
 
-      expect(screen.getByText(/not connected — use "connect to discord"/i)).toBeInTheDocument()
+      expect(screen.queryByText('Connected')).not.toBeInTheDocument()
+      expect(screen.queryByText('Discord')).not.toBeInTheDocument()
     })
 
     it('should show avatar when member has avatar_path', () => {
