@@ -1,4 +1,5 @@
 import { useAuth } from '../../contexts/AuthContext'
+import { VERSION } from '../../version'
 import type { Server, Club } from '../../types'
 
 interface SidebarProps {
@@ -34,7 +35,7 @@ export default function Sidebar({
       })
   )
   const sidebarContent = (
-    <>
+    <div className="flex flex-col h-full">
       {/* Clubs Header */}
       <div className="p-4 border-b border-[var(--color-divider)]">
         <div className="flex justify-between items-center">
@@ -56,7 +57,7 @@ export default function Sidebar({
       </div>
 
       {/* Club List */}
-      <div>
+      <div className="flex-1 overflow-y-auto">
         {allClubs.length === 0 ? (
           <div className="p-6 text-center">
             <p className="text-[var(--color-text-secondary)] font-medium">No clubs found</p>
@@ -112,7 +113,7 @@ export default function Sidebar({
                 {club.role && club.role !== 'member' && (
                   <span className={`inline-block mt-1 px-1.5 py-0.5 text-xs font-medium rounded-full capitalize ${
                     club.role === 'owner'
-                      ? 'bg-[#F0BF05]/15 text-[#F0BF05]'
+                      ? 'bg-role-owner/15 text-role-owner'
                       : 'bg-tertiary/10 text-tertiary'
                   }`}>
                     {club.role}
@@ -123,13 +124,18 @@ export default function Sidebar({
           ))
         )}
       </div>
-    </>
+
+      {/* Version */}
+      <div className="p-4 border-t border-[var(--color-divider)]">
+        <p className="text-helper text-[var(--color-text-meta)]">v{VERSION}</p>
+      </div>
+    </div>
   )
 
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:block fixed top-16 left-0 bottom-0 w-64 bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] overflow-y-auto transition-colors">
+      <aside className="hidden lg:flex lg:flex-col fixed top-16 left-0 bottom-0 w-64 bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] transition-colors">
         {sidebarContent}
       </aside>
 
@@ -141,7 +147,7 @@ export default function Sidebar({
             onClick={onMobileClose}
             aria-hidden="true"
           />
-          <aside className="fixed top-16 left-0 bottom-0 w-64 z-50 bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] overflow-y-auto lg:hidden">
+          <aside className="fixed top-16 left-0 bottom-0 w-64 z-50 flex flex-col bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] lg:hidden">
             {sidebarContent}
           </aside>
         </>

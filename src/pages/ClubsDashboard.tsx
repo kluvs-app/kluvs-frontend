@@ -456,7 +456,7 @@ export default function ClubsDashboard() {
                       </div>
                       {club.role && club.role !== 'member' && (
                         <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full capitalize ${
-                          club.role === 'owner' ? 'bg-[#F0BF05]/15 text-[#F0BF05]' : 'bg-tertiary/10 text-tertiary'
+                          club.role === 'owner' ? 'bg-role-owner/15 text-role-owner' : 'bg-tertiary/10 text-tertiary'
                         }`}>
                           {club.role}
                         </span>

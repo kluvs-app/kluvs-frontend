@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ClubsDashboard from './pages/ClubsDashboard'
 import LoginPage from './pages/LoginPage'
+import SetNewPasswordPage from './pages/SetNewPasswordPage'
 import LandingPage from './pages/LandingPage'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfUse from './pages/TermsOfUse'
@@ -11,7 +12,7 @@ import DiscordPage from './pages/DiscordPage'
 import ScrollToTop from './components/ScrollToTop'
 
 function AppContent() {
-  const { user, loading } = useAuth()
+  const { user, loading, isPasswordRecovery } = useAuth()
 
   if (loading) {
     return (
@@ -27,6 +28,10 @@ function AppContent() {
 
   if (!user) {
     return <LoginPage />
+  }
+
+  if (isPasswordRecovery) {
+    return <SetNewPasswordPage />
   }
 
   return <ClubsDashboard />

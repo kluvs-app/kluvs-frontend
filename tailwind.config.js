@@ -24,16 +24,24 @@ export default {
             DEFAULT: '#006781',
             hover: '#005568',
           },
-          discord: '#5865F2',
+          discord: {
+            DEFAULT: '#5865F2',
+            hover: '#4752C4',
+          },
           google: {
             bg: '#F2F2F2',
+            'bg-hover': '#EEEEEE',
             text: '#1F1F1F',
+            stroke: '#D1D1D1',
+          },
+          role: {
+            owner: '#C9900A',
           },
           surface: {
             dark: '#0a0a0a',
             'dark-raised': '#141414',
             'dark-elevated': '#1a1a1a',
-            light: '#ffffff',
+            light: '#fafafc',
             'light-raised': '#f5f5f5',
             'light-elevated': '#eeeeee',
           },
