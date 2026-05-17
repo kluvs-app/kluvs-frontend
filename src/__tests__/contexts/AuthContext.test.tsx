@@ -692,6 +692,99 @@ describe('AuthContext', () => {
     })
   })
 
+  describe('Tab Visibility — session re-validation', () => {
+    it('re-fetches member data when tab becomes visible with a valid session', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => {
+        expect(result.current.member).not.toBeNull()
+      })
+
+      const callsBefore = mockSupabase.functions.invoke.mock.calls.length
+
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      await waitFor(() => {
+        expect(mockSupabase.functions.invoke.mock.calls.length).toBeGreaterThan(callsBefore)
+      })
+
+      expect(mockSupabase.auth.getSession).toHaveBeenCalled()
+    })
+
+    it('clears user and member when tab becomes visible with an expired session', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => {
+        expect(result.current.user).not.toBeNull()
+      })
+
+      // Session has since expired
+      mockSupabase.auth.getSession.mockResolvedValueOnce({ data: { session: null }, error: null })
+
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      await waitFor(() => {
+        expect(result.current.user).toBeNull()
+        expect(result.current.member).toBeNull()
+      })
+    })
+
+    it('does not re-fetch when tab becomes hidden', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => {
+        expect(result.current.member).not.toBeNull()
+      })
+
+      const callsBefore = mockSupabase.auth.getSession.mock.calls.length
+
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      // Give it a tick to ensure nothing fires
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(mockSupabase.auth.getSession.mock.calls.length).toBe(callsBefore)
+    })
+
+    it('removes the visibilitychange listener on unmount', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result, unmount } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => {
+        expect(result.current.member).not.toBeNull()
+      })
+
+      unmount()
+
+      const callsAfterUnmount = mockSupabase.auth.getSession.mock.calls.length
+
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(mockSupabase.auth.getSession.mock.calls.length).toBe(callsAfterUnmount)
+    })
+  })
+
   describe('Auth State Change Listener', () => {
     it('should handle initial load and auth state changes', async () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
