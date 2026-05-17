@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { invokeFunction } from '../../supabase'
 import type { Club, Server, Member } from '../../types'
 
 interface MemberModalProps {
@@ -103,7 +103,7 @@ export default function MemberModal({
           ...memberData
         }
 
-        const { error } = await supabase.functions.invoke('member', {
+        const { error } = await invokeFunction('member', {
           method: 'PUT',
           body: requestBody
         })
@@ -123,7 +123,7 @@ export default function MemberModal({
             newShameList = newShameList.filter(id => id !== editingMember.id)
           }
 
-          const { error: shameError } = await supabase.functions.invoke('club', {
+          const { error: shameError } = await invokeFunction('club', {
             method: 'PUT',
             body: {
               id: selectedClub.id,
@@ -144,7 +144,7 @@ export default function MemberModal({
           clubs: [selectedClub.id] // Add them to this specific club
         }
 
-        const { data, error } = await supabase.functions.invoke('member', {
+        const { data, error } = await invokeFunction('member', {
           method: 'POST',
           body: requestBody
         })
@@ -155,7 +155,7 @@ export default function MemberModal({
         if (formData.on_shame_list && data.member) {
           const newShameList = [...selectedClub.shame_list, data.member.id]
 
-          const { error: shameError } = await supabase.functions.invoke('club', {
+          const { error: shameError } = await invokeFunction('club', {
             method: 'PUT',
             body: {
               id: selectedClub.id,

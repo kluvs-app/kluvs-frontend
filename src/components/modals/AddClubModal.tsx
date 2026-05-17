@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { invokeFunction } from '../../supabase'
 import type { Server } from '../../types'
 
 interface AddClubModalProps {
@@ -51,7 +51,7 @@ export default function AddClubModal({
 
       console.log('Creating club:', requestBody)
 
-      const { data, error } = await supabase.functions.invoke('club', {
+      const { data, error } = await invokeFunction('club', {
         method: 'POST',
         body: requestBody
       })

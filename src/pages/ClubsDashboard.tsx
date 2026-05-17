@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../supabase'
+import { invokeFunction } from '../supabase'
 import type { Club, Server, Discussion, Member } from "../types"
 import AddClubModal from '../components/modals/AddClubModal'
 import EditBookModal from '../components/modals/EditBookModal'
@@ -91,7 +91,7 @@ export default function ClubsDashboard() {
       // Preserve current selection if requested
       const currentSelection = preserveSelection ? selectedServer : null
 
-      const { data, error } = await supabase.functions.invoke('server', {
+      const { data, error } = await invokeFunction<{ servers: Server[] }>('server', {
         method: 'GET'
       })
 
@@ -139,7 +139,7 @@ export default function ClubsDashboard() {
       const functionName = `club?id=${encodeURIComponent(clubId)}&server_id=${encodeURIComponent(serverIdToUse)}`
       console.log('🏢 [CLUB-FETCH] Calling Edge Function with URL:', functionName)
 
-      const { data, error } = await supabase.functions.invoke(functionName, {
+      const { data, error } = await invokeFunction<Club>(functionName, {
         method: 'GET'
       })
 

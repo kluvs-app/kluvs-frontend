@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
-import { supabase } from '../supabase'
+import { supabase, invokeFunction } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Member, UserRole } from '../types'
 
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         console.log('✅ Session ready, calling Edge Function')
 
-        const { data, error } = await supabase.functions.invoke(`member?user_id=${encodeURIComponent(userId)}`, {
+        const { data, error } = await invokeFunction<Member>(`member?user_id=${encodeURIComponent(userId)}`, {
           method: 'GET'
         })
 
@@ -205,19 +205,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    console.log('🔓 Signing out...')
+    // Clear local state immediately regardless of Supabase response,
+    // since an expired session still means the user is logged out locally.
+    setUser(null)
+    setMember(null)
+    processingUserIdRef.current = null
     try {
-      console.log('🔓 Signing out...')
       const { error } = await supabase.auth.signOut()
-      if (error) throw error
-
-      // Immediately clear local state
-      setUser(null)
-      setMember(null)
-      processingUserIdRef.current = null
-      console.log('✅ Sign out successful')
+      if (error) console.error('❌ Supabase sign out error (session may have already expired):', error)
+      else console.log('✅ Sign out successful')
     } catch (error) {
-      console.error('Error signing out:', error)
-      throw error
+      console.error('❌ Sign out exception:', error)
     }
   }
 
@@ -239,7 +238,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (initialized) {
         if (event === 'IDENTITY_LINKED') {
           console.log('🔗 Discord identity linked, syncing member...')
-          const { error } = await supabase.functions.invoke('link-discord', { method: 'POST' })
+          const { error } = await invokeFunction('link-discord', { method: 'POST' })
           if (error) console.error('❌ link-discord edge function error:', error)
         }
         await handleUserChange(session?.user ?? null)
@@ -247,7 +246,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Re-validate session when the tab becomes visible again.
+    // Browsers throttle timers in background tabs, which can cause
+    // Supabase's token auto-refresh to miss its window.
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        console.log('👁️ Tab visible — re-checking session')
+        const { data: { session } } = await supabase.auth.getSession()
+        await handleUserChange(session?.user ?? null)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      subscription.unsubscribe()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   const value = {
