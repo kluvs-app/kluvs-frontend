@@ -59,7 +59,7 @@ export default function MembersTable({
 
             {/* Name + handle */}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-[var(--color-text-primary)] text-sm leading-tight">
+              <p className="font-medium text-[var(--color-text-primary)] text-sm leading-tight">
                 {member.name}
               </p>
               {(member.handle || member.discord_id) && (

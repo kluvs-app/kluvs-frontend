@@ -323,7 +323,7 @@ export default function ClubsDashboard() {
                     <button
                       key={id}
                       onClick={() => setActiveTab(id as typeof activeTab)}
-                      className={`px-4 py-2.5 text-sm font-semibold text-primary border-b-2 transition-colors ${
+                      className={`px-4 py-2.5 text-sm font-medium text-primary border-b-2 transition-colors ${
                         activeTab === id ? 'border-primary' : 'border-transparent'
                       }`}
                     >
@@ -340,7 +340,7 @@ export default function ClubsDashboard() {
                 <div className="divide-y divide-[var(--color-divider)]">
                   {/* Current Book */}
                   <div className="pb-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
+                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
                     {selectedClub.active_session ? (
                       <BookInfo
                         book={selectedClub.active_session.book}
@@ -363,10 +363,10 @@ export default function ClubsDashboard() {
 
                   {/* Next Discussion */}
                   <div className="pt-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
+                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
                     {nextDiscussion ? (
                       <>
-                        <h4 className="font-semibold text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
+                        <h4 className="font-medium text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
                         <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                           {[
                             nextDiscussion.location,
@@ -440,7 +440,7 @@ export default function ClubsDashboard() {
             <div>
               {/* Mobile: inline club list */}
               <div className="lg:hidden">
-                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Your Clubs</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Your Clubs</p>
                 <div>
                   {myClubs.map(club => (
                     <div
@@ -452,7 +452,7 @@ export default function ClubsDashboard() {
                       className="flex items-center justify-between py-4 border-b border-[var(--color-divider)] last:border-b-0 cursor-pointer group"
                     >
                       <div>
-                        <p className="font-semibold text-[var(--color-text-primary)] group-hover:text-primary transition-colors">
+                        <p className="font-medium text-[var(--color-text-primary)] group-hover:text-primary transition-colors">
                           {club.name}
                         </p>
                         <p className="text-helper text-[var(--color-text-secondary)] mt-0.5">{club.serverName}</p>

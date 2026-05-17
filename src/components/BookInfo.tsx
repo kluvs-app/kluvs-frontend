@@ -31,7 +31,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
             </p>
           )}
           {dueDate && (
-            <p className="text-body-lg text-primary font-semibold mt-2">
+            <p className="text-body-lg text-primary font-medium mt-2">
               Due {new Date(dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </p>
           )}

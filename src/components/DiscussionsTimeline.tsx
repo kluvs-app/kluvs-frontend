@@ -118,7 +118,7 @@ export default function DiscussionsTimeline({
                   {/* Content */}
                   <div className={`flex items-start justify-between gap-2 rounded-card px-2 py-2 -mx-2 -my-2 transition-colors group-hover:bg-[var(--color-bg-raised)] ${isPast ? 'opacity-70' : ''}`}>
                     <div className="min-w-0">
-                      <h4 className={`font-semibold leading-snug ${
+                      <h4 className={`font-bold leading-snug ${
                         isPast ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-text-primary)]'
                       }`}>
                         {discussion.title}
@@ -217,7 +217,7 @@ export default function DiscussionsTimeline({
                         </div>
                       )}
 
-                      <div className={`inline-flex items-center px-2 py-1 rounded text-helper-sm font-semibold mb-3 ${
+                      <div className={`inline-flex items-center px-2 py-1 rounded text-helper-sm font-bold mb-3 ${
                         isPast ? 'bg-[var(--color-bg)] text-[var(--color-text-secondary)]'
                           : isNext ? 'bg-primary/10 text-primary'
                           : 'bg-tertiary/10 text-tertiary'
@@ -229,7 +229,7 @@ export default function DiscussionsTimeline({
                         {new Date(discussion.date).toLocaleDateString()}
                       </div>
 
-                      <h4 className={`font-semibold mb-3 text-body leading-tight ${
+                      <h4 className={`font-bold mb-3 text-body leading-tight ${
                         isPast ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-text-primary)]'
                       }`}>
                         {discussion.title}
