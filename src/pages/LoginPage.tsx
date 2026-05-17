@@ -85,7 +85,7 @@ export default function LoginPage() {
             <button
               onClick={handleDiscordSignIn}
               disabled={signingIn !== null}
-              className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-[#4752C4] disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn font-medium text-body-lg transition-colors"
+              className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn font-medium text-body-lg transition-colors"
             >
               {signingIn === 'discord' ? (
                 <>
@@ -104,7 +104,7 @@ export default function LoginPage() {
             <button
               onClick={handleGoogleSignIn}
               disabled={signingIn !== null}
-              className="w-full flex items-center justify-center gap-3 bg-google-bg hover:bg-[#E8E8E8] dark:bg-google-bg dark:hover:bg-[#E8E8E8] disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-google-text dark:text-google-text px-6 py-3 rounded-btn font-medium text-body-lg transition-colors"
+              className="w-full flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover dark:bg-google-bg dark:hover:bg-google-bg-hover disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-google-text dark:text-google-text px-6 py-3 rounded-btn font-medium text-body-lg transition-colors"
             >
               {signingIn === 'google' ? (
                 <>

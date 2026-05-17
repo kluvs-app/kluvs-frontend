@@ -81,7 +81,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
           <button
             onClick={handleOAuthLink}
             disabled={oauthLoading}
-            className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-[#4752C4] disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn font-medium text-body-lg transition-colors"
+            className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn font-medium text-body-lg transition-colors"
           >
             {oauthLoading ? (
               <>

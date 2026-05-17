@@ -100,9 +100,9 @@ export default function DiscussionsTimeline({
                       left: '-40px',
                       top: '14px',
                       background: isPast
-                        ? '#B85A22'
+                        ? 'var(--color-primary-hover)'
                         : isNext
-                        ? '#D16D30'
+                        ? 'var(--color-primary)'
                         : 'var(--color-bg-elevated)',
                       border: (!isPast && !isNext) ? '1px solid var(--color-divider)' : 'none',
                       boxShadow: isNext ? '0 0 0 3px rgba(209,110,48,0.25)' : 'none'

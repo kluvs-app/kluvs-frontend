@@ -113,7 +113,7 @@ export default function Sidebar({
                 {club.role && club.role !== 'member' && (
                   <span className={`inline-block mt-1 px-1.5 py-0.5 text-xs font-medium rounded-full capitalize ${
                     club.role === 'owner'
-                      ? 'bg-[#F0BF05]/15 text-[#F0BF05]'
+                      ? 'bg-role-owner/15 text-role-owner'
                       : 'bg-tertiary/10 text-tertiary'
                   }`}>
                     {club.role}
@@ -127,7 +127,7 @@ export default function Sidebar({
 
       {/* Version */}
       <div className="p-4 border-t border-[var(--color-divider)]">
-        <p className="text-helper text-[var(--color-text-secondary)] opacity-50">v{VERSION}</p>
+        <p className="text-helper text-[var(--color-text-meta)]">v{VERSION}</p>
       </div>
     </div>
   )

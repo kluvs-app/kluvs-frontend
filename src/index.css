@@ -12,15 +12,18 @@
 
 @layer base {
   :root {
-    --color-bg: #ffffff;
+    --color-bg: #fafafc;
     --color-bg-raised: #f5f5f5;
     --color-bg-elevated: #eeeeee;
     --color-text-primary: #1a1a1a;
     --color-text-secondary: #666666;
+    --color-text-meta: #999999;
     --color-divider: #e0e0e0;
     --color-input-bg: #f5f5f5;
     --color-input-border: #e0e0e0;
     --color-overlay: rgba(0, 0, 0, 0.5);
+    --color-primary: #D16D30;
+    --color-primary-hover: #B85A22;
   }
 
   .dark {
@@ -29,6 +32,7 @@
     --color-bg-elevated: #1a1a1a;
     --color-text-primary: #ffffff;
     --color-text-secondary: #b0b0b0;
+    --color-text-meta: #737373;
     --color-divider: #2a2a2a;
     --color-input-bg: #1a1a1a;
     --color-input-border: #2a2a2a;
