@@ -63,7 +63,7 @@ export default function DiscussionsTimeline({
     <>
       {/* Section heading */}
       <div className="flex justify-between items-center mb-5">
-        <h3 className="text-section-heading text-[var(--color-text-primary)]">Discussion Timeline</h3>
+        <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">Discussion Timeline</p>
         {isAdmin && (
           <button
             onClick={onAddDiscussion}

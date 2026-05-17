@@ -340,7 +340,7 @@ export default function ClubsDashboard() {
                 <div className="divide-y divide-[var(--color-divider)]">
                   {/* Current Book */}
                   <div className="pb-5">
-                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
+                    <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
                     {selectedClub.active_session ? (
                       <BookInfo
                         book={selectedClub.active_session.book}
@@ -363,7 +363,7 @@ export default function ClubsDashboard() {
 
                   {/* Next Discussion */}
                   <div className="pt-5">
-                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
+                    <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
                     {nextDiscussion ? (
                       <>
                         <h4 className="font-medium text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
@@ -440,7 +440,7 @@ export default function ClubsDashboard() {
             <div>
               {/* Mobile: inline club list */}
               <div className="lg:hidden">
-                <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Your Clubs</p>
+                <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Your Clubs</p>
                 <div>
                   {myClubs.map(club => (
                     <div
