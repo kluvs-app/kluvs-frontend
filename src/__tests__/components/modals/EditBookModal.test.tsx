@@ -4,15 +4,29 @@ import userEvent from '@testing-library/user-event'
 import EditBookModal from '../../../components/modals/EditBookModal'
 import { mockClub, mockClub2 } from '../../utils/mocks'
 
-// Mock supabase
+vi.mock('../../../components/BookSearchInput', () => ({
+  default: ({ onSelect, initialBook, disabled }: {
+    onSelect: (id: number, book: object) => void
+    initialBook?: { id?: number; title: string }
+    disabled?: boolean
+  }) => (
+    <div data-testid="book-search-input">
+      {initialBook && <span data-testid="initial-book">{initialBook.title}</span>}
+      <button
+        disabled={disabled}
+        onClick={() => onSelect(99, { id: 99, title: 'New Book', author: 'New Author' })}
+        data-testid="mock-select-book"
+      >
+        Select Book
+      </button>
+    </div>
+  ),
+}))
+
 const mockInvoke = vi.fn()
 vi.mock('../../../supabase', () => ({
-  supabase: {
-    functions: {
-      invoke: (...args: any[]) => mockInvoke(...args),
-    },
-  },
-  invokeFunction: (...args: any[]) => mockInvoke(...args),
+  supabase: { functions: { invoke: (...args: unknown[]) => mockInvoke(...args) } },
+  invokeFunction: (...args: unknown[]) => mockInvoke(...args),
 }))
 
 describe('EditBookModal', () => {
@@ -32,34 +46,33 @@ describe('EditBookModal', () => {
   describe('Rendering', () => {
     it('should render when isOpen with active session', () => {
       render(<EditBookModal {...defaultProps} />)
-
       expect(screen.getByRole('heading', { name: 'Edit Book' })).toBeInTheDocument()
     })
 
     it('should not render when isOpen is false', () => {
       render(<EditBookModal {...defaultProps} isOpen={false} />)
-
       expect(screen.queryByText('Edit Book')).not.toBeInTheDocument()
     })
 
     it('should not render when no active session', () => {
       render(<EditBookModal {...defaultProps} selectedClub={mockClub2} />)
-
       expect(screen.queryByText('Edit Book')).not.toBeInTheDocument()
     })
 
-    it('should pre-populate form fields from active session', () => {
+    it('should show BookSearchInput with current book as initialBook', () => {
       render(<EditBookModal {...defaultProps} />)
+      expect(screen.getByTestId('book-search-input')).toBeInTheDocument()
+      expect(screen.getByTestId('initial-book')).toHaveTextContent('The Great Gatsby')
+    })
 
-      expect(screen.getByDisplayValue('The Great Gatsby')).toBeInTheDocument()
-      expect(screen.getByDisplayValue('F. Scott Fitzgerald')).toBeInTheDocument()
-      expect(screen.getByDisplayValue('First Edition')).toBeInTheDocument()
-      expect(screen.getByDisplayValue('1925')).toBeInTheDocument()
+    it('should pre-populate due date from active session', () => {
+      render(<EditBookModal {...defaultProps} />)
+      const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement
+      expect(dateInput.value).toBe('2024-12-31')
     })
 
     it('should show club context info', () => {
       render(<EditBookModal {...defaultProps} />)
-
       expect(screen.getByText(mockClub.name)).toBeInTheDocument()
       expect(screen.getByText('Updating active reading session')).toBeInTheDocument()
     })
@@ -68,7 +81,6 @@ describe('EditBookModal', () => {
   describe('Accessibility', () => {
     it('should have dialog role and aria attributes', () => {
       render(<EditBookModal {...defaultProps} />)
-
       const dialog = screen.getByRole('dialog')
       expect(dialog).toHaveAttribute('aria-modal', 'true')
       expect(dialog).toHaveAttribute('aria-labelledby', 'modal-title-edit-book')
@@ -76,170 +88,64 @@ describe('EditBookModal', () => {
 
     it('should have Close aria-label on X button', () => {
       render(<EditBookModal {...defaultProps} />)
-
       expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
     })
 
     it('should close on Escape key', async () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
-
       await user.keyboard('{Escape}')
-
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('Form Validation', () => {
-    it('should disable submit button when title is empty', async () => {
-      const user = userEvent.setup()
+    it('should enable submit when book is pre-populated from active session', () => {
       render(<EditBookModal {...defaultProps} />)
-
-      const titleInput = screen.getByDisplayValue('The Great Gatsby') as HTMLInputElement
-      await user.clear(titleInput)
-
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      expect(submitButton).toBeDisabled()
-    })
-
-    it('should disable submit button when author is empty', async () => {
-      const user = userEvent.setup()
-      render(<EditBookModal {...defaultProps} />)
-
-      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald') as HTMLInputElement
-      await user.clear(authorInput)
-
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      expect(submitButton).toBeDisabled()
-    })
-
-    it('should call onError when title is empty and submit is attempted', async () => {
-      const user = userEvent.setup()
-      const onError = vi.fn()
-      render(<EditBookModal {...defaultProps} onError={onError} />)
-
-      const titleInput = screen.getByDisplayValue('The Great Gatsby') as HTMLInputElement
-      await user.clear(titleInput)
-
-      // Type something in title to enable button momentarily
-      await user.type(titleInput, 'T')
-      // Then clear again to trigger validation
-      await user.clear(titleInput)
-      await user.type(titleInput, '  ') // Just spaces
-
-      // Try to click submit - button should be disabled but test validation
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      expect(submitButton).toBeDisabled()
-    })
-
-    it('should call onError when author is empty and submit is attempted', async () => {
-      const user = userEvent.setup()
-      const onError = vi.fn()
-      render(<EditBookModal {...defaultProps} onError={onError} />)
-
-      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald') as HTMLInputElement
-      await user.clear(authorInput)
-      await user.type(authorInput, '  ') // Just spaces
-
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      expect(submitButton).toBeDisabled()
-    })
-  })
-
-  describe('Form Input Changes', () => {
-    it('should update title when input changes', async () => {
-      const user = userEvent.setup()
-      render(<EditBookModal {...defaultProps} />)
-
-      const titleInput = screen.getByDisplayValue('The Great Gatsby') as HTMLInputElement
-      await user.clear(titleInput)
-      await user.type(titleInput, 'New Title')
-
-      expect(titleInput.value).toBe('New Title')
-    })
-
-    it('should update author when input changes', async () => {
-      const user = userEvent.setup()
-      render(<EditBookModal {...defaultProps} />)
-
-      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald') as HTMLInputElement
-      await user.clear(authorInput)
-      await user.type(authorInput, 'New Author')
-
-      expect(authorInput.value).toBe('New Author')
-    })
-
-    it('should update edition when input changes', async () => {
-      const user = userEvent.setup()
-      render(<EditBookModal {...defaultProps} />)
-
-      const editionInput = screen.getByDisplayValue('First Edition') as HTMLInputElement
-      await user.clear(editionInput)
-      await user.type(editionInput, 'Second Edition')
-
-      expect(editionInput.value).toBe('Second Edition')
-    })
-
-    it('should update year when input changes', async () => {
-      const user = userEvent.setup()
-      render(<EditBookModal {...defaultProps} />)
-
-      const yearInput = screen.getByDisplayValue('1925') as HTMLInputElement
-      await user.clear(yearInput)
-      await user.type(yearInput, '2023')
-
-      expect(yearInput.value).toBe('2023')
-    })
-
-    it('should allow empty edition field', async () => {
-      const user = userEvent.setup()
-      render(<EditBookModal {...defaultProps} />)
-
-      const editionInput = screen.getByDisplayValue('First Edition') as HTMLInputElement
-      await user.clear(editionInput)
-
-      // Should still be able to submit with empty edition
-      await user.click(screen.getByRole('button', { name: /update book/i }))
-
-      await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalled()
-      })
-    })
-
-    it('should allow empty year field', async () => {
-      const user = userEvent.setup()
-      render(<EditBookModal {...defaultProps} />)
-
-      const yearInput = screen.getByDisplayValue('1925') as HTMLInputElement
-      await user.clear(yearInput)
-
-      await user.click(screen.getByRole('button', { name: /update book/i }))
-
-      await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalled()
-      })
+      // mockBook.id = 1, so selectedBookId is pre-populated
+      expect(screen.getByRole('button', { name: /update book/i })).not.toBeDisabled()
     })
   })
 
   describe('Form Submission', () => {
-    it('should call supabase session PUT on submit', async () => {
+    it('should send book_id from pre-populated session on submit', async () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
-
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      await user.click(submitButton)
-
+      await user.click(screen.getByRole('button', { name: /update book/i }))
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith(
           'session',
           expect.objectContaining({
             method: 'PUT',
             body: expect.objectContaining({
-              book: expect.objectContaining({
-                title: 'The Great Gatsby',
-                author: 'F. Scott Fitzgerald',
-              }),
+              id: mockClub.active_session!.id,
+              book_id: mockClub.active_session!.book.id,
             }),
+          })
+        )
+      })
+    })
+
+    it('should not send inline book object', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+      await user.click(screen.getByRole('button', { name: /update book/i }))
+      await waitFor(() => {
+        const body = (mockInvoke.mock.calls[0][1] as { body: Record<string, unknown> }).body
+        expect(body).not.toHaveProperty('book')
+      })
+    })
+
+    it('should send new book_id when user selects a different book', async () => {
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+      await user.click(screen.getByTestId('mock-select-book'))
+      await user.click(screen.getByRole('button', { name: /update book/i }))
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'session',
+          expect.objectContaining({
+            body: expect.objectContaining({ book_id: 99 }),
           })
         )
       })
@@ -248,44 +154,10 @@ describe('EditBookModal', () => {
     it('should call onBookUpdated and onClose on success', async () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
-
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      await user.click(submitButton)
-
+      await user.click(screen.getByRole('button', { name: /update book/i }))
       await waitFor(() => {
         expect(defaultProps.onBookUpdated).toHaveBeenCalledTimes(1)
         expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
-      })
-    })
-
-    it('should trim whitespace from title and author on submit', async () => {
-      const user = userEvent.setup()
-      render(<EditBookModal {...defaultProps} />)
-
-      const titleInput = screen.getByDisplayValue('The Great Gatsby') as HTMLInputElement
-      const authorInput = screen.getByDisplayValue('F. Scott Fitzgerald') as HTMLInputElement
-
-      await user.clear(titleInput)
-      await user.type(titleInput, '  Updated Title  ')
-      await user.clear(authorInput)
-      await user.type(authorInput, '  Updated Author  ')
-
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      await user.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalledWith(
-          'session',
-          expect.objectContaining({
-            method: 'PUT',
-            body: expect.objectContaining({
-              book: expect.objectContaining({
-                title: 'Updated Title',
-                author: 'Updated Author',
-              }),
-            }),
-          })
-        )
       })
     })
   })
@@ -295,10 +167,7 @@ describe('EditBookModal', () => {
       mockInvoke.mockResolvedValue({ data: null, error: new Error('Update failed') })
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
-
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      await user.click(submitButton)
-
+      await user.click(screen.getByRole('button', { name: /update book/i }))
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Update failed')
       })
@@ -308,10 +177,7 @@ describe('EditBookModal', () => {
       mockInvoke.mockRejectedValue(new Error('Network error'))
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
-
-      const submitButton = screen.getByRole('button', { name: /update book/i })
-      await user.click(submitButton)
-
+      await user.click(screen.getByRole('button', { name: /update book/i }))
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Network error')
       })
@@ -322,9 +188,7 @@ describe('EditBookModal', () => {
     it('should call onClose and clear errors when Cancel is clicked', async () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
-
       await user.click(screen.getByRole('button', { name: 'Cancel' }))
-
       expect(defaultProps.onError).toHaveBeenCalledWith('')
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
@@ -332,9 +196,7 @@ describe('EditBookModal', () => {
     it('should call onClose when X button is clicked', async () => {
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
-
       await user.click(screen.getByRole('button', { name: 'Close' }))
-
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
   })

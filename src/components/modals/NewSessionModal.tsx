@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
 import type { Club } from '../../types'
+import BookSearchInput from '../BookSearchInput'
 
 interface NewSessionModalProps {
   isOpen: boolean
@@ -8,13 +9,6 @@ interface NewSessionModalProps {
   selectedClub: Club
   onSessionCreated: () => void
   onError: (error: string) => void
-}
-
-interface NewSessionFormData {
-  title: string
-  author: string
-  year: string
-  due_date: string
 }
 
 export default function NewSessionModal({
@@ -25,49 +19,46 @@ export default function NewSessionModal({
   onError
 }: NewSessionModalProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState<NewSessionFormData>({
-    title: '',
-    author: '',
-    year: '',
-    due_date: ''
-  })
+  const [selectedBookId, setSelectedBookId] = useState<number | null>(null)
+  const [dueDate, setDueDate] = useState('')
+  const [bookKey, setBookKey] = useState(0)
 
   const validateDueDate = (dateString: string): boolean => {
-    if (!dateString) return true // Optional field
+    if (!dateString) return true
     const selectedDate = new Date(dateString)
     const today = new Date()
-    today.setHours(0, 0, 0, 0) // Start of today
+    today.setHours(0, 0, 0, 0)
     return selectedDate > today
   }
 
+  const handleBookSelect = (bookId: number) => {
+    setSelectedBookId(bookId)
+  }
+
   const handleSubmit = async () => {
-    if (!formData.title.trim() || !formData.author.trim()) {
-      onError('Title and Author are required')
+    if (!selectedBookId) {
+      onError('Please select a book')
       return
     }
 
-    if (!formData.due_date) {
+    if (!dueDate) {
       onError('Due date is required')
       return
     }
 
-    if (!validateDueDate(formData.due_date)) {
+    if (!validateDueDate(dueDate)) {
       onError('Due date must be in the future')
       return
     }
 
     try {
       setLoading(true)
-      onError('') // Clear any existing errors
+      onError('')
 
       const requestBody = {
         club_id: selectedClub.id,
-        book: {
-          title: formData.title.trim(),
-          author: formData.author.trim(),
-          year: formData.year.trim() ? parseInt(formData.year.trim()) : undefined
-        },
-        due_date: formData.due_date
+        book_id: selectedBookId,
+        due_date: dueDate
       }
 
       console.log('Creating new session:', requestBody)
@@ -81,11 +72,10 @@ export default function NewSessionModal({
 
       console.log('Session created successfully:', data)
 
-      // Reset form and close modal
-      setFormData({ title: '', author: '', year: '', due_date: '' })
+      setSelectedBookId(null)
+      setDueDate('')
+      setBookKey(k => k + 1)
       onClose()
-
-      // Notify parent component of successful creation
       onSessionCreated()
 
     } catch (err: unknown) {
@@ -101,8 +91,10 @@ export default function NewSessionModal({
   }
 
   const handleClose = () => {
-    setFormData({ title: '', author: '', year: '', due_date: '' })
-    onError('') // Clear errors when closing
+    setSelectedBookId(null)
+    setDueDate('')
+    setBookKey(k => k + 1)
+    onError('')
     onClose()
   }
 
@@ -114,7 +106,6 @@ export default function NewSessionModal({
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, loading])
 
-  // Get tomorrow's date for min date validation
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
   const tomorrowString = tomorrow.toISOString().split('T')[0]
@@ -147,53 +138,19 @@ export default function NewSessionModal({
 
         {/* Modal Form */}
         <div className="space-y-4">
-          {/* Book Title Field */}
+          {/* Book Search */}
           <div>
             <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Book Title <span className="text-primary">*</span>
+              Book <span className="text-primary">*</span>
             </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="e.g., The Lord of the Rings"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={200}
-            />
-          </div>
-
-          {/* Author Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Author <span className="text-primary">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.author}
-              onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
-              placeholder="e.g., J.R.R. Tolkien"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={100}
-            />
-          </div>
-
-          {/* Year Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Publication Year <span className="text-[var(--color-text-secondary)]">(optional)</span>
-            </label>
-            <input
-              type="number"
-              value={formData.year}
-              onChange={(e) => setFormData(prev => ({ ...prev, year: e.target.value }))}
-              placeholder="e.g., 1954"
-              min="1000"
-              max={new Date().getFullYear() + 1}
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            <BookSearchInput
+              key={bookKey}
+              onSelect={handleBookSelect}
               disabled={loading}
             />
+            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
+              Search by title or author
+            </p>
           </div>
 
           {/* Due Date Field */}
@@ -203,8 +160,8 @@ export default function NewSessionModal({
             </label>
             <input
               type="date"
-              value={formData.due_date}
-              onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               min={tomorrowString}
               className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               disabled={loading}
@@ -237,7 +194,7 @@ export default function NewSessionModal({
 
           <button
             onClick={handleSubmit}
-            disabled={loading || !formData.title.trim() || !formData.author.trim() || !formData.due_date}
+            disabled={loading || !selectedBookId || !dueDate}
             className="bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium transition-colors flex items-center space-x-2"
           >
             {loading ? (

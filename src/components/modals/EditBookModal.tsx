@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
 import type { Club } from '../../types'
+import BookSearchInput from '../BookSearchInput'
 
 interface EditBookModalProps {
   isOpen: boolean
@@ -8,14 +9,6 @@ interface EditBookModalProps {
   selectedClub: Club
   onBookUpdated: () => void
   onError: (error: string) => void
-}
-
-interface EditBookFormData {
-  title: string
-  author: string
-  edition: string
-  year: string
-  due_date: string
 }
 
 export default function EditBookModal({
@@ -26,33 +19,24 @@ export default function EditBookModal({
   onError
 }: EditBookModalProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState<EditBookFormData>({
-    title: '',
-    author: '',
-    edition: '',
-    year: '',
-    due_date: ''
-  })
+  const [selectedBookId, setSelectedBookId] = useState<number | null>(null)
+  const [dueDate, setDueDate] = useState('')
 
-  // Pre-populate form when modal opens
   useEffect(() => {
     if (isOpen && selectedClub.active_session) {
-      const book = selectedClub.active_session.book
       const session = selectedClub.active_session
-
-      setFormData({
-        title: book.title || '',
-        author: book.author || '',
-        edition: book.edition || '',
-        year: book.year ? String(book.year) : '',
-        due_date: session.due_date ? session.due_date.split('T')[0] : '' // Convert to YYYY-MM-DD format
-      })
+      setSelectedBookId(session.book.id ?? null)
+      setDueDate(session.due_date ? session.due_date.split('T')[0] : '')
     }
   }, [isOpen, selectedClub])
 
+  const handleBookSelect = (bookId: number) => {
+    setSelectedBookId(bookId)
+  }
+
   const handleSubmit = async () => {
-    if (!formData.title.trim() || !formData.author.trim()) {
-      onError('Title and Author are required')
+    if (!selectedBookId) {
+      onError('Please select a book')
       return
     }
 
@@ -63,23 +47,15 @@ export default function EditBookModal({
 
     try {
       setLoading(true)
-      onError('') // Clear any existing errors
+      onError('')
 
-      console.log('Updating book:', formData)
-
-      // We'll update the session's book and due date using your existing session endpoint
       const requestBody = {
         id: selectedClub.active_session.id,
-        book: {
-          title: formData.title.trim(),
-          author: formData.author.trim(),
-          edition: formData.edition.trim() || undefined,
-          year: formData.year.trim() ? parseInt(formData.year.trim()) : undefined
-        },
-        due_date: formData.due_date || undefined
+        book_id: selectedBookId,
+        due_date: dueDate || undefined
       }
 
-      console.log('Update request:', requestBody)
+      console.log('Updating book:', requestBody)
 
       const { data, error } = await invokeFunction('session', {
         method: 'PUT',
@@ -90,7 +66,6 @@ export default function EditBookModal({
 
       console.log('Book updated successfully:', data)
 
-      // Close modal and notify parent
       onClose()
       onBookUpdated()
 
@@ -107,7 +82,7 @@ export default function EditBookModal({
   }
 
   const handleClose = () => {
-    onError('') // Clear errors when closing
+    onError('')
     onClose()
   }
 
@@ -120,6 +95,8 @@ export default function EditBookModal({
   }, [isOpen, loading])
 
   if (!isOpen || !selectedClub.active_session) return null
+
+  const currentBook = selectedClub.active_session.book
 
   return (
     <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title-edit-book">
@@ -147,69 +124,20 @@ export default function EditBookModal({
 
         {/* Modal Form */}
         <div className="space-y-4">
-          {/* Book Title Field */}
+          {/* Book Search */}
           <div>
             <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Book Title <span className="text-primary">*</span>
+              Book <span className="text-primary">*</span>
             </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="e.g., The Lord of the Rings"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={200}
-            />
-          </div>
-
-          {/* Author Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Author <span className="text-primary">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.author}
-              onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
-              placeholder="e.g., J.R.R. Tolkien"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={100}
-            />
-          </div>
-
-          {/* Edition Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Edition <span className="text-[var(--color-text-secondary)]">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={formData.edition}
-              onChange={(e) => setFormData(prev => ({ ...prev, edition: e.target.value }))}
-              placeholder="e.g., First, Paperback, 2nd Edition"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={50}
-            />
-          </div>
-
-          {/* Year Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Publication Year <span className="text-[var(--color-text-secondary)]">(optional)</span>
-            </label>
-            <input
-              type="number"
-              value={formData.year}
-              onChange={(e) => setFormData(prev => ({ ...prev, year: e.target.value }))}
-              placeholder="e.g., 1954"
-              min="1000"
-              max={new Date().getFullYear() + 1}
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            <BookSearchInput
+              key={isOpen ? 'open' : 'closed'}
+              onSelect={handleBookSelect}
+              initialBook={currentBook}
               disabled={loading}
             />
+            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
+              Search to change the book
+            </p>
           </div>
 
           {/* Due Date Field */}
@@ -219,8 +147,8 @@ export default function EditBookModal({
             </label>
             <input
               type="date"
-              value={formData.due_date}
-              onChange={(e) => setFormData(prev => ({ ...prev, due_date: e.target.value }))}
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               disabled={loading}
             />
@@ -252,7 +180,7 @@ export default function EditBookModal({
 
           <button
             onClick={handleSubmit}
-            disabled={loading || !formData.title.trim() || !formData.author.trim()}
+            disabled={loading || !selectedBookId}
             className="bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium transition-colors flex items-center space-x-2"
           >
             {loading ? (

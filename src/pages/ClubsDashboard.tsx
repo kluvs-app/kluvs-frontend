@@ -72,9 +72,12 @@ export default function ClubsDashboard() {
   // Tab state for selected club view
   const [activeTab, setActiveTab] = useState<'general' | 'session' | 'members'>('general')
 
-  // Fetch servers on component mount
+  // Fetch servers on component mount; also warm up edge functions that are
+  // only called on user action (session, book) to avoid cold-start failures.
   useEffect(() => {
-    fetchServers(false) // Don't preserve selection on initial load
+    fetchServers(false)
+    invokeFunction('session', { method: 'GET' }).catch(() => {})
+    invokeFunction('book', { method: 'GET' }).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
