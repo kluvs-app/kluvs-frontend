@@ -97,11 +97,36 @@ describe('DiscordPage', () => {
       expect(screen.getByText('/join')).toBeInTheDocument()
     })
 
-    it('should render admin prefix commands', () => {
+    it('should render admin slash commands', () => {
       renderDiscordPage()
-      expect(screen.getByText('!setup')).toBeInTheDocument()
-      expect(screen.getByText('!club_create')).toBeInTheDocument()
-      expect(screen.getByText('!session_create')).toBeInTheDocument()
+      expect(screen.getByText('/setup')).toBeInTheDocument()
+      expect(screen.getByText('/club_create')).toBeInTheDocument()
+      expect(screen.getByText('/session_create')).toBeInTheDocument()
+    })
+
+    it('should render new admin commands', () => {
+      renderDiscordPage()
+      expect(screen.getByText('/discussion_add')).toBeInTheDocument()
+      expect(screen.getByText('/server_register')).toBeInTheDocument()
+      expect(screen.getByText('/discussion_sync')).toBeInTheDocument()
+    })
+
+    it('should render /due_date command', () => {
+      renderDiscordPage()
+      expect(screen.getByText('/due_date')).toBeInTheDocument()
+    })
+
+    it('should not render any ! prefix commands', () => {
+      renderDiscordPage()
+      const codeElements = document.querySelectorAll('code')
+      codeElements.forEach(el => {
+        expect(el.textContent).not.toMatch(/^!/)
+      })
+    })
+
+    it('should describe admin commands as slash commands', () => {
+      renderDiscordPage()
+      expect(screen.getByText(/all commands use discord's slash command system/i)).toBeInTheDocument()
     })
   })
 

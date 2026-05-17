@@ -14,6 +14,8 @@ vi.mock('../../supabase', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
       onAuthStateChange: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
     },
     functions: {
       invoke: vi.fn(),
@@ -54,6 +56,8 @@ describe('AuthContext', () => {
       error: null,
     })
     mockSupabase.auth.signOut.mockResolvedValue({ error: null })
+    mockSupabase.auth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: null })
+    mockSupabase.auth.updateUser.mockResolvedValue({ data: { user: createMockUser() }, error: null })
     mockSupabase.auth.onAuthStateChange.mockReturnValue({
       data: {
         subscription: {
@@ -94,6 +98,9 @@ describe('AuthContext', () => {
       expect(result.current).toHaveProperty('signUpWithEmail')
       expect(result.current).toHaveProperty('signOut')
       expect(result.current).toHaveProperty('refreshMemberData')
+      expect(result.current).toHaveProperty('isPasswordRecovery')
+      expect(result.current).toHaveProperty('resetPasswordForEmail')
+      expect(result.current).toHaveProperty('updatePassword')
     })
   })
 
@@ -821,6 +828,107 @@ describe('AuthContext', () => {
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
       })
+    })
+  })
+
+  describe('resetPasswordForEmail', () => {
+    it('should call Supabase resetPasswordForEmail with the email and redirectTo', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await result.current.resetPasswordForEmail('user@example.com')
+
+      expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        'user@example.com',
+        expect.objectContaining({ redirectTo: expect.stringContaining('/app') })
+      )
+    })
+
+    it('should throw when Supabase returns an error', async () => {
+      mockSupabase.auth.resetPasswordForEmail.mockResolvedValueOnce({
+        data: null,
+        error: new Error('Rate limit exceeded'),
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await expect(result.current.resetPasswordForEmail('user@example.com')).rejects.toThrow('Rate limit exceeded')
+    })
+  })
+
+  describe('updatePassword', () => {
+    it('should call Supabase updateUser with the new password', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await result.current.updatePassword('newpassword123')
+
+      expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith({ password: 'newpassword123' })
+    })
+
+    it('should throw when Supabase returns an error', async () => {
+      mockSupabase.auth.updateUser.mockResolvedValueOnce({
+        data: null,
+        error: new Error('Weak password'),
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await expect(result.current.updatePassword('weak')).rejects.toThrow('Weak password')
+    })
+  })
+
+  describe('isPasswordRecovery', () => {
+    it('should default to false', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      expect(result.current.isPasswordRecovery).toBe(false)
+    })
+
+    it('should be set to true when PASSWORD_RECOVERY event fires', async () => {
+      let authStateCallback: ((event: string, session: any) => void) | null = null
+      mockSupabase.auth.onAuthStateChange.mockImplementation((cb: any) => {
+        authStateCallback = cb
+        return { data: { subscription: { unsubscribe: vi.fn() } } }
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      authStateCallback?.('PASSWORD_RECOVERY', { user: createMockUser() })
+
+      await waitFor(() => {
+        expect(result.current.isPasswordRecovery).toBe(true)
+      })
+    })
+
+    it('should be cleared after updatePassword succeeds', async () => {
+      let authStateCallback: ((event: string, session: any) => void) | null = null
+      mockSupabase.auth.onAuthStateChange.mockImplementation((cb: any) => {
+        authStateCallback = cb
+        return { data: { subscription: { unsubscribe: vi.fn() } } }
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      authStateCallback?.('PASSWORD_RECOVERY', { user: createMockUser() })
+
+      await waitFor(() => expect(result.current.isPasswordRecovery).toBe(true))
+
+      await result.current.updatePassword('newpassword123')
+
+      await waitFor(() => expect(result.current.isPasswordRecovery).toBe(false))
     })
   })
 
