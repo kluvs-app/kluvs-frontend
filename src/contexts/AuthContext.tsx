@@ -235,8 +235,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (initialized) {
+        if (event === 'IDENTITY_LINKED') {
+          console.log('🔗 Discord identity linked, syncing member...')
+          const { error } = await supabase.functions.invoke('link-discord', { method: 'POST' })
+          if (error) console.error('❌ link-discord edge function error:', error)
+        }
         await handleUserChange(session?.user ?? null)
       }
       setLoading(false)

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
-import { useAuth } from '../../contexts/AuthContext'
 
 interface DiscordLinkModalProps {
   isOpen: boolean
@@ -8,7 +7,6 @@ interface DiscordLinkModalProps {
 }
 
 export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalProps) {
-  const { refreshMemberData } = useAuth()
   const [oauthLoading, setOauthLoading] = useState(false)
   const [oauthError, setOauthError] = useState('')
 
@@ -17,14 +15,13 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
       setOauthLoading(true)
       setOauthError('')
 
-      const { error } = await supabase.auth.linkIdentity({ provider: 'discord' })
+      // linkIdentity initiates an OAuth redirect — execution stops here.
+      // The link-discord edge function is called in AuthContext on IDENTITY_LINKED.
+      const { error } = await supabase.auth.linkIdentity({
+        provider: 'discord',
+        options: { redirectTo: `${window.location.origin}/app` }
+      })
       if (error) throw error
-
-      const { error: fnError } = await supabase.functions.invoke('link-discord', { method: 'POST' })
-      if (fnError) throw fnError
-
-      await refreshMemberData()
-      onClose()
     } catch (err: unknown) {
       console.error('Error linking Discord:', err)
       setOauthError(
