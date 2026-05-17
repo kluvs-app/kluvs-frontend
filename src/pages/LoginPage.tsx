@@ -68,7 +68,9 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-10">
-          <img src="/ic-mark.svg" alt="Kluvs" className="h-16 w-16 mx-auto mb-6" />
+          <Link to="/" aria-label="Back to home">
+            <img src="/ic-mark.svg" alt="Kluvs" className="h-16 w-16 mx-auto mb-6 hover:opacity-80 transition-opacity" />
+          </Link>
           <h1 className="text-page-heading text-[var(--color-text-primary)] mb-2">
             Welcome to your Kluvs
           </h1>
