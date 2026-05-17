@@ -8,11 +8,14 @@ interface AuthContextType {
   user: User | null
   member: Member | null
   loading: boolean
+  isPasswordRecovery: boolean
   getRoleForClub: (clubId: string) => UserRole | null
   signInWithDiscord: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
   signUpWithEmail: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>
+  resetPasswordForEmail: (email: string) => Promise<void>
+  updatePassword: (newPassword: string) => Promise<void>
   signOut: () => Promise<void>
   refreshMemberData: () => Promise<void>
 }
@@ -33,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
   
   // Use ref for immediate synchronous tracking of processing state
   const processingUserIdRef = useRef<string | null>(null)
@@ -204,6 +208,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Send password reset email
+  const resetPasswordForEmail = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/app`
+      })
+      if (error) throw error
+    } catch (error) {
+      console.error('Error sending password reset email:', error)
+      throw error
+    }
+  }
+
+  // Update password during a recovery session
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      setIsPasswordRecovery(false)
+    } catch (error) {
+      console.error('Error updating password:', error)
+      throw error
+    }
+  }
+
   const signOut = async () => {
     console.log('🔓 Signing out...')
     // Clear local state immediately regardless of Supabase response,
@@ -234,7 +263,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true)
+      }
       if (initialized) {
         await handleUserChange(session?.user ?? null)
       }
@@ -263,11 +295,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     member,
     loading,
+    isPasswordRecovery,
     getRoleForClub,
     signInWithDiscord,
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
+    resetPasswordForEmail,
+    updatePassword,
     signOut,
     refreshMemberData,
   }

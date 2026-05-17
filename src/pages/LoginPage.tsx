@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function LoginPage() {
-  const { loading, signInWithDiscord, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth()
+  const { loading, signInWithDiscord, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPasswordForEmail } = useAuth()
   const [signingIn, setSigningIn] = useState<'discord' | 'google' | 'email' | null>(null)
-  const [emailMode, setEmailMode] = useState<'signin' | 'signup'>('signin')
+  const [emailMode, setEmailMode] = useState<'signin' | 'signup' | 'reset'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState<string | null>(null)
   const [confirmationSent, setConfirmationSent] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
   const handleDiscordSignIn = async () => {
     try {
@@ -27,6 +28,21 @@ export default function LoginPage() {
       await signInWithGoogle()
     } catch (error) {
       console.error('Google sign in failed:', error)
+      setSigningIn(null)
+    }
+  }
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setEmailError(null)
+    try {
+      setSigningIn('email')
+      await resetPasswordForEmail(email)
+      setResetSent(true)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to send reset email'
+      setEmailError(message)
+    } finally {
       setSigningIn(null)
     }
   }
@@ -132,8 +148,58 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Reset password form */}
+          {emailMode === 'reset' && (
+            resetSent ? (
+              <div className="p-4 bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] text-center space-y-2">
+                <p className="text-[var(--color-text-primary)] font-medium">Check your inbox</p>
+                <p className="text-[var(--color-text-secondary)] text-body">
+                  We sent a reset link to <strong>{email}</strong>
+                </p>
+                <button
+                  onClick={() => { setEmailMode('signin'); setResetSent(false); setEmail('') }}
+                  className="mt-2 text-primary hover:opacity-80 font-medium text-body transition-opacity"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleResetSubmit} className="space-y-4">
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={signingIn !== null}
+                  className="w-full px-4 py-2.5 bg-[var(--color-surface-1)] border border-[var(--color-divider)] rounded-[10px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                />
+                {emailError && (
+                  <p className="text-danger text-body text-center">{emailError}</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={signingIn !== null}
+                  className="w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium text-body-lg transition-colors"
+                >
+                  {signingIn === 'email' ? 'Sending…' : 'Send reset link'}
+                </button>
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => { setEmailMode('signin'); setEmailError(null) }}
+                    disabled={signingIn !== null}
+                    className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-50 text-body transition-colors"
+                  >
+                    Back to sign in
+                  </button>
+                </div>
+              </form>
+            )
+          )}
+
           {/* Email Form */}
-          {confirmationSent ? (
+          {emailMode !== 'reset' && (confirmationSent ? (
             <div className="p-4 bg-[var(--color-surface-1)] rounded-[10px] border border-[var(--color-divider)]">
               <p className="text-center text-[var(--color-text-primary)] font-medium">
                 Check your inbox
@@ -173,23 +239,23 @@ export default function LoginPage() {
                 className="w-full px-4 py-2.5 bg-[var(--color-surface-1)] border border-[var(--color-divider)] rounded-[10px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               />
               {emailError && (
-                <p className="text-red-400 text-body-sm text-center">{emailError}</p>
+                <p className="text-danger text-body text-center">{emailError}</p>
               )}
               <button
                 type="submit"
                 disabled={signingIn !== null}
-                className="w-full bg-primary hover:bg-primary/90 disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium text-body-lg transition-colors"
+                className="w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium text-body-lg transition-colors"
               >
                 {signingIn === 'email' ? (
                   <>
                     <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
-                    <span>{emailMode === 'signin' ? 'Signing in...' : 'Creating account...'}</span>
+                    <span>{emailMode === 'signin' ? 'Signing in…' : 'Creating account…'}</span>
                   </>
                 ) : (
                   emailMode === 'signin' ? 'Sign In' : 'Create Account'
                 )}
               </button>
-              <div className="text-center mt-4">
+              <div className="flex justify-between items-center mt-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -197,15 +263,25 @@ export default function LoginPage() {
                     setEmailError(null)
                   }}
                   disabled={signingIn !== null}
-                  className="text-primary hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-body-sm transition-opacity"
+                  className="text-primary hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-body transition-opacity"
                 >
                   {emailMode === 'signin'
                     ? "Don't have an account? Sign up"
                     : 'Already have an account? Sign in'}
                 </button>
+                {emailMode === 'signin' && (
+                  <button
+                    type="button"
+                    onClick={() => { setEmailMode('reset'); setEmailError(null) }}
+                    disabled={signingIn !== null}
+                    className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-50 text-body transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                )}
               </div>
             </form>
-          )}
+          ))}
         </div>
 
         {/* Footer info */}
