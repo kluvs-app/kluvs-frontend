@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club, Book } from '../../types'
+import type { Club } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 
 interface NewSessionModalProps {
@@ -31,7 +31,7 @@ export default function NewSessionModal({
     return selectedDate > today
   }
 
-  const handleBookSelect = (bookId: number, _book: Book) => {
+  const handleBookSelect = (bookId: number) => {
     setSelectedBookId(bookId)
   }
 

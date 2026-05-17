@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club, Book } from '../../types'
+import type { Club } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 
 interface EditBookModalProps {
@@ -30,7 +30,7 @@ export default function EditBookModal({
     }
   }, [isOpen, selectedClub])
 
-  const handleBookSelect = (bookId: number, _book: Book) => {
+  const handleBookSelect = (bookId: number) => {
     setSelectedBookId(bookId)
   }
 
