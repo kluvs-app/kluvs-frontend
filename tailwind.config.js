@@ -8,7 +8,8 @@ export default {
     theme: {
       extend: {
         fontFamily: {
-          'sans': ['Inter', 'system-ui', 'sans-serif'],
+          'sans': ['IBM Plex Sans', 'system-ui', 'sans-serif'],
+          'serif': ['EB Garamond', 'Georgia', 'serif'],
         },
         colors: {
           primary: {

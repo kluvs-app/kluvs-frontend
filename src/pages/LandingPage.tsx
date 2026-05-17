@@ -68,7 +68,7 @@ export default function LandingPage() {
         <KluvsHexBackground />
         <div className="relative z-10 pt-[260px]">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-5xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-5xl font-serif font-bold text-white mb-6 leading-tight">
             Your Book Club,<br />organized.
           </h1>
           <p className="text-body-lg text-white/70 mb-10 max-w-lg mx-auto">
@@ -116,7 +116,7 @@ export default function LandingPage() {
       {/* Features */}
       <section className="px-6 py-16 bg-[var(--color-bg-raised)]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-section-heading text-[var(--color-text-primary)] text-center mb-12">
+          <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] text-center mb-12">
             Everything your book club needs
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -139,7 +139,7 @@ export default function LandingPage() {
       {/* Contact */}
       <section className="px-6 py-16 bg-[var(--color-bg)]">
         <div className="max-w-lg mx-auto">
-          <h2 className="text-section-heading text-[var(--color-text-primary)] mb-2">Contact Us</h2>
+          <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] mb-2">Contact Us</h2>
           <p className="text-body text-[var(--color-text-secondary)] mb-8">
             Have a question or feedback? We'd love to hear from you.
           </p>

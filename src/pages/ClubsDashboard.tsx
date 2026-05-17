@@ -303,7 +303,7 @@ export default function ClubsDashboard() {
 
               {/* Club Header */}
               <div className="mb-4">
-                <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
+                <h2 className="text-page-heading font-serif text-[var(--color-text-primary)]">{selectedClub.name}</h2>
                 <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                   {[
                     `${selectedClub.members.length} member${selectedClub.members.length !== 1 ? 's' : ''}`,

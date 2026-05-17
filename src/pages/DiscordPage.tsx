@@ -124,7 +124,7 @@ export default function DiscordPage() {
             </a>
           </div>
 
-          <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
+          <h1 className="text-5xl font-serif font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
             Your Book Club's<br />favorite Discord companion.
           </h1>
           <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
@@ -156,7 +156,7 @@ export default function DiscordPage() {
       {/* Features */}
       <section className="px-6 py-16 bg-[var(--color-bg-raised)]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-section-heading text-[var(--color-text-primary)] text-center mb-12">
+          <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] text-center mb-12">
             Everything your book club needs, in Discord
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -179,7 +179,7 @@ export default function DiscordPage() {
       {/* Commands */}
       <section className="px-6 py-16 bg-[var(--color-bg)]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-section-heading text-[var(--color-text-primary)] text-center mb-4">
+          <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] text-center mb-4">
             Commands
           </h2>
           <p className="text-body text-[var(--color-text-secondary)] text-center mb-12">
