@@ -20,7 +20,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
           />
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="text-card-heading text-[var(--color-text-primary)]">{book.title}</h3>
+          <h3 className="text-card-heading font-serif italic text-[var(--color-text-primary)]">{book.title}</h3>
           <p className="text-body text-[var(--color-text-secondary)] mt-1">by {book.author}</p>
           {(book.year || book.page_count) && (
             <p className="text-body text-[var(--color-text-secondary)] mt-0.5">
@@ -31,7 +31,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
             </p>
           )}
           {dueDate && (
-            <p className="text-body-lg text-primary font-semibold mt-2">
+            <p className="text-body-lg text-primary font-medium mt-2">
               Due {new Date(dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </p>
           )}

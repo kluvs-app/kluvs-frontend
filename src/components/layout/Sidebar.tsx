@@ -104,7 +104,7 @@ export default function Sidebar({
                 }}
                 className="p-4"
               >
-                <h3 className="font-semibold text-[var(--color-text-primary)] truncate">
+                <h3 className="font-medium text-[var(--color-text-primary)] truncate">
                   {club.name}
                 </h3>
                 <p className="text-helper text-[var(--color-text-secondary)] mt-0.5 truncate">

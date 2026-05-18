@@ -26,8 +26,8 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-3">
               <img src="/ic-mark.svg" alt="Kluvs" className="h-8 w-8" />
-              <h1 className="text-section-heading text-[var(--color-text-primary)]">
-                Kluvs
+              <h1 className="text-section-heading font-serif font-bold tracking-widest text-[var(--color-text-primary)]">
+                KLUVS
               </h1>
             </Link>
             {onMenuToggle && (
