@@ -33,11 +33,11 @@ describe('LandingPage', () => {
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     })
 
-    it('should render the "Dashboard" nav link pointing to /app', () => {
+    it('should render the "Dashboard" nav link pointing to the app subdomain', () => {
       renderLandingPage()
       const link = screen.getByRole('link', { name: /dashboard/i })
       expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', '/app')
+      expect(link).toHaveAttribute('href', import.meta.env.VITE_OAUTH_REDIRECT_URL)
     })
   })
 

@@ -76,7 +76,7 @@ describe('DiscordLinkModal', () => {
 
       expect(mockLinkIdentity).toHaveBeenCalledWith({
         provider: 'discord',
-        options: { redirectTo: `${window.location.origin}/app` }
+        options: { redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL }
       })
     })
 

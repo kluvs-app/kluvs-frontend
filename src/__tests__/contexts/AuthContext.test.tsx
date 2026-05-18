@@ -275,7 +275,7 @@ describe('AuthContext', () => {
       expect(mockSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
         provider: 'discord',
         options: {
-          redirectTo: window.location.origin + '/app',
+          redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL,
         },
       })
     })
@@ -313,7 +313,7 @@ describe('AuthContext', () => {
       expect(mockSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin + '/app',
+          redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL,
         },
       })
     })
@@ -841,7 +841,7 @@ describe('AuthContext', () => {
 
       expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
         'user@example.com',
-        expect.objectContaining({ redirectTo: expect.stringContaining('/app') })
+        expect.objectContaining({ redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL })
       )
     })
 
