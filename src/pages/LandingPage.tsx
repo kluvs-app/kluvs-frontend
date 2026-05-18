@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import DiscordIcon from '../components/icons/DiscordIcon'
 import KluvsHexBackground from '../components/KluvsHexBackground'
+import HowItWorksSection from '../components/HowItWorksSection'
 
 function BookIcon() {
   return (
@@ -136,8 +137,10 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <HowItWorksSection />
+
       {/* Contact */}
-      <section className="px-6 py-16 bg-[var(--color-bg)]">
+      <section className="px-6 py-16 bg-[var(--color-bg-raised)]">
         <div className="max-w-lg mx-auto">
           <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] mb-2">Contact Us</h2>
           <p className="text-body text-[var(--color-text-secondary)] mb-8">
