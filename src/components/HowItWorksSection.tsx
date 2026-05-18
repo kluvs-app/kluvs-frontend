@@ -44,7 +44,7 @@ export default function HowItWorksSection() {
               >
                 <div
                   className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-[#8b96f7]"
-                  style={{ background: 'rgba(88,101,242,0.25)' }}
+                  style={{ background: 'var(--color-bg-raised)' }}
                 >
                   <DiscordIcon className="w-5 h-5" />
                 </div>
@@ -95,14 +95,17 @@ export default function HowItWorksSection() {
                   Multiple Members per Club
                 </div>
               </div>
-              {['@socrates', '@big-brother'].map((handle) => (
+              {[
+                { handle: '@big-brother', role: 'Owner' },
+                { handle: '@socrates', role: 'Admin' },
+              ].map(({ handle, role }) => (
                 <div key={handle} className="rounded-xl p-2.5 flex items-center gap-2.5" style={{ background: 'var(--color-bg-elevated)' }}>
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: 'var(--color-text-secondary)' }}>
                     <MatIcon name="person" size={16} />
                   </div>
                   <div>
                     <div className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>{handle}</div>
-                    <div className="text-[10px] mt-px" style={{ color: 'var(--color-text-meta)' }}>Member</div>
+                    <div className="text-[10px] mt-px" style={{ color: 'var(--color-text-meta)' }}>{role}</div>
                   </div>
                 </div>
               ))}
@@ -218,7 +221,7 @@ export default function HowItWorksSection() {
                 </div>
               </div>
               <div className="rounded-xl p-2.5 flex items-center gap-2.5" style={{ background: 'rgba(88,101,242,0.18)' }}>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[#8b96f7]" style={{ background: 'rgba(88,101,242,0.15)' }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[#8b96f7]" style={{ background: 'var(--color-bg-raised)' }}>
                   <DiscordIcon className="w-3.5 h-3" />
                 </div>
                 <div>
