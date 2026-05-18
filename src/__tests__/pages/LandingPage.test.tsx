@@ -19,13 +19,13 @@ describe('LandingPage', () => {
   describe('Rendering', () => {
     it('should render the Kluvs logo', () => {
       renderLandingPage()
-      const logos = screen.getAllByAltText('KLUVS')
+      const logos = screen.getAllByAltText('Kluvs')
       expect(logos.length).toBeGreaterThan(0)
     })
 
     it('should render the brand name in the nav', () => {
       renderLandingPage()
-      expect(screen.getByText('KLUVS')).toBeInTheDocument()
+      expect(screen.getByText('Kluvs')).toBeInTheDocument()
     })
 
     it('should render the hero headline', () => {

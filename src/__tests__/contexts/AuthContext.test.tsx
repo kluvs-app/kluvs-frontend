@@ -904,7 +904,8 @@ describe('AuthContext', () => {
 
       await waitFor(() => expect(result.current.loading).toBe(false))
 
-      authStateCallback?.('PASSWORD_RECOVERY', { user: createMockUser() })
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      authStateCallback!('PASSWORD_RECOVERY', { user: createMockUser() })
 
       await waitFor(() => {
         expect(result.current.isPasswordRecovery).toBe(true)
@@ -922,7 +923,8 @@ describe('AuthContext', () => {
 
       await waitFor(() => expect(result.current.loading).toBe(false))
 
-      authStateCallback?.('PASSWORD_RECOVERY', { user: createMockUser() })
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      authStateCallback!('PASSWORD_RECOVERY', { user: createMockUser() })
 
       await waitFor(() => expect(result.current.isPasswordRecovery).toBe(true))
 

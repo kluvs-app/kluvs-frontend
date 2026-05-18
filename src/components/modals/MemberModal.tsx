@@ -152,8 +152,9 @@ export default function MemberModal({
         if (error) throw error
 
         // Handle shame list for new member
-        if (formData.on_shame_list && data.member) {
-          const newShameList = [...selectedClub.shame_list, data.member.id]
+        const created = (data as { member?: { id: number } }).member
+        if (formData.on_shame_list && created) {
+          const newShameList = [...selectedClub.shame_list, created.id]
 
           const { error: shameError } = await invokeFunction('club', {
             method: 'PUT',
