@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getAvatarUrl } from '../../supabase'
 import ThemeToggle from '../ThemeToggle'
@@ -42,6 +42,29 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
               </button>
             )}
           </div>
+
+          {/* Center: Tab navigation (desktop) */}
+          <nav className="hidden sm:flex items-center gap-1" aria-label="Main navigation">
+            {([
+              { to: '/me', label: 'Me' },
+              { to: '/clubs', label: 'Clubs' },
+              { to: '/books', label: 'Books' },
+            ] as const).map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `px-4 py-1.5 rounded-btn text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'text-primary bg-primary/10'
+                      : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]'
+                  }`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
 
           {/* Right: Theme toggle, User */}
           <div className="flex items-center gap-3">

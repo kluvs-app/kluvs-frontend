@@ -37,7 +37,7 @@ describe('LandingPage', () => {
       renderLandingPage()
       const link = screen.getByRole('link', { name: /dashboard/i })
       expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', import.meta.env.VITE_OAUTH_REDIRECT_URL)
+      expect(link).toHaveAttribute('href', `${import.meta.env.VITE_OAUTH_REDIRECT_URL}/me`)
     })
   })
 

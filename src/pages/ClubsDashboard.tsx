@@ -9,7 +9,6 @@ import MemberModal from '../components/modals/MemberModal'
 import DeleteMemberModal from '../components/modals/DeleteMemberModal'
 import DeleteDiscussionModal from '../components/modals/DeleteDiscussionModal'
 import DeleteClubModal from '../components/modals/DeleteClubModal'
-import TopNavbar from '../components/layout/TopNavbar'
 import Sidebar from '../components/layout/Sidebar'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import MembersTable from '../components/MembersTable'
@@ -17,6 +16,7 @@ import BookInfo from '../components/BookInfo'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function ClubsDashboard() {
+
   const [servers, setServers] = useState<Server[]>([])
   const [selectedServer, setSelectedServer] = useState<string>('')
   const [selectedClub, setSelectedClub] = useState<Club | null>(null)
@@ -246,14 +246,8 @@ export default function ClubsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]">
-      {/* Top Navigation */}
-      <TopNavbar
-        onMenuToggle={() => setSidebarOpen(prev => !prev)}
-      />
-
-      {/* Sidebar + Main Content */}
-      <div className="flex pt-16">
+    <>
+    <div className="flex">
         <Sidebar
           servers={servers}
           selectedClub={selectedClub}
@@ -615,6 +609,6 @@ export default function ClubsDashboard() {
         }}
         onError={setError}
       />
-    </div>
+    </>
   )
 }
