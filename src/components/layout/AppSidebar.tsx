@@ -54,8 +54,7 @@ const NAV = [
 ]
 
 function getClubsTo(): string {
-  const last = localStorage.getItem('kluvs:lastClub')
-  return last ? `/clubs/${last}` : '/clubs'
+  return '/clubs'
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────

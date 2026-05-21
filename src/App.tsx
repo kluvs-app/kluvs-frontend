@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
-import ClubsDashboard from './pages/ClubsDashboard'
+import ClubsPage from './pages/ClubsPage'
+import ClubDetailPage from './pages/ClubDetailPage'
 import ProfilePage from './pages/ProfilePage'
 import BooksPage from './pages/BooksPage'
 import LoginPage from './pages/LoginPage'
@@ -42,7 +43,9 @@ function AppContent() {
       <Route element={<AppShell />}>
         <Route index element={<Navigate to="/me" replace />} />
         <Route path="me" element={<ProfilePage />} />
-        <Route path="clubs" element={<ClubsDashboard />} />
+        <Route path="clubs" element={<ClubsPage />} />
+        <Route path="clubs/new" element={<ClubsPage openNewModal />} />
+        <Route path="clubs/:slug" element={<ClubDetailPage />} />
         <Route path="books" element={<BooksPage />} />
         <Route path="*" element={<Navigate to="/me" replace />} />
       </Route>
