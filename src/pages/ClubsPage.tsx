@@ -97,6 +97,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
           setShowAddClubModal(false)
           refreshMemberData()
         }}
+        onError={() => {}}
       />
     </div>
   )

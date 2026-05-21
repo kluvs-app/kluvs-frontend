@@ -169,7 +169,7 @@ export default function DiscussionsTimeline({
           <div className="hidden lg:block relative pb-4 pt-6">
             <div
               ref={scrollContainerRef}
-              className="flex gap-4 overflow-x-auto pb-6 px-4 pt-4"
+              className="flex gap-4 overflow-x-auto pb-6 pt-4"
               style={{
                 scrollSnapType: 'x mandatory',
                 msOverflowStyle: 'none',
@@ -258,7 +258,6 @@ export default function DiscussionsTimeline({
               })}
             </div>
 
-            <div className="absolute bottom-0 left-6 right-6 h-0.5 bg-[var(--color-divider)]" />
           </div>
         </>
       )}
