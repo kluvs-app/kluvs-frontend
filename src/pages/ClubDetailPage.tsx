@@ -137,7 +137,15 @@ export default function ClubDetailPage() {
     )
   }
 
-  if (!club) return null
+  if (!club) {
+    return error ? (
+      <main className="px-6 py-6">
+        <div className="bg-danger/10 border border-danger/30 rounded-card p-4">
+          <p className="text-danger font-medium">{error}</p>
+        </div>
+      </main>
+    ) : null
+  }
 
   return (
     <>
@@ -161,15 +169,30 @@ export default function ClubDetailPage() {
 
         {/* Club header */}
         <div className="sticky top-0 z-10 bg-[var(--color-bg)] -mx-6 px-6 py-4 mb-2 border-b border-[var(--color-divider)]">
-          <h1 className="text-page-heading font-serif font-bold text-[var(--color-text-primary)]">
-            {club.name}
-          </h1>
-          <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
-            {[
-              `${club.members.length} member${club.members.length !== 1 ? 's' : ''}`,
-              club.founded_date && `Founded in ${new Date(club.founded_date).getFullYear()}`
-            ].filter(Boolean).join(' · ')}
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-page-heading font-serif font-bold text-[var(--color-text-primary)]">
+                {club.name}
+              </h1>
+              <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
+                {[
+                  `${club.members.length} member${club.members.length !== 1 ? 's' : ''}`,
+                  club.founded_date && `Founded in ${new Date(club.founded_date).getFullYear()}`
+                ].filter(Boolean).join(' · ')}
+              </p>
+            </div>
+            {isAdmin && (
+              <button
+                onClick={() => { setClubToDelete({ id: club.id, name: club.name }); setShowDeleteClubModal(true) }}
+                className="shrink-0 p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-danger hover:bg-[var(--color-bg-elevated)] transition-colors"
+                aria-label="Delete club"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
         {clubLoading ? (
