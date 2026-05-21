@@ -83,11 +83,11 @@ describe('Header', () => {
       expect(screen.queryByRole('link', { name: /Dashboard/i })).not.toBeInTheDocument()
     })
 
-    it('should link to /app', () => {
+    it('should link to the OAuth redirect URL', () => {
       renderHeader({ showOpenAppButton: true })
 
       const button = screen.getByRole('link', { name: /Dashboard/i })
-      expect(button).toHaveAttribute('href', '/app')
+      expect(button).toHaveAttribute('href', import.meta.env.VITE_OAUTH_REDIRECT_URL)
     })
 
     it('should have proper styling', () => {

@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
         options: {
-          redirectTo: `${window.location.origin}/app`
+          redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL
         }
       })
       if (error) throw error
@@ -175,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/app`
+          redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL
         }
       })
       if (error) throw error
@@ -212,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetPasswordForEmail = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/app`
+        redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL
       })
       if (error) throw error
     } catch (error) {

@@ -98,7 +98,7 @@ describe('SetNewPasswordPage', () => {
       })
     })
 
-    it('should navigate to /app on success', async () => {
+    it('should navigate to / on success', async () => {
       const user = userEvent.setup()
       renderPage()
 
@@ -107,7 +107,7 @@ describe('SetNewPasswordPage', () => {
       await user.click(screen.getByRole('button', { name: /update password/i }))
 
       await waitFor(() => {
-        expect(mockNavigate).toHaveBeenCalledWith('/app')
+        expect(mockNavigate).toHaveBeenCalledWith('/')
       })
     })
 

@@ -13,12 +13,12 @@ export default function Header({ showOpenAppButton = false }: HeaderProps) {
       </Link>
 
       {showOpenAppButton && (
-        <Link
-          to="/app"
+        <a
+          href={import.meta.env.VITE_OAUTH_REDIRECT_URL}
           className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-body font-medium transition-colors"
         >
           Dashboard
-        </Link>
+        </a>
       )}
     </header>
   )
