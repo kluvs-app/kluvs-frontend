@@ -80,8 +80,42 @@ export default function AppSidebar() {
           </span>
         </a>
 
+        <hr className="border-t border-[var(--color-divider)] mx-4 mb-2" />
+
+        {/* Profile card */}
+        <Link
+          to="/me"
+          className="flex items-center gap-2.5 mx-3 px-3 py-2.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
+        >
+          <div className="relative h-8 w-8 shrink-0">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
+              {member?.name?.[0]?.toUpperCase() ?? '?'}
+            </div>
+            {member?.avatar_path && (
+              <img
+                src={getAvatarUrl(member.avatar_path)}
+                alt={member.name}
+                className="absolute inset-0 h-8 w-8 rounded-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
+              />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-[var(--color-text-primary)] truncate leading-tight">
+              {member?.name ?? 'User'}
+            </p>
+            {member?.handle && (
+              <p className="text-xs text-[var(--color-text-secondary)] truncate leading-tight">
+                {member.handle.startsWith('@') ? member.handle : `@${member.handle}`}
+              </p>
+            )}
+          </div>
+        </Link>
+
+        <hr className="border-t border-[var(--color-divider)] mx-4 my-2" />
+
         {/* Primary nav */}
-        <nav className="flex flex-col gap-0.5 px-3 mt-1" aria-label="Main navigation">
+        <nav className="flex flex-col gap-0.5 px-3" aria-label="Main navigation">
           {NAV.map(({ label, base, Icon }) => {
             const active = location.pathname.startsWith(base)
             const to = label === 'Clubs' ? getClubsTo() : base
@@ -106,38 +140,8 @@ export default function AppSidebar() {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Profile foot */}
+        {/* Footer actions */}
         <div className="border-t border-dashed border-[var(--color-divider)] p-3 space-y-0.5">
-          {/* User card → /me */}
-          <Link
-            to="/me"
-            className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
-          >
-            <div className="relative h-8 w-8 shrink-0">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                {member?.name?.[0]?.toUpperCase() ?? '?'}
-              </div>
-              {member?.avatar_path && (
-                <img
-                  src={getAvatarUrl(member.avatar_path)}
-                  alt={member.name}
-                  className="absolute inset-0 h-8 w-8 rounded-full object-cover"
-                  onError={(e) => { e.currentTarget.style.display = 'none' }}
-                />
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-[var(--color-text-primary)] truncate leading-tight">
-                {member?.name ?? 'User'}
-              </p>
-              {member?.handle && (
-                <p className="text-xs text-[var(--color-text-secondary)] truncate leading-tight">
-                  {member.handle.startsWith('@') ? member.handle : `@${member.handle}`}
-                </p>
-              )}
-            </div>
-          </Link>
-
           {/* Discord */}
           {!member?.discord_id ? (
             <button
