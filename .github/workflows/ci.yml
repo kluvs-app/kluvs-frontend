@@ -26,10 +26,14 @@ jobs:
 
       - name: Run validation
         # Uses your existing script to run lint, type-check, and tests in one go
-        run: npm run validate 
+        run: npm run validate
+        env:
+          VITE_OAUTH_REDIRECT_URL: http://localhost:5173
 
       - name: Run tests with coverage
         run: npm run test:coverage
+        env:
+          VITE_OAUTH_REDIRECT_URL: http://localhost:5173
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -64,6 +68,8 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          VITE_OAUTH_REDIRECT_URL: https://app.kluvs.com
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

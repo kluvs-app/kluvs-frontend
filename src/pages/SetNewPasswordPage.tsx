@@ -24,7 +24,7 @@ export default function SetNewPasswordPage() {
     try {
       setSubmitting(true)
       await updatePassword(password)
-      navigate('/app')
+      navigate('/')
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to update password.')
     } finally {
