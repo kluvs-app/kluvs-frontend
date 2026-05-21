@@ -24,7 +24,7 @@ function BookIcon() {
 
 function SparkleIcon() {
   return (
-    <svg className="w-7 h-7" style={{ color: '#C9A227' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg className="w-7 h-7 text-role-owner" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
     </svg>
   )
@@ -69,23 +69,36 @@ const userCommands = [
   { name: '/leave', description: 'Leave the book club in this channel' },
   { name: '/book', description: 'Show current book details' },
   { name: '/session', description: 'Show all session details' },
-  { name: '/duedate', description: 'Show the session due date' },
+  { name: '/due_date', description: 'Show the session due date' },
   { name: '/discussions', description: 'View scheduled discussion topics' },
   { name: '/book_summary', description: 'AI-generated book summary' },
+  { name: '/support', description: 'Get help in the community server' },
+  { name: '/donate', description: 'Support the Kluvs project' },
+  { name: '/vote', description: 'Vote for Kluvs on top.gg' },
+  { name: '/bug', description: 'Report a bug to the team' },
+  { name: '/feedback', description: 'Send feedback to the team' },
 ]
 
 const adminCommands = [
-  { name: '!setup', description: 'First-run wizard: register server and create a club' },
-  { name: '!admin_help', description: 'Show the full admin command reference' },
-  { name: '!club_create', description: 'Create a new book club' },
-  { name: '!club_update', description: 'Update club name or channel' },
-  { name: '!club_delete', description: 'Delete the club' },
-  { name: '!session_create', description: 'Create a reading session' },
-  { name: '!session_update', description: 'Update due date or book details' },
-  { name: '!session_delete', description: 'Delete the active session' },
-  { name: '!member_add', description: 'Add a member to the club' },
-  { name: '!member_remove', description: 'Remove a member from the club' },
-  { name: '!member_role', description: 'Set a member\'s role (admin or member)' },
+  { name: '/setup', description: 'First-run wizard: register server and create a club' },
+  { name: '/admin_help', description: 'Show the full admin command reference' },
+  { name: '/server_register', description: 'Register this Discord server' },
+  { name: '/server_update', description: 'Update the server name' },
+  { name: '/server_delete', description: 'Delete server and all data' },
+  { name: '/club_create', description: 'Create a new book club' },
+  { name: '/club_update', description: 'Update club name or channel' },
+  { name: '/club_delete', description: 'Delete the club' },
+  { name: '/member_add', description: 'Add a member to the club' },
+  { name: '/member_remove', description: 'Remove a member from the club' },
+  { name: '/member_role', description: 'Set a member\'s role (admin or member)' },
+  { name: '/session_create', description: 'Create a reading session' },
+  { name: '/session_update', description: 'Update due date or book details' },
+  { name: '/session_delete', description: 'Delete the active session' },
+  { name: '/discussion_add', description: 'Add a discussion and create a Discord event' },
+  { name: '/discussion_update', description: 'Update an existing discussion' },
+  { name: '/discussion_delete', description: 'Delete a discussion' },
+  { name: '/discussion_sync', description: 'Create Discord events for discussions missing one' },
+  { name: '/version', description: 'Show the current bot version' },
 ]
 
 export default function DiscordPage() {
@@ -104,15 +117,14 @@ export default function DiscordPage() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Add Kluvs bot to your Discord server"
-              className="flex items-center gap-3 text-white px-8 py-3 rounded-btn font-medium text-body-lg transition-opacity hover:opacity-90"
-              style={{ backgroundColor: '#5865F2' }}
+              className="flex items-center gap-3 bg-discord text-white px-8 py-3 rounded-btn font-medium text-body-lg transition-opacity hover:opacity-90"
             >
               <DiscordIcon />
               Add to Server
             </a>
           </div>
 
-          <h1 className="text-5xl font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
+          <h1 className="text-5xl font-serif font-bold text-[var(--color-text-primary)] mb-6 leading-tight">
             Your Book Club's<br />favorite Discord companion.
           </h1>
           <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
@@ -144,7 +156,7 @@ export default function DiscordPage() {
       {/* Features */}
       <section className="px-6 py-16 bg-[var(--color-bg-raised)]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-section-heading text-[var(--color-text-primary)] text-center mb-12">
+          <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] text-center mb-12">
             Everything your book club needs, in Discord
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -167,11 +179,11 @@ export default function DiscordPage() {
       {/* Commands */}
       <section className="px-6 py-16 bg-[var(--color-bg)]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-section-heading text-[var(--color-text-primary)] text-center mb-4">
+          <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] text-center mb-4">
             Commands
           </h2>
           <p className="text-body text-[var(--color-text-secondary)] text-center mb-12">
-            Slash commands are available to all members. Admin commands (prefix <code className="bg-[var(--color-bg-raised)] px-1.5 py-0.5 rounded text-sm font-mono">!</code>) require the guild owner or club admin role.
+            All commands use Discord's slash command system. Admin commands require the guild owner or club admin role.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 

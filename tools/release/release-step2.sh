@@ -14,7 +14,8 @@ VERSION_NAME="$1"
 echo "2️⃣ Updating library version to $VERSION_NAME..."
 
 npm version "$VERSION_NAME" --no-git-tag-version
-git add package.json package-lock.json
+echo "export const VERSION = '$VERSION_NAME'" > src/version.ts
+git add package.json package-lock.json src/version.ts
 echo "Changes to commit:"
 git --no-pager diff --cached
 git commit -m "Bump version to $VERSION_NAME"

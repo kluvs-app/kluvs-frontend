@@ -13,6 +13,7 @@ vi.mock('../../../supabase', () => {
   }
   return {
     supabase: mockClient,
+    invokeFunction: (...args: any[]) => mockClient.functions.invoke(...args),
   }
 })
 

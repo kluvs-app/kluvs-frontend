@@ -10,6 +10,7 @@ const mockSignInWithDiscord = vi.fn()
 const mockSignInWithGoogle = vi.fn()
 const mockSignInWithEmail = vi.fn()
 const mockSignUpWithEmail = vi.fn()
+const mockResetPasswordForEmail = vi.fn()
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
     loading: false,
@@ -17,6 +18,7 @@ vi.mock('../contexts/AuthContext', () => ({
     signInWithGoogle: mockSignInWithGoogle,
     signInWithEmail: mockSignInWithEmail,
     signUpWithEmail: mockSignUpWithEmail,
+    resetPasswordForEmail: mockResetPasswordForEmail,
   }),
 }))
 
@@ -37,6 +39,7 @@ describe('LoginPage', () => {
     mockSignInWithGoogle.mockResolvedValue(undefined)
     mockSignInWithEmail.mockResolvedValue(undefined)
     mockSignUpWithEmail.mockResolvedValue({ needsConfirmation: false })
+    mockResetPasswordForEmail.mockResolvedValue(undefined)
   })
 
   describe('Rendering', () => {
@@ -202,7 +205,7 @@ describe('LoginPage', () => {
       await user.click(signInButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Signing in...')).toBeInTheDocument()
+        expect(screen.getByText('Signing in…')).toBeInTheDocument()
       })
     })
 
@@ -271,6 +274,113 @@ describe('LoginPage', () => {
       await waitFor(() => {
         expect(screen.queryByText('Invalid credentials')).not.toBeInTheDocument()
       })
+    })
+  })
+
+  describe('Home Link', () => {
+    it('should render the logo as a link to /', () => {
+      renderLoginPage()
+      const homeLink = screen.getByRole('link', { name: /back to home/i })
+      expect(homeLink).toHaveAttribute('href', '/')
+    })
+
+    it('should render the Kluvs logo image inside the home link', () => {
+      renderLoginPage()
+      const logo = screen.getByAltText('Kluvs')
+      expect(logo.closest('a')).toHaveAttribute('href', '/')
+    })
+  })
+
+  describe('Forgot Password', () => {
+    it('should show "Forgot password?" button in sign-in mode', () => {
+      renderLoginPage()
+      expect(screen.getByRole('button', { name: /forgot password/i })).toBeInTheDocument()
+    })
+
+    it('should not show "Forgot password?" button in sign-up mode', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      await user.click(screen.getByText("Don't have an account? Sign up"))
+
+      expect(screen.queryByRole('button', { name: /forgot password/i })).not.toBeInTheDocument()
+    })
+
+    it('should switch to reset mode when "Forgot password?" is clicked', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      await user.click(screen.getByRole('button', { name: /forgot password/i }))
+
+      expect(screen.getByRole('button', { name: /send reset link/i })).toBeInTheDocument()
+      expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument()
+    })
+
+    it('should call resetPasswordForEmail on submit', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      await user.click(screen.getByRole('button', { name: /forgot password/i }))
+      await user.type(screen.getByPlaceholderText('Email address'), 'user@example.com')
+      await user.click(screen.getByRole('button', { name: /send reset link/i }))
+
+      await waitFor(() => {
+        expect(mockResetPasswordForEmail).toHaveBeenCalledWith('user@example.com')
+      })
+    })
+
+    it('should show confirmation after reset email is sent', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      await user.click(screen.getByRole('button', { name: /forgot password/i }))
+      await user.type(screen.getByPlaceholderText('Email address'), 'user@example.com')
+      await user.click(screen.getByRole('button', { name: /send reset link/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Check your inbox')).toBeInTheDocument()
+      })
+    })
+
+    it('should show error when reset email fails', async () => {
+      mockResetPasswordForEmail.mockRejectedValueOnce(new Error('Rate limit exceeded'))
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      await user.click(screen.getByRole('button', { name: /forgot password/i }))
+      await user.type(screen.getByPlaceholderText('Email address'), 'user@example.com')
+      await user.click(screen.getByRole('button', { name: /send reset link/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Rate limit exceeded')).toBeInTheDocument()
+      })
+    })
+
+    it('should return to sign-in from reset form via "Back to sign in"', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      await user.click(screen.getByRole('button', { name: /forgot password/i }))
+      await user.click(screen.getByRole('button', { name: /back to sign in/i }))
+
+      expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument()
+    })
+
+    it('should return to sign-in from reset confirmation via "Back to sign in"', async () => {
+      const user = userEvent.setup()
+      renderLoginPage()
+
+      await user.click(screen.getByRole('button', { name: /forgot password/i }))
+      await user.type(screen.getByPlaceholderText('Email address'), 'user@example.com')
+      await user.click(screen.getByRole('button', { name: /send reset link/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Check your inbox')).toBeInTheDocument()
+      })
+
+      await user.click(screen.getByRole('button', { name: /back to sign in/i }))
+
+      expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument()
     })
   })
 

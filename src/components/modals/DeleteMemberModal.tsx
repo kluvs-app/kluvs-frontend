@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { invokeFunction } from '../../supabase'
 import type { Member } from '../../types'
 
 interface DeleteMemberModalProps {
@@ -28,7 +28,7 @@ export default function DeleteMemberModal({
 
       console.log('Deleting member:', memberToDelete)
 
-      const { data, error } = await supabase.functions.invoke(`member?id=${encodeURIComponent(memberToDelete.id)}`, {
+      const { data, error } = await invokeFunction(`member?id=${encodeURIComponent(memberToDelete.id)}`, {
         method: 'DELETE'
       })
 

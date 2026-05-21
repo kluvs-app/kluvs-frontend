@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
-import { supabase } from '../supabase'
+import { supabase, invokeFunction } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Member, UserRole } from '../types'
 
@@ -8,11 +8,14 @@ interface AuthContextType {
   user: User | null
   member: Member | null
   loading: boolean
+  isPasswordRecovery: boolean
   getRoleForClub: (clubId: string) => UserRole | null
   signInWithDiscord: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
   signUpWithEmail: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>
+  resetPasswordForEmail: (email: string) => Promise<void>
+  updatePassword: (newPassword: string) => Promise<void>
   signOut: () => Promise<void>
   refreshMemberData: () => Promise<void>
 }
@@ -33,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
   
   // Use ref for immediate synchronous tracking of processing state
   const processingUserIdRef = useRef<string | null>(null)
@@ -66,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         console.log('✅ Session ready, calling Edge Function')
 
-        const { data, error } = await supabase.functions.invoke(`member?user_id=${encodeURIComponent(userId)}`, {
+        const { data, error } = await invokeFunction<Member>(`member?user_id=${encodeURIComponent(userId)}`, {
           method: 'GET'
         })
 
@@ -204,20 +208,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signOut = async () => {
+  // Send password reset email
+  const resetPasswordForEmail = async (email: string) => {
     try {
-      console.log('🔓 Signing out...')
-      const { error } = await supabase.auth.signOut()
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/app`
+      })
       if (error) throw error
-
-      // Immediately clear local state
-      setUser(null)
-      setMember(null)
-      processingUserIdRef.current = null
-      console.log('✅ Sign out successful')
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('Error sending password reset email:', error)
       throw error
+    }
+  }
+
+  // Update password during a recovery session
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
+      if (error) throw error
+      setIsPasswordRecovery(false)
+    } catch (error) {
+      console.error('Error updating password:', error)
+      throw error
+    }
+  }
+
+  const signOut = async () => {
+    console.log('🔓 Signing out...')
+    // Clear local state immediately regardless of Supabase response,
+    // since an expired session still means the user is logged out locally.
+    setUser(null)
+    setMember(null)
+    processingUserIdRef.current = null
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) console.error('❌ Supabase sign out error (session may have already expired):', error)
+      else console.log('✅ Sign out successful')
+    } catch (error) {
+      console.error('❌ Sign out exception:', error)
     }
   }
 
@@ -235,25 +263,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true)
+      }
       if (initialized) {
         await handleUserChange(session?.user ?? null)
       }
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Re-validate session when the tab becomes visible again.
+    // Browsers throttle timers in background tabs, which can cause
+    // Supabase's token auto-refresh to miss its window.
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        console.log('👁️ Tab visible — re-checking session')
+        const { data: { session } } = await supabase.auth.getSession()
+        await handleUserChange(session?.user ?? null)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      subscription.unsubscribe()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [])
 
   const value = {
     user,
     member,
     loading,
+    isPasswordRecovery,
     getRoleForClub,
     signInWithDiscord,
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
+    resetPasswordForEmail,
+    updatePassword,
     signOut,
     refreshMemberData,
   }

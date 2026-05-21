@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../supabase'
+import { invokeFunction } from '../supabase'
 import type { Club, Server, Discussion, Member } from "../types"
 import AddClubModal from '../components/modals/AddClubModal'
 import EditBookModal from '../components/modals/EditBookModal'
@@ -72,9 +72,12 @@ export default function ClubsDashboard() {
   // Tab state for selected club view
   const [activeTab, setActiveTab] = useState<'general' | 'session' | 'members'>('general')
 
-  // Fetch servers on component mount
+  // Fetch servers on component mount; also warm up edge functions that are
+  // only called on user action (session, book) to avoid cold-start failures.
   useEffect(() => {
-    fetchServers(false) // Don't preserve selection on initial load
+    fetchServers(false)
+    invokeFunction('session', { method: 'GET' }).catch(() => {})
+    invokeFunction('book', { method: 'GET' }).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -91,7 +94,7 @@ export default function ClubsDashboard() {
       // Preserve current selection if requested
       const currentSelection = preserveSelection ? selectedServer : null
 
-      const { data, error } = await supabase.functions.invoke('server', {
+      const { data, error } = await invokeFunction<{ servers: Server[] }>('server', {
         method: 'GET'
       })
 
@@ -139,7 +142,7 @@ export default function ClubsDashboard() {
       const functionName = `club?id=${encodeURIComponent(clubId)}&server_id=${encodeURIComponent(serverIdToUse)}`
       console.log('🏢 [CLUB-FETCH] Calling Edge Function with URL:', functionName)
 
-      const { data, error } = await supabase.functions.invoke(functionName, {
+      const { data, error } = await invokeFunction<Club>(functionName, {
         method: 'GET'
       })
 
@@ -300,7 +303,7 @@ export default function ClubsDashboard() {
 
               {/* Club Header */}
               <div className="mb-4">
-                <h2 className="text-page-heading text-[var(--color-text-primary)]">{selectedClub.name}</h2>
+                <h2 className="text-page-heading font-serif text-[var(--color-text-primary)]">{selectedClub.name}</h2>
                 <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                   {[
                     `${selectedClub.members.length} member${selectedClub.members.length !== 1 ? 's' : ''}`,
@@ -320,7 +323,7 @@ export default function ClubsDashboard() {
                     <button
                       key={id}
                       onClick={() => setActiveTab(id as typeof activeTab)}
-                      className={`px-4 py-2.5 text-sm font-semibold text-primary border-b-2 transition-colors ${
+                      className={`px-4 py-2.5 text-sm font-medium text-primary border-b-2 transition-colors ${
                         activeTab === id ? 'border-primary' : 'border-transparent'
                       }`}
                     >
@@ -337,7 +340,7 @@ export default function ClubsDashboard() {
                 <div className="divide-y divide-[var(--color-divider)]">
                   {/* Current Book */}
                   <div className="pb-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
+                    <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
                     {selectedClub.active_session ? (
                       <BookInfo
                         book={selectedClub.active_session.book}
@@ -360,10 +363,10 @@ export default function ClubsDashboard() {
 
                   {/* Next Discussion */}
                   <div className="pt-5">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
+                    <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
                     {nextDiscussion ? (
                       <>
-                        <h4 className="font-semibold text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
+                        <h4 className="font-medium text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
                         <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                           {[
                             nextDiscussion.location,
@@ -437,7 +440,7 @@ export default function ClubsDashboard() {
             <div>
               {/* Mobile: inline club list */}
               <div className="lg:hidden">
-                <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Your Clubs</p>
+                <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">Your Clubs</p>
                 <div>
                   {myClubs.map(club => (
                     <div
@@ -449,14 +452,14 @@ export default function ClubsDashboard() {
                       className="flex items-center justify-between py-4 border-b border-[var(--color-divider)] last:border-b-0 cursor-pointer group"
                     >
                       <div>
-                        <p className="font-semibold text-[var(--color-text-primary)] group-hover:text-primary transition-colors">
+                        <p className="font-medium text-[var(--color-text-primary)] group-hover:text-primary transition-colors">
                           {club.name}
                         </p>
                         <p className="text-helper text-[var(--color-text-secondary)] mt-0.5">{club.serverName}</p>
                       </div>
                       {club.role && club.role !== 'member' && (
                         <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full capitalize ${
-                          club.role === 'owner' ? 'bg-[#F0BF05]/15 text-[#F0BF05]' : 'bg-tertiary/10 text-tertiary'
+                          club.role === 'owner' ? 'bg-role-owner/15 text-role-owner' : 'bg-tertiary/10 text-tertiary'
                         }`}>
                           {club.role}
                         </span>

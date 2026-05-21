@@ -56,6 +56,11 @@ describe('Sidebar', () => {
       expect(serverNameElements.length).toBeGreaterThan(0)
     })
 
+    it('should display the app version at the bottom', () => {
+      render(<Sidebar {...defaultProps} />)
+      expect(screen.getByText(/^v\d+\.\d+\.\d+$/)).toBeInTheDocument()
+    })
+
     it('should show empty state when member has no clubs in any server', () => {
       // Override useAuth to return a member with no clubs
       vi.mocked(vi.fn()).mockReturnValue(undefined)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { invokeFunction } from '../../supabase'
 import type { Club } from '../../types'
 
 interface DeleteClubModalProps {
@@ -32,7 +32,7 @@ export default function DeleteClubModal({
 
       console.log('Deleting club:', clubToDelete)
 
-      const { data, error } = await supabase.functions.invoke(`club?id=${encodeURIComponent(clubToDelete.id)}&server_id=${encodeURIComponent(selectedServer)}`, {
+      const { data, error } = await invokeFunction(`club?id=${encodeURIComponent(clubToDelete.id)}&server_id=${encodeURIComponent(selectedServer)}`, {
         method: 'DELETE'
       })
 

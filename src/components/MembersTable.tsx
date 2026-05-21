@@ -20,9 +20,9 @@ export default function MembersTable({
     <>
       {/* Section heading */}
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-section-heading text-[var(--color-text-primary)]">
+        <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">
           Members ({selectedClub.members.length})
-        </h3>
+        </p>
         {isAdmin && (
           <button
             onClick={onAddMember}
@@ -59,7 +59,7 @@ export default function MembersTable({
 
             {/* Name + handle */}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-[var(--color-text-primary)] text-sm leading-tight">
+              <p className="font-medium text-[var(--color-text-primary)] text-sm leading-tight">
                 {member.name}
               </p>
               {(member.handle || member.discord_id) && (

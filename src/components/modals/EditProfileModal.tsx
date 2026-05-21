@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase, getAvatarUrl } from '../../supabase'
+import { invokeFunction, getAvatarUrl } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
 
@@ -52,7 +52,7 @@ export default function EditProfileModal({
 
       console.log('Updating member with:', requestBody)
 
-      const { data, error } = await supabase.functions.invoke('member', {
+      const { data, error } = await invokeFunction('member', {
         method: 'PUT',
         body: requestBody
       })

@@ -14,6 +14,8 @@ vi.mock('../../supabase', () => {
       signUp: vi.fn(),
       signOut: vi.fn(),
       onAuthStateChange: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
     },
     functions: {
       invoke: vi.fn(),
@@ -21,6 +23,7 @@ vi.mock('../../supabase', () => {
   }
   return {
     supabase: mockClient,
+    invokeFunction: (...args: any[]) => mockClient.functions.invoke(...args),
   }
 })
 
@@ -53,6 +56,8 @@ describe('AuthContext', () => {
       error: null,
     })
     mockSupabase.auth.signOut.mockResolvedValue({ error: null })
+    mockSupabase.auth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: null })
+    mockSupabase.auth.updateUser.mockResolvedValue({ data: { user: createMockUser() }, error: null })
     mockSupabase.auth.onAuthStateChange.mockReturnValue({
       data: {
         subscription: {
@@ -93,6 +98,9 @@ describe('AuthContext', () => {
       expect(result.current).toHaveProperty('signUpWithEmail')
       expect(result.current).toHaveProperty('signOut')
       expect(result.current).toHaveProperty('refreshMemberData')
+      expect(result.current).toHaveProperty('isPasswordRecovery')
+      expect(result.current).toHaveProperty('resetPasswordForEmail')
+      expect(result.current).toHaveProperty('updatePassword')
     })
   })
 
@@ -617,7 +625,7 @@ describe('AuthContext', () => {
   })
 
   describe('Error Handling - Sign Out', () => {
-    it('should handle sign out errors', async () => {
+    it('should clear local state even when sign out returns an error', async () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', {
@@ -636,10 +644,15 @@ describe('AuthContext', () => {
         expect(result.current.user).not.toBeNull()
       })
 
-      await expect(result.current.signOut()).rejects.toThrow('Sign out failed')
+      await result.current.signOut()
+
+      await waitFor(() => {
+        expect(result.current.user).toBeNull()
+        expect(result.current.member).toBeNull()
+      })
     })
 
-    it('should handle unexpected error in sign out', async () => {
+    it('should clear local state even when sign out throws unexpectedly', async () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', {
@@ -656,7 +669,12 @@ describe('AuthContext', () => {
         expect(result.current.user).not.toBeNull()
       })
 
-      await expect(result.current.signOut()).rejects.toThrow('Unexpected error')
+      await result.current.signOut()
+
+      await waitFor(() => {
+        expect(result.current.user).toBeNull()
+        expect(result.current.member).toBeNull()
+      })
     })
   })
 
@@ -678,6 +696,99 @@ describe('AuthContext', () => {
 
       // Should handle exception gracefully
       expect(result.current.member).toBeNull()
+    })
+  })
+
+  describe('Tab Visibility — session re-validation', () => {
+    it('re-fetches member data when tab becomes visible with a valid session', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => {
+        expect(result.current.member).not.toBeNull()
+      })
+
+      const callsBefore = mockSupabase.functions.invoke.mock.calls.length
+
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      await waitFor(() => {
+        expect(mockSupabase.functions.invoke.mock.calls.length).toBeGreaterThan(callsBefore)
+      })
+
+      expect(mockSupabase.auth.getSession).toHaveBeenCalled()
+    })
+
+    it('clears user and member when tab becomes visible with an expired session', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => {
+        expect(result.current.user).not.toBeNull()
+      })
+
+      // Session has since expired
+      mockSupabase.auth.getSession.mockResolvedValueOnce({ data: { session: null }, error: null })
+
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      await waitFor(() => {
+        expect(result.current.user).toBeNull()
+        expect(result.current.member).toBeNull()
+      })
+    })
+
+    it('does not re-fetch when tab becomes hidden', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => {
+        expect(result.current.member).not.toBeNull()
+      })
+
+      const callsBefore = mockSupabase.auth.getSession.mock.calls.length
+
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      // Give it a tick to ensure nothing fires
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(mockSupabase.auth.getSession.mock.calls.length).toBe(callsBefore)
+    })
+
+    it('removes the visibilitychange listener on unmount', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser)
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result, unmount } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => {
+        expect(result.current.member).not.toBeNull()
+      })
+
+      unmount()
+
+      const callsAfterUnmount = mockSupabase.auth.getSession.mock.calls.length
+
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(mockSupabase.auth.getSession.mock.calls.length).toBe(callsAfterUnmount)
     })
   })
 
@@ -717,6 +828,109 @@ describe('AuthContext', () => {
       await waitFor(() => {
         expect(result.current.loading).toBe(false)
       })
+    })
+  })
+
+  describe('resetPasswordForEmail', () => {
+    it('should call Supabase resetPasswordForEmail with the email and redirectTo', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await result.current.resetPasswordForEmail('user@example.com')
+
+      expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+        'user@example.com',
+        expect.objectContaining({ redirectTo: expect.stringContaining('/app') })
+      )
+    })
+
+    it('should throw when Supabase returns an error', async () => {
+      mockSupabase.auth.resetPasswordForEmail.mockResolvedValueOnce({
+        data: null,
+        error: new Error('Rate limit exceeded'),
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await expect(result.current.resetPasswordForEmail('user@example.com')).rejects.toThrow('Rate limit exceeded')
+    })
+  })
+
+  describe('updatePassword', () => {
+    it('should call Supabase updateUser with the new password', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await result.current.updatePassword('newpassword123')
+
+      expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith({ password: 'newpassword123' })
+    })
+
+    it('should throw when Supabase returns an error', async () => {
+      mockSupabase.auth.updateUser.mockResolvedValueOnce({
+        data: null,
+        error: new Error('Weak password'),
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      await expect(result.current.updatePassword('weak')).rejects.toThrow('Weak password')
+    })
+  })
+
+  describe('isPasswordRecovery', () => {
+    it('should default to false', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      expect(result.current.isPasswordRecovery).toBe(false)
+    })
+
+    it('should be set to true when PASSWORD_RECOVERY event fires', async () => {
+      let authStateCallback: ((event: string, session: any) => void) | null = null
+      mockSupabase.auth.onAuthStateChange.mockImplementation((cb: any) => {
+        authStateCallback = cb
+        return { data: { subscription: { unsubscribe: vi.fn() } } }
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      authStateCallback!('PASSWORD_RECOVERY', { user: createMockUser() })
+
+      await waitFor(() => {
+        expect(result.current.isPasswordRecovery).toBe(true)
+      })
+    })
+
+    it('should be cleared after updatePassword succeeds', async () => {
+      let authStateCallback: ((event: string, session: any) => void) | null = null
+      mockSupabase.auth.onAuthStateChange.mockImplementation((cb: any) => {
+        authStateCallback = cb
+        return { data: { subscription: { unsubscribe: vi.fn() } } }
+      })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      authStateCallback!('PASSWORD_RECOVERY', { user: createMockUser() })
+
+      await waitFor(() => expect(result.current.isPasswordRecovery).toBe(true))
+
+      await result.current.updatePassword('newpassword123')
+
+      await waitFor(() => expect(result.current.isPasswordRecovery).toBe(false))
     })
   })
 

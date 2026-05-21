@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { invokeFunction } from '../../supabase'
 import type { Club, Discussion } from '../../types'
 
 interface DeleteDiscussionModalProps {
@@ -36,7 +36,7 @@ export default function DeleteDiscussionModal({
         discussion_ids_to_delete: [discussionToDelete.id]
       }
 
-      const { data, error } = await supabase.functions.invoke('session', {
+      const { data, error } = await invokeFunction('session', {
         method: 'PUT',
         body: requestBody
       })

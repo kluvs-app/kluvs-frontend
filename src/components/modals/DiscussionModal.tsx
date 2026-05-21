@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../../supabase'
+import { invokeFunction } from '../../supabase'
 import type { Club } from '../../types'
 
 interface Discussion {
@@ -128,7 +128,7 @@ export default function DiscussionModal({
 
       console.log(`${isEditing ? 'Updating' : 'Adding'} discussion:`, requestBody)
 
-      const { data, error } = await supabase.functions.invoke('session', {
+      const { data, error } = await invokeFunction('session', {
         method: 'PUT',
         body: requestBody
       })
