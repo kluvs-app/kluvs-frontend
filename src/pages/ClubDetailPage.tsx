@@ -120,12 +120,6 @@ export default function ClubDetailPage() {
   const handleEditMember = (m: Member) => { setEditingMember(m); setShowMemberModal(true) }
   const handleDeleteMember = (m: Member) => { setMemberToDelete(m); setShowDeleteMemberModal(true) }
 
-  const nextDiscussion = club?.active_session
-    ? [...club.active_session.discussions]
-        .filter(d => new Date(d.date) > new Date())
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] ?? null
-    : null
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
