@@ -87,7 +87,7 @@ describe('Header', () => {
       renderHeader({ showOpenAppButton: true })
 
       const button = screen.getByRole('link', { name: /Dashboard/i })
-      expect(button).toHaveAttribute('href', import.meta.env.VITE_OAUTH_REDIRECT_URL)
+      expect(button).toHaveAttribute('href', `${import.meta.env.VITE_OAUTH_REDIRECT_URL}/me`)
     })
 
     it('should have proper styling', () => {

@@ -25,17 +25,6 @@ vi.mock('../supabase', () => {
 })
 
 // Mock layout and child components to simplify testing
-vi.mock('../components/layout/TopNavbar', () => ({
-  default: ({ onMenuToggle }: any) => (
-    <div data-testid="top-navbar">
-      <span>Kluvs</span>
-      {onMenuToggle && (
-        <button onClick={onMenuToggle} data-testid="menu-toggle">Menu</button>
-      )}
-    </div>
-  ),
-}))
-
 vi.mock('../components/layout/Sidebar', () => ({
   default: ({ onClubSelect, onAddClub, onDeleteClub }: any) => (
     <div data-testid="clubs-sidebar">
@@ -251,7 +240,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -287,7 +276,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -319,7 +308,7 @@ describe('ClubsDashboard', () => {
 
       await waitFor(() => {
         // Component should render even with error
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
     })
   })
@@ -341,7 +330,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const addClubButton = screen.getByTestId('sidebar-add-club')
@@ -369,7 +358,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       // Open modal
@@ -412,8 +401,6 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
-        expect(screen.getByTestId('top-navbar')).toBeInTheDocument()
         expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
     })
@@ -437,7 +424,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       // Before selecting club, detail components shouldn't show data
@@ -479,7 +466,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       // Should show "Select a Book Club" message
@@ -511,7 +498,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -521,67 +508,6 @@ describe('ClubsDashboard', () => {
       await waitFor(() => {
         expect(screen.getByText('Loading Club Details')).toBeInTheDocument()
       }, { timeout: 200 })
-    })
-  })
-
-  describe('Mobile Sidebar', () => {
-    it('should toggle sidebar when menu button is clicked', async () => {
-      const user = userEvent.setup()
-
-      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'server') {
-          return Promise.resolve({ data: { servers: [mockServer] }, error: null })
-        }
-        if (endpoint.includes('member?user_id=')) {
-          return Promise.resolve({ data: mockAdminMember, error: null })
-        }
-        return Promise.resolve({ data: null, error: null })
-      })
-
-      render(<ClubsDashboard />)
-
-      await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
-      })
-
-      const menuToggle = screen.getByTestId('menu-toggle')
-      expect(menuToggle).toBeInTheDocument()
-
-      // Toggle sidebar open
-      await user.click(menuToggle)
-
-      // Toggle sidebar closed
-      await user.click(menuToggle)
-    })
-
-    it('should close sidebar when club is selected from sidebar', async () => {
-      const user = userEvent.setup()
-
-      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'server') {
-          return Promise.resolve({ data: { servers: [mockServer] }, error: null })
-        }
-        if (endpoint.includes('club?id=club-1')) {
-          return Promise.resolve({ data: mockClub, error: null })
-        }
-        if (endpoint.includes('member?user_id=')) {
-          return Promise.resolve({ data: mockAdminMember, error: null })
-        }
-        return Promise.resolve({ data: null, error: null })
-      })
-
-      render(<ClubsDashboard />)
-
-      await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
-      })
-
-      const selectClubButton = screen.getByTestId('select-club-1')
-      await user.click(selectClubButton)
-
-      await waitFor(() => {
-        expect(screen.getByTestId('current-reading-card')).toBeInTheDocument()
-      })
     })
   })
 
@@ -605,7 +531,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -637,7 +563,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -662,7 +588,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
         expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
     })
@@ -729,7 +655,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const addClubButton = screen.getByTestId('sidebar-add-club')
@@ -765,7 +691,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       // Select a club
@@ -802,7 +728,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -843,7 +769,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -884,7 +810,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -925,7 +851,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -966,7 +892,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1007,7 +933,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1048,7 +974,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1083,7 +1009,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1130,7 +1056,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1176,7 +1102,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1217,7 +1143,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1258,7 +1184,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1304,7 +1230,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1350,7 +1276,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
@@ -1396,7 +1322,7 @@ describe('ClubsDashboard', () => {
       render(<ClubsDashboard />)
 
       await waitFor(() => {
-        expect(screen.getByText('Kluvs')).toBeInTheDocument()
+        expect(screen.getByTestId('clubs-sidebar')).toBeInTheDocument()
       })
 
       const selectClubButton = screen.getByTestId('select-club-1')
