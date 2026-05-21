@@ -25,7 +25,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
   }, [])
 
   return (
-    <div className="max-w-2xl mx-auto px-5 py-8">
+    <div className="px-6 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-page-heading font-serif font-bold text-[var(--color-text-primary)]">
@@ -51,12 +51,12 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div>
           {clubs.map((club) => (
             <Link
               key={club.id}
               to={`/clubs/${club.id}`}
-              className="flex items-center gap-3 px-4 py-3 rounded-card bg-[var(--color-bg-raised)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+              className="flex items-center gap-4 px-6 py-3.5 -mx-6 border-b border-[var(--color-divider)] last:border-b-0 hover:bg-[var(--color-bg-elevated)] transition-colors group"
             >
               {/* Avatar */}
               <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm shrink-0">
@@ -68,9 +68,15 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                 <p className="font-medium text-[var(--color-text-primary)] truncate">
                   {club.name}
                 </p>
-                <p className="text-sm text-[var(--color-text-secondary)] truncate capitalize mt-0.5">
+                <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+                  club.role === 'owner'
+                    ? 'bg-role-owner/15 text-role-owner'
+                    : club.role === 'admin'
+                      ? 'bg-tertiary/10 text-tertiary'
+                      : 'bg-secondary/10 text-secondary'
+                }`}>
                   {club.role}
-                </p>
+                </span>
               </div>
 
               {/* Chevron */}

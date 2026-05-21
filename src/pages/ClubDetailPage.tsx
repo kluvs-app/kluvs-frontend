@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useParams, useNavigate } from 'react-router-dom'
 import { invokeFunction } from '../supabase'
 import type { Club, Server, Discussion, Member } from '../types'
 import EditBookModal from '../components/modals/EditBookModal'
@@ -14,12 +14,9 @@ import MembersTable from '../components/MembersTable'
 import BookInfo from '../components/BookInfo'
 import { useAuth } from '../contexts/AuthContext'
 
-type TabId = 'general' | 'session' | 'members'
-
 export default function ClubDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const [searchParams, setSearchParams] = useSearchParams()
   const { member, getRoleForClub } = useAuth()
 
   const memberClub = member?.clubs.find(c => c.id === slug)
@@ -34,16 +31,6 @@ export default function ClubDetailPage() {
   const selectedServerData = servers.find(s => s.id === serverId)
   const clubRole = club ? getRoleForClub(club.id) : null
   const isAdmin = clubRole === 'admin' || clubRole === 'owner'
-
-  // Tab state lives in ?tab= URL param, replaceState only
-  const activeTab = (searchParams.get('tab') ?? 'general') as TabId
-  const setTab = (tab: TabId) => {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev)
-      next.set('tab', tab)
-      return next
-    }, { replace: true })
-  }
 
   // Modal state
   const [showEditBookModal, setShowEditBookModal] = useState(false)
@@ -154,7 +141,7 @@ export default function ClubDetailPage() {
 
   return (
     <>
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+      <main className="px-6 py-6">
         {/* Mobile back link */}
         <Link
           to="/clubs"
@@ -173,11 +160,11 @@ export default function ClubDetailPage() {
         )}
 
         {/* Club header */}
-        <div className="mb-5">
+        <div className="sticky top-0 z-10 bg-[var(--color-bg)] -mx-6 px-6 py-4 mb-2 border-b border-[var(--color-divider)]">
           <h1 className="text-page-heading font-serif font-bold text-[var(--color-text-primary)]">
             {club.name}
           </h1>
-          <p className="text-sm text-[var(--color-text-secondary)] mt-1">
+          <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
             {[
               `${club.members.length} member${club.members.length !== 1 ? 's' : ''}`,
               club.founded_date && `Founded in ${new Date(club.founded_date).getFullYear()}`
@@ -185,118 +172,55 @@ export default function ClubDetailPage() {
           </p>
         </div>
 
-        {/* Tab bar */}
-        <div className="border-b border-[var(--color-divider)] mb-6">
-          <nav className="-mb-px flex gap-1">
-            {([
-              { id: 'general',  label: 'General' },
-              { id: 'session',  label: 'Active Session' },
-              { id: 'members',  label: 'Members' },
-            ] as { id: TabId; label: string }[]).map(({ id, label }) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === id
-                    ? 'text-primary border-primary'
-                    : 'text-[var(--color-text-secondary)] border-transparent hover:text-[var(--color-text-primary)]'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Tab panels */}
         {clubLoading ? (
-          <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-12 text-center">
+          <div className="py-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-r-transparent mx-auto" />
           </div>
         ) : (
-          <div key={activeTab}>
-            {/* General */}
-            {activeTab === 'general' && (
-              <div className="divide-y divide-[var(--color-divider)]">
-                <div className="pb-5">
-                  <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Current Book</p>
-                  {club.active_session ? (
-                    <BookInfo book={club.active_session.book} dueDate={club.active_session.due_date} />
-                  ) : (
-                    <>
-                      <p className="text-body text-[var(--color-text-secondary)] italic">No active reading session</p>
-                      {isAdmin && (
-                        <button
-                          onClick={() => setShowNewSessionModal(true)}
-                          className="mt-3 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
-                        >
-                          Start Session
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-                <div className="pt-5">
-                  <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-3">Next Discussion</p>
-                  {nextDiscussion ? (
-                    <>
-                      <h4 className="font-medium text-[var(--color-text-primary)]">{nextDiscussion.title}</h4>
-                      <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-                        {[
-                          nextDiscussion.location,
-                          new Date(nextDiscussion.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-                        ].filter(Boolean).join(' · ')}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-body text-[var(--color-text-secondary)] italic">No upcoming discussion</p>
-                  )}
-                </div>
-              </div>
-            )}
-
+          <div className="divide-y divide-[var(--color-divider)]">
             {/* Active Session */}
-            {activeTab === 'session' && (
-              <div>
-                {club.active_session ? (
-                  <div className="divide-y divide-[var(--color-divider)]">
-                    <div className="pb-6">
-                      <BookInfo
-                        book={club.active_session.book}
-                        dueDate={club.active_session.due_date}
-                        isAdmin={isAdmin}
-                        onEditBook={() => setShowEditBookModal(true)}
-                        onNewSession={() => setShowNewSessionModal(true)}
-                      />
-                    </div>
-                    <div className="pt-6">
-                      <DiscussionsTimeline
-                        selectedClub={club}
-                        isAdmin={isAdmin}
-                        onAddDiscussion={handleAddDiscussion}
-                        onEditDiscussion={handleEditDiscussion}
-                        onDeleteDiscussion={handleDeleteDiscussion}
-                      />
-                    </div>
+            <section className="pt-6 pb-10">
+              <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)] mb-4">
+                Active Session
+              </p>
+              {club.active_session ? (
+                <div className="divide-y divide-[var(--color-divider)]">
+                  <div className="pb-6">
+                    <BookInfo
+                      book={club.active_session.book}
+                      dueDate={club.active_session.due_date}
+                      isAdmin={isAdmin}
+                      onEditBook={() => setShowEditBookModal(true)}
+                      onNewSession={() => setShowNewSessionModal(true)}
+                    />
                   </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-[var(--color-text-secondary)]">No active reading session</p>
-                    {isAdmin && (
-                      <button
-                        onClick={() => setShowNewSessionModal(true)}
-                        className="mt-4 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
-                      >
-                        Start Session
-                      </button>
-                    )}
+                  <div className="pt-6">
+                  <DiscussionsTimeline
+                    selectedClub={club}
+                    isAdmin={isAdmin}
+                    onAddDiscussion={handleAddDiscussion}
+                    onEditDiscussion={handleEditDiscussion}
+                    onDeleteDiscussion={handleDeleteDiscussion}
+                  />
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              ) : (
+                <div>
+                  <p className="text-body text-[var(--color-text-secondary)] italic">No active reading session</p>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowNewSessionModal(true)}
+                      className="mt-3 bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
+                    >
+                      Start Session
+                    </button>
+                  )}
+                </div>
+              )}
+            </section>
 
             {/* Members */}
-            {activeTab === 'members' && (
+            <section className="pt-6">
               <MembersTable
                 selectedClub={club}
                 isAdmin={isAdmin}
@@ -304,7 +228,7 @@ export default function ClubDetailPage() {
                 onEditMember={handleEditMember}
                 onDeleteMember={handleDeleteMember}
               />
-            )}
+            </section>
           </div>
         )}
       </main>
