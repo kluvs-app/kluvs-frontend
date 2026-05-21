@@ -1,3 +1,18 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html",
+      "has": [{ "type": "host", "value": "app.kluvs.com" }]
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "redirects": [
+    {
+      "source": "/app/:path*",
+      "destination": "https://app.kluvs.com/me",
+      "permanent": false,
+      "has": [{ "type": "host", "value": "kluvs.com" }]
+    }
+  ]
 }
