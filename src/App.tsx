@@ -15,7 +15,7 @@ import DiscordPage from './pages/DiscordPage'
 import ScrollToTop from './components/ScrollToTop'
 import AppShell from './components/layout/AppShell'
 
-function PublicAuthRoute() {
+export function PublicAuthRoute() {
   const { user, loading } = useAuth()
 
   if (loading) {
@@ -37,7 +37,7 @@ function PublicAuthRoute() {
   return <LoginPage />
 }
 
-function ProtectedRoute() {
+export function ProtectedRoute() {
   const { user, loading, isPasswordRecovery } = useAuth()
 
   if (loading) {
