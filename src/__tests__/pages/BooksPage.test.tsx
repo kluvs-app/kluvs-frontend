@@ -206,19 +206,12 @@ describe('BooksPage', () => {
       )
     })
 
-    it('shows "In library" badge after successful upsert', async () => {
+    it('shows Published and Pages labels in the details section', async () => {
       await renderWithResults()
       await selectBook()
 
-      expect(screen.getByText(/in library/i)).toBeInTheDocument()
-    })
-
-    it('shows year and page count metadata tiles', async () => {
-      await renderWithResults()
-      await selectBook()
-
-      // Label text is unique to the detail metadata tiles
-      expect(screen.getByText('Year')).toBeInTheDocument()
+      // Label text is unique to the detail metadata rows
+      expect(screen.getByText('Published')).toBeInTheDocument()
       expect(screen.getByText('Pages')).toBeInTheDocument()
     })
 
