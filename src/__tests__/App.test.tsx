@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from '../contexts/ThemeContext'
 import { PublicAuthRoute, ProtectedRoute } from '../App'
+import App from '../App'
 
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -16,6 +17,18 @@ vi.mock('../pages/LoginPage', () => ({
 vi.mock('../pages/SetNewPasswordPage', () => ({
   default: () => <div>Set New Password Page</div>,
 }))
+
+vi.mock('../pages/LandingPage', () => ({ default: () => <div>Landing Page</div> }))
+vi.mock('../pages/PrivacyPolicy', () => ({ default: () => <div>Privacy Policy</div> }))
+vi.mock('../pages/TermsOfUse', () => ({ default: () => <div>Terms of Use</div> }))
+vi.mock('../pages/DataDeletion', () => ({ default: () => <div>Data Deletion</div> }))
+vi.mock('../pages/DiscordPage', () => ({ default: () => <div>Discord Page</div> }))
+vi.mock('../pages/ProfilePage', () => ({ default: () => <div>Profile Page</div> }))
+vi.mock('../pages/ClubsPage', () => ({ default: () => <div>Clubs Page</div> }))
+vi.mock('../pages/ClubDetailPage', () => ({ default: () => <div>Club Detail Page</div> }))
+vi.mock('../pages/BooksPage', () => ({ default: () => <div>Books Page</div> }))
+vi.mock('../components/layout/AppShell', () => ({ default: () => <div>App Shell</div> }))
+vi.mock('../components/ScrollToTop', () => ({ default: () => null }))
 
 // Silence Supabase / other module noise in tests
 vi.mock('../supabase', () => ({ supabase: { auth: {}, functions: {} } }))
@@ -99,5 +112,24 @@ describe('ProtectedRoute', () => {
     mockUseAuth.mockReturnValue({ user: { id: '1' }, loading: false, isPasswordRecovery: false } as never)
     renderProtectedRoute()
     expect(screen.getByText('Protected Content')).toBeInTheDocument()
+  })
+})
+
+describe('App', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+  afterEach(() => { vi.unstubAllEnvs() })
+
+  it('renders the marketing tree when not on the app domain', () => {
+    vi.stubEnv('VITE_FORCE_APP_DOMAIN', '')
+    mockUseAuth.mockReturnValue({ user: null, loading: false, isPasswordRecovery: false } as never)
+    render(<App />)
+    expect(screen.getByText('Landing Page')).toBeInTheDocument()
+  })
+
+  it('renders the app tree when VITE_FORCE_APP_DOMAIN is set', () => {
+    vi.stubEnv('VITE_FORCE_APP_DOMAIN', 'true')
+    mockUseAuth.mockReturnValue({ user: null, loading: false, isPasswordRecovery: false } as never)
+    render(<App />)
+    expect(screen.getByText('Login Page')).toBeInTheDocument()
   })
 })
