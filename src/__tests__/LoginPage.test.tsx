@@ -278,16 +278,16 @@ describe('LoginPage', () => {
   })
 
   describe('Home Link', () => {
-    it('should render the logo as a link to /', () => {
+    it('should render the logo as a link to kluvs.com', () => {
       renderLoginPage()
       const homeLink = screen.getByRole('link', { name: /back to home/i })
-      expect(homeLink).toHaveAttribute('href', '/')
+      expect(homeLink).toHaveAttribute('href', 'https://kluvs.com')
     })
 
     it('should render the Kluvs logo image inside the home link', () => {
       renderLoginPage()
       const logo = screen.getByAltText('Kluvs')
-      expect(logo.closest('a')).toHaveAttribute('href', '/')
+      expect(logo.closest('a')).toHaveAttribute('href', 'https://kluvs.com')
     })
   })
 
