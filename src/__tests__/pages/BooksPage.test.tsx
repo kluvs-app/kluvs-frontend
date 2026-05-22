@@ -3,6 +3,41 @@ import { render, screen, act, fireEvent } from '../utils/test-utils'
 import { MemoryRouter } from 'react-router-dom'
 import BooksPage from '../../pages/BooksPage'
 import type { Book } from '../../types'
+import type { GBVolumeInfo, KGPerson } from '../../services/googleBooks'
+
+// ── fetch mock (getVolume + getAuthor call fetch directly) ─────────────────────
+
+const mockFetch = vi.fn()
+vi.stubGlobal('fetch', mockFetch)
+
+function fetchOk(data: unknown) {
+  return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(data) } as Response)
+}
+function fetchFail() {
+  return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) } as Response)
+}
+
+const mockVolumeInfo: GBVolumeInfo = {
+  title: 'The Great Gatsby',
+  subtitle: 'A Story of the Jazz Age',
+  authors: ['F. Scott Fitzgerald'],
+  publisher: 'Scribner',
+  publishedDate: '1925-04-10',
+  description: '<b>A tale of the American Dream.</b>',
+  pageCount: 180,
+  categories: ['Fiction', 'Classic literature'],
+  averageRating: 3.9,
+  ratingsCount: 54321,
+  language: 'en',
+}
+
+const mockKGPerson: KGPerson = {
+  name: 'Francis Scott Fitzgerald',
+  description: 'American novelist',
+  detailedDescription: {
+    articleBody: 'Francis Scott Key Fitzgerald was an American novelist.',
+  },
+}
 
 // ── Supabase mock ──────────────────────────────────────────────────────────────
 
@@ -61,6 +96,9 @@ beforeEach(async () => {
     data: { subscription: { unsubscribe: vi.fn() } },
   })
   mockSupabase.functions.invoke.mockResolvedValue({ data: [], error: null })
+
+  // Default: all direct fetch calls (getVolume, getAuthor) return nothing
+  mockFetch.mockResolvedValue(fetchFail())
 })
 
 afterEach(() => {
@@ -250,6 +288,153 @@ describe('BooksPage', () => {
       })
 
       expect(screen.getByRole('heading', { name: /the great gatsby/i })).toBeInTheDocument()
+    })
+  })
+
+  describe('Selection guard', () => {
+    it('does not POST again when the same book is re-selected', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+
+      // Click the list button (first DOM match — panel is CSS-hidden but still in DOM)
+      await act(async () => {
+        fireEvent.click(screen.getAllByText('The Great Gatsby')[0])
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      const firstCount = mockSupabase.functions.invoke.mock.calls.filter(
+        ([ep]: [string]) => ep === 'book'
+      ).length
+
+      await act(async () => {
+        fireEvent.click(screen.getAllByText('The Great Gatsby')[0])
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      const secondCount = mockSupabase.functions.invoke.mock.calls.filter(
+        ([ep]: [string]) => ep === 'book'
+      ).length
+
+      expect(secondCount).toBe(firstCount)
+    })
+  })
+
+  describe('Google Books enrichment (getVolume)', () => {
+    async function renderAndSelect() {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      mockFetch.mockImplementation((url: string) => {
+        if (url.includes('googleapis.com/books'))
+          return fetchOk({ id: 'gatsby-google-id', volumeInfo: mockVolumeInfo })
+        return fetchFail()
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(100)
+      })
+    }
+
+    it('calls the Google Books volumes endpoint on selection', async () => {
+      await renderAndSelect()
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('googleapis.com/books/v1/volumes/gatsby-google-id')
+      )
+    })
+
+    it('shows the subtitle from volumeInfo', async () => {
+      await renderAndSelect()
+      expect(screen.getByText('A Story of the Jazz Age')).toBeInTheDocument()
+    })
+
+    it('shows the description stripped of HTML', async () => {
+      await renderAndSelect()
+      expect(screen.getByText('A tale of the American Dream.')).toBeInTheDocument()
+    })
+
+    it('shows genre chips from categories', async () => {
+      await renderAndSelect()
+      expect(screen.getByText('Fiction')).toBeInTheDocument()
+    })
+
+    it('shows the star rating when averageRating is present', async () => {
+      await renderAndSelect()
+      expect(screen.getByText(/3\.9/)).toBeInTheDocument()
+    })
+
+    it('still shows the book when getVolume fails', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(100)
+      })
+      expect(screen.getByRole('heading', { name: /the great gatsby/i })).toBeInTheDocument()
+    })
+  })
+
+  describe('Author section (getAuthor)', () => {
+    async function renderAndSelectWithAuthor() {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      mockFetch.mockImplementation((url: string) => {
+        if (url.includes('googleapis.com/books'))
+          return fetchOk({ id: 'gatsby-google-id', volumeInfo: mockVolumeInfo })
+        if (url.includes('kgsearch.googleapis.com'))
+          return fetchOk({ itemListElement: [{ result: mockKGPerson }] })
+        return fetchFail()
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(100)
+      })
+    }
+
+    it('shows the author name when getAuthor returns data', async () => {
+      await renderAndSelectWithAuthor()
+      expect(screen.getByText('Francis Scott Fitzgerald')).toBeInTheDocument()
+    })
+
+    it('shows the author descriptor eyebrow', async () => {
+      await renderAndSelectWithAuthor()
+      expect(screen.getByText('American novelist')).toBeInTheDocument()
+    })
+
+    it('shows the author bio', async () => {
+      await renderAndSelectWithAuthor()
+      expect(screen.getByText(/Francis Scott Key Fitzgerald/)).toBeInTheDocument()
+    })
+
+    it('does not show the author section when getAuthor returns null', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(100)
+      })
+      expect(screen.queryByText(/about the author/i)).not.toBeInTheDocument()
     })
   })
 })
