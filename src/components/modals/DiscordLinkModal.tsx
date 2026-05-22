@@ -19,7 +19,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
       // discord_id is set by a backend trigger on auth.identities INSERT.
       const { error } = await supabase.auth.linkIdentity({
         provider: 'discord',
-        options: { redirectTo: `${window.location.origin}/app` }
+        options: { redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL }
       })
       if (error) throw error
     } catch (err: unknown) {

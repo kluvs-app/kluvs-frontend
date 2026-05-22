@@ -135,7 +135,7 @@ export default function Sidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col fixed top-16 left-0 bottom-0 w-64 bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] transition-colors">
+      <aside className="hidden lg:flex lg:flex-col fixed top-0 left-[220px] bottom-0 w-64 bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] transition-colors">
         {sidebarContent}
       </aside>
 
@@ -147,7 +147,7 @@ export default function Sidebar({
             onClick={onMobileClose}
             aria-hidden="true"
           />
-          <aside className="fixed top-16 left-0 bottom-0 w-64 z-50 flex flex-col bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] lg:hidden">
+          <aside className="fixed top-0 left-0 bottom-0 w-64 z-50 flex flex-col bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] lg:hidden">
             {sidebarContent}
           </aside>
         </>

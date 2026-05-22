@@ -1,7 +1,10 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
-import ClubsDashboard from './pages/ClubsDashboard'
+import ClubsPage from './pages/ClubsPage'
+import ClubDetailPage from './pages/ClubDetailPage'
+import ProfilePage from './pages/ProfilePage'
+import BooksPage from './pages/BooksPage'
 import LoginPage from './pages/LoginPage'
 import SetNewPasswordPage from './pages/SetNewPasswordPage'
 import LandingPage from './pages/LandingPage'
@@ -10,6 +13,7 @@ import TermsOfUse from './pages/TermsOfUse'
 import DataDeletion from './pages/DataDeletion'
 import DiscordPage from './pages/DiscordPage'
 import ScrollToTop from './components/ScrollToTop'
+import AppShell from './components/layout/AppShell'
 
 function AppContent() {
   const { user, loading, isPasswordRecovery } = useAuth()
@@ -34,7 +38,19 @@ function AppContent() {
     return <SetNewPasswordPage />
   }
 
-  return <ClubsDashboard />
+  return (
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route index element={<Navigate to="/me" replace />} />
+        <Route path="me" element={<ProfilePage />} />
+        <Route path="clubs" element={<ClubsPage />} />
+        <Route path="clubs/new" element={<ClubsPage openNewModal />} />
+        <Route path="clubs/:slug" element={<ClubDetailPage />} />
+        <Route path="books" element={<BooksPage />} />
+        <Route path="*" element={<Navigate to="/me" replace />} />
+      </Route>
+    </Routes>
+  )
 }
 
 function App() {
@@ -49,7 +65,7 @@ function App() {
           <Route path="/delete-account" element={<DataDeletion />} />
           <Route path="/discord" element={<DiscordPage />} />
           <Route
-            path="/app/*"
+            path="/*"
             element={
               <AuthProvider>
                 <AppContent />
