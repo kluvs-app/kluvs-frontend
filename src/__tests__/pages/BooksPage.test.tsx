@@ -403,7 +403,10 @@ describe('BooksPage', () => {
       await typeAndSearch('gatsby')
       await act(async () => {
         fireEvent.click(screen.getByText('The Great Gatsby'))
-        await vi.advanceTimersByTimeAsync(100)
+        // Advance timers to allow all async operations to complete
+        // Author fetch and volume fetch are direct fetch calls with no timers,
+        // but they need promise chain resolution time
+        await vi.advanceTimersByTimeAsync(500)
       })
     }
 
