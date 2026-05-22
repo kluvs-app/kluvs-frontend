@@ -40,6 +40,10 @@ export interface Book {
   page_count?: number
   image_url?: string
   external_google_id?: string
+  description?: string
+  publisher?: string
+  categories?: string[]
+  language?: string
 }
 
 export type UserRole = 'owner' | 'admin' | 'member'
