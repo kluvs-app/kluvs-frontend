@@ -64,7 +64,9 @@ export function ProtectedRoute() {
 }
 
 function App() {
-  const isAppDomain = window.location.hostname === 'app.kluvs.com'
+  const isAppDomain =
+    window.location.hostname === 'app.kluvs.com' ||
+    import.meta.env.VITE_FORCE_APP_DOMAIN === 'true'
 
   return (
     <ThemeProvider>
