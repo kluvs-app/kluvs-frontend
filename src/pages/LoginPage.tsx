@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function LoginPage() {
@@ -84,9 +83,9 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-10">
-          <Link to="/" aria-label="Back to home">
+          <a href="https://kluvs.com" aria-label="Back to home">
             <img src="/ic-mark.svg" alt="Kluvs" className="h-16 w-16 mx-auto mb-6 hover:opacity-80 transition-opacity" />
-          </Link>
+          </a>
           <h1 className="text-page-heading font-serif text-[var(--color-text-primary)] mb-2">
             Welcome to your Kluvs
           </h1>
@@ -290,19 +289,19 @@ export default function LoginPage() {
             Secure authentication powered by Supabase
           </p>
           <p className="text-center text-helper space-x-3">
-            <Link
-              to="/privacy"
+            <a
+              href="https://kluvs.com/privacy"
               className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors"
             >
               Privacy Policy
-            </Link>
+            </a>
             <span className="text-[var(--color-divider)]">·</span>
-            <Link
-              to="/terms"
+            <a
+              href="https://kluvs.com/terms"
               className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors"
             >
               Terms of Use
-            </Link>
+            </a>
           </p>
         </div>
       </div>
