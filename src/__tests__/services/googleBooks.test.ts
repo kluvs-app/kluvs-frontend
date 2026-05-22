@@ -8,7 +8,6 @@ import {
   formatRatingCount,
   searchVolumes,
   getVolume,
-  getAuthor,
   type GBImageLinks,
   type GBIndustryIdentifier,
   type GBVolumeInfo,
