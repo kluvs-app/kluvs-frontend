@@ -75,7 +75,7 @@ function App() {
         {isAppDomain ? (
           <AuthProvider>
             <Routes>
-              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route path="/" element={<PublicAuthRoute />} />
               <Route path="/login" element={<PublicAuthRoute />} />
               <Route path="/signup" element={<Navigate to="/login" replace />} />
               <Route element={<ProtectedRoute />}>
