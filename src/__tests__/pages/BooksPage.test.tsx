@@ -9,15 +9,15 @@ import type { GBVolumeInfo, KGPerson } from '../../services/googleBooks'
 // getAuthor has an early return when API_KEY is absent (which it always is in CI),
 // so we mock the module to control its return value directly.
 
-const mockGetVolume = vi.fn<[string], Promise<GBVolumeInfo | null>>()
-const mockGetAuthor = vi.fn<[string], Promise<KGPerson | null>>()
+const mockGetVolume = vi.fn<(id: string) => Promise<GBVolumeInfo | null>>()
+const mockGetAuthor = vi.fn<(name: string) => Promise<KGPerson | null>>()
 
 vi.mock('../../services/googleBooks', async (importOriginal) => {
   const mod = await importOriginal<typeof import('../../services/googleBooks')>()
   return {
     ...mod,
-    getVolume: (...args: [string]) => mockGetVolume(...args),
-    getAuthor: (...args: [string]) => mockGetAuthor(...args),
+    getVolume: (id: string) => mockGetVolume(id),
+    getAuthor: (name: string) => mockGetAuthor(name),
   }
 })
 
@@ -26,9 +26,6 @@ vi.mock('../../services/googleBooks', async (importOriginal) => {
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
 
-function fetchOk(data: unknown) {
-  return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(data) } as Response)
-}
 function fetchFail() {
   return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) } as Response)
 }
