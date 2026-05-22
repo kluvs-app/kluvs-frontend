@@ -5,7 +5,23 @@ import BooksPage from '../../pages/BooksPage'
 import type { Book } from '../../types'
 import type { GBVolumeInfo, KGPerson } from '../../services/googleBooks'
 
-// ── fetch mock (getVolume + getAuthor call fetch directly) ─────────────────────
+// ── googleBooks service mock ───────────────────────────────────────────────────
+// getAuthor has an early return when API_KEY is absent (which it always is in CI),
+// so we mock the module to control its return value directly.
+
+const mockGetVolume = vi.fn<[string], Promise<GBVolumeInfo | null>>()
+const mockGetAuthor = vi.fn<[string], Promise<KGPerson | null>>()
+
+vi.mock('../../services/googleBooks', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../../services/googleBooks')>()
+  return {
+    ...mod,
+    getVolume: (...args: [string]) => mockGetVolume(...args),
+    getAuthor: (...args: [string]) => mockGetAuthor(...args),
+  }
+})
+
+// ── fetch mock (kept for any remaining direct fetch usage) ─────────────────────
 
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
@@ -97,7 +113,9 @@ beforeEach(async () => {
   })
   mockSupabase.functions.invoke.mockResolvedValue({ data: [], error: null })
 
-  // Default: all direct fetch calls (getVolume, getAuthor) return nothing
+  // Default: service functions return nothing
+  mockGetVolume.mockResolvedValue(null)
+  mockGetAuthor.mockResolvedValue(null)
   mockFetch.mockResolvedValue(fetchFail())
 })
 
@@ -329,11 +347,7 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
         return Promise.resolve({ data: null, error: null })
       })
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('googleapis.com/books'))
-          return fetchOk({ id: 'gatsby-google-id', volumeInfo: mockVolumeInfo })
-        return fetchFail()
-      })
+      mockGetVolume.mockResolvedValue(mockVolumeInfo)
       renderPage()
       await typeAndSearch('gatsby')
       await act(async () => {
@@ -342,11 +356,9 @@ describe('BooksPage', () => {
       })
     }
 
-    it('calls the Google Books volumes endpoint on selection', async () => {
+    it('calls getVolume with the book external_google_id on selection', async () => {
       await renderAndSelect()
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('googleapis.com/books/v1/volumes/gatsby-google-id')
-      )
+      expect(mockGetVolume).toHaveBeenCalledWith('gatsby-google-id')
     })
 
     it('shows the subtitle from volumeInfo', async () => {
@@ -392,20 +404,12 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
         return Promise.resolve({ data: null, error: null })
       })
-      mockFetch.mockImplementation((url: string) => {
-        if (url.includes('googleapis.com/books'))
-          return fetchOk({ id: 'gatsby-google-id', volumeInfo: mockVolumeInfo })
-        if (url.includes('kgsearch.googleapis.com'))
-          return fetchOk({ itemListElement: [{ result: mockKGPerson }] })
-        return fetchFail()
-      })
+      mockGetVolume.mockResolvedValue(mockVolumeInfo)
+      mockGetAuthor.mockResolvedValue(mockKGPerson)
       renderPage()
       await typeAndSearch('gatsby')
       await act(async () => {
         fireEvent.click(screen.getByText('The Great Gatsby'))
-        // Advance timers to allow all async operations to complete
-        // Author fetch and volume fetch are direct fetch calls with no timers,
-        // but they need promise chain resolution time
         await vi.advanceTimersByTimeAsync(500)
       })
     }
