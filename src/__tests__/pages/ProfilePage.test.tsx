@@ -51,29 +51,29 @@ function renderPage() {
   return render(<MemoryRouter><ProfilePage /></MemoryRouter>)
 }
 
-// Helper for tests requiring auth + club fetch (two async hops)
 const TWO_HOP = { timeout: 3000 }
 
 describe('ProfilePage', () => {
   describe('Rendering', () => {
-    it('renders the Me heading', async () => {
+    it('renders the Profile eyebrow', async () => {
       renderPage()
-      await waitFor(() => expect(screen.getByText('Me')).toBeInTheDocument())
+      await waitFor(() => expect(screen.getAllByText('Profile').length).toBeGreaterThan(0))
     })
 
     it('shows member name', async () => {
       renderPage()
-      await waitFor(() => expect(screen.getByText('Admin User')).toBeInTheDocument())
+      await waitFor(() => expect(screen.getAllByText('Admin User').length).toBeGreaterThan(0))
     })
 
     it('shows member handle', async () => {
       renderPage()
-      await waitFor(() => expect(screen.getByText('@admin_handle')).toBeInTheDocument())
+      await waitFor(() => expect(screen.getAllByText('@admin_handle').length).toBeGreaterThan(0))
     })
 
-    it('shows member since year', async () => {
+    it('shows member since year in stats', async () => {
       renderPage()
-      await waitFor(() => expect(screen.getByText(/Member since/i)).toBeInTheDocument())
+      // memberSince = new Date('2024-01-01').getFullYear() = 2024
+      await waitFor(() => expect(screen.getAllByText('2024').length).toBeGreaterThan(0))
     })
   })
 
@@ -81,16 +81,18 @@ describe('ProfilePage', () => {
     it('shows clubs count', async () => {
       renderPage()
       await waitFor(() => {
-        expect(screen.getByText('Number of Clubs')).toBeInTheDocument()
-        expect(screen.getByText('2')).toBeInTheDocument()
+        // "Active clubs" label (desktop) or "Clubs" (mobile) — both in DOM
+        expect(screen.getAllByText(/clubs/i).length).toBeGreaterThan(0)
+        // The count value "2" is displayed as the stat number
+        expect(screen.getAllByText('2').length).toBeGreaterThan(0)
       })
     })
 
     it('shows books read count', async () => {
       renderPage()
       await waitFor(() => {
-        expect(screen.getByText('Books Read')).toBeInTheDocument()
-        expect(screen.getByText('10')).toBeInTheDocument()
+        expect(screen.getAllByText(/books/i).length).toBeGreaterThan(0)
+        expect(screen.getAllByText('10').length).toBeGreaterThan(0)
       })
     })
   })
@@ -106,12 +108,14 @@ describe('ProfilePage', () => {
       await waitFor(() => expect(screen.getAllByText('F. Scott Fitzgerald').length).toBeGreaterThan(0), TWO_HOP)
     })
 
-    it('shows discussion progress label', async () => {
+    it('shows discussion progress as fraction', async () => {
       renderPage()
-      await waitFor(() => expect(screen.getByText(/discussions/i)).toBeInTheDocument(), TWO_HOP)
+      // Both discussions are in the past so done=2, total=2 → "2 of 2"
+      // Two clubs both resolve to mockClub, so multiple matching spans are expected
+      await waitFor(() => expect(screen.getAllByText(/\d+ of \d+/).length).toBeGreaterThan(0), TWO_HOP)
     })
 
-    it('shows empty state when no active sessions', async () => {
+    it('shows shelf header when no active sessions', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
         if (endpoint.includes('club?id=')) return Promise.resolve({ data: mockClub2, error: null })
@@ -119,13 +123,13 @@ describe('ProfilePage', () => {
       })
       renderPage()
       await waitFor(() =>
-        expect(screen.getByText(/No active reading sessions/i)).toBeInTheDocument(), TWO_HOP
+        expect(screen.getByText(/on your shelf/i)).toBeInTheDocument(), TWO_HOP
       )
     })
   })
 
-  describe('Next Discussion', () => {
-    it('shows next discussion card when an upcoming discussion exists', async () => {
+  describe('Up Next', () => {
+    it('shows Up Next section when an upcoming discussion exists', async () => {
       const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
@@ -134,7 +138,7 @@ describe('ProfilePage', () => {
             ...mockClub,
             active_session: {
               ...mockClub.active_session,
-              discussions: [{ id: 'd-future', title: 'Future Discussion', date: futureDate }],
+              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', date: futureDate }],
             },
           },
           error: null,
@@ -142,10 +146,10 @@ describe('ProfilePage', () => {
         return Promise.resolve({ data: null, error: null })
       })
       renderPage()
-      await waitFor(() => expect(screen.getByText('Next Discussion')).toBeInTheDocument(), TWO_HOP)
+      await waitFor(() => expect(screen.getAllByText(/up next/i).length).toBeGreaterThan(0), TWO_HOP)
     })
 
-    it('shows no upcoming message when there are no future discussions', async () => {
+    it('hides Up Next section when there are no future discussions', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
         if (endpoint.includes('club?id=')) return Promise.resolve({ data: mockClub2, error: null })
@@ -153,39 +157,40 @@ describe('ProfilePage', () => {
       })
       renderPage()
       await waitFor(() =>
-        expect(screen.getByText(/No upcoming discussions/i)).toBeInTheDocument(), TWO_HOP
+        expect(screen.queryByText(/up next/i)).not.toBeInTheDocument(), TWO_HOP
       )
     })
   })
 
   describe('Edit Profile', () => {
-    it('opens EditProfileModal when avatar edit button is clicked', async () => {
+    it('opens EditProfileModal when Edit profile button is clicked', async () => {
       const user = userEvent.setup()
       renderPage()
-      await waitFor(() => screen.getByLabelText('Edit profile'))
-      await user.click(screen.getByLabelText('Edit profile'))
+      // Both mobile and desktop buttons have aria-label="Edit profile" — click the first
+      await waitFor(() => expect(screen.getAllByLabelText('Edit profile').length).toBeGreaterThan(0))
+      await user.click(screen.getAllByLabelText('Edit profile')[0])
       expect(screen.getByTestId('edit-profile-modal')).toBeInTheDocument()
     })
 
     it('closes EditProfileModal on dismiss', async () => {
       const user = userEvent.setup()
       renderPage()
-      await waitFor(() => screen.getByLabelText('Edit profile'))
-      await user.click(screen.getByLabelText('Edit profile'))
+      await waitFor(() => expect(screen.getAllByLabelText('Edit profile').length).toBeGreaterThan(0))
+      await user.click(screen.getAllByLabelText('Edit profile')[0])
       await user.click(screen.getByRole('button', { name: /close/i }))
       expect(screen.queryByTestId('edit-profile-modal')).not.toBeInTheDocument()
     })
   })
 
   describe('Member with no clubs', () => {
-    it('shows zero clubs in stats', async () => {
+    it('shows zero in clubs stat', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id='))
           return Promise.resolve({ data: { ...mockRegularMember, clubs: [] }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       renderPage()
-      await waitFor(() => expect(screen.getByText('0')).toBeInTheDocument())
+      await waitFor(() => expect(screen.getAllByText('0').length).toBeGreaterThan(0))
     })
   })
 })
