@@ -13,6 +13,7 @@ import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import MembersTable from '../components/MembersTable'
 import BookInfo from '../components/BookInfo'
 import { useAuth } from '../contexts/AuthContext'
+import { parseLocalDate } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
 
 export default function ClubDetailPage() {
@@ -172,7 +173,7 @@ export default function ClubDetailPage() {
               <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">
                 {[
                   `${club.members.length} member${club.members.length !== 1 ? 's' : ''}`,
-                  club.founded_date && `Founded in ${new Date(club.founded_date).getFullYear()}`
+                  club.founded_date && `Founded in ${parseLocalDate(club.founded_date).getFullYear()}`
                 ].filter(Boolean).join(' · ')}
               </p>
             </div>

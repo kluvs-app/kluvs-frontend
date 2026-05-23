@@ -27,6 +27,7 @@ export interface Discussion {
   id: string
   title: string
   date: string
+  time?: string | null
   location?: string
 }
 
