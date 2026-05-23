@@ -39,15 +39,15 @@ export default {
             owner: '#C9900A',
           },
           surface: {
-            dark: '#0a0a0a',
-            'dark-raised': '#141414',
-            'dark-elevated': '#1a1a1a',
+            dark: '#140F0D',
+            'dark-raised': '#1A140F',
+            'dark-elevated': '#241C17',
             light: '#fafafc',
             'light-raised': '#f5f5f5',
             'light-elevated': '#eeeeee',
           },
           divider: {
-            dark: '#2a2a2a',
+            dark: '#332B24',
             light: '#e0e0e0',
           },
           content: {
