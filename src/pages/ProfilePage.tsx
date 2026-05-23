@@ -627,6 +627,36 @@ export default function ProfilePage() {
 
       {/* ─── Shelf + Clubs ─────────────────────────────────────────────────── */}
 
+      {!loading && clubItems.length === 0 && (
+        <div className="pt-10 md:pt-16 flex flex-col items-center text-center gap-5 pb-10">
+          <p style={{
+            fontFamily: '"EB Garamond", Georgia, serif',
+            fontWeight: 500, fontStyle: 'italic',
+            fontSize: 28, lineHeight: 1.2, letterSpacing: '-0.01em',
+            color: 'var(--color-text-primary)',
+          }}>No clubs yet.</p>
+          <p style={{
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 14, color: 'var(--color-text-secondary)', maxWidth: 320,
+          }}>You haven't joined any book clubs. Find one and start reading with others.</p>
+          <Link
+            to="/clubs"
+            style={{
+              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+              fontSize: 13, fontWeight: 500,
+              color: COPPER, textDecoration: 'none',
+              border: `1px solid ${COPPER}`,
+              padding: '9px 18px', borderRadius: 8,
+              display: 'inline-block',
+              transition: 'opacity 120ms',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          >Find a club to join</Link>
+        </div>
+      )}
+
+      {(loading || clubItems.length > 0) && (
       <div className="pt-10 md:pt-12 lg:grid lg:grid-cols-[1.55fr_1fr] lg:gap-12">
 
         {/* Left: On Your Shelf */}
@@ -703,6 +733,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      )}
 
       <EditProfileModal
         isOpen={showEditProfileModal}
