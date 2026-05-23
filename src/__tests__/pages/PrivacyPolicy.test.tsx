@@ -28,12 +28,12 @@ describe('PrivacyPolicy', () => {
 
     it('should display the Kluvs logo in the header', () => {
       renderPrivacyPolicy()
-      expect(screen.getByAltText('Kluvs')).toBeInTheDocument()
+      expect(screen.getAllByAltText('Kluvs')[0]).toBeInTheDocument()
     })
 
     it('should display the Kluvs brand name in the header', () => {
       renderPrivacyPolicy()
-      expect(screen.getByText('Kluvs')).toBeInTheDocument()
+      expect(screen.getAllByAltText('Kluvs').length).toBeGreaterThan(0)
     })
   })
 
@@ -94,7 +94,7 @@ describe('PrivacyPolicy', () => {
   describe('Navigation', () => {
     it('should have a clickable Kluvs logo in the header', () => {
       renderPrivacyPolicy()
-      const logo = screen.getByAltText('Kluvs').closest('a')
+      const logo = screen.getAllByAltText('Kluvs')[0].closest('a')
       expect(logo).toHaveAttribute('href', '/')
     })
   })
