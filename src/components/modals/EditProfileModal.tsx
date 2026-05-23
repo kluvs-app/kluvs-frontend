@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { invokeFunction, getAvatarUrl } from '../../supabase'
+import { useState, useEffect, useRef } from 'react'
+import { supabase, invokeFunction, getAvatarUrl } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
 
@@ -11,199 +11,253 @@ interface EditProfileModalProps {
   currentMember: Member | null
 }
 
+function nameInitials(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
+}
+
 export default function EditProfileModal({
   isOpen,
   onClose,
   onProfileUpdated,
   onError,
-  currentMember
+  currentMember,
 }: EditProfileModalProps) {
   const { member } = useAuth()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Pre-populate form when modal opens
   useEffect(() => {
     if (isOpen && currentMember) {
       setName(currentMember.name)
+      setAvatarFile(null)
+      setAvatarPreview(null)
     }
   }, [isOpen, currentMember])
 
-  const handleSubmit = async () => {
-    if (!name.trim()) {
-      onError('Name is required')
-      return
-    }
+  useEffect(() => {
+    return () => { if (avatarPreview) URL.revokeObjectURL(avatarPreview) }
+  }, [avatarPreview])
 
-    if (!member) {
-      onError('No member data found')
-      return
-    }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview)
+    setAvatarFile(file)
+    setAvatarPreview(URL.createObjectURL(file))
+  }
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !member) return
 
     try {
       setLoading(true)
-      onError('') // Clear any existing errors
+      onError('')
 
-      const requestBody = {
-        id: member.id,
-        name: name.trim(),
-        books_read: member.books_read
+      let newAvatarPath = member.avatar_path ?? null
+
+      if (avatarFile) {
+        const ext = avatarFile.name.split('.').pop() ?? 'jpg'
+        const path = `avatars/${member.user_id ?? member.id}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('member-avatars')
+          .upload(path, avatarFile, { upsert: true, contentType: avatarFile.type })
+        if (uploadError) throw uploadError
+        newAvatarPath = path
       }
 
-      console.log('Updating member with:', requestBody)
+      const body: Record<string, unknown> = {
+        id: member.id,
+        name: name.trim(),
+        books_read: member.books_read,
+      }
+      if (newAvatarPath !== member.avatar_path) body.avatar_path = newAvatarPath
 
-      const { data, error } = await invokeFunction('member', {
-        method: 'PUT',
-        body: requestBody
-      })
-
-      console.log('Update response:', { data, error })
-
+      const { error } = await invokeFunction('member', { method: 'PUT', body })
       if (error) throw error
 
       onClose()
       onProfileUpdated()
-
     } catch (err: unknown) {
-      console.error('Error updating profile:', err)
-      onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
-          : 'Failed to update profile'
-      )
+      onError(err instanceof Error ? err.message : 'Failed to update profile')
     } finally {
       setLoading(false)
     }
   }
 
   const handleClose = () => {
-    setName(currentMember?.name || '')
-    onError('') // Clear errors when closing
+    if (loading) return
+    setName(currentMember?.name ?? '')
+    setAvatarFile(null)
+    setAvatarPreview(null)
+    onError('')
     onClose()
   }
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !loading) handleClose()
-    }
-    if (isOpen) document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !loading) handleClose() }
+    if (isOpen) document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
   }, [isOpen, loading])
 
   if (!isOpen || !member) return null
 
-  const hasChanges = name.trim() !== member.name
+  const initials = member.name ? nameInitials(member.name) : '?'
+  const currentAvatarUrl = avatarPreview ?? (currentMember?.avatar_path ? getAvatarUrl(currentMember.avatar_path) : null)
+
+  const hasChanges = name.trim() !== member.name || avatarFile !== null
 
   return (
-    <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title-edit-profile">
-      <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-6 w-full max-w-md">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 id="modal-title-edit-profile" className="text-card-heading text-[var(--color-text-primary)]">Edit Profile</h2>
-            <p className="text-helper text-[var(--color-text-secondary)]">Update your profile details</p>
-          </div>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'var(--color-overlay)' }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title-edit-profile"
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-6 pt-5 pb-5"
+          style={{ borderBottom: '1px solid var(--color-divider)' }}
+        >
+          <span
+            id="modal-title-edit-profile"
+            style={{
+              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+              textTransform: 'uppercase', color: '#D16D30',
+            }}
+          >Edit Profile</span>
           <button
             onClick={handleClose}
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors p-1"
             disabled={loading}
             aria-label="Close"
+            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        {/* Form */}
-        <div className="space-y-4">
-          {/* Name Field */}
+        {/* Body */}
+        <div className="px-6 pt-6 pb-6 space-y-5">
+
+          {/* Avatar */}
+          <div className="flex flex-col items-center gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loading}
+              className="relative group"
+              aria-label="Change avatar"
+            >
+              <div
+                className="rounded-full bg-primary flex items-center justify-center text-white font-serif font-medium overflow-hidden relative"
+                style={{ width: 72, height: 72, fontSize: 72 * 0.40, letterSpacing: '-0.015em' }}
+              >
+                {initials}
+                {currentAvatarUrl && (
+                  <img
+                    src={currentAvatarUrl}
+                    alt="Member avatar"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={e => { e.currentTarget.style.display = 'none' }}
+                  />
+                )}
+              </div>
+              <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-[120ms]">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                </svg>
+              </div>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <span className="text-[11px] text-[var(--color-text-secondary)]">
+              {avatarFile ? avatarFile.name : 'Click to change'}
+            </span>
+          </div>
+
+          {/* Name */}
           <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Display Name <span className="text-primary">*</span>
-            </label>
+            <label
+              style={{
+                display: 'block',
+                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+                textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                marginBottom: 8,
+              }}
+            >Display Name</label>
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your display name"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              onChange={e => setName(e.target.value)}
+              placeholder="Your name"
               disabled={loading}
               maxLength={100}
               autoFocus
+              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             />
-            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
-              This is how your name appears to other members
-            </p>
           </div>
 
-          {/* Avatar Display */}
-          {currentMember?.avatar_path && (
-            <div>
-              <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-                Avatar
-              </label>
-              <div className="flex items-center space-x-3">
-                <img
-                  src={getAvatarUrl(currentMember.avatar_path)}
-                  alt="Member avatar"
-                  className="w-16 h-16 rounded-full object-cover border border-[var(--color-divider)]"
-                />
-                <p className="text-[var(--color-text-secondary)] text-xs">Avatar is managed externally</p>
+          {/* Discord status */}
+          {currentMember?.discord_id ? (
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-input"
+              style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
+            >
+              <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Discord</p>
+                <p className="text-sm text-[var(--color-text-primary)] font-mono truncate mt-0.5">{currentMember.discord_id}</p>
               </div>
+              <span className="text-xs font-medium text-secondary shrink-0">Connected</span>
+            </div>
+          ) : (
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-input"
+              style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
+            >
+              <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0 opacity-40" />
+              <p className="text-sm text-[var(--color-text-secondary)] flex-1">Discord not connected</p>
             </div>
           )}
-
-          {/* Discord Connection Status (read-only, only shown when connected) */}
-          {currentMember?.discord_id && (
-            <div>
-              <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-                Discord
-              </label>
-              <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input">
-                <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
-                <div className="flex-1">
-                  <span className="text-secondary font-medium text-sm">Connected</span>
-                  <p className="text-[var(--color-text-secondary)] text-xs mt-0.5 font-mono">{currentMember.discord_id}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Current Stats Display */}
-          <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4 text-sm text-[var(--color-text-secondary)]">
-                <span className="flex items-center">
-                  {member.books_read} books
-                </span>
-              </div>
-              <p className="text-[var(--color-text-secondary)] text-xs">Read-only stats</p>
-            </div>
-          </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--color-divider)]">
+        {/* Footer */}
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderTop: '1px solid var(--color-divider)' }}
+        >
           <button
             onClick={handleClose}
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors font-medium"
             disabled={loading}
-          >
-            Cancel
-          </button>
-
+            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+          >Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={loading || !name.trim() || !hasChanges}
-            className="bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium transition-colors flex items-center space-x-2"
+            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                <span>Updating...</span>
-              </>
-            ) : (
-              <span>Save Changes</span>
+            {loading && (
+              <div className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
             )}
+            {loading ? 'Saving…' : 'Save'}
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { getAvatarUrl } from '../../supabase'
 import { VERSION } from '../../version'
 import SignOutModal from '../modals/SignOutModal'
+import DiscordLinkModal from '../modals/DiscordLinkModal'
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 // Material Symbols, weight 600, 24px — sourced from public/icons/
@@ -52,6 +53,7 @@ export default function AppSidebar() {
   const { member } = useAuth()
   const location = useLocation()
   const [showSignOutModal, setShowSignOutModal] = useState(false)
+  const [showDiscordLinkModal, setShowDiscordLinkModal] = useState(false)
 
   return (
     <>
@@ -129,6 +131,17 @@ export default function AppSidebar() {
 
         {/* Footer actions */}
         <div className="border-t border-dashed border-[var(--color-divider)] p-3 space-y-0.5">
+          {/* Connect Discord — only shown when not yet linked */}
+          {!member?.discord_id && (
+            <button
+              onClick={() => setShowDiscordLinkModal(true)}
+              className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[#5865F2] hover:bg-[var(--color-bg-elevated)] transition-colors"
+            >
+              <img src="/ic-discord.svg" alt="" className="w-5 h-5 shrink-0" />
+              Connect Discord
+            </button>
+          )}
+
           {/* Sign out */}
           <button
             onClick={() => setShowSignOutModal(true)}
@@ -146,6 +159,7 @@ export default function AppSidebar() {
       </aside>
 
       <SignOutModal isOpen={showSignOutModal} onClose={() => setShowSignOutModal(false)} />
+      <DiscordLinkModal isOpen={showDiscordLinkModal} onClose={() => setShowDiscordLinkModal(false)} />
     </>
   )
 }
