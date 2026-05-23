@@ -131,8 +131,8 @@ export default function AppSidebar() {
 
         {/* Footer actions */}
         <div className="border-t border-dashed border-[var(--color-divider)] p-3 space-y-0.5">
-          {/* Discord */}
-          {!member?.discord_id ? (
+          {/* Connect Discord — only shown when not yet linked */}
+          {!member?.discord_id && (
             <button
               onClick={() => setShowDiscordLinkModal(true)}
               className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[#5865F2] hover:bg-[var(--color-bg-elevated)] transition-colors"
@@ -140,11 +140,6 @@ export default function AppSidebar() {
               <img src="/ic-discord.svg" alt="" className="w-5 h-5 shrink-0" />
               Connect Discord
             </button>
-          ) : (
-            <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-[var(--color-text-secondary)]">
-              <img src="/ic-discord.svg" alt="" className="w-5 h-5 shrink-0 opacity-40" />
-              Connected
-            </div>
           )}
 
           {/* Sign out */}
