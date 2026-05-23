@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
+import { parseLocalDate } from '../../utils/dates'
 
 interface NewSessionModalProps {
   isOpen: boolean
@@ -26,7 +27,7 @@ export default function NewSessionModal({
 
   const validateDueDate = (dateString: string): boolean => {
     if (!dateString) return true
-    const selectedDate = new Date(dateString)
+    const selectedDate = parseLocalDate(dateString)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     return selectedDate > today

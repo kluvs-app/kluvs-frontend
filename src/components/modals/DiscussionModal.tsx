@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club } from '../../types'
+import type { Club, Discussion } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
-
-interface Discussion {
-  id: string
-  title: string
-  date: string
-  location?: string
-}
+import { parseLocalDate } from '../../utils/dates'
 
 interface DiscussionModalProps {
   isOpen: boolean
@@ -65,9 +59,9 @@ export default function DiscussionModal({
 
   const validateDate = (dateString: string): boolean => {
     if (!dateString) return false
-    const selectedDate = new Date(dateString)
+    const selectedDate = parseLocalDate(dateString)
     const today = new Date()
-    today.setHours(0, 0, 0, 0) // Start of today
+    today.setHours(0, 0, 0, 0)
     return selectedDate >= today
   }
 

@@ -1,4 +1,5 @@
 import type { Book } from '../types'
+import { parseLocalDate } from '../utils/dates'
 
 interface BookInfoProps {
   book: Book
@@ -32,7 +33,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
           )}
           {dueDate && (
             <p className="text-body-lg text-primary font-medium mt-2">
-              Due {new Date(dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              Due {parseLocalDate(dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </p>
           )}
         </div>

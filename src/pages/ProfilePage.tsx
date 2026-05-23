@@ -4,6 +4,7 @@ import { invokeFunction, getAvatarUrl } from '../supabase'
 import { useAuth } from '../contexts/AuthContext'
 import type { Club } from '../types'
 import EditProfileModal from '../components/modals/EditProfileModal'
+import { isPast, parseLocalDate } from '../utils/dates'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -27,14 +28,14 @@ function nameInitials(name: string): string {
 }
 
 function formatUpNextDate(dateStr: string): string {
-  return new Date(dateStr)
+  return parseLocalDate(dateStr)
     .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     .replace(', ', ' · ')
     .toUpperCase()
 }
 
 function formatNextDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return parseLocalDate(dateStr).toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric',
   })
 }
@@ -311,8 +312,8 @@ export default function ProfilePage() {
         book: c.active_session!.book,
       }))
     )
-    .filter(d => new Date(d.date) > new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] ?? null
+    .filter(d => !isPast(d.date, d.time))
+    .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0] ?? null
 
   // Active readings with progress + next date per book
   const shelfItems = clubs
@@ -320,10 +321,10 @@ export default function ProfilePage() {
     .map(c => {
       const session = c.active_session!
       const total = session.discussions.length
-      const done = session.discussions.filter(d => new Date(d.date) <= new Date()).length
+      const done = session.discussions.filter(d => isPast(d.date, d.time)).length
       const nextDisc = session.discussions
-        .filter(d => new Date(d.date) > new Date())
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
+        .filter(d => !isPast(d.date, d.time))
+        .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0]
       return {
         book: session.book,
         clubName: c.name,
