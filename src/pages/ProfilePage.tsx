@@ -381,6 +381,7 @@ export default function ProfilePage() {
           <button
             onClick={() => setShowEditProfileModal(true)}
             aria-label="Edit profile"
+            className="transition-[background,transform] duration-[120ms] hover:bg-[rgba(242,237,229,0.06)] active:scale-[0.97]"
             style={{
               background: 'transparent',
               border: `1px solid ${OUTLINE_BORDER}`,
@@ -479,6 +480,7 @@ export default function ProfilePage() {
         <button
           onClick={() => setShowEditProfileModal(true)}
           aria-label="Edit profile"
+          className="transition-[background,transform] duration-[120ms] hover:bg-[rgba(242,237,229,0.06)] active:scale-[0.97]"
           style={{
             background: 'transparent',
             border: `1px solid ${OUTLINE_BORDER}`,
