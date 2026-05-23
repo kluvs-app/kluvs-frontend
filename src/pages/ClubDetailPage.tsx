@@ -13,6 +13,7 @@ import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import MembersTable from '../components/MembersTable'
 import BookInfo from '../components/BookInfo'
 import { useAuth } from '../contexts/AuthContext'
+import KluvsSpinner from '../components/KluvsSpinner'
 
 export default function ClubDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -124,7 +125,7 @@ export default function ClubDetailPage() {
     return (
       <div className="flex items-center justify-center py-24">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-r-transparent mx-auto" />
+          <KluvsSpinner size={64} className="mx-auto" />
           <p className="mt-6 text-[var(--color-text-primary)] text-lg font-medium">Loading club…</p>
         </div>
       </div>
@@ -191,7 +192,7 @@ export default function ClubDetailPage() {
 
         {clubLoading ? (
           <div className="py-12 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-r-transparent mx-auto" />
+            <KluvsSpinner size={48} className="mx-auto" />
           </div>
         ) : (
           <div className="divide-y divide-[var(--color-divider)]">

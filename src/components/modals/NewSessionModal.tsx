@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
 import type { Club } from '../../types'
 import BookSearchInput from '../BookSearchInput'
+import KluvsSpinner from '../KluvsSpinner'
 
 interface NewSessionModalProps {
   isOpen: boolean
@@ -199,7 +200,7 @@ export default function NewSessionModal({
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <KluvsSpinner size={16} color="#ffffff" />
                 <span>Creating...</span>
               </>
             ) : (

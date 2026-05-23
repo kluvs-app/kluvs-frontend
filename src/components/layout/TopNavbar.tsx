@@ -24,11 +24,9 @@ export default function TopNavbar({ onMenuToggle }: TopNavbarProps) {
         <div className="h-full px-4 sm:px-6 flex items-center justify-between">
           {/* Left: Logo, Brand & Hamburger */}
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-3">
-              <img src="/ic-mark.svg" alt="Kluvs" className="h-8 w-8" />
-              <h1 className="text-section-heading font-serif font-bold tracking-widest text-[var(--color-text-primary)]">
-                KLUVS
-              </h1>
+            <Link to="/" className="flex items-center">
+              <img src="/kluvs-lockup-dark.svg" alt="Kluvs" className="h-7 w-auto dark:hidden" />
+              <img src="/kluvs-lockup-light.svg" alt="Kluvs" className="h-7 w-auto hidden dark:block" />
             </Link>
             {onMenuToggle && (
               <button

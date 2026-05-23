@@ -1,6 +1,7 @@
 // src/components/modals/SignOutModal.tsx
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import KluvsSpinner from '../KluvsSpinner'
 
 interface SignOutModalProps {
   isOpen: boolean
@@ -68,7 +69,7 @@ export default function SignOutModal({
             className="flex-1 bg-danger hover:bg-danger-hover text-white px-4 py-2.5 rounded-btn font-medium transition-colors flex items-center justify-center"
           >
             {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              <KluvsSpinner size={16} color="#ffffff" />
             ) : (
               <span>Sign Out</span>
             )}

@@ -10,6 +10,25 @@
   animation: tab-fade 150ms ease-out both;
 }
 
+@keyframes spinBreatheTidal {
+  0%   { transform: rotate(0deg)   scale(0.96); opacity: 0.94; animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }
+  35%  { transform: rotate(120deg) scale(1.08); opacity: 1;    animation-timing-function: linear; }
+  50%  { transform: rotate(120deg) scale(1.08); opacity: 1;    animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }
+  85%  { transform: rotate(240deg) scale(0.96); opacity: 0.94; animation-timing-function: linear; }
+  100% { transform: rotate(240deg) scale(0.96); opacity: 0.94; }
+}
+.kluvs-spinner {
+  transform-origin: 50% 50%;
+  animation: spinBreatheTidal 4000ms infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kluvs-spinner {
+    animation: none;
+    transform: rotate(0deg) scale(0.96);
+    opacity: 0.94;
+  }
+}
+
 @layer base {
   :root {
     --color-bg: #fafafc;
