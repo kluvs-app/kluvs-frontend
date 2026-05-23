@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import KluvsSpinner from '../components/KluvsSpinner'
 
 export default function LoginPage() {
   const { loading, signInWithDiscord, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPasswordForEmail } = useAuth()
@@ -72,7 +71,7 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
-          <KluvsSpinner size={64} className="mx-auto" />
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-r-transparent mx-auto"></div>
           <p className="mt-6 text-[var(--color-text-primary)] text-lg font-medium">Loading...</p>
         </div>
       </div>
@@ -84,9 +83,8 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-10">
-          <a href="https://kluvs.com" aria-label="Back to home" className="inline-block mb-6 hover:opacity-80 transition-opacity">
-            <img src="/kluvs-lockup-dark.svg" alt="Kluvs" className="h-10 w-auto mx-auto dark:hidden" />
-            <img src="/kluvs-lockup-light.svg" alt="Kluvs" className="h-10 w-auto mx-auto hidden dark:block" />
+          <a href="https://kluvs.com" aria-label="Back to home">
+            <img src="/ic-mark.svg" alt="Kluvs" className="h-16 w-16 mx-auto mb-6 hover:opacity-80 transition-opacity" />
           </a>
           <h1 className="text-page-heading font-serif text-[var(--color-text-primary)] mb-2">
             Welcome to your Kluvs
@@ -108,7 +106,7 @@ export default function LoginPage() {
             >
               {signingIn === 'discord' ? (
                 <>
-                  <KluvsSpinner size={20} color="#ffffff" />
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
                   <span>Connecting to Discord...</span>
                 </>
               ) : (
@@ -127,7 +125,7 @@ export default function LoginPage() {
             >
               {signingIn === 'google' ? (
                 <>
-                  <KluvsSpinner size={20} color="#1a1a1a" />
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-google-text border-t-transparent"></div>
                   <span>Connecting to Google...</span>
                 </>
               ) : (
@@ -249,7 +247,7 @@ export default function LoginPage() {
               >
                 {signingIn === 'email' ? (
                   <>
-                    <KluvsSpinner size={16} color="#ffffff" className="mr-2" />
+                    <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
                     <span>{emailMode === 'signin' ? 'Signing in…' : 'Creating account…'}</span>
                   </>
                 ) : (
