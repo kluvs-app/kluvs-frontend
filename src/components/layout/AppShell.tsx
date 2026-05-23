@@ -1,5 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import AppSidebar from './AppSidebar'
+import { useAuth } from '../../contexts/AuthContext'
 
 const MS_VIEWBOX = "0 -960 960 960"
 
@@ -19,8 +20,29 @@ const TABS = [
 ]
 
 export default function AppShell() {
+  const { isOnline } = useAuth()
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
+      {!isOnline && (
+        <div
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center gap-2 py-2 px-4"
+          style={{ background: '#1A140F', borderBottom: '1px solid rgba(242,237,229,0.08)' }}
+          role="status"
+          aria-live="polite"
+        >
+          <svg className="w-4 h-4 shrink-0" style={{ color: '#8C8073' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 010 12.728M5.636 5.636a9 9 0 000 12.728M12 12h.01" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+          </svg>
+          <span style={{
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 13, color: '#8C8073', letterSpacing: '0.01em',
+          }}>
+            You're offline — content may be out of date
+          </span>
+        </div>
+      )}
       {/* Desktop sidebar */}
       <AppSidebar />
 
