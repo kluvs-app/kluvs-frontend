@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
 import type { Member } from '../../types'
+import KluvsSpinner from '../KluvsSpinner'
 
 interface DeleteMemberModalProps {
   isOpen: boolean
@@ -110,7 +111,7 @@ export default function DeleteMemberModal({
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                <KluvsSpinner size={16} color="#ffffff" />
                 <span>Deleting...</span>
               </>
             ) : (

@@ -44,7 +44,8 @@ describe('TopNavbar', () => {
     it('should display Kluvs brand name', () => {
       render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
-      expect(screen.getByText('KLUVS')).toBeInTheDocument()
+      const logos = screen.getAllByAltText('Kluvs')
+      expect(logos.length).toBeGreaterThan(0)
     })
 
     it('should display user name', () => {

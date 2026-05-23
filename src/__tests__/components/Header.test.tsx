@@ -19,15 +19,16 @@ describe('Header', () => {
     it('should render the Kluvs logo image', () => {
       renderHeader()
 
-      const logo = screen.getByAltText('Kluvs')
-      expect(logo).toBeInTheDocument()
-      expect(logo).toHaveAttribute('src', '/ic-mark.svg')
+      const logos = screen.getAllByAltText('Kluvs')
+      expect(logos[0]).toBeInTheDocument()
+      expect(logos[0]).toHaveAttribute('src', '/kluvs-lockup-dark.svg')
     })
 
-    it('should render the Kluvs text', () => {
+    it('should render the Kluvs wordmark', () => {
       renderHeader()
 
-      expect(screen.getByText('Kluvs')).toBeInTheDocument()
+      const logos = screen.getAllByAltText('Kluvs')
+      expect(logos.length).toBeGreaterThan(0)
     })
 
     it('should have sticky positioning', () => {
@@ -49,17 +50,17 @@ describe('Header', () => {
     it('should render logo as a link to home', () => {
       renderHeader()
 
-      const link = screen.getByAltText('Kluvs').closest('a')
+      const link = screen.getAllByAltText('Kluvs')[0].closest('a')
       expect(link).toHaveAttribute('href', '/')
     })
 
-    it('should have the logo and text inside the same link', () => {
+    it('should have the lockup inside a link', () => {
       renderHeader()
 
-      const link = screen.getByAltText('Kluvs').closest('a')
+      const logos = screen.getAllByAltText('Kluvs')
+      const link = logos[0].closest('a')
       expect(link).toBeInTheDocument()
-      expect(link).toContainElement(screen.getByAltText('Kluvs'))
-      expect(link).toContainElement(screen.getByText('Kluvs'))
+      expect(link).toContainElement(logos[0])
     })
   })
 
@@ -110,7 +111,7 @@ describe('Header', () => {
       renderHeader({ showOpenAppButton: true })
 
       const header = screen.getByRole('banner')
-      const logo = screen.getByAltText('Kluvs').closest('a')
+      const logo = screen.getAllByAltText('Kluvs')[0].closest('a')
       const appButton = screen.getByRole('link', { name: /Dashboard/i })
 
       // Logo should come before app button in DOM

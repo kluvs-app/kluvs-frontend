@@ -25,7 +25,7 @@ describe('LandingPage', () => {
 
     it('should render the brand name in the nav', () => {
       renderLandingPage()
-      expect(screen.getByText('Kluvs')).toBeInTheDocument()
+      expect(screen.getAllByAltText('Kluvs').length).toBeGreaterThan(0)
     })
 
     it('should render the hero headline', () => {

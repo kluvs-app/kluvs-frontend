@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../supabase'
+import KluvsSpinner from '../KluvsSpinner'
 
 interface DiscordLinkModalProps {
   isOpen: boolean
@@ -85,7 +86,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
           >
             {oauthLoading ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                <KluvsSpinner size={20} color="#ffffff" />
                 <span>Connecting...</span>
               </>
             ) : (

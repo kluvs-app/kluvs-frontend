@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase, invokeFunction, getAvatarUrl } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
+import KluvsSpinner from '../KluvsSpinner'
 
 interface EditProfileModalProps {
   isOpen: boolean
@@ -255,7 +256,7 @@ export default function EditProfileModal({
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
             {loading && (
-              <div className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              <KluvsSpinner size={14} color="#ffffff" />
             )}
             {loading ? 'Saving…' : 'Save'}
           </button>

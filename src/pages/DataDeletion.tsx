@@ -6,8 +6,8 @@ export default function DataDeletion() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
       <header className="border-b border-[var(--color-divider)] px-6 py-4 flex items-center gap-3">
-        <img src="/ic-mark.svg" alt="Kluvs" className="h-7 w-7" />
-        <span className="text-section-heading font-serif font-bold tracking-widest uppercase text-[var(--color-text-primary)]">Kluvs</span>
+        <img src="/kluvs-lockup-dark.svg" alt="Kluvs" className="h-6 w-auto dark:hidden" />
+        <img src="/kluvs-lockup-light.svg" alt="Kluvs" className="h-6 w-auto hidden dark:block" />
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-12">
