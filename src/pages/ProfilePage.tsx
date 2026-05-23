@@ -417,7 +417,13 @@ export default function ProfilePage() {
               <p style={{
                 fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
                 fontSize: 14, color: 'var(--color-text-secondary)', marginTop: 5,
-              }}>{handle}</p>
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                {handle}
+                {member?.discord_id && (
+                  <img src="/ic-discord.svg" alt="" style={{ width: 13, height: 13, opacity: 0.6, flexShrink: 0, display: 'block' }} />
+                )}
+              </p>
             )}
           </div>
         </div>
@@ -460,7 +466,13 @@ export default function ProfilePage() {
             <p style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
               fontSize: 15, color: 'var(--color-text-secondary)', marginTop: 10,
-            }}>{handle}</p>
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              {handle}
+              {member?.discord_id && (
+                <img src="/ic-discord.svg" alt="" style={{ width: 14, height: 14, opacity: 0.6, flexShrink: 0, display: 'block' }} />
+              )}
+            </p>
           )}
         </div>
 
