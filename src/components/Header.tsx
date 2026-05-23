@@ -6,7 +6,7 @@ interface HeaderProps {
 
 export default function Header({ showOpenAppButton = false }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-6 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-40 h-16 border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-6 flex items-center justify-between">
       <Link to="/" className="flex items-center">
         <img src="/kluvs-lockup-dark.svg" alt="Kluvs" className="h-7 w-auto dark:hidden" />
         <img src="/kluvs-lockup-light.svg" alt="Kluvs" className="h-7 w-auto hidden dark:block" />
