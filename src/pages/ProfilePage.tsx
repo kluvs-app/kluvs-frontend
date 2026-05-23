@@ -560,7 +560,7 @@ export default function ProfilePage() {
             </div>
             <p style={{
               fontFamily: '"EB Garamond", Georgia, serif',
-              fontWeight: 500, fontSize: 26, lineHeight: 1.15,
+              fontWeight: 500, fontStyle: 'italic', fontSize: 26, lineHeight: 1.15,
               letterSpacing: '-0.012em', color: 'var(--color-text-primary)',
               marginBottom: 10,
             } as React.CSSProperties}>
@@ -599,7 +599,7 @@ export default function ProfilePage() {
             <div>
               <p style={{
                 fontFamily: '"EB Garamond", Georgia, serif',
-                fontWeight: 500, fontSize: 44, lineHeight: 1.1,
+                fontWeight: 500, fontStyle: 'italic', fontSize: 44, lineHeight: 1.1,
                 letterSpacing: '-0.015em', color: 'var(--color-text-primary)',
                 maxWidth: 760, marginBottom: 18,
               } as React.CSSProperties}>
