@@ -155,8 +155,8 @@ function getTrefoilState(phase: number, jumpPx: number): { dy: number; scale: nu
 
 export default function KluvsHexBackground({
   accentColor = '#D16D30',
-  bgFill = '#0a0a0a',
-  bgContour = '#1a1a1a',
+  bgFill,
+  bgContour,
   cellSize = 32,
   logoTopPx = 96,
   ringGap = 0.10,
@@ -260,10 +260,14 @@ export default function KluvsHexBackground({
       if (startTime === null) startTime = timestamp
       const elapsed = reducedMotion ? 0 : (timestamp - startTime) / 1000
 
+      const style = getComputedStyle(document.documentElement)
+      const resolvedBgFill = bgFill ?? style.getPropertyValue('--color-bg').trim()
+      const resolvedBgContour = bgContour ?? style.getPropertyValue('--color-bg-elevated').trim()
+
       ctx.clearRect(0, 0, size.w, size.h)
 
       // Solid background
-      ctx.fillStyle = bgFill
+      ctx.fillStyle = resolvedBgFill
       ctx.fillRect(0, 0, size.w, size.h)
 
       // Background rings — outermost first so inner rings paint on top
@@ -280,10 +284,10 @@ export default function KluvsHexBackground({
           const cx = x + offX
           const cy = y + offY + (reducedMotion ? 0 : dy)
           drawHex(ctx, cx, cy, cellSize)
-          ctx.fillStyle = bgContour
+          ctx.fillStyle = resolvedBgContour
           ctx.fill()
           drawHex(ctx, cx, cy, cellSize - 1.5)
-          ctx.fillStyle = bgFill
+          ctx.fillStyle = resolvedBgFill
           ctx.fill()
         }
         ctx.globalAlpha = 1
@@ -321,7 +325,7 @@ export default function KluvsHexBackground({
 
     rafId = requestAnimationFrame(draw)
     return () => cancelAnimationFrame(rafId)
-  }, [size, accentColor, bgFill, bgContour, cellSize, logoTopPx, ringGap, pulseDuration, loopGap, jumpPx])
+  }, [size, accentColor, bgFill, bgContour, cellSize, logoTopPx, ringGap, pulseDuration, loopGap, jumpPx]) // bgFill/bgContour kept so explicit prop overrides still restart the loop
 
   return (
     <div

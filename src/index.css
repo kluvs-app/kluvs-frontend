@@ -27,15 +27,15 @@
   }
 
   .dark {
-    --color-bg: #0a0a0a;
-    --color-bg-raised: #141414;
-    --color-bg-elevated: #1a1a1a;
+    --color-bg: #140F0D;
+    --color-bg-raised: #1A140F;
+    --color-bg-elevated: #241C17;
     --color-text-primary: #ffffff;
     --color-text-secondary: #b0b0b0;
     --color-text-meta: #737373;
-    --color-divider: #2a2a2a;
-    --color-input-bg: #1a1a1a;
-    --color-input-border: #2a2a2a;
+    --color-divider: #332B24;
+    --color-input-bg: #241C17;
+    --color-input-border: #332B24;
     --color-overlay: rgba(0, 0, 0, 0.7);
   }
 
