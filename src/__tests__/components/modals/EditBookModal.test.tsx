@@ -200,4 +200,24 @@ describe('EditBookModal', () => {
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
   })
+
+  describe('Due Date', () => {
+    it('should send updated due_date when user changes the date field', async () => {
+      const { fireEvent } = await import('@testing-library/react')
+      render(<EditBookModal {...defaultProps} />)
+      const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement
+      fireEvent.change(dateInput, { target: { value: '2025-06-30' } })
+
+      const user = userEvent.setup()
+      await user.click(screen.getByRole('button', { name: /update book/i }))
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'session',
+          expect.objectContaining({
+            body: expect.objectContaining({ due_date: '2025-06-30' }),
+          })
+        )
+      })
+    })
+  })
 })

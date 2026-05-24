@@ -16,19 +16,19 @@ vi.mock('../../../supabase', () => ({
   getAvatarUrl: (path: string) => `https://storage.example.com/${path}`,
 }))
 
+const mockAuthMember = {
+  id: 1,
+  user_id: 'admin-user-id',
+  name: 'Admin User',
+  handle: 'admin_handle',
+  books_read: 10,
+  clubs: [{ id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }],
+  discord_id: '111222333444555666',
+  avatar_path: 'avatars/admin-user.jpg',
+}
+const mockUseAuth = vi.fn()
 vi.mock('../../../contexts/AuthContext', () => ({
-  useAuth: () => ({
-    member: {
-      id: 1,
-      user_id: 'admin-user-id',
-      name: 'Admin User',
-      handle: 'admin_handle',
-      books_read: 10,
-      clubs: [{ id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }],
-      discord_id: '111222333444555666',
-      avatar_path: 'avatars/admin-user.jpg',
-    },
-  }),
+  useAuth: () => mockUseAuth(),
 }))
 
 describe('EditProfileModal', () => {
@@ -44,6 +44,7 @@ describe('EditProfileModal', () => {
     vi.clearAllMocks()
     mockInvoke.mockResolvedValue({ data: {}, error: null })
     mockUpload.mockResolvedValue({ data: {}, error: null })
+    mockUseAuth.mockReturnValue({ member: mockAuthMember })
   })
 
   describe('Rendering', () => {
@@ -214,6 +215,28 @@ describe('EditProfileModal', () => {
       await user.click(screen.getByRole('button', { name: 'Close' }))
       expect(defaultProps.onError).toHaveBeenCalledWith('')
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('Single-word name initials', () => {
+    it('uses first two chars as initials when name has only one word', () => {
+      mockUseAuth.mockReturnValue({
+        member: { ...mockAuthMember, name: 'Alice' },
+      })
+      const singleWordMember = { ...defaultProps.currentMember, name: 'Alice' }
+      render(<EditProfileModal {...defaultProps} currentMember={singleWordMember} />)
+      // nameInitials('Alice') → parts.length < 2 → 'AL'
+      expect(screen.getByText('AL')).toBeInTheDocument()
+    })
+  })
+
+  describe('Avatar image error', () => {
+    it('hides avatar img on load error', async () => {
+      const { fireEvent } = await import('@testing-library/react')
+      render(<EditProfileModal {...defaultProps} />)
+      const avatarImg = screen.getByAltText('Member avatar') as HTMLImageElement
+      fireEvent.error(avatarImg)
+      expect(avatarImg.style.display).toBe('none')
     })
   })
 
