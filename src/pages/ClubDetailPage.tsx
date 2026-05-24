@@ -69,17 +69,16 @@ export default function ClubDetailPage() {
 
   // Fetch club details whenever slug changes
   useEffect(() => {
-    if (!slug || !serverId) return
-    fetchClub(slug, serverId)
+    if (!slug) return
+    fetchClub(slug)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, serverId])
 
-  const fetchClub = async (clubId: string, srvId: string) => {
+  const fetchClub = async (clubId: string) => {
     try {
       setLoading(true)
       setError(null)
-      const fn = `club?id=${encodeURIComponent(clubId)}&server_id=${encodeURIComponent(srvId)}`
-      const { data, error: err } = await invokeFunction<Club>(fn, { method: 'GET' })
+      const { data, error: err } = await invokeFunction<Club>(`club?id=${encodeURIComponent(clubId)}`, { method: 'GET' })
       if (err) throw err
       setClub(data)
     } catch (err: unknown) {
@@ -94,11 +93,10 @@ export default function ClubDetailPage() {
   }
 
   const refreshClub = async () => {
-    if (!slug || !serverId) return
+    if (!slug) return
     try {
       setClubLoading(true)
-      const fn = `club?id=${encodeURIComponent(slug)}&server_id=${encodeURIComponent(serverId)}`
-      const { data, error: err } = await invokeFunction<Club>(fn, { method: 'GET' })
+      const { data, error: err } = await invokeFunction<Club>(`club?id=${encodeURIComponent(slug)}`, { method: 'GET' })
       if (err) throw err
       setClub(data)
     } catch (err: unknown) {
