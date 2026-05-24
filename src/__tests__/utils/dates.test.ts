@@ -20,18 +20,16 @@ describe('parseLocalDate', () => {
     expect(d.getDate()).toBe(23)
   })
 
-  it('differs from naive UTC parsing in non-UTC environments', () => {
-    const utcParsed = new Date('2026-05-23')
+  it('always produces local midnight regardless of timezone offset', () => {
     const localParsed = parseLocalDate('2026-05-23')
-    // Both represent the same calendar day locally; local date components must be correct
-    expect(localParsed.getDate()).toBe(23)
-    // UTC-parsed version may show the previous day locally in UTC-offset environments
-    // This assertion documents that parseLocalDate is safe regardless of offset
+    // Local date components must always be correct — the key invariant
     expect(localParsed.getFullYear()).toBe(2026)
     expect(localParsed.getMonth()).toBe(4)
-    // The key invariant: UTC midnight would be a different local time, but
-    // parseLocalDate always gives local midnight
-    expect(localParsed.getTime()).not.toBe(utcParsed.getTime())
+    expect(localParsed.getDate()).toBe(23)
+    // Must be midnight in local time
+    expect(localParsed.getHours()).toBe(0)
+    expect(localParsed.getMinutes()).toBe(0)
+    expect(localParsed.getSeconds()).toBe(0)
   })
 
   it('handles January 1st (year boundary)', () => {
