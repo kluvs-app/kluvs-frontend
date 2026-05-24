@@ -18,10 +18,11 @@ vi.mock('../../supabase', () => {
 })
 
 vi.mock('../../components/modals/EditProfileModal', () => ({
-  default: ({ isOpen, onClose }: any) =>
+  default: ({ isOpen, onClose, onProfileUpdated }: any) =>
     isOpen ? (
       <div role="dialog" data-testid="edit-profile-modal">
         <button onClick={onClose}>Close</button>
+        <button onClick={onProfileUpdated} data-testid="profile-updated-btn">Profile Updated</button>
       </div>
     ) : null,
 }))
@@ -191,6 +192,46 @@ describe('ProfilePage', () => {
       })
       renderPage()
       await waitFor(() => expect(screen.getAllByText('0').length).toBeGreaterThan(0))
+    })
+
+    it('shows empty state message and CTA when member has no clubs', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id='))
+          return Promise.resolve({ data: { ...mockRegularMember, clubs: [] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await waitFor(() => expect(screen.getByText(/No clubs yet/i)).toBeInTheDocument(), TWO_HOP)
+      expect(screen.getByText(/You haven't joined any book clubs/i)).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /find a club to join/i })).toBeInTheDocument()
+    })
+
+    it('applies hover opacity on Find a club link mouseEnter and resets on mouseLeave', async () => {
+      const { fireEvent } = await import('@testing-library/react')
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id='))
+          return Promise.resolve({ data: { ...mockRegularMember, clubs: [] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await waitFor(() => expect(screen.getByRole('link', { name: /find a club to join/i })).toBeInTheDocument(), TWO_HOP)
+      const link = screen.getByRole('link', { name: /find a club to join/i }) as HTMLElement
+      fireEvent.mouseEnter(link)
+      expect(link.style.opacity).toBe('0.75')
+      fireEvent.mouseLeave(link)
+      expect(link.style.opacity).toBe('1')
+    })
+  })
+
+  describe('onProfileUpdated callback', () => {
+    it('closes EditProfileModal after onProfileUpdated is called', async () => {
+      const user = userEvent.setup()
+      renderPage()
+      await waitFor(() => expect(screen.getAllByLabelText('Edit profile').length).toBeGreaterThan(0))
+      await user.click(screen.getAllByLabelText('Edit profile')[0])
+      expect(screen.getByTestId('edit-profile-modal')).toBeInTheDocument()
+      await user.click(screen.getByTestId('profile-updated-btn'))
+      expect(screen.queryByTestId('edit-profile-modal')).not.toBeInTheDocument()
     })
   })
 })

@@ -19,9 +19,11 @@ vi.mock('../../supabase', () => {
 
 vi.mock('../../components/layout/Sidebar', () => ({ default: () => null }))
 vi.mock('../../components/DiscussionsTimeline', () => ({
-  default: ({ onAddDiscussion }: any) => (
+  default: ({ onAddDiscussion, onEditDiscussion, onDeleteDiscussion }: any) => (
     <div data-testid="discussions-timeline">
       <button onClick={onAddDiscussion} data-testid="add-discussion-btn">Add Discussion</button>
+      <button onClick={() => onEditDiscussion?.({ id: 'disc-1', title: 'Test', date: '2025-01-01' })} data-testid="edit-discussion-btn">Edit Discussion</button>
+      <button onClick={() => onDeleteDiscussion?.({ id: 'disc-1', title: 'Test', date: '2025-01-01' })} data-testid="delete-discussion-btn">Delete Discussion</button>
     </div>
   ),
 }))
@@ -45,6 +47,62 @@ vi.mock('../../components/BookInfo', () => ({
       {onNewSession && <button onClick={onNewSession} data-testid="new-session-btn">New Session</button>}
     </div>
   ),
+}))
+vi.mock('../../components/modals/EditBookModal', () => ({
+  default: ({ isOpen, onBookUpdated, onClose }: any) => isOpen ? (
+    <div role="dialog" data-testid="edit-book-modal">
+      <button onClick={onBookUpdated} data-testid="modal-book-save">Save</button>
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null,
+}))
+vi.mock('../../components/modals/NewSessionModal', () => ({
+  default: ({ isOpen, onSessionCreated, onClose }: any) => isOpen ? (
+    <div role="dialog" data-testid="new-session-modal">
+      <button onClick={onSessionCreated} data-testid="modal-session-save">Save</button>
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null,
+}))
+vi.mock('../../components/modals/DiscussionModal', () => ({
+  default: ({ isOpen, onDiscussionSaved, onClose }: any) => isOpen ? (
+    <div role="dialog" data-testid="discussion-modal">
+      <button onClick={onDiscussionSaved} data-testid="modal-discussion-save">Save</button>
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null,
+}))
+vi.mock('../../components/modals/MemberModal', () => ({
+  default: ({ isOpen, onMemberSaved, onClose }: any) => isOpen ? (
+    <div role="dialog" data-testid="member-modal">
+      <button onClick={onMemberSaved} data-testid="modal-member-save">Save</button>
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null,
+}))
+vi.mock('../../components/modals/DeleteMemberModal', () => ({
+  default: ({ isOpen, onMemberDeleted, onClose }: any) => isOpen ? (
+    <div role="dialog" data-testid="delete-member-modal">
+      <button onClick={onMemberDeleted} data-testid="modal-member-delete">Confirm</button>
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null,
+}))
+vi.mock('../../components/modals/DeleteDiscussionModal', () => ({
+  default: ({ isOpen, onDiscussionDeleted, onClose }: any) => isOpen ? (
+    <div role="dialog" data-testid="delete-discussion-modal">
+      <button onClick={onDiscussionDeleted} data-testid="modal-discussion-delete">Confirm</button>
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null,
+}))
+vi.mock('../../components/modals/DeleteClubModal', () => ({
+  default: ({ isOpen, onClubDeleted, onClose }: any) => isOpen ? (
+    <div role="dialog" data-testid="delete-club-modal">
+      <button onClick={onClubDeleted} data-testid="modal-club-delete">Confirm</button>
+      <button onClick={onClose}>Close</button>
+    </div>
+  ) : null,
 }))
 
 const mockNavigate = vi.fn()
@@ -144,16 +202,12 @@ describe('ClubDetailPage', () => {
   })
 
   describe('Data fetching', () => {
-    it('fetches club using slug as ID and member server_id', async () => {
+    it('fetches club using slug as ID', async () => {
       renderDetail('club-1')
       await waitFor(() => {
         expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
           expect.stringContaining('club?id=club-1'),
           expect.objectContaining({ method: 'GET' })
-        )
-        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
-          expect.stringContaining('server_id=server-1'),
-          expect.any(Object)
         )
       })
     })
@@ -219,7 +273,7 @@ describe('ClubDetailPage', () => {
       renderDetail()
       await waitFor(() => screen.getByTestId('edit-book-btn'))
       await user.click(screen.getByTestId('edit-book-btn'))
-      await waitFor(() => expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument())
+      await waitFor(() => expect(screen.getByTestId('edit-book-modal')).toBeInTheDocument())
     })
 
     it('opens NewSessionModal when new session is clicked', async () => {
@@ -227,7 +281,21 @@ describe('ClubDetailPage', () => {
       renderDetail()
       await waitFor(() => screen.getByTestId('new-session-btn'))
       await user.click(screen.getByTestId('new-session-btn'))
-      await waitFor(() => expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument())
+      await waitFor(() => expect(screen.getByTestId('new-session-modal')).toBeInTheDocument())
+    })
+
+    it('opens NewSessionModal when Start Session is clicked (no active session)', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: null }, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByRole('button', { name: /start session/i }))
+      await user.click(screen.getByRole('button', { name: /start session/i }))
+      await waitFor(() => expect(screen.getByTestId('new-session-modal')).toBeInTheDocument())
     })
 
     it('opens DiscussionModal when add discussion is clicked', async () => {
@@ -235,7 +303,23 @@ describe('ClubDetailPage', () => {
       renderDetail()
       await waitFor(() => screen.getByTestId('add-discussion-btn'))
       await user.click(screen.getByTestId('add-discussion-btn'))
-      await waitFor(() => expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument())
+      await waitFor(() => expect(screen.getByTestId('discussion-modal')).toBeInTheDocument())
+    })
+
+    it('opens DiscussionModal when edit discussion is clicked', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('edit-discussion-btn'))
+      await user.click(screen.getByTestId('edit-discussion-btn'))
+      await waitFor(() => expect(screen.getByTestId('discussion-modal')).toBeInTheDocument())
+    })
+
+    it('opens DeleteDiscussionModal when delete discussion is clicked', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('delete-discussion-btn'))
+      await user.click(screen.getByTestId('delete-discussion-btn'))
+      await waitFor(() => expect(screen.getByTestId('delete-discussion-modal')).toBeInTheDocument())
     })
 
     it('opens MemberModal when add member is clicked', async () => {
@@ -243,7 +327,23 @@ describe('ClubDetailPage', () => {
       renderDetail()
       await waitFor(() => screen.getByTestId('add-member-btn'))
       await user.click(screen.getByTestId('add-member-btn'))
-      await waitFor(() => expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument())
+      await waitFor(() => expect(screen.getByTestId('member-modal')).toBeInTheDocument())
+    })
+
+    it('opens MemberModal when edit member is clicked', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('edit-member-btn'))
+      await user.click(screen.getByTestId('edit-member-btn'))
+      await waitFor(() => expect(screen.getByTestId('member-modal')).toBeInTheDocument())
+    })
+
+    it('opens DeleteMemberModal when delete member is clicked', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('delete-member-btn'))
+      await user.click(screen.getByTestId('delete-member-btn'))
+      await waitFor(() => expect(screen.getByTestId('delete-member-modal')).toBeInTheDocument())
     })
 
     it('opens DeleteClubModal when delete club is clicked', async () => {
@@ -251,7 +351,195 @@ describe('ClubDetailPage', () => {
       renderDetail()
       await waitFor(() => screen.getByRole('button', { name: /delete club/i }))
       await user.click(screen.getByRole('button', { name: /delete club/i }))
-      await waitFor(() => expect(screen.getByRole('dialog', { hidden: true })).toBeInTheDocument())
+      await waitFor(() => expect(screen.getByTestId('delete-club-modal')).toBeInTheDocument())
+    })
+
+    it('navigates to /clubs after club is deleted', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByRole('button', { name: /delete club/i }))
+      await user.click(screen.getByRole('button', { name: /delete club/i }))
+      await waitFor(() => screen.getByTestId('modal-club-delete'))
+      await user.click(screen.getByTestId('modal-club-delete'))
+      expect(mockNavigate).toHaveBeenCalledWith('/clubs', { replace: true })
+    })
+  })
+
+  describe('Refresh (refreshClub)', () => {
+    it('calls club API again after onBookUpdated', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('edit-book-btn'))
+      vi.clearAllMocks()
+      mockSupabase.functions.invoke.mockResolvedValue({ data: mockClub, error: null })
+      await user.click(screen.getByTestId('edit-book-btn'))
+      await waitFor(() => screen.getByTestId('modal-book-save'))
+      await user.click(screen.getByTestId('modal-book-save'))
+      await waitFor(() =>
+        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+          expect.stringContaining('club?id=club-1'),
+          expect.objectContaining({ method: 'GET' })
+        )
+      )
+    })
+
+    it('calls club API again after onSessionCreated', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('new-session-btn'))
+      vi.clearAllMocks()
+      mockSupabase.functions.invoke.mockResolvedValue({ data: mockClub, error: null })
+      await user.click(screen.getByTestId('new-session-btn'))
+      await waitFor(() => screen.getByTestId('modal-session-save'))
+      await user.click(screen.getByTestId('modal-session-save'))
+      await waitFor(() =>
+        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+          expect.stringContaining('club?id=club-1'),
+          expect.objectContaining({ method: 'GET' })
+        )
+      )
+    })
+
+    it('calls club API again after onDiscussionSaved', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('add-discussion-btn'))
+      vi.clearAllMocks()
+      mockSupabase.functions.invoke.mockResolvedValue({ data: mockClub, error: null })
+      await user.click(screen.getByTestId('add-discussion-btn'))
+      await waitFor(() => screen.getByTestId('modal-discussion-save'))
+      await user.click(screen.getByTestId('modal-discussion-save'))
+      await waitFor(() =>
+        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+          expect.stringContaining('club?id=club-1'),
+          expect.objectContaining({ method: 'GET' })
+        )
+      )
+    })
+
+    it('calls club API again after onMemberSaved', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('add-member-btn'))
+      vi.clearAllMocks()
+      mockSupabase.functions.invoke.mockResolvedValue({ data: mockClub, error: null })
+      await user.click(screen.getByTestId('add-member-btn'))
+      await waitFor(() => screen.getByTestId('modal-member-save'))
+      await user.click(screen.getByTestId('modal-member-save'))
+      await waitFor(() =>
+        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+          expect.stringContaining('club?id=club-1'),
+          expect.objectContaining({ method: 'GET' })
+        )
+      )
+    })
+
+    it('calls club API again after onMemberDeleted', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('delete-member-btn'))
+      vi.clearAllMocks()
+      mockSupabase.functions.invoke.mockResolvedValue({ data: mockClub, error: null })
+      await user.click(screen.getByTestId('delete-member-btn'))
+      await waitFor(() => screen.getByTestId('modal-member-delete'))
+      await user.click(screen.getByTestId('modal-member-delete'))
+      await waitFor(() =>
+        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+          expect.stringContaining('club?id=club-1'),
+          expect.objectContaining({ method: 'GET' })
+        )
+      )
+    })
+
+    it('calls club API again after onDiscussionDeleted', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('delete-discussion-btn'))
+      vi.clearAllMocks()
+      mockSupabase.functions.invoke.mockResolvedValue({ data: mockClub, error: null })
+      await user.click(screen.getByTestId('delete-discussion-btn'))
+      await waitFor(() => screen.getByTestId('modal-discussion-delete'))
+      await user.click(screen.getByTestId('modal-discussion-delete'))
+      await waitFor(() =>
+        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+          expect.stringContaining('club?id=club-1'),
+          expect.objectContaining({ method: 'GET' })
+        )
+      )
+    })
+
+    it('closes EditBookModal via onClose', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('edit-book-btn'))
+      await user.click(screen.getByTestId('edit-book-btn'))
+      await waitFor(() => screen.getByTestId('edit-book-modal'))
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('edit-book-modal')).not.toBeInTheDocument()
+    })
+
+    it('closes DiscussionModal via onClose and resets editingDiscussion', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('add-discussion-btn'))
+      await user.click(screen.getByTestId('add-discussion-btn'))
+      await waitFor(() => screen.getByTestId('discussion-modal'))
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('discussion-modal')).not.toBeInTheDocument()
+    })
+
+    it('closes MemberModal via onClose and resets editingMember', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('add-member-btn'))
+      await user.click(screen.getByTestId('add-member-btn'))
+      await waitFor(() => screen.getByTestId('member-modal'))
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('member-modal')).not.toBeInTheDocument()
+    })
+
+    it('closes DeleteMemberModal via onClose and resets memberToDelete', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('delete-member-btn'))
+      await user.click(screen.getByTestId('delete-member-btn'))
+      await waitFor(() => screen.getByTestId('delete-member-modal'))
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('delete-member-modal')).not.toBeInTheDocument()
+    })
+
+    it('closes DeleteDiscussionModal via onClose', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('delete-discussion-btn'))
+      await user.click(screen.getByTestId('delete-discussion-btn'))
+      await waitFor(() => screen.getByTestId('delete-discussion-modal'))
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('delete-discussion-modal')).not.toBeInTheDocument()
+    })
+
+    it('closes DeleteClubModal via onClose', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByRole('button', { name: /delete club/i }))
+      await user.click(screen.getByRole('button', { name: /delete club/i }))
+      await waitFor(() => screen.getByTestId('delete-club-modal'))
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('delete-club-modal')).not.toBeInTheDocument()
+    })
+
+    it('shows error when refreshClub fails', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => screen.getByTestId('edit-book-btn'))
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: null, error: { message: 'Refresh failed' } })
+        return Promise.resolve({ data: null, error: null })
+      })
+      await user.click(screen.getByTestId('edit-book-btn'))
+      await waitFor(() => screen.getByTestId('modal-book-save'))
+      await user.click(screen.getByTestId('modal-book-save'))
+      await waitFor(() => expect(screen.getByText('Refresh failed')).toBeInTheDocument())
     })
   })
 })

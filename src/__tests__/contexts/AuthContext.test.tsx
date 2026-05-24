@@ -1006,4 +1006,26 @@ describe('AuthContext', () => {
       expect(mockSupabase.functions.invoke).toHaveBeenCalledTimes(3)
     })
   })
+
+  describe('Network events', () => {
+    it('should set isOnline to false on offline event', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      expect(result.current.isOnline).toBe(true)
+      window.dispatchEvent(new Event('offline'))
+      await waitFor(() => expect(result.current.isOnline).toBe(false))
+    })
+
+    it('should set isOnline to true on online event after going offline', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      window.dispatchEvent(new Event('offline'))
+      await waitFor(() => expect(result.current.isOnline).toBe(false))
+
+      window.dispatchEvent(new Event('online'))
+      await waitFor(() => expect(result.current.isOnline).toBe(true))
+    })
+  })
 })

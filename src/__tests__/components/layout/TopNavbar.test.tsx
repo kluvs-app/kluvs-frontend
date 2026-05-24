@@ -5,16 +5,11 @@ import userEvent from '@testing-library/user-event'
 import TopNavbar from '../../../components/layout/TopNavbar'
 
 const mockRefreshMemberData = vi.fn()
+const mockUseAuth = vi.fn()
 
 // Mock useAuth
 vi.mock('../../../contexts/AuthContext', () => ({
-  useAuth: () => ({
-    member: {
-      id: 1,
-      name: 'Test User',
-    },
-    refreshMemberData: mockRefreshMemberData,
-  }),
+  useAuth: () => mockUseAuth(),
 }))
 
 // Mock ThemeToggle
@@ -38,6 +33,10 @@ describe('TopNavbar', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockUseAuth.mockReturnValue({
+      member: { id: 1, name: 'Test User' },
+      refreshMemberData: mockRefreshMemberData,
+    })
   })
 
   describe('Rendering', () => {
@@ -225,6 +224,53 @@ describe('TopNavbar', () => {
       render(<MemoryRouter><TopNavbar {...defaultProps} /></MemoryRouter>)
 
       expect(screen.getByText('T')).toBeInTheDocument() // First letter of "Test User"
+    })
+  })
+
+  describe('Discord connect visibility', () => {
+    it('should hide Connect to Discord when member has discord_id', async () => {
+      mockUseAuth.mockReturnValue({
+        member: { id: 1, name: 'Discord User', discord_id: '123456789' },
+        refreshMemberData: mockRefreshMemberData,
+      })
+      const user = userEvent.setup()
+      render(<MemoryRouter><TopNavbar /></MemoryRouter>)
+      await user.click(screen.getByLabelText('User menu'))
+      expect(screen.queryByRole('menuitem', { name: /connect to discord/i })).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Null member fallbacks', () => {
+    it('should show ? avatar and User label when member is null', () => {
+      mockUseAuth.mockReturnValue({
+        member: null,
+        refreshMemberData: mockRefreshMemberData,
+      })
+      render(<MemoryRouter><TopNavbar /></MemoryRouter>)
+      expect(screen.getByText('?')).toBeInTheDocument()
+      expect(screen.getByText('User')).toBeInTheDocument()
+    })
+  })
+
+  describe('Modal close callbacks', () => {
+    it('should close SignOutModal when its onClose is called', async () => {
+      const user = userEvent.setup()
+      render(<MemoryRouter><TopNavbar /></MemoryRouter>)
+      await user.click(screen.getByLabelText('User menu'))
+      await user.click(screen.getByRole('menuitem', { name: 'Sign Out' }))
+      expect(screen.getByTestId('sign-out-modal')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('sign-out-modal')).not.toBeInTheDocument()
+    })
+
+    it('should close DiscordLinkModal when its onClose is called', async () => {
+      const user = userEvent.setup()
+      render(<MemoryRouter><TopNavbar /></MemoryRouter>)
+      await user.click(screen.getByLabelText('User menu'))
+      await user.click(screen.getByRole('menuitem', { name: /connect to discord/i }))
+      expect(screen.getByTestId('discord-link-modal')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('discord-link-modal')).not.toBeInTheDocument()
     })
   })
 })
