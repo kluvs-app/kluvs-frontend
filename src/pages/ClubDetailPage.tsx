@@ -71,7 +71,6 @@ export default function ClubDetailPage() {
   useEffect(() => {
     if (!slug) return
     fetchClub(slug)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, serverId])
 
   const fetchClub = async (clubId: string) => {
@@ -175,17 +174,29 @@ export default function ClubDetailPage() {
                 ].filter(Boolean).join(' · ')}
               </p>
             </div>
-            {isAdmin && (
+            <div className="flex items-center gap-1">
               <button
-                onClick={() => { setClubToDelete({ id: club.id, name: club.name }); setShowDeleteClubModal(true) }}
-                className="shrink-0 p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-danger hover:bg-[var(--color-bg-elevated)] transition-colors"
-                aria-label="Delete club"
+                onClick={() => navigator.clipboard.writeText(club.id)}
+                className="shrink-0 p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+                aria-label="Copy club ID"
+                title="Copy Club ID for /link_club"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </button>
-            )}
+              {isAdmin && (
+                <button
+                  onClick={() => { setClubToDelete({ id: club.id, name: club.name }); setShowDeleteClubModal(true) }}
+                  className="shrink-0 p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-danger hover:bg-[var(--color-bg-elevated)] transition-colors"
+                  aria-label="Delete club"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

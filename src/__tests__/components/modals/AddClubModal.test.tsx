@@ -2,14 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import AddClubModal from '../../../components/modals/AddClubModal'
-import { mockServer } from '../../utils/mocks'
+import { mockAdminMember, mockRegularMember } from '../../utils/mocks'
 
-// Mock the supabase module
+vi.mock('../../../contexts/AuthContext', () => ({
+  useAuth: vi.fn(),
+}))
+
 vi.mock('../../../supabase', () => {
   const mockClient = {
-    functions: {
-      invoke: vi.fn(),
-    },
+    functions: { invoke: vi.fn() },
   }
   return {
     supabase: mockClient,
@@ -17,8 +18,25 @@ vi.mock('../../../supabase', () => {
   }
 })
 
+const mockGuilds1 = [
+  {
+    id: 'server-1',
+    name: "Blingers' Books",
+    channels: [
+      { id: 'ch-1', name: 'general' },
+      { id: 'ch-2', name: 'book-club' },
+    ],
+  },
+]
+
+const mockGuilds2 = [
+  { id: 'server-1', name: "Blingers' Books", channels: [{ id: 'ch-1', name: 'general' }] },
+  { id: 'server-2', name: 'Another Server', channels: [{ id: 'ch-3', name: 'reading' }] },
+]
+
 describe('AddClubModal', () => {
   let mockSupabase: any
+  let mockUseAuth: any
   const mockOnClose = vi.fn()
   const mockOnClubCreated = vi.fn()
   const mockOnError = vi.fn()
@@ -26,70 +44,68 @@ describe('AddClubModal', () => {
   const defaultProps = {
     isOpen: true,
     onClose: mockOnClose,
-    selectedServer: 'server-1',
-    selectedServerData: mockServer,
     onClubCreated: mockOnClubCreated,
     onError: mockOnError,
   }
 
   beforeEach(async () => {
-    // Get the mocked supabase from the module
     const supabaseModule = await import('../../../supabase')
     mockSupabase = supabaseModule.supabase as any
+    const authModule = await import('../../../contexts/AuthContext')
+    mockUseAuth = authModule.useAuth as ReturnType<typeof vi.fn>
 
-    // Reset all mocks
     vi.clearAllMocks()
 
-    // Default successful response
-    mockSupabase.functions.invoke.mockResolvedValue({
-      data: { id: 'test-uuid-123', name: 'Test Club' },
-      error: null,
+    mockUseAuth.mockReturnValue({ member: mockAdminMember })
+
+    mockSupabase.functions.invoke.mockImplementation((path: string) => {
+      if (path.startsWith('discord-guilds')) {
+        return Promise.resolve({ data: mockGuilds1, error: null })
+      }
+      return Promise.resolve({ data: { id: 'test-uuid-123' }, error: null })
     })
   })
 
   describe('Rendering', () => {
     it('should not render when isOpen is false', () => {
       render(<AddClubModal {...defaultProps} isOpen={false} />)
-
-      expect(screen.queryByText('Add New Club')).not.toBeInTheDocument()
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
 
     it('should render when isOpen is true', () => {
       render(<AddClubModal {...defaultProps} />)
-
-      expect(screen.getByText('Add New Club')).toBeInTheDocument()
-      expect(screen.getByText('Create a book club for your server')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+      expect(screen.getByText('New Club')).toBeInTheDocument()
     })
 
-    it('should render all form fields', () => {
+    it('should render club name field', () => {
       render(<AddClubModal {...defaultProps} />)
-
-      // Labels exist but aren't properly associated, so query by placeholder instead
-      expect(screen.getByPlaceholderText('e.g., Fantasy Book Club')).toBeInTheDocument()
-      expect(screen.getByPlaceholderText('123456789012345678')).toBeInTheDocument()
       expect(screen.getByText(/Club Name/i)).toBeInTheDocument()
-      expect(screen.getByText(/Discord Channel ID/i)).toBeInTheDocument()
-    })
-
-    it('should display selected server name', () => {
-      render(<AddClubModal {...defaultProps} />)
-
-      expect(screen.getByText(mockServer.name)).toBeInTheDocument()
-      expect(screen.getByText('Club will be created in this server')).toBeInTheDocument()
+      expect(screen.getByPlaceholderText('e.g., Fantasy Book Club')).toBeInTheDocument()
     })
 
     it('should render action buttons', () => {
       render(<AddClubModal {...defaultProps} />)
-
       expect(screen.getByRole('button', { name: /Cancel/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /Create Club/i })).toBeInTheDocument()
     })
 
-    it('should show close button', () => {
+    it('should render close button', () => {
       render(<AddClubModal {...defaultProps} />)
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+    })
 
-      const closeButton = screen.getByRole('button', { name: 'Close' })
-      expect(closeButton).toBeInTheDocument()
+    it('should show Discord section for member with Discord connected', async () => {
+      render(<AddClubModal {...defaultProps} />)
+      await waitFor(() => {
+        expect(screen.getByText('Discord')).toBeInTheDocument()
+      })
+    })
+
+    it('should not show Discord section for member without Discord', () => {
+      mockUseAuth.mockReturnValue({ member: mockRegularMember })
+      render(<AddClubModal {...defaultProps} />)
+      expect(screen.queryByText('Discord')).not.toBeInTheDocument()
     })
   })
 
@@ -97,102 +113,50 @@ describe('AddClubModal', () => {
     it('should allow typing in club name field', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
       const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
       await user.type(nameInput, 'My Book Club')
-
       expect(nameInput).toHaveValue('My Book Club')
-    })
-
-    it('should allow typing in discord channel field', async () => {
-      const user = userEvent.setup()
-      render(<AddClubModal {...defaultProps} />)
-
-      const channelInput = screen.getByPlaceholderText('123456789012345678')
-      await user.type(channelInput, '9876543210')
-
-      expect(channelInput).toHaveValue('9876543210')
     })
 
     it('should limit club name to 100 characters', () => {
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      expect(nameInput).toHaveAttribute('maxLength', '100')
+      expect(screen.getByPlaceholderText('e.g., Fantasy Book Club')).toHaveAttribute('maxLength', '100')
     })
   })
 
   describe('Form Validation', () => {
     it('should disable submit button when club name is empty', () => {
       render(<AddClubModal {...defaultProps} />)
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      expect(submitButton).toBeDisabled()
+      expect(screen.getByRole('button', { name: /Create Club/i })).toBeDisabled()
     })
 
     it('should enable submit button when club name is filled', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      expect(submitButton).toBeEnabled()
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      expect(screen.getByRole('button', { name: /Create Club/i })).toBeEnabled()
     })
 
     it('should disable submit button when club name is only whitespace', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, '   ')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      expect(submitButton).toBeDisabled()
-    })
-
-    it('should call onError when submitting with empty name', async () => {
-      const user = userEvent.setup()
-      render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, '   ')
-
-      // Manually trigger submit (button is disabled but testing the function)
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-
-      // Type something then clear to test validation
-      await user.clear(nameInput)
-      await user.type(nameInput, 'a')
-      await user.clear(nameInput)
-
-      // Button should be disabled
-      expect(submitButton).toBeDisabled()
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), '   ')
+      expect(screen.getByRole('button', { name: /Create Club/i })).toBeDisabled()
     })
   })
 
   describe('Form Submission', () => {
-    it('should call supabase Edge Function with correct data', async () => {
+    it('should submit with name and null server when no server selected', async () => {
+      mockUseAuth.mockReturnValue({ member: mockRegularMember })
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
       await waitFor(() => {
         expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
           'club',
           expect.objectContaining({
-            method: 'POST',
-            body: expect.objectContaining({
-              id: 'test-uuid-123', // from crypto.randomUUID mock
-              name: 'My Book Club',
-              server_id: 'server-1',
-            }),
+            body: expect.objectContaining({ name: 'My Book Club', server_id: null }),
           })
         )
       })
@@ -201,67 +165,45 @@ describe('AddClubModal', () => {
     it('should trim club name before submission', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, '  My Book Club  ')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), '  My Book Club  ')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
       await waitFor(() => {
         expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
           'club',
           expect.objectContaining({
-            body: expect.objectContaining({
-              name: 'My Book Club', // trimmed
-            }),
+            body: expect.objectContaining({ name: 'My Book Club' }),
           })
         )
       })
     })
 
-    it('should send null for empty discord channel', async () => {
+    it('should send null for discord_channel when none selected', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
       await waitFor(() => {
         expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
           'club',
           expect.objectContaining({
-            body: expect.objectContaining({
-              discord_channel: null,
-            }),
+            body: expect.objectContaining({ discord_channel: null }),
           })
         )
       })
     })
 
-    it('should include discord channel when provided', async () => {
+    it('should submit with selected channel', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      const channelInput = screen.getByPlaceholderText('123456789012345678')
-
-      await user.type(nameInput, 'My Book Club')
-      await user.type(channelInput, '9876543210')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
+      await waitFor(() => expect(screen.getByLabelText(/Channel/i)).toBeInTheDocument())
+      await user.selectOptions(screen.getByLabelText(/Channel/i), 'ch-1')
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
       await waitFor(() => {
         expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
           'club',
           expect.objectContaining({
-            body: expect.objectContaining({
-              discord_channel: '9876543210',
-            }),
+            body: expect.objectContaining({ discord_channel: 'ch-1' }),
           })
         )
       })
@@ -269,101 +211,54 @@ describe('AddClubModal', () => {
 
     it('should show loading state during submission', async () => {
       const user = userEvent.setup()
-
-      // Make the API call take some time
-      mockSupabase.functions.invoke.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve({ data: {}, error: null }), 100))
-      )
-
+      mockSupabase.functions.invoke.mockImplementation((path: string) => {
+        if (path.startsWith('discord-guilds')) return Promise.resolve({ data: mockGuilds1, error: null })
+        return new Promise(resolve => setTimeout(() => resolve({ data: {}, error: null }), 100))
+      })
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
-      // Should show loading state
-      expect(screen.getByText('Creating...')).toBeInTheDocument()
-      expect(submitButton).toBeDisabled()
-
-      // Wait for submission to complete
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
+      expect(screen.getByText('Creating…')).toBeInTheDocument()
       await waitFor(() => {
-        expect(screen.queryByText('Creating...')).not.toBeInTheDocument()
+        expect(screen.queryByText('Creating…')).not.toBeInTheDocument()
       }, { timeout: 200 })
     })
 
-    it('should call onClubCreated and onClose on successful submission', async () => {
+    it('should call onClubCreated and onClose on success', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
       await waitFor(() => {
-        expect(mockOnClubCreated).toHaveBeenCalledWith('test-uuid-123')
+        expect(mockOnClubCreated).toHaveBeenCalled()
         expect(mockOnClose).toHaveBeenCalled()
       })
     })
 
-    it('should reset form after successful submission', async () => {
+    it('should call onError with message on API failure', async () => {
       const user = userEvent.setup()
-      render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
-      await waitFor(() => {
-        expect(mockOnClose).toHaveBeenCalled()
+      mockSupabase.functions.invoke.mockImplementation((path: string) => {
+        if (path.startsWith('discord-guilds')) return Promise.resolve({ data: mockGuilds1, error: null })
+        return Promise.resolve({ data: null, error: new Error('Server error') })
       })
-
-      // Form should be reset (we can't check directly since modal closes,
-      // but this is tested by the component logic)
-    })
-
-    it('should call onError with error message on failed submission', async () => {
-      const user = userEvent.setup()
-
-      mockSupabase.functions.invoke.mockResolvedValue({
-        data: null,
-        error: new Error('Server error'),
-      })
-
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
       await waitFor(() => {
         expect(mockOnError).toHaveBeenCalledWith('Server error')
       })
-
-      // Should not close modal on error
       expect(mockOnClose).not.toHaveBeenCalled()
     })
 
     it('should call onError with generic message for unknown errors', async () => {
       const user = userEvent.setup()
-
-      mockSupabase.functions.invoke.mockRejectedValue('Unknown error')
-
+      mockSupabase.functions.invoke.mockImplementation((path: string) => {
+        if (path.startsWith('discord-guilds')) return Promise.resolve({ data: mockGuilds1, error: null })
+        return Promise.reject('Unknown error')
+      })
       render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
       await waitFor(() => {
         expect(mockOnError).toHaveBeenCalledWith('Failed to create club')
       })
@@ -374,105 +269,162 @@ describe('AddClubModal', () => {
     it('should call onClose when cancel button is clicked', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const cancelButton = screen.getByRole('button', { name: /Cancel/i })
-      await user.click(cancelButton)
-
+      await user.click(screen.getByRole('button', { name: /Cancel/i }))
       expect(mockOnClose).toHaveBeenCalled()
     })
 
     it('should call onClose when close button is clicked', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const closeButton = screen.getByRole('button', { name: 'Close' })
-      await user.click(closeButton)
-
+      await user.click(screen.getByRole('button', { name: 'Close' }))
       expect(mockOnClose).toHaveBeenCalled()
     })
 
-    it('should clear form when closing', async () => {
+    it('should clear form when closed and reopened', async () => {
       const user = userEvent.setup()
       const { rerender } = render(<AddClubModal {...defaultProps} />)
-
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const closeButton = screen.getByRole('button', { name: 'Close' })
-      await user.click(closeButton)
-
-      // Re-open modal
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: 'Close' }))
       rerender(<AddClubModal {...defaultProps} isOpen={false} />)
       rerender(<AddClubModal {...defaultProps} isOpen={true} />)
-
-      // Form should be cleared
-      const newNameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      expect(newNameInput).toHaveValue('')
+      expect(screen.getByPlaceholderText('e.g., Fantasy Book Club')).toHaveValue('')
     })
 
     it('should call onError with empty string when closing', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
-
-      const closeButton = screen.getByRole('button', { name: 'Close' })
-      await user.click(closeButton)
-
+      await user.click(screen.getByRole('button', { name: 'Close' }))
       expect(mockOnError).toHaveBeenCalledWith('')
     })
 
     it('should disable close buttons during submission', async () => {
       const user = userEvent.setup()
-
-      mockSupabase.functions.invoke.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve({ data: {}, error: null }), 100))
-      )
-
+      mockSupabase.functions.invoke.mockImplementation((path: string) => {
+        if (path.startsWith('discord-guilds')) return Promise.resolve({ data: mockGuilds1, error: null })
+        return new Promise(resolve => setTimeout(() => resolve({ data: {}, error: null }), 100))
+      })
       render(<AddClubModal {...defaultProps} />)
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
+      expect(screen.getByRole('button', { name: /Cancel/i })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Close' })).toBeDisabled()
+      await waitFor(() => expect(mockOnClose).toHaveBeenCalled(), { timeout: 200 })
+    })
+  })
 
-      const nameInput = screen.getByPlaceholderText('e.g., Fantasy Book Club')
-      await user.type(nameInput, 'My Book Club')
-
-      const submitButton = screen.getByRole('button', { name: /Create Club/i })
-      await user.click(submitButton)
-
-      // Close buttons should be disabled
-      const cancelButton = screen.getByRole('button', { name: /Cancel/i })
-      const closeButton = screen.getByRole('button', { name: 'Close' })
-
-      expect(cancelButton).toBeDisabled()
-      expect(closeButton).toBeDisabled()
-
+  describe('Discord section', () => {
+    it('should fetch guilds on open', async () => {
+      render(<AddClubModal {...defaultProps} />)
       await waitFor(() => {
-        expect(mockOnClose).toHaveBeenCalled()
-      }, { timeout: 200 })
+        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+          `discord-guilds?member_id=${encodeURIComponent(mockAdminMember.id)}`,
+          { method: 'GET' }
+        )
+      })
+    })
+
+    it('should show loading indicator while fetching guilds', () => {
+      mockSupabase.functions.invoke.mockImplementation(() => new Promise(() => {}))
+      render(<AddClubModal {...defaultProps} />)
+      expect(screen.getByText('Loading servers…')).toBeInTheDocument()
+    })
+
+    it('should show static server info for a single guild', async () => {
+      render(<AddClubModal {...defaultProps} />)
+      await waitFor(() => {
+        expect(screen.getByText(mockGuilds1[0].name)).toBeInTheDocument()
+      })
+      expect(screen.queryByLabelText(/^Server$/i)).not.toBeInTheDocument()
+    })
+
+    it('should auto-select single guild and show channel dropdown', async () => {
+      render(<AddClubModal {...defaultProps} />)
+      await waitFor(() => {
+        expect(screen.getByLabelText(/Channel/i)).toBeInTheDocument()
+      })
+    })
+
+    it('should show server dropdown with all options for multiple guilds', async () => {
+      mockSupabase.functions.invoke.mockImplementation((path: string) => {
+        if (path.startsWith('discord-guilds')) return Promise.resolve({ data: mockGuilds2, error: null })
+        return Promise.resolve({ data: { id: 'test-uuid-123' }, error: null })
+      })
+      render(<AddClubModal {...defaultProps} />)
+      await waitFor(() => {
+        expect(screen.getByLabelText(/^Server$/i)).toBeInTheDocument()
+        expect(screen.getByRole('option', { name: 'No server' })).toBeInTheDocument()
+        expect(screen.getByRole('option', { name: mockGuilds2[0].name })).toBeInTheDocument()
+        expect(screen.getByRole('option', { name: mockGuilds2[1].name })).toBeInTheDocument()
+      })
+    })
+
+    it('should show channel dropdown when server is selected from multi-guild list', async () => {
+      mockSupabase.functions.invoke.mockImplementation((path: string) => {
+        if (path.startsWith('discord-guilds')) return Promise.resolve({ data: mockGuilds2, error: null })
+        return Promise.resolve({ data: { id: 'test-uuid-123' }, error: null })
+      })
+      const user = userEvent.setup()
+      render(<AddClubModal {...defaultProps} />)
+      await waitFor(() => expect(screen.getByLabelText(/^Server$/i)).toBeInTheDocument())
+      await user.selectOptions(screen.getByLabelText(/^Server$/i), 'server-1')
+      await waitFor(() => {
+        expect(screen.getByLabelText(/Channel/i)).toBeInTheDocument()
+        expect(screen.getByRole('option', { name: '#general' })).toBeInTheDocument()
+      })
+    })
+
+    it('should hide channel dropdown when "No server" is selected', async () => {
+      mockSupabase.functions.invoke.mockImplementation((path: string) => {
+        if (path.startsWith('discord-guilds')) return Promise.resolve({ data: mockGuilds2, error: null })
+        return Promise.resolve({ data: { id: 'test-uuid-123' }, error: null })
+      })
+      const user = userEvent.setup()
+      render(<AddClubModal {...defaultProps} />)
+      await waitFor(() => expect(screen.getByLabelText(/^Server$/i)).toBeInTheDocument())
+      await user.selectOptions(screen.getByLabelText(/^Server$/i), 'server-1')
+      await user.selectOptions(screen.getByLabelText(/^Server$/i), '')
+      expect(screen.queryByLabelText(/Channel/i)).not.toBeInTheDocument()
+    })
+
+    it('should submit with correct server_id when server is selected', async () => {
+      mockSupabase.functions.invoke.mockImplementation((path: string) => {
+        if (path.startsWith('discord-guilds')) return Promise.resolve({ data: mockGuilds2, error: null })
+        return Promise.resolve({ data: { id: 'test-uuid-123' }, error: null })
+      })
+      const user = userEvent.setup()
+      render(<AddClubModal {...defaultProps} />)
+      await waitFor(() => expect(screen.getByLabelText(/^Server$/i)).toBeInTheDocument())
+      await user.selectOptions(screen.getByLabelText(/^Server$/i), 'server-2')
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'Test Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
+      await waitFor(() => {
+        expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+          'club',
+          expect.objectContaining({
+            body: expect.objectContaining({ server_id: 'server-2' }),
+          })
+        )
+      })
     })
   })
 
   describe('Accessibility', () => {
-    it('should have proper labels for form fields', () => {
+    it('should have dialog role with aria-modal', () => {
       render(<AddClubModal {...defaultProps} />)
-
-      // Labels exist in the DOM even if not properly associated
-      expect(screen.getByText(/Club Name/i)).toBeInTheDocument()
-      expect(screen.getByText(/Discord Channel ID/i)).toBeInTheDocument()
-
-      // Inputs are accessible via placeholder
-      expect(screen.getByPlaceholderText('e.g., Fantasy Book Club')).toBeInTheDocument()
-      expect(screen.getByPlaceholderText('123456789012345678')).toBeInTheDocument()
+      const dialog = screen.getByRole('dialog')
+      expect(dialog).toHaveAttribute('aria-modal', 'true')
     })
 
-    it('should indicate required fields', () => {
+    it('should have aria-labelledby pointing to title', () => {
       render(<AddClubModal {...defaultProps} />)
-
-      // Required asterisk should be present
-      const nameLabel = screen.getByText('Club Name').parentElement
-      expect(nameLabel).toHaveTextContent('*')
+      expect(screen.getByRole('dialog')).toHaveAttribute('aria-labelledby', 'modal-title-add-club')
     })
 
-    it('should indicate optional fields', () => {
+    it('should indicate optional channel field', async () => {
       render(<AddClubModal {...defaultProps} />)
-
-      expect(screen.getByText('(optional)')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('(optional)')).toBeInTheDocument()
+      })
     })
   })
 })
