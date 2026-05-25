@@ -15,6 +15,12 @@ interface AddClubFormData {
   discord_channel: string
 }
 
+interface Guild {
+  id: string
+  name: string
+  channels: { id: string; name: string }[]
+}
+
 export default function AddClubModal({
   isOpen,
   onClose,
@@ -23,11 +29,8 @@ export default function AddClubModal({
 }: AddClubModalProps) {
   const { member } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState<AddClubFormData>({
-    name: '',
-    discord_channel: ''
-  })
-  const [guilds, setGuilds] = useState<{ id: string; name: string; channels: { id: string; name: string }[] }[]>([])
+  const [formData, setFormData] = useState<AddClubFormData>({ name: '', discord_channel: '' })
+  const [guilds, setGuilds] = useState<Guild[]>([])
   const [guildsLoading, setGuildsLoading] = useState(false)
   const [selectedServer, setSelectedServer] = useState('')
 
@@ -88,22 +91,23 @@ export default function AddClubModal({
   useEffect(() => {
     if (!isOpen || !member?.discord_id) return
     let cancelled = false
-    const fetch = async () => {
+    const fetchGuilds = async () => {
       setGuildsLoading(true)
       try {
-        const { data, error } = await invokeFunction<{ id: string; name: string; channels: { id: string; name: string }[] }[]>(
+        const { data, error } = await invokeFunction<Guild[]>(
           `discord-guilds?member_id=${encodeURIComponent(member.id)}`,
           { method: 'GET' }
         )
         if (cancelled) return
         if (!error && Array.isArray(data)) {
           setGuilds(data)
+          if (data.length === 1) setSelectedServer(data[0].id)
         }
       } finally {
         if (!cancelled) setGuildsLoading(false)
       }
     }
-    fetch()
+    fetchGuilds()
     return () => { cancelled = true }
   }, [isOpen])
 
@@ -186,7 +190,6 @@ export default function AddClubModal({
               className="rounded-input space-y-4 px-4 pt-4 pb-4"
               style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
             >
-              {/* Discord section header */}
               <div className="flex items-center gap-2">
                 <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0" />
                 <span style={{
@@ -246,6 +249,7 @@ export default function AddClubModal({
                   {selectedServer && (
                     <div>
                       <label
+                        htmlFor="channel-select"
                         style={{
                           display: 'block',
                           fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
@@ -256,6 +260,7 @@ export default function AddClubModal({
                       >Channel <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
                       <div className="relative">
                         <select
+                          id="channel-select"
                           value={formData.discord_channel}
                           onChange={(e) => setFormData(prev => ({ ...prev, discord_channel: e.target.value }))}
                           className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"

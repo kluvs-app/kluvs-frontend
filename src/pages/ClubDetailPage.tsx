@@ -71,7 +71,6 @@ export default function ClubDetailPage() {
   useEffect(() => {
     if (!slug) return
     fetchClub(slug)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, serverId])
 
   const fetchClub = async (clubId: string) => {

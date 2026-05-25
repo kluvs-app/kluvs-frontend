@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { invokeFunction } from '../supabase'
 import AddClubModal from '../components/modals/AddClubModal'
-import type { Server } from '../types'
 
 interface ClubsPageProps {
   openNewModal?: boolean
@@ -12,17 +10,8 @@ interface ClubsPageProps {
 export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
   const { member, refreshMemberData } = useAuth()
   const [showAddClubModal, setShowAddClubModal] = useState(openNewModal)
-  const [servers, setServers] = useState<Server[]>([])
 
   const clubs = member?.clubs ?? []
-  const selectedServer = servers[0]?.id ?? ''
-  const selectedServerData = servers[0]
-
-  useEffect(() => {
-    invokeFunction<{ servers: Server[] }>('server', { method: 'GET' })
-      .then(({ data }) => { if (data?.servers) setServers(data.servers) })
-      .catch(() => {})
-  }, [])
 
   return (
     <div className="px-6 py-8">
@@ -91,8 +80,6 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
       <AddClubModal
         isOpen={showAddClubModal}
         onClose={() => setShowAddClubModal(false)}
-        selectedServer={selectedServer}
-        selectedServerData={selectedServerData}
         onClubCreated={() => {
           setShowAddClubModal(false)
           refreshMemberData()
