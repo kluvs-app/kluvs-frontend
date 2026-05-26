@@ -3,16 +3,8 @@
     {
       "source": "/(.*)",
       "destination": "/index.html",
-      "has": [{ "type": "host", "value": "app.kluvs.com" }]
+      "has": [{ "type": "host", "value": "app\\.kluvs\\.(com|xyz)" }]
     },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "redirects": [
-    {
-      "source": "/app/:path*",
-      "destination": "https://app.kluvs.com/me",
-      "permanent": false,
-      "has": [{ "type": "host", "value": "kluvs.com" }]
-    }
   ]
 }
