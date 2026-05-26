@@ -66,7 +66,7 @@ export function ProtectedRoute() {
 
 function App() {
   const isAppDomain =
-    window.location.hostname === 'app.kluvs.com' ||
+    window.location.hostname.startsWith('app.') ||
     import.meta.env.VITE_FORCE_APP_DOMAIN === 'true'
 
   return (
