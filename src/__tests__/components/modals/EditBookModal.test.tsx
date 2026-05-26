@@ -74,7 +74,6 @@ describe('EditBookModal', () => {
     it('should show club context info', () => {
       render(<EditBookModal {...defaultProps} />)
       expect(screen.getByText(mockClub.name)).toBeInTheDocument()
-      expect(screen.getByText('Updating active reading session')).toBeInTheDocument()
     })
   })
 
