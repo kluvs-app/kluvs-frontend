@@ -34,7 +34,6 @@ describe('DiscussionModal', () => {
       render(<DiscussionModal {...defaultProps} />)
 
       expect(screen.getByRole('heading', { name: 'Add Discussion' })).toBeInTheDocument()
-      expect(screen.getByText('Schedule a new discussion event')).toBeInTheDocument()
     })
 
     it('should not render when isOpen is false', () => {
@@ -52,7 +51,7 @@ describe('DiscussionModal', () => {
     it('should show empty form fields in add mode', () => {
       render(<DiscussionModal {...defaultProps} />)
 
-      expect(screen.getByPlaceholderText('e.g., Chapter 1-5 Discussion')).toHaveValue('')
+      expect(screen.getByPlaceholderText('e.g., Chapters 1–5')).toHaveValue('')
     })
   })
 
@@ -61,7 +60,6 @@ describe('DiscussionModal', () => {
       render(<DiscussionModal {...defaultProps} editingDiscussion={mockDiscussion} />)
 
       expect(screen.getByRole('heading', { name: 'Edit Discussion' })).toBeInTheDocument()
-      expect(screen.getByText('Update discussion details')).toBeInTheDocument()
     })
 
     it('should pre-populate form in edit mode', () => {
@@ -109,7 +107,7 @@ describe('DiscussionModal', () => {
 
   describe('Form Submission - Add', () => {
     async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
-      await user.type(screen.getByPlaceholderText('e.g., Chapter 1-5 Discussion'), 'New Discussion')
+      await user.type(screen.getByPlaceholderText('e.g., Chapters 1–5'), 'New Discussion')
 
       // Fill date via the date input (type="date")
       const dateInputs = document.querySelectorAll('input[type="date"]')
@@ -166,7 +164,7 @@ describe('DiscussionModal', () => {
       const user = userEvent.setup()
       render(<DiscussionModal {...defaultProps} />)
 
-      await user.type(screen.getByPlaceholderText('e.g., Chapter 1-5 Discussion'), 'Test')
+      await user.type(screen.getByPlaceholderText('e.g., Chapters 1–5'), 'Test')
       const dateInputs = document.querySelectorAll('input[type="date"]')
       const dateInput = dateInputs[0] as HTMLInputElement
       const tomorrow = new Date()
@@ -184,7 +182,7 @@ describe('DiscussionModal', () => {
       const user = userEvent.setup()
       render(<DiscussionModal {...defaultProps} />)
 
-      await user.type(screen.getByPlaceholderText('e.g., Chapter 1-5 Discussion'), 'Past Test')
+      await user.type(screen.getByPlaceholderText('e.g., Chapters 1–5'), 'Past Test')
       const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement
       // Use fireEvent to set a past date directly since type may not bypass min attribute
       const { fireEvent } = await import('@testing-library/react')
@@ -249,7 +247,7 @@ describe('DiscussionModal', () => {
       const user = userEvent.setup()
       render(<DiscussionModal {...defaultProps} />)
 
-      const locationInput = screen.getByPlaceholderText('e.g., Community Center, Discord Voice Chat')
+      const locationInput = screen.getByPlaceholderText('e.g., Community Center, Discord')
       await user.type(locationInput, 'Library Room B')
 
       expect(locationInput).toHaveValue('Library Room B')

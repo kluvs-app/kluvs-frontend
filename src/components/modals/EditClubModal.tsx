@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Club } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
+import BaseModal from './BaseModal'
 
 interface EditClubModalProps {
   isOpen: boolean
@@ -80,12 +81,6 @@ export default function EditClubModal({
     return () => { cancelled = true }
   }, [isOpen, member?.discord_id])
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !loading) handleClose() }
-    if (isOpen) document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [isOpen, loading])
-
   const isDisconnecting = originalChannel !== '' && selectedChannel === ''
   const isRerouting = originalChannel !== '' && selectedChannel !== '' && selectedChannel !== originalChannel
   const showDiscordWarning = isDisconnecting || isRerouting
@@ -129,234 +124,38 @@ export default function EditClubModal({
     onClose()
   }
 
-  if (!isOpen) return null
-
   const currentGuild = guilds.find(g => g.id === selectedServer)
   const channels = currentGuild?.channels ?? []
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'var(--color-overlay)' }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title-edit-club"
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl overflow-hidden"
-        style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
-      >
-        {/* Header */}
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Edit Club"
+      loading={loading}
+      labelId="modal-title-edit-club"
+      dangerZone={
         <div
-          className="flex items-center justify-between px-6 pt-5 pb-5"
-          style={{ borderBottom: '1px solid var(--color-divider)' }}
+          className="rounded-input px-4 py-3"
+          style={{ background: 'rgba(220, 38, 38, 0.06)', border: '1px solid rgba(220, 38, 38, 0.2)' }}
         >
-          <span
-            id="modal-title-edit-club"
-            style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: '#D16D30',
-            }}
-          >Edit Club</span>
-          <button
-            onClick={handleClose}
-            disabled={loading}
-            aria-label="Close"
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="px-6 pt-6 pb-6 space-y-5">
-
-          {/* Name */}
-          <div>
-            <label style={{
-              display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-              marginBottom: 8,
-            }}>Club Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Fantasy Book Club"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={100}
-              autoFocus
-            />
-          </div>
-
-          {/* Discord section */}
-          {member?.discord_id && (
-            <div
-              className="rounded-input space-y-4 px-4 pt-4 pb-4"
-              style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
-            >
-              <div className="flex items-center gap-2">
-                <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0" />
-                <span style={{
-                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                  fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                  textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-                }}>Discord</span>
-              </div>
-
-              {guildsLoading ? (
-                <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
-                  <KluvsSpinner size={16} />
-                  <span>Loading servers…</span>
-                </div>
-              ) : guilds.length > 0 ? (
-                <>
-                  {guilds.length === 1 ? (
-                    <div>
-                      <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Server</p>
-                      <p className="text-sm text-[var(--color-text-primary)]">{guilds[0].name}</p>
-                    </div>
-                  ) : (
-                    <div>
-                      <label htmlFor="edit-club-server-select" style={{
-                        display: 'block',
-                        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                        fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                        textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-                        marginBottom: 8,
-                      }}>Server</label>
-                      <div className="relative">
-                        <select
-                          id="edit-club-server-select"
-                          value={selectedServer}
-                          onChange={(e) => {
-                            setSelectedServer(e.target.value)
-                            setSelectedChannel('')
-                            setDiscordAcknowledged(false)
-                          }}
-                          className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                          disabled={loading}
-                        >
-                          <option value="">No server</option>
-                          {guilds.map(g => (
-                            <option key={g.id} value={g.id}>{g.name}</option>
-                          ))}
-                        </select>
-                        <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedServer && (
-                    <div>
-                      <label htmlFor="edit-club-channel-select" style={{
-                        display: 'block',
-                        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                        fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                        textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-                        marginBottom: 8,
-                      }}>Channel <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
-                      <div className="relative">
-                        <select
-                          id="edit-club-channel-select"
-                          value={selectedChannel}
-                          onChange={(e) => {
-                            setSelectedChannel(e.target.value)
-                            setDiscordAcknowledged(false)
-                          }}
-                          className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-                          disabled={loading}
-                        >
-                          <option value="">No channel</option>
-                          {channels.map(ch => (
-                            <option key={ch.id} value={ch.id}>#{ch.name}</option>
-                          ))}
-                        </select>
-                        <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
-                        </svg>
-                      </div>
-                    </div>
-                  )}
-
-                  {showDiscordWarning && (
-                    <div
-                      className="rounded-lg px-4 py-3 space-y-3"
-                      style={{ background: 'rgba(209,109,48,0.08)', border: '1px solid rgba(209,109,48,0.25)' }}
-                    >
-                      <p className="text-sm leading-relaxed" style={{ color: '#D16D30' }}>
-                        {isDisconnecting
-                          ? "You're disconnecting this club from Discord. Bot notifications will stop until a new channel is connected."
-                          : "You're moving this club to a different Discord channel. The bot will stop posting to the current channel."}
-                      </p>
-                      <label className="flex items-center gap-2.5 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={discordAcknowledged}
-                          onChange={(e) => setDiscordAcknowledged(e.target.checked)}
-                          className="w-4 h-4 rounded accent-primary"
-                        />
-                        <span className="text-sm text-[var(--color-text-primary)]">I understand</span>
-                      </label>
-                    </div>
-                  )}
-                </>
-              ) : null}
-            </div>
-          )}
-
-          {/* Founded Date */}
-          <div>
-            <label style={{
-              display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-              marginBottom: 8,
-            }}>
-              Founded Date{' '}
-              <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
-            </label>
-            <input
-              type="date"
-              value={foundedDate}
-              onChange={(e) => setFoundedDate(e.target.value)}
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-            />
-            <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
-              This date was automatically set when your club was created in Kluvs. You can change it to reflect when your book club was actually founded — we know great clubs predate this app.
-            </p>
-          </div>
-        </div>
-
-        {/* Danger zone */}
-        <div
-          className="px-6 py-3"
-          style={{ borderTop: '1px solid var(--color-divider)' }}
-        >
+          <p style={{
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>Danger Zone</p>
           <button
             onClick={onDeleteClub}
             disabled={loading}
-            className="text-sm font-medium text-danger hover:text-danger-hover transition-colors disabled:opacity-40"
+            className="px-3.5 py-1.5 text-[13px] font-medium text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
           >
             Delete club…
           </button>
         </div>
-
-        {/* Footer */}
-        <div
-          className="flex items-center justify-between px-6 py-4"
-          style={{ borderTop: '1px solid var(--color-divider)' }}
-        >
+      }
+      footer={
+        <>
           <button
             onClick={handleClose}
             disabled={loading}
@@ -370,8 +169,174 @@ export default function EditClubModal({
             {loading && <KluvsSpinner size={14} color="#ffffff" />}
             {loading ? 'Saving…' : 'Save'}
           </button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+
+        {/* Name */}
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>Club Name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g., Fantasy Book Club"
+            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            disabled={loading}
+            maxLength={100}
+            autoFocus
+          />
+        </div>
+
+        {/* Discord section */}
+        {member?.discord_id && (
+          <div
+            className="rounded-input space-y-4 px-4 pt-4 pb-4"
+            style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
+          >
+            <div className="flex items-center gap-2">
+              <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0" />
+              <span style={{
+                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+                textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              }}>Discord</span>
+            </div>
+
+            {guildsLoading ? (
+              <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                <KluvsSpinner size={16} />
+                <span>Loading servers…</span>
+              </div>
+            ) : guilds.length > 0 ? (
+              <>
+                {guilds.length === 1 ? (
+                  <div>
+                    <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Server</p>
+                    <p className="text-sm text-[var(--color-text-primary)]">{guilds[0].name}</p>
+                  </div>
+                ) : (
+                  <div>
+                    <label htmlFor="edit-club-server-select" style={{
+                      display: 'block',
+                      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                      fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+                      textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                      marginBottom: 8,
+                    }}>Server</label>
+                    <div className="relative">
+                      <select
+                        id="edit-club-server-select"
+                        value={selectedServer}
+                        onChange={(e) => {
+                          setSelectedServer(e.target.value)
+                          setSelectedChannel('')
+                          setDiscordAcknowledged(false)
+                        }}
+                        className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        disabled={loading}
+                      >
+                        <option value="">No server</option>
+                        {guilds.map(g => (
+                          <option key={g.id} value={g.id}>{g.name}</option>
+                        ))}
+                      </select>
+                      <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+
+                {selectedServer && (
+                  <div>
+                    <label htmlFor="edit-club-channel-select" style={{
+                      display: 'block',
+                      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                      fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+                      textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                      marginBottom: 8,
+                    }}>Channel <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+                    <div className="relative">
+                      <select
+                        id="edit-club-channel-select"
+                        value={selectedChannel}
+                        onChange={(e) => {
+                          setSelectedChannel(e.target.value)
+                          setDiscordAcknowledged(false)
+                        }}
+                        className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        disabled={loading}
+                      >
+                        <option value="">No channel</option>
+                        {channels.map(ch => (
+                          <option key={ch.id} value={ch.id}>#{ch.name}</option>
+                        ))}
+                      </select>
+                      <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+
+                {showDiscordWarning && (
+                  <div
+                    className="rounded-lg px-4 py-3 space-y-3"
+                    style={{ background: 'rgba(209,109,48,0.08)', border: '1px solid rgba(209,109,48,0.25)' }}
+                  >
+                    <p className="text-sm leading-relaxed" style={{ color: '#D16D30' }}>
+                      {isDisconnecting
+                        ? "You're disconnecting this club from Discord. Bot notifications will stop until a new channel is connected."
+                        : "You're moving this club to a different Discord channel. The bot will stop posting to the current channel."}
+                    </p>
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={discordAcknowledged}
+                        onChange={(e) => setDiscordAcknowledged(e.target.checked)}
+                        className="w-4 h-4 rounded accent-primary"
+                      />
+                      <span className="text-sm text-[var(--color-text-primary)]">I understand</span>
+                    </label>
+                  </div>
+                )}
+              </>
+            ) : null}
+          </div>
+        )}
+
+        {/* Founded Date */}
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>
+            Founded Date{' '}
+            <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+          </label>
+          <input
+            type="date"
+            value={foundedDate}
+            onChange={(e) => setFoundedDate(e.target.value)}
+            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            disabled={loading}
+          />
+          <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
+            This date was automatically set when your club was created in Kluvs. You can change it to reflect when your book club was actually founded — we know great clubs predate this app.
+          </p>
         </div>
       </div>
-    </div>
+    </BaseModal>
   )
 }

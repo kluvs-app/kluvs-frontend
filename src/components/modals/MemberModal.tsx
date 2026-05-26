@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
 import type { Club, Server, Member } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
+import BaseModal from './BaseModal'
 
 interface MemberModalProps {
   isOpen: boolean
@@ -10,7 +11,7 @@ interface MemberModalProps {
   selectedServerData: Server | undefined
   onMemberSaved: () => void
   onError: (error: string) => void
-  editingMember?: Member | null // If provided, we're editing instead of adding
+  editingMember?: Member | null
 }
 
 interface MemberFormData {
@@ -39,57 +40,37 @@ export default function MemberModal({
 
   const isEditing = !!editingMember
 
-  // Pre-populate form when editing
   useEffect(() => {
     if (isOpen) {
       if (editingMember) {
-        // Edit mode - pre-populate with existing data
-        const isOnShameList = selectedClub.shame_list.includes(editingMember.id)
         setFormData({
           name: editingMember.name,
           books_read: String(editingMember.books_read),
-          on_shame_list: isOnShameList,
+          on_shame_list: selectedClub.shame_list.includes(editingMember.id),
           discord_id: editingMember.discord_id ?? ''
         })
       } else {
-        // Add mode - reset to defaults
-        setFormData({
-          name: '',
-          books_read: '0',
-          on_shame_list: false,
-          discord_id: ''
-        })
+        setFormData({ name: '', books_read: '0', on_shame_list: false, discord_id: '' })
       }
     }
   }, [isOpen, editingMember])
 
   const validateForm = (): boolean => {
-    if (!formData.name.trim()) {
-      onError('Member name is required')
-      return false
-    }
-
+    if (!formData.name.trim()) { onError('Member name is required'); return false }
     const booksRead = parseInt(formData.books_read)
-
-    if (isNaN(booksRead) || booksRead < 0) {
-      onError('Books read must be a non-negative number')
-      return false
-    }
-
+    if (isNaN(booksRead) || booksRead < 0) { onError('Books read must be a non-negative number'); return false }
     if (formData.discord_id.trim() && !/^\d{17,19}$/.test(formData.discord_id.trim())) {
       onError('Discord ID must be a 17–19 digit number')
       return false
     }
-
     return true
   }
 
   const handleSubmit = async () => {
     if (!validateForm()) return
-
     try {
       setLoading(true)
-      onError('') // Clear any existing errors
+      onError('')
 
       const memberData = {
         name: formData.name.trim(),
@@ -98,74 +79,45 @@ export default function MemberModal({
       }
 
       if (isEditing && editingMember) {
-        // Edit mode - update existing member
-        const requestBody = {
-          id: editingMember.id,
-          ...memberData
-        }
-
         const { error } = await invokeFunction('member', {
           method: 'PUT',
-          body: requestBody
+          body: { id: editingMember.id, ...memberData }
         })
-
         if (error) throw error
 
-        // Handle shame list update separately for edit mode
         if (formData.on_shame_list !== selectedClub.shame_list.includes(editingMember.id)) {
           let newShameList = [...selectedClub.shame_list]
           if (formData.on_shame_list) {
-            // Add to shame list
-            if (!newShameList.includes(editingMember.id)) {
-              newShameList.push(editingMember.id)
-            }
+            if (!newShameList.includes(editingMember.id)) newShameList.push(editingMember.id)
           } else {
-            // Remove from shame list
             newShameList = newShameList.filter(id => id !== editingMember.id)
           }
-
           const { error: shameError } = await invokeFunction('club', {
             method: 'PUT',
-            body: {
-              id: selectedClub.id,
-              server_id: selectedServerData?.id,
-              shame_list: newShameList
-            }
+            body: { id: selectedClub.id, server_id: selectedServerData?.id, shame_list: newShameList }
           })
-
           if (shameError) {
             console.error('Error updating shame list:', shameError)
             onError('Member updated but failed to update shame list status')
           }
         }
       } else {
-        // Add mode - create new member and add to club
-        const requestBody = {
-          ...memberData,
-          clubs: [selectedClub.id] // Add them to this specific club
-        }
-
         const { data, error } = await invokeFunction('member', {
           method: 'POST',
-          body: requestBody
+          body: { ...memberData, clubs: [selectedClub.id] }
         })
-
         if (error) throw error
 
-        // Handle shame list for new member
         const created = (data as { member?: { id: number } }).member
         if (formData.on_shame_list && created) {
-          const newShameList = [...selectedClub.shame_list, created.id]
-
           const { error: shameError } = await invokeFunction('club', {
             method: 'PUT',
             body: {
               id: selectedClub.id,
               server_id: selectedServerData?.id,
-              shame_list: newShameList
+              shame_list: [...selectedClub.shame_list, created.id]
             }
           })
-
           if (shameError) {
             console.error('Error adding to shame list:', shameError)
             onError('Member created but failed to add to shame list')
@@ -173,15 +125,10 @@ export default function MemberModal({
         }
       }
 
-      // Reset form and close modal
       setFormData({ name: '', books_read: '0', on_shame_list: false, discord_id: '' })
       onClose()
-
-      // Notify parent component of successful save
       onMemberSaved()
-
     } catch (err: unknown) {
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} member:`, err)
       onError(
         err && typeof err === 'object' && 'message' in err
           ? String(err.message)
@@ -194,194 +141,146 @@ export default function MemberModal({
 
   const handleClose = () => {
     setFormData({ name: '', books_read: '0', on_shame_list: false, discord_id: '' })
-    onError('') // Clear errors when closing
+    onError('')
     onClose()
   }
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !loading) handleClose()
-    }
-    if (isOpen) document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, loading])
-
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title-member">
-      <div className="bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] p-6 w-full max-w-md">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
-            </div>
-            <div>
-              <h2 id="modal-title-member" className="text-card-heading text-[var(--color-text-primary)]">
-                {isEditing ? 'Edit Member' : 'Add Member'}
-              </h2>
-              <p className="text-helper text-[var(--color-text-secondary)]">
-                {isEditing ? 'Update member details' : 'Add a new member to the club'}
-              </p>
-            </div>
-          </div>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={isEditing ? 'Edit Member' : 'Add Member'}
+      loading={loading}
+      labelId="modal-title-member"
+      footer={
+        <>
           <button
             onClick={handleClose}
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors p-1"
             disabled={loading}
-            aria-label="Close"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Modal Form */}
-        <div className="space-y-4">
-          {/* Member Name Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Member Name <span className="text-primary">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="e.g., BookLover42"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={100}
-            />
-          </div>
-
-          {/* Books Read Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Books Read
-            </label>
-            <input
-              type="number"
-              value={formData.books_read}
-              onChange={(e) => setFormData(prev => ({ ...prev, books_read: e.target.value }))}
-              placeholder="0"
-              min="0"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-            />
-            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
-              Number of books completed
-            </p>
-          </div>
-
-          {/* Discord ID Field */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-2">
-              Discord ID
-            </label>
-            <input
-              type="text"
-              value={formData.discord_id}
-              onChange={(e) => setFormData(prev => ({ ...prev, discord_id: e.target.value }))}
-              placeholder="e.g., 123456789012345678"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              maxLength={19}
-            />
-            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
-              Discord snowflake ID — leave blank to clear
-            </p>
-          </div>
-
-          {/* Shame List Toggle - Material 3 Style */}
-          <div>
-            <label className="block text-[var(--color-text-primary)] font-medium mb-3">
-              Shame List Status
-            </label>
-            <div className="flex items-center justify-between bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input p-4">
-              <div className="flex items-center space-x-3">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
-                  formData.on_shame_list
-                    ? 'bg-red-500 text-white'
-                    : 'bg-green-500 text-white'
-                }`}>
-                </div>
-                <div>
-                  <p className="text-[var(--color-text-primary)] font-medium">
-                    {formData.on_shame_list ? 'On Shame List' : 'Good Standing'}
-                  </p>
-                  <p className="text-[var(--color-text-secondary)] text-xs">
-                    {formData.on_shame_list
-                      ? 'Member has fallen behind on reading'
-                      : 'Member is up to date with reading'
-                    }
-                  </p>
-                </div>
-              </div>
-
-              {/* Material 3 Switch */}
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.on_shame_list}
-                  onChange={(e) => setFormData(prev => ({ ...prev, on_shame_list: e.target.checked }))}
-                  className="sr-only peer"
-                  disabled={loading}
-                />
-                <div className={`relative w-14 h-8 rounded-full transition-colors peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 ${
-                  formData.on_shame_list
-                    ? 'bg-red-500'
-                    : 'bg-[var(--color-divider)]'
-                } peer-checked:bg-red-500`}>
-                  <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-lg transition-colors flex items-center justify-center ${
-                    formData.on_shame_list ? 'translate-x-6' : 'translate-x-0'
-                  }`}>
-                  </div>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          {/* Club Context */}
-          <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-input p-3">
-            <p className="text-[var(--color-text-secondary)] text-sm font-medium">
-              Club: <span className="text-[var(--color-text-primary)]">{selectedClub.name}</span>
-            </p>
-            <p className="text-[var(--color-text-secondary)] text-xs mt-1">
-              {isEditing ? 'Updating member in' : 'Adding member to'} this club
-            </p>
-          </div>
-        </div>
-
-        {/* Modal Footer */}
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--color-divider)]">
-          <button
-            onClick={handleClose}
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors font-medium"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-
+            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+          >Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={loading || !formData.name.trim()}
-            className="bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium transition-colors flex items-center space-x-2"
+            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading ? (
-              <>
-                <KluvsSpinner size={16} color="#ffffff" />
-                <span>{isEditing ? 'Updating...' : 'Adding...'}</span>
-              </>
-            ) : (
-              <span>{isEditing ? 'Update Member' : 'Add Member'}</span>
-            )}
+            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading
+              ? (isEditing ? 'Updating…' : 'Adding…')
+              : (isEditing ? 'Update Member' : 'Add Member')}
           </button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>Member Name</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="e.g., BookLover42"
+            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            disabled={loading}
+            maxLength={100}
+            autoFocus
+          />
+        </div>
+
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>Books Read</label>
+          <input
+            type="number"
+            value={formData.books_read}
+            onChange={(e) => setFormData(prev => ({ ...prev, books_read: e.target.value }))}
+            placeholder="0"
+            min="0"
+            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            disabled={loading}
+          />
+        </div>
+
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>Discord ID <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+          <input
+            type="text"
+            value={formData.discord_id}
+            onChange={(e) => setFormData(prev => ({ ...prev, discord_id: e.target.value }))}
+            placeholder="e.g., 123456789012345678"
+            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            disabled={loading}
+            maxLength={19}
+          />
+          <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
+            Discord snowflake ID — leave blank to clear
+          </p>
+        </div>
+
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>Shame List</label>
+          <div
+            className="flex items-center justify-between rounded-input px-4 py-3"
+            style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
+          >
+            <div>
+              <p className="text-sm text-[var(--color-text-primary)]">
+                {formData.on_shame_list ? 'On shame list' : 'Good standing'}
+              </p>
+              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                {formData.on_shame_list ? 'Member has fallen behind on reading' : 'Member is up to date'}
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
+              <input
+                type="checkbox"
+                checked={formData.on_shame_list}
+                onChange={(e) => setFormData(prev => ({ ...prev, on_shame_list: e.target.checked }))}
+                className="sr-only peer"
+                disabled={loading}
+              />
+              <div className={`relative w-11 h-6 rounded-full transition-colors peer-focus:ring-2 peer-focus:ring-primary/20 ${
+                formData.on_shame_list ? 'bg-danger' : 'bg-[var(--color-divider)]'
+              }`}>
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                  formData.on_shame_list ? 'translate-x-5' : 'translate-x-0'
+                }`} />
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div
+          className="rounded-input px-4 py-3"
+          style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
+        >
+          <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Club</p>
+          <p className="text-sm text-[var(--color-text-primary)]">{selectedClub.name}</p>
         </div>
       </div>
-    </div>
+    </BaseModal>
   )
 }

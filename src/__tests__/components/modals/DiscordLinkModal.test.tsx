@@ -62,7 +62,7 @@ describe('DiscordLinkModal', () => {
 
     it('should have a descriptive heading', () => {
       render(<DiscordLinkModal {...defaultProps} />)
-      expect(screen.getByText('Link your Discord account')).toBeInTheDocument()
+      expect(screen.getByText('Sign in with Discord to link your account automatically.')).toBeInTheDocument()
     })
   })
 
@@ -90,7 +90,7 @@ describe('DiscordLinkModal', () => {
       const button = screen.getByRole('button', { name: /sign in with discord/i })
       await user.click(button)
 
-      expect(screen.getByText('Connecting...')).toBeInTheDocument()
+      expect(screen.getByText('Connecting…')).toBeInTheDocument()
     })
 
     it('should disable button during OAuth flow', async () => {
@@ -116,6 +116,19 @@ describe('DiscordLinkModal', () => {
 
       await waitFor(() => {
         expect(screen.getByText('OAuth failed')).toBeInTheDocument()
+      })
+    })
+
+    it('should show generic error message for unknown error format', async () => {
+      const user = userEvent.setup()
+      mockLinkIdentity.mockRejectedValue(null)
+
+      render(<DiscordLinkModal {...defaultProps} />)
+      const button = screen.getByRole('button', { name: /sign in with discord/i })
+      await user.click(button)
+
+      await waitFor(() => {
+        expect(screen.getByText('Failed to connect Discord')).toBeInTheDocument()
       })
     })
 
