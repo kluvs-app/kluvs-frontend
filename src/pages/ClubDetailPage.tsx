@@ -9,6 +9,7 @@ import MemberModal from '../components/modals/MemberModal'
 import DeleteMemberModal from '../components/modals/DeleteMemberModal'
 import DeleteDiscussionModal from '../components/modals/DeleteDiscussionModal'
 import DeleteClubModal from '../components/modals/DeleteClubModal'
+import EditClubModal from '../components/modals/EditClubModal'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import MembersTable from '../components/MembersTable'
 import BookInfo from '../components/BookInfo'
@@ -41,6 +42,8 @@ export default function ClubDetailPage() {
   const [editingDiscussion, setEditingDiscussion] = useState<Discussion | null>(null)
   const [showDeleteDiscussionModal, setShowDeleteDiscussionModal] = useState(false)
   const [discussionToDelete, setDiscussionToDelete] = useState<Discussion | null>(null)
+  const [showEditClubModal, setShowEditClubModal] = useState(false)
+  const [idCopied, setIdCopied] = useState(false)
   const [showDeleteClubModal, setShowDeleteClubModal] = useState(false)
   const [clubToDelete, setClubToDelete] = useState<{ id: string; name: string } | null>(null)
   const [showMemberModal, setShowMemberModal] = useState(false)
@@ -173,27 +176,43 @@ export default function ClubDetailPage() {
                   club.founded_date && `Founded in ${parseLocalDate(club.founded_date).getFullYear()}`
                 ].filter(Boolean).join(' · ')}
               </p>
-            </div>
-            <div className="flex items-center gap-1">
               <button
-                onClick={() => navigator.clipboard.writeText(club.id)}
-                className="shrink-0 p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
-                aria-label="Copy club ID"
+                onClick={() => {
+                  navigator.clipboard.writeText(club.id)
+                  setIdCopied(true)
+                  setTimeout(() => setIdCopied(false), 1500)
+                }}
+                className="mt-2 transition-colors duration-[120ms]"
+                style={{
+                  fontSize: 11, fontWeight: 500,
+                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                  padding: '3px 10px', borderRadius: 999,
+                  border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
+                  color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                  background: 'transparent', cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
                 title="Copy Club ID for /link_club"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
+                {idCopied ? 'Copied!' : 'Copy ID'}
               </button>
+            </div>
+            <div className="flex flex-col items-end">
               {isAdmin && (
                 <button
-                  onClick={() => { setClubToDelete({ id: club.id, name: club.name }); setShowDeleteClubModal(true) }}
-                  className="shrink-0 p-2 rounded-lg text-[var(--color-text-secondary)] hover:text-danger hover:bg-[var(--color-bg-elevated)] transition-colors"
-                  aria-label="Delete club"
+                  onClick={() => setShowEditClubModal(true)}
+                  className="transition-[background,transform] duration-[120ms] hover:bg-[rgba(242,237,229,0.06)] active:scale-[0.97]"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(242,237,229,0.14)',
+                    color: 'var(--color-text-primary)',
+                    fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                    fontSize: 13, fontWeight: 500,
+                    padding: '10px 16px', borderRadius: 8,
+                    whiteSpace: 'nowrap', cursor: 'pointer',
+                  }}
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
+                  Edit club
                 </button>
               )}
             </div>
@@ -306,6 +325,18 @@ export default function ClubDetailPage() {
         discussionToDelete={discussionToDelete}
         selectedClub={club}
         onDiscussionDeleted={refreshClub}
+        onError={setError}
+      />
+      <EditClubModal
+        isOpen={showEditClubModal}
+        onClose={() => setShowEditClubModal(false)}
+        club={club}
+        onClubUpdated={refreshClub}
+        onDeleteClub={() => {
+          setShowEditClubModal(false)
+          setClubToDelete({ id: club.id, name: club.name })
+          setShowDeleteClubModal(true)
+        }}
         onError={setError}
       />
       <DeleteClubModal
