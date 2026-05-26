@@ -225,12 +225,12 @@ describe('ClubDetailPage', () => {
   })
 
   describe('Admin actions', () => {
-    it('shows delete button for admin', async () => {
+    it('shows Edit club button for admin', async () => {
       renderDetail()
-      await waitFor(() => expect(screen.getByRole('button', { name: /delete club/i })).toBeInTheDocument())
+      await waitFor(() => expect(screen.getByRole('button', { name: /edit club/i })).toBeInTheDocument())
     })
 
-    it('hides delete button for regular member', async () => {
+    it('hides Edit club button for regular member', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockRegularMember, error: null })
         if (endpoint.includes('club?id=')) return Promise.resolve({ data: mockClub, error: null })
@@ -239,7 +239,7 @@ describe('ClubDetailPage', () => {
       })
       renderDetail()
       await waitFor(() => screen.getByText('Book Lovers Club'))
-      expect(screen.queryByRole('button', { name: /delete club/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /edit club/i })).not.toBeInTheDocument()
     })
 
     it('shows Start Session button for admin when no active session', async () => {
@@ -346,19 +346,23 @@ describe('ClubDetailPage', () => {
       await waitFor(() => expect(screen.getByTestId('delete-member-modal')).toBeInTheDocument())
     })
 
-    it('opens DeleteClubModal when delete club is clicked', async () => {
+    it('opens DeleteClubModal when delete club is clicked via Edit club modal', async () => {
       const user = userEvent.setup()
       renderDetail()
-      await waitFor(() => screen.getByRole('button', { name: /delete club/i }))
-      await user.click(screen.getByRole('button', { name: /delete club/i }))
+      await waitFor(() => screen.getByRole('button', { name: /edit club/i }))
+      await user.click(screen.getByRole('button', { name: /edit club/i }))
+      await waitFor(() => screen.getByRole('button', { name: /delete club…/i }))
+      await user.click(screen.getByRole('button', { name: /delete club…/i }))
       await waitFor(() => expect(screen.getByTestId('delete-club-modal')).toBeInTheDocument())
     })
 
     it('navigates to /clubs after club is deleted', async () => {
       const user = userEvent.setup()
       renderDetail()
-      await waitFor(() => screen.getByRole('button', { name: /delete club/i }))
-      await user.click(screen.getByRole('button', { name: /delete club/i }))
+      await waitFor(() => screen.getByRole('button', { name: /edit club/i }))
+      await user.click(screen.getByRole('button', { name: /edit club/i }))
+      await waitFor(() => screen.getByRole('button', { name: /delete club…/i }))
+      await user.click(screen.getByRole('button', { name: /delete club…/i }))
       await waitFor(() => screen.getByTestId('modal-club-delete'))
       await user.click(screen.getByTestId('modal-club-delete'))
       expect(mockNavigate).toHaveBeenCalledWith('/clubs', { replace: true })
@@ -521,8 +525,10 @@ describe('ClubDetailPage', () => {
     it('closes DeleteClubModal via onClose', async () => {
       const user = userEvent.setup()
       renderDetail()
-      await waitFor(() => screen.getByRole('button', { name: /delete club/i }))
-      await user.click(screen.getByRole('button', { name: /delete club/i }))
+      await waitFor(() => screen.getByRole('button', { name: /edit club/i }))
+      await user.click(screen.getByRole('button', { name: /edit club/i }))
+      await waitFor(() => screen.getByRole('button', { name: /delete club…/i }))
+      await user.click(screen.getByRole('button', { name: /delete club…/i }))
       await waitFor(() => screen.getByTestId('delete-club-modal'))
       await user.click(screen.getByRole('button', { name: 'Close' }))
       expect(screen.queryByTestId('delete-club-modal')).not.toBeInTheDocument()
