@@ -5,7 +5,7 @@ import { invokeFunction } from '../supabase'
 import { isPast, parseLocalDate } from '../utils/dates'
 import type { Club } from '../types'
 import AddClubModal from '../components/modals/AddClubModal'
-import CoverSlot from '../components/ui/CoverSlot'
+import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
 import Avatar from '../components/ui/Avatar'
 
@@ -79,11 +79,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
         // Mobile zero clubs state
         <div className="flex-1 flex flex-col items-center justify-center px-5 py-8 gap-8">
           <div>
-            <CoverSlot
-              width={120}
-              height={140}
-              alt="Book cover placeholder"
-            />
+            <BookCover size="lg" title="Book cover placeholder" />
           </div>
           <div className="text-center">
             <h2 className="font-serif italic text-[48px] font-medium text-[var(--color-text-primary)] mb-4">
@@ -113,17 +109,17 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                   className="flex items-center gap-3 px-5 py-3 border-b border-[rgba(242,237,229,0.08)] hover:bg-[rgba(242,237,229,0.04)] active:bg-[rgba(242,237,229,0.08)] transition-colors"
                 >
                   {/* Cover */}
-                  <CoverSlot
-                    width={56}
-                    height={72}
-                    alt={`${club.name} book cover`}
+                  <BookCover
+                    imageUrl={fullClub?.active_session?.book?.image_url}
+                    title={`${club.name} book cover`}
+                    size="sm"
                   />
 
                   {/* Club info */}
                   <div className="flex-1 min-w-0 flex flex-col">
                     {/* Club name + role on same line */}
                     <div className="flex items-center gap-2 mb-1.5">
-                      <h3 className="font-serif text-[19px] font-medium text-[var(--color-text-primary)] truncate">
+                      <h3 className="font-serif text-[21px] font-medium text-[var(--color-text-primary)] truncate">
                         {club.name}
                       </h3>
                       <RoleEyebrow role={club.role} />
@@ -131,7 +127,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
 
                     {/* Book title in Garamond italic */}
                     {fullClub?.active_session?.book?.title && (
-                      <p className="font-serif italic text-[14px] text-[var(--color-text-secondary)] mb-2 truncate">
+                      <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)] mb-2 truncate">
                         {fullClub.active_session.book.title}
                       </p>
                     )}

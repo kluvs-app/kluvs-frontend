@@ -14,7 +14,7 @@ import AddClubModal from '../components/modals/AddClubModal'
 import { useAuth } from '../contexts/AuthContext'
 import { parseLocalDate, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
-import CoverSlot from '../components/ui/CoverSlot'
+import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
 import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
@@ -385,11 +385,10 @@ export default function ClubDetailPage() {
                 {club.active_session ? (
                   <div className="mb-12">
                     <div className="grid grid-cols-[128px_1fr] gap-9 mb-12 pb-12 border-b border-[var(--color-divider)]">
-                      <CoverSlot
+                      <BookCover
                         imageUrl={club.active_session.book?.image_url}
-                        width={128}
-                        height={184}
-                        alt={club.active_session.book?.title || 'Book cover'}
+                        title={club.active_session.book?.title || 'Book cover'}
+                        size="lg"
                       />
 
                       <div>
@@ -791,11 +790,10 @@ export default function ClubDetailPage() {
             <div className="space-y-6">
               {/* NOW READING */}
               <div className="grid grid-cols-[80px_1fr] gap-5 items-center">
-                <CoverSlot
+                <BookCover
                   imageUrl={club.active_session.book?.image_url}
-                  width={80}
-                  height={114}
-                  alt={club.active_session.book?.title || 'Book cover'}
+                  title={club.active_session.book?.title || 'Book cover'}
+                  size="md"
                 />
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
