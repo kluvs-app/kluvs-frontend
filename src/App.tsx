@@ -13,6 +13,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfUse from './pages/TermsOfUse'
 import DataDeletion from './pages/DataDeletion'
 import DiscordPage from './pages/DiscordPage'
+import JoinPage from './pages/JoinPage'
 import ScrollToTop from './components/ScrollToTop'
 import AppShell from './components/layout/AppShell'
 
@@ -79,6 +80,7 @@ function App() {
               <Route path="/" element={<PublicAuthRoute />} />
               <Route path="/login" element={<PublicAuthRoute />} />
               <Route path="/signup" element={<Navigate to="/login" replace />} />
+              <Route path="/join/:token" element={<JoinPage />} />
               <Route element={<ProtectedRoute />}>
                 <Route element={<AppShell />}>
                   <Route path="/me" element={<ProfilePage />} />

@@ -14,6 +14,8 @@ export interface Club {
   active_session: Session | null
   past_sessions: Session[]
   shame_list: number[]
+  join_policy: 'PRIVATE' | 'INVITE_LINK'
+  invite_token?: string | null
 }
 
 export interface Session {
