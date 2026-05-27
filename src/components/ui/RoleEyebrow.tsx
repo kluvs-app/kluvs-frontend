@@ -1,0 +1,35 @@
+import type { UserRole } from '../../types'
+
+interface RoleEyebrowProps {
+  role: UserRole
+  className?: string
+}
+
+export default function RoleEyebrow({ role, className = '' }: RoleEyebrowProps) {
+  const isOwner = role === 'owner'
+  const isAdmin = role === 'admin'
+
+  return (
+    <span
+      className={[
+        'inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.14em]',
+        isOwner
+          ? 'text-[#C9900A]'
+          : isAdmin
+            ? 'text-[#7BA8B8]'
+            : 'text-[rgba(201,189,168,0.7)]',
+        className,
+      ].join(' ')}
+    >
+      {(isOwner || isAdmin) && (
+        <span
+          className={`inline-block w-[8px] h-[8px] rounded-full ${
+            isOwner ? 'bg-[#C9900A]' : 'bg-[#006781]'
+          }`}
+          aria-hidden
+        />
+      )}
+      {role}
+    </span>
+  )
+}
