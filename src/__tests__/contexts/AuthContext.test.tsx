@@ -9,6 +9,7 @@ vi.mock('../../supabase', () => {
   const mockClient = {
     auth: {
       getSession: vi.fn(),
+      refreshSession: vi.fn(),
       signInWithOAuth: vi.fn(),
       signInWithPassword: vi.fn(),
       signUp: vi.fn(),
@@ -55,6 +56,7 @@ describe('AuthContext', () => {
       data: { user: createMockUser(), session: {} },
       error: null,
     })
+    mockSupabase.auth.refreshSession.mockResolvedValue({ data: { session: {} }, error: null })
     mockSupabase.auth.signOut.mockResolvedValue({ error: null })
     mockSupabase.auth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: null })
     mockSupabase.auth.updateUser.mockResolvedValue({ data: { user: createMockUser() }, error: null })
@@ -700,42 +702,60 @@ describe('AuthContext', () => {
   })
 
   describe('Tab Visibility — session re-validation', () => {
-    it('re-fetches member data when tab becomes visible with a valid session', async () => {
+    it('does not call refreshSession when token is still fresh', async () => {
+      const mockUser = createMockUser({ id: 'test-user-id' })
+      setupAuthMocks(mockSupabase, mockUser) // expires_at = now + 3600
+      mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
+
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+      await waitFor(() => expect(result.current.member).not.toBeNull())
+
+      const callsBefore = mockSupabase.auth.refreshSession.mock.calls.length
+
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
+      document.dispatchEvent(new Event('visibilitychange'))
+
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      expect(mockSupabase.auth.refreshSession.mock.calls.length).toBe(callsBefore)
+    })
+
+    it('calls refreshSession when token is close to expiry', async () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
 
       const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+      await waitFor(() => expect(result.current.member).not.toBeNull())
 
-      await waitFor(() => {
-        expect(result.current.member).not.toBeNull()
+      // Override getSession to return a near-expiry session (60s left — under the 300s threshold)
+      mockSupabase.auth.getSession.mockResolvedValueOnce({
+        data: { session: { expires_at: Math.floor(Date.now() / 1000) + 60 } },
+        error: null,
       })
-
-      const callsBefore = mockSupabase.functions.invoke.mock.calls.length
 
       Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
       document.dispatchEvent(new Event('visibilitychange'))
 
       await waitFor(() => {
-        expect(mockSupabase.functions.invoke.mock.calls.length).toBeGreaterThan(callsBefore)
+        expect(mockSupabase.auth.refreshSession).toHaveBeenCalled()
       })
-
-      expect(mockSupabase.auth.getSession).toHaveBeenCalled()
     })
 
-    it('clears user and member when tab becomes visible with an expired session', async () => {
+    it('clears user and member when session is fully expired on tab focus', async () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
 
       const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+      await waitFor(() => expect(result.current.user).not.toBeNull())
 
-      await waitFor(() => {
-        expect(result.current.user).not.toBeNull()
-      })
-
-      // Session has since expired
+      // getSession returns null (session gone) → refreshSession is attempted → fails
       mockSupabase.auth.getSession.mockResolvedValueOnce({ data: { session: null }, error: null })
+      mockSupabase.auth.refreshSession.mockResolvedValueOnce({
+        data: { session: null },
+        error: { message: 'Session expired' },
+      })
 
       Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
       document.dispatchEvent(new Event('visibilitychange'))
@@ -746,26 +766,28 @@ describe('AuthContext', () => {
       })
     })
 
-    it('does not re-fetch when tab becomes hidden', async () => {
+    it('does not call refreshSession when tab becomes hidden', async () => {
       const mockUser = createMockUser({ id: 'test-user-id' })
       setupAuthMocks(mockSupabase, mockUser)
       mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
 
       const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+      await waitFor(() => expect(result.current.member).not.toBeNull())
 
-      await waitFor(() => {
-        expect(result.current.member).not.toBeNull()
+      // Use near-expiry so the handler would refresh if tab were visible
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { expires_at: Math.floor(Date.now() / 1000) + 60 } },
+        error: null,
       })
 
-      const callsBefore = mockSupabase.auth.getSession.mock.calls.length
+      const callsBefore = mockSupabase.auth.refreshSession.mock.calls.length
 
       Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
       document.dispatchEvent(new Event('visibilitychange'))
 
-      // Give it a tick to ensure nothing fires
       await new Promise(resolve => setTimeout(resolve, 50))
 
-      expect(mockSupabase.auth.getSession.mock.calls.length).toBe(callsBefore)
+      expect(mockSupabase.auth.refreshSession.mock.calls.length).toBe(callsBefore)
     })
 
     it('removes the visibilitychange listener on unmount', async () => {
@@ -774,21 +796,24 @@ describe('AuthContext', () => {
       mockEdgeFunctionResponse(mockSupabase, 'member', { data: mockAdminMember })
 
       const { result, unmount } = renderHook(() => useAuth(), { wrapper: AuthProvider })
-
-      await waitFor(() => {
-        expect(result.current.member).not.toBeNull()
-      })
+      await waitFor(() => expect(result.current.member).not.toBeNull())
 
       unmount()
 
-      const callsAfterUnmount = mockSupabase.auth.getSession.mock.calls.length
+      // Use near-expiry so the handler would refresh if the listener were still active
+      mockSupabase.auth.getSession.mockResolvedValue({
+        data: { session: { expires_at: Math.floor(Date.now() / 1000) + 60 } },
+        error: null,
+      })
+
+      const callsAfterUnmount = mockSupabase.auth.refreshSession.mock.calls.length
 
       Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true })
       document.dispatchEvent(new Event('visibilitychange'))
 
       await new Promise(resolve => setTimeout(resolve, 50))
 
-      expect(mockSupabase.auth.getSession.mock.calls.length).toBe(callsAfterUnmount)
+      expect(mockSupabase.auth.refreshSession.mock.calls.length).toBe(callsAfterUnmount)
     })
   })
 
@@ -979,6 +1004,28 @@ describe('AuthContext', () => {
       // Should have max retries (3) + initial call
       expect(result.current.member).toBeNull()
       expect(mockSupabase.functions.invoke).toHaveBeenCalledTimes(3)
+    })
+  })
+
+  describe('Network events', () => {
+    it('should set isOnline to false on offline event', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      expect(result.current.isOnline).toBe(true)
+      window.dispatchEvent(new Event('offline'))
+      await waitFor(() => expect(result.current.isOnline).toBe(false))
+    })
+
+    it('should set isOnline to true on online event after going offline', async () => {
+      const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+      await waitFor(() => expect(result.current.loading).toBe(false))
+
+      window.dispatchEvent(new Event('offline'))
+      await waitFor(() => expect(result.current.isOnline).toBe(false))
+
+      window.dispatchEvent(new Event('online'))
+      await waitFor(() => expect(result.current.isOnline).toBe(true))
     })
   })
 })

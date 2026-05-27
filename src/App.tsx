@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import KluvsSpinner from './components/KluvsSpinner'
 import { ThemeProvider } from './contexts/ThemeContext'
 import ClubsPage from './pages/ClubsPage'
 import ClubDetailPage from './pages/ClubDetailPage'
@@ -22,7 +23,7 @@ export function PublicAuthRoute() {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-r-transparent mx-auto"></div>
+          <KluvsSpinner size={64} className="mx-auto" />
           <p className="mt-6 text-[var(--color-text-primary)] text-lg font-medium">Loading your library...</p>
           <div className="mt-2 text-[var(--color-text-secondary)] text-sm">Checking authentication</div>
         </div>
@@ -44,7 +45,7 @@ export function ProtectedRoute() {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-r-transparent mx-auto"></div>
+          <KluvsSpinner size={64} className="mx-auto" />
           <p className="mt-6 text-[var(--color-text-primary)] text-lg font-medium">Loading your library...</p>
           <div className="mt-2 text-[var(--color-text-secondary)] text-sm">Checking authentication</div>
         </div>
@@ -65,7 +66,7 @@ export function ProtectedRoute() {
 
 function App() {
   const isAppDomain =
-    window.location.hostname === 'app.kluvs.com' ||
+    window.location.hostname.startsWith('app.') ||
     import.meta.env.VITE_FORCE_APP_DOMAIN === 'true'
 
   return (

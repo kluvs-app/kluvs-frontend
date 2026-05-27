@@ -18,7 +18,7 @@ describe('DataDeletion', () => {
   describe('Rendering', () => {
     it('should render the Kluvs logo', () => {
       renderDataDeletion()
-      expect(screen.getByAltText('Kluvs')).toBeInTheDocument()
+      expect(screen.getAllByAltText('Kluvs')[0]).toBeInTheDocument()
     })
 
     it('should render the page title', () => {

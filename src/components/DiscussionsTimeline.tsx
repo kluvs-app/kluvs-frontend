@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { Club, Discussion } from '../types'
+import { isPast, parseLocalDate } from '../utils/dates'
 
 interface DiscussionsTimelineProps {
   selectedClub: Club
@@ -18,18 +19,16 @@ export default function DiscussionsTimeline({
 }: DiscussionsTimelineProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  const now = new Date()
-
   const sortedDiscussions = selectedClub.active_session
     ? [...selectedClub.active_session.discussions].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        (a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime()
       )
     : []
 
-  const isPastDiscussion = (date: string) => new Date(date) < now
+  const isPastDiscussion = (date: string, time?: string | null) => isPast(date, time)
 
   const nextDiscussionIndex = sortedDiscussions.findIndex(
-    discussion => !isPastDiscussion(discussion.date)
+    discussion => !isPastDiscussion(discussion.date, discussion.time)
   )
 
   useEffect(() => {
@@ -51,11 +50,17 @@ export default function DiscussionsTimeline({
 
   if (!selectedClub.active_session) return null
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+  const formatDate = (dateString: string, time?: string | null) => {
+    if (time) {
+      const dt = new Date(`${dateString}T${time}`)
+      return {
+        full: dt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
+              ' at ' + dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+      }
+    }
+    const date = parseLocalDate(dateString)
     return {
-      full: date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' at ' +
-            date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+      full: date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
     }
   }
 
@@ -87,9 +92,9 @@ export default function DiscussionsTimeline({
             />
 
             {sortedDiscussions.map((discussion, index) => {
-              const isPast = isPastDiscussion(discussion.date)
+              const isPast = isPastDiscussion(discussion.date, discussion.time)
               const isNext = index === nextDiscussionIndex
-              const dateInfo = formatDate(discussion.date)
+              const dateInfo = formatDate(discussion.date, discussion.time)
 
               return (
                 <div key={discussion.id} className="group relative mb-6 last:mb-0">
@@ -177,7 +182,7 @@ export default function DiscussionsTimeline({
               }}
             >
               {sortedDiscussions.map((discussion, index) => {
-                const isPast = isPastDiscussion(discussion.date)
+                const isPast = isPastDiscussion(discussion.date, discussion.time)
                 const isNext = index === nextDiscussionIndex
 
                 return (
@@ -226,7 +231,7 @@ export default function DiscussionsTimeline({
                       </div>
 
                       <div className="text-helper font-medium mb-2 text-[var(--color-text-secondary)]">
-                        {new Date(discussion.date).toLocaleDateString()}
+                        {formatDate(discussion.date, discussion.time).full}
                       </div>
 
                       <h4 className={`font-bold mb-3 text-body leading-tight ${

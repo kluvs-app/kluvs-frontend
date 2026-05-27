@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     class="kluvs-spinner-svg"
+     viewBox="-52.79 -74 500 500"
+     width="32" height="32"
+     role="img" aria-label="Loading">
+  <!--
+    Kluvs Loading Spinner — Breathe·Tidal variant.
+    Animation target is the root <svg> element.
+    transform-origin: 50% 50% works because the viewBox is centered
+    on the mark's rotation centroid (197.21, 176) — confirmed:
+    (-52.79 + 500/2, -74 + 500/2) = (197.21, 176).
+    Half-extent 250 units accommodates scale(1.08): max reach ~240 units.
+    Color is hardcoded; override via CSS fill/stroke on the <g> for inline use.
+  -->
+  <style>
+    @keyframes spinBreatheTidal {
+      0%   { transform: rotate(0deg)   scale(0.96); opacity: 0.94; animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }
+      35%  { transform: rotate(120deg) scale(1.08); opacity: 1;    animation-timing-function: linear; }
+      50%  { transform: rotate(120deg) scale(1.08); opacity: 1;    animation-timing-function: cubic-bezier(0.4, 0, 0.4, 1); }
+      85%  { transform: rotate(240deg) scale(0.96); opacity: 0.94; animation-timing-function: linear; }
+      100% { transform: rotate(240deg) scale(0.96); opacity: 0.94; }
+    }
+    .kluvs-spinner-svg {
+      transform-origin: 50% 50%;
+      animation: spinBreatheTidal 4000ms infinite;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .kluvs-spinner-svg {
+        animation: none;
+        transform: rotate(0deg) scale(0.96);
+        opacity: 0.94;
+      }
+    }
+  </style>
+  <g fill="#D16D30" stroke="#D16D30" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <polygon fill="none" points="11,68.51 110.6,11 197.21,61 283.81,11 383.41,68.51 383.41,183.52 296.81,233.52 296.81,333.52 197.21,391.02 97.6,333.52 97.6,233.52 11,183.52"/>
+    <polygon stroke="none" points="191.58,79.26 191.58,172.76 110.6,219.51 29.63,172.76 29.63,79.26 110.6,32.51"/>
+    <polygon stroke="none" points="364.78,79.26 364.78,172.76 283.81,219.51 202.83,172.76 202.83,79.26 283.81,32.51"/>
+    <polygon stroke="none" points="278.18,229.26 278.18,322.76 197.21,369.51 116.23,322.76 116.23,229.26 197.21,182.51"/>
+  </g>
+</svg>

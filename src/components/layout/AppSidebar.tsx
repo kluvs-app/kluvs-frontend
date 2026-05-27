@@ -61,12 +61,10 @@ export default function AppSidebar() {
         {/* Brand */}
         <a
           href={import.meta.env.VITE_OAUTH_REDIRECT_URL?.replace('app.', '') ?? '/'}
-          className="flex items-center gap-2.5 px-5 h-16 shrink-0 hover:opacity-80 transition-opacity"
+          className="flex items-center px-5 h-16 shrink-0 hover:opacity-80 transition-opacity"
         >
-          <img src="/ic-mark.svg" alt="" className="h-7 w-7" />
-          <span className="font-serif font-bold text-lg tracking-widest uppercase text-[var(--color-text-primary)]">
-            KLUVS
-          </span>
+          <img src="/kluvs-lockup-dark.svg" alt="Kluvs" className="h-6 w-auto dark:hidden" />
+          <img src="/kluvs-lockup-light.svg" alt="Kluvs" className="h-6 w-auto hidden dark:block" />
         </a>
 
         <hr className="border-t border-[var(--color-divider)] mx-4 mb-2" />
@@ -131,8 +129,8 @@ export default function AppSidebar() {
 
         {/* Footer actions */}
         <div className="border-t border-dashed border-[var(--color-divider)] p-3 space-y-0.5">
-          {/* Discord */}
-          {!member?.discord_id ? (
+          {/* Connect Discord — only shown when not yet linked */}
+          {!member?.discord_id && (
             <button
               onClick={() => setShowDiscordLinkModal(true)}
               className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[#5865F2] hover:bg-[var(--color-bg-elevated)] transition-colors"
@@ -140,11 +138,6 @@ export default function AppSidebar() {
               <img src="/ic-discord.svg" alt="" className="w-5 h-5 shrink-0" />
               Connect Discord
             </button>
-          ) : (
-            <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg text-sm text-[var(--color-text-secondary)]">
-              <img src="/ic-discord.svg" alt="" className="w-5 h-5 shrink-0 opacity-40" />
-              Connected
-            </div>
           )}
 
           {/* Sign out */}

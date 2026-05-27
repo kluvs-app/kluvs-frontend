@@ -111,17 +111,6 @@ npm run test:ui
 npm run test:coverage
 ```
 
-### Test Coverage
-
-Current coverage: **469 tests** across 25 test files
-
-- ✅ Core: AuthContext, ClubsDashboard, LoginPage, LandingPage
-- ✅ Components: Header, Footer, Sidebar, TopNavbar, CurrentReadingCard, DiscussionsTimeline, MembersTable, ThemeToggle
-- ✅ Modals: AddClubModal, DeleteClubModal, EditProfileModal, SignOutModal, DiscussionModal, NewSessionModal, EditBookModal, MemberModal, and more
-- ✅ Pages: LandingPage, PrivacyPolicy, TermsOfUse, DataDeletion, DiscordPage
-
-Coverage goals: 80%+ statements/functions/lines, 75%+ branches
-
 ### Writing Tests
 
 See [CLAUDE.md - Testing Section](CLAUDE.md#testing) for guidelines on writing tests.
@@ -198,7 +187,7 @@ kluvs-frontend/
 
 The app uses **OAuth 2.0** with Supabase Auth for authentication:
 
-- **Providers:** Discord, Google
+- **Providers:** Discord, Google (*iOS coming soon...*)
 - **Session:** Stored in localStorage with auto-refresh
 - **Roles:** Admin (full access) vs Member (read-only)
 
@@ -224,85 +213,6 @@ User roles are managed via the backend API. Contact an admin to upgrade your rol
 - **Testing:** Vitest + React Testing Library
 - **Linting:** ESLint with TypeScript support
 - **Pre-commit Hooks:** Husky (runs validation on push)
-
-## 🚢 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Import project in [Vercel](https://vercel.com)
-3. Add environment variables:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-4. Deploy!
-
-### Deploy to Netlify
-
-1. Push your code to GitHub
-2. Import project in [Netlify](https://netlify.com)
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-5. Add environment variables in Netlify UI
-
-### Other Platforms
-
-The app is a static SPA that can be deployed anywhere that serves static files:
-- Cloudflare Pages
-- GitHub Pages
-- AWS S3 + CloudFront
-- Any static hosting service
-
-## 🐛 Troubleshooting
-
-### "Failed to fetch servers"
-
-**Cause:** Backend Edge Functions not deployed or environment variables incorrect.
-
-**Fix:**
-1. Verify `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local`
-2. Ensure backend Edge Functions are deployed
-3. Check browser console for detailed errors
-
-### "Sign in failed"
-
-**Cause:** OAuth redirect URL not configured in Supabase.
-
-**Fix:**
-1. Go to Supabase Dashboard → Authentication → URL Configuration
-2. Add your app URL to "Site URL" and "Redirect URLs"
-   - Development: `http://localhost:5173`
-   - Production: `https://your-domain.com`
-
-### Tests failing
-
-**Cause:** Dependencies not installed or stale cache.
-
-**Fix:**
-```bash
-# Clear node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-
-# Clear Vite cache
-rm -rf node_modules/.vite
-
-# Run tests
-npm run test:run
-```
-
-## 📚 Additional Documentation
-
-- **[CLAUDE.md](CLAUDE.md)** - Comprehensive project documentation for AI assistants
-  - Architecture overview
-  - Component structure
-  - Testing guidelines
-  - Common tasks and patterns
-  - Backend API compatibility
-
-- **[Backend API](https://github.com/kluvs-app/kluvs-backend)** - RESTful Edge Functions
-  - API endpoints documentation
-  - Database schema
-  - Setup instructions
 
 ## 🤝 Contributing
 

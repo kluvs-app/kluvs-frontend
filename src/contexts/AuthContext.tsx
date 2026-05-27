@@ -18,6 +18,7 @@ interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<void>
   signOut: () => Promise<void>
   refreshMemberData: () => Promise<void>
+  isOnline: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -37,9 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
   
-  // Use ref for immediate synchronous tracking of processing state
+  // Immediate synchronous tracking of which user is currently being processed
   const processingUserIdRef = useRef<string | null>(null)
+  // Stable ref to member — lets handleUserChange (useCallback, no deps) read
+  // the latest value without a stale closure.
+  const memberRef = useRef<Member | null>(null)
 
   const getRoleForClub = useCallback((clubId: string): UserRole | null => {
     return member?.clubs.find(c => c.id === clubId)?.role ?? null
@@ -129,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!newUser) {
       console.log('❌ No user, clearing member')
       setMember(null)
+      memberRef.current = null
       processingUserIdRef.current = null
       return
     }
@@ -139,14 +145,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('🔄 Starting member lookup...')
 
-      // Look up member by user_id (created by database trigger on signup)
       const memberData = await findMemberByUserId(newUser.id)
 
       console.log('🎯 Member lookup completed:', memberData)
-      setMember(memberData)
+      if (memberData !== null) {
+        // Successful fetch — update member state
+        setMember(memberData)
+        memberRef.current = memberData
+      } else if (memberRef.current === null) {
+        // First-ever load and member genuinely not found — clear state
+        setMember(null)
+      }
+      // If fetch returned null but we already have member data (e.g. transient
+      // edge-function failure after tab focus with an expired token), keep the
+      // existing data. TOKEN_REFRESHED will retry with a fresh token shortly.
     } catch (error) {
       console.error('💥 Error in handleUserChange:', error)
-      setMember(null)
+      if (memberRef.current === null) setMember(null)
     } finally {
       // Clear the processing flag (immediate, synchronous)
       processingUserIdRef.current = null
@@ -268,26 +283,56 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsPasswordRecovery(true)
       }
       if (initialized) {
-        await handleUserChange(session?.user ?? null)
+        // Do NOT await — Supabase calls this from inside the Web Lock, so
+        // awaiting would hold the lock for the entire member HTTP round-trip,
+        // blocking every getSession() call in the app until the edge function responds.
+        handleUserChange(session?.user ?? null)
       }
       setLoading(false)
     })
 
-    // Re-validate session when the tab becomes visible again.
-    // Browsers throttle timers in background tabs, which can cause
-    // Supabase's token auto-refresh to miss its window.
+    // Only refresh the token when it's within 5 minutes of expiring (or already
+    // gone). Skips unnecessary round-trips on brief tab switches.
+    const SESSION_REFRESH_THRESHOLD_S = 300
+
     const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible') {
-        console.log('👁️ Tab visible — re-checking session')
+      if (document.visibilityState !== 'visible') return
+      try {
         const { data: { session } } = await supabase.auth.getSession()
-        await handleUserChange(session?.user ?? null)
+        const secondsUntilExpiry = (session?.expires_at ?? 0) - Math.floor(Date.now() / 1000)
+        if (!session || secondsUntilExpiry < SESSION_REFRESH_THRESHOLD_S) {
+          console.log('👁️ Tab visible — token expiring soon, refreshing')
+          const { error } = await supabase.auth.refreshSession()
+          if (error) {
+            console.log('❌ Session refresh failed:', error.message)
+            await handleUserChange(null)
+          }
+          // On success: TOKEN_REFRESHED → onAuthStateChange → handleUserChange
+        }
+      } catch {
+        console.warn('⚠️ Session check failed — network may be unavailable')
       }
     }
+
+    // Track network connectivity and retry the token refresh when coming back online.
+    const handleOffline = () => {
+      console.log('📴 Network offline')
+      setIsOnline(false)
+    }
+    const handleOnline = () => {
+      console.log('📶 Network online')
+      setIsOnline(true)
+    }
+
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('offline', handleOffline)
+    window.addEventListener('online', handleOnline)
 
     return () => {
       subscription.unsubscribe()
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('offline', handleOffline)
+      window.removeEventListener('online', handleOnline)
     }
   }, [])
 
@@ -296,6 +341,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     member,
     loading,
     isPasswordRecovery,
+    isOnline,
     getRoleForClub,
     signInWithDiscord,
     signInWithGoogle,

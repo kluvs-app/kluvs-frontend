@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 42" width="248" height="42">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&amp;display=swap');</style>
+  </defs>
+  <!-- Mark: 42×42 -->
+  <g transform="scale(0.10633)" fill="#D16D30" stroke="#D16D30" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <polygon fill="none" points="11,68.51 110.6,11 197.21,61 283.81,11 383.41,68.51 383.41,183.52 296.81,233.52 296.81,333.52 197.21,391.02 97.6,333.52 97.6,233.52 11,183.52"/>
+    <polygon stroke="none" points="191.58,79.26 191.58,172.76 110.6,219.51 29.63,172.76 29.63,79.26 110.6,32.51"/>
+    <polygon stroke="none" points="364.78,79.26 364.78,172.76 283.81,219.51 202.83,172.76 202.83,79.26 283.81,32.51"/>
+    <polygon stroke="none" points="278.18,229.26 278.18,322.76 197.21,369.51 116.23,322.76 116.23,229.26 197.21,182.51"/>
+  </g>
+  <!-- KLUVS: near-black — for use on light surfaces -->
+  <text x="56" y="32" font-family="'EB Garamond', Georgia, serif" font-weight="700" font-size="36" letter-spacing="6.5" fill="#1A1A1A">KLUVS</text>
+</svg>

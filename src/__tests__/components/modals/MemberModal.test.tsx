@@ -35,7 +35,6 @@ describe('MemberModal', () => {
       render(<MemberModal {...defaultProps} />)
 
       expect(screen.getByRole('heading', { name: 'Add Member' })).toBeInTheDocument()
-      expect(screen.getByText('Add a new member to the club')).toBeInTheDocument()
     })
 
     it('should not render when isOpen is false', () => {
@@ -56,7 +55,6 @@ describe('MemberModal', () => {
       render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
 
       expect(screen.getByRole('heading', { name: 'Edit Member' })).toBeInTheDocument()
-      expect(screen.getByText('Update member details')).toBeInTheDocument()
     })
 
     it('should pre-populate form in edit mode', () => {

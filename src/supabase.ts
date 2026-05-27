@@ -1,4 +1,4 @@
-import { createClient, type FunctionInvokeOptions } from '@supabase/supabase-js'
+import { createClient, type FunctionInvokeOptions, FunctionsHttpError } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -25,7 +25,18 @@ export async function invokeFunction<T = unknown>(
   options?: FunctionInvokeOptions
 ): Promise<{ data: T | null; error: Error | null }> {
   await supabase.auth.getSession()
-  return supabase.functions.invoke<T>(name, options)
+  const result = await supabase.functions.invoke<T>(name, options)
+
+  // On 401, force a fresh token and retry once. Handles the brief window
+  // between tab focus and the background session refresh completing.
+  if (result.error instanceof FunctionsHttpError && result.error.context?.status === 401) {
+    const { error: refreshError } = await supabase.auth.refreshSession()
+    if (!refreshError) {
+      return supabase.functions.invoke<T>(name, options)
+    }
+  }
+
+  return result
 }
 
 export function getAvatarUrl(avatarPath: string): string {

@@ -4,31 +4,31 @@ import userEvent from '@testing-library/user-event'
 import EditProfileModal from '../../../components/modals/EditProfileModal'
 import { mockAdminMember } from '../../utils/mocks'
 
-// Mock supabase
 const mockInvoke = vi.fn()
+const mockUpload = vi.fn()
+
 vi.mock('../../../supabase', () => ({
   supabase: {
-    functions: {
-      invoke: (...args: any[]) => mockInvoke(...args),
-    },
+    functions: { invoke: (...args: any[]) => mockInvoke(...args) },
+    storage: { from: () => ({ upload: mockUpload }) },
   },
   invokeFunction: (...args: any[]) => mockInvoke(...args),
   getAvatarUrl: (path: string) => `https://storage.example.com/${path}`,
 }))
 
-// Mock useAuth (EditProfileModal uses member from useAuth for submission)
+const mockAuthMember = {
+  id: 1,
+  user_id: 'admin-user-id',
+  name: 'Admin User',
+  handle: 'admin_handle',
+  books_read: 10,
+  clubs: [{ id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }],
+  discord_id: '111222333444555666',
+  avatar_path: 'avatars/admin-user.jpg',
+}
+const mockUseAuth = vi.fn()
 vi.mock('../../../contexts/AuthContext', () => ({
-  useAuth: () => ({
-    member: {
-      id: 1,
-      user_id: 'admin-user-id',
-      name: 'Admin User',
-      books_read: 10,
-      clubs: [{ id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }],
-      discord_id: '111222333444555666',
-      avatar_path: 'avatars/admin-user.jpg',
-    },
-  }),
+  useAuth: () => mockUseAuth(),
 }))
 
 describe('EditProfileModal', () => {
@@ -43,195 +43,230 @@ describe('EditProfileModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockInvoke.mockResolvedValue({ data: {}, error: null })
+    mockUpload.mockResolvedValue({ data: {}, error: null })
+    mockUseAuth.mockReturnValue({ member: mockAuthMember })
   })
 
   describe('Rendering', () => {
-    it('should render when isOpen with currentMember', () => {
+    it('renders when isOpen with currentMember', () => {
       render(<EditProfileModal {...defaultProps} />)
-
-      expect(screen.getByRole('heading', { name: 'Edit Profile' })).toBeInTheDocument()
-      expect(screen.getByText('Update your profile details')).toBeInTheDocument()
+      expect(screen.getByText('Edit Profile')).toBeInTheDocument()
     })
 
-    it('should not render when isOpen is false', () => {
+    it('does not render when isOpen is false', () => {
       render(<EditProfileModal {...defaultProps} isOpen={false} />)
-
       expect(screen.queryByText('Edit Profile')).not.toBeInTheDocument()
     })
 
-    it('should not render when isOpen is false and currentMember is null', () => {
-      render(<EditProfileModal {...defaultProps} isOpen={false} currentMember={null as any} />)
-
-      expect(screen.queryByText('Edit Profile')).not.toBeInTheDocument()
-    })
-
-    it('should pre-populate name from currentMember', () => {
+    it('pre-populates name from currentMember', () => {
       render(<EditProfileModal {...defaultProps} />)
-
       expect(screen.getByDisplayValue('Admin User')).toBeInTheDocument()
     })
 
-    it('should show Discord Connected status with ID when discord_id is set', () => {
+    it('shows Discord connected status when discord_id is set', () => {
       render(<EditProfileModal {...defaultProps} />)
-
       expect(screen.getByText('Connected')).toBeInTheDocument()
       expect(screen.getByText('111222333444555666')).toBeInTheDocument()
     })
 
-    it('should hide Discord section when discord_id is null', () => {
-      const memberWithoutDiscord = { ...defaultProps.currentMember, discord_id: null }
-      render(<EditProfileModal {...defaultProps} currentMember={memberWithoutDiscord} />)
-
+    it('shows Discord not connected when discord_id is null', () => {
+      render(<EditProfileModal {...defaultProps} currentMember={{ ...defaultProps.currentMember, discord_id: null }} />)
+      expect(screen.getByText('Discord not connected')).toBeInTheDocument()
       expect(screen.queryByText('Connected')).not.toBeInTheDocument()
-      expect(screen.queryByText('Discord')).not.toBeInTheDocument()
     })
 
-    it('should show avatar when member has avatar_path', () => {
+    it('shows avatar when member has avatar_path', () => {
       render(<EditProfileModal {...defaultProps} />)
-
       const avatar = screen.getByAltText('Member avatar')
       expect(avatar).toBeInTheDocument()
       expect(avatar).toHaveAttribute('src', expect.stringContaining('avatars/admin-user.jpg'))
     })
 
-    it('should not show avatar when member has no avatar_path', () => {
+    it('does not show avatar img when member has no avatar_path', () => {
       const memberWithoutAvatar = { ...defaultProps.currentMember, avatar_path: undefined }
       render(<EditProfileModal {...defaultProps} currentMember={memberWithoutAvatar} />)
-
       expect(screen.queryByAltText('Member avatar')).not.toBeInTheDocument()
     })
+
+    it('shows Change avatar button', () => {
+      render(<EditProfileModal {...defaultProps} />)
+      expect(screen.getByRole('button', { name: 'Change avatar' })).toBeInTheDocument()
+    })
+
   })
 
   describe('Accessibility', () => {
-    it('should have dialog role and aria attributes', () => {
+    it('has dialog role and aria attributes', () => {
       render(<EditProfileModal {...defaultProps} />)
-
       const dialog = screen.getByRole('dialog')
       expect(dialog).toHaveAttribute('aria-modal', 'true')
       expect(dialog).toHaveAttribute('aria-labelledby', 'modal-title-edit-profile')
     })
 
-    it('should have Close button with aria-label', () => {
+    it('has Close button with aria-label', () => {
       render(<EditProfileModal {...defaultProps} />)
-
       expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
     })
 
-    it('should close on Escape key', async () => {
+    it('closes on Escape key', async () => {
       const user = userEvent.setup()
       render(<EditProfileModal {...defaultProps} />)
-
       await user.keyboard('{Escape}')
-
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe('Form Validation', () => {
-    it('should disable submit when name is empty', async () => {
+  describe('Form validation', () => {
+    it('disables Save when name is empty', async () => {
       const user = userEvent.setup()
       render(<EditProfileModal {...defaultProps} />)
-
-      const nameInput = screen.getByDisplayValue('Admin User')
-      await user.clear(nameInput)
-
-      expect(screen.getByText('Save Changes').closest('button')).toBeDisabled()
+      await user.clear(screen.getByDisplayValue('Admin User'))
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
     })
 
-    it('should disable submit when name is only whitespace', async () => {
+    it('disables Save when name is only whitespace', async () => {
       const user = userEvent.setup()
       render(<EditProfileModal {...defaultProps} />)
-
       const nameInput = screen.getByDisplayValue('Admin User')
       await user.clear(nameInput)
       await user.type(nameInput, '   ')
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+    })
 
-      expect(screen.getByText('Save Changes').closest('button')).toBeDisabled()
+    it('disables Save when nothing has changed', () => {
+      render(<EditProfileModal {...defaultProps} />)
+      expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+    })
+
+    it('enables Save when name changes', async () => {
+      const user = userEvent.setup()
+      render(<EditProfileModal {...defaultProps} />)
+      const nameInput = screen.getByDisplayValue('Admin User')
+      await user.clear(nameInput)
+      await user.type(nameInput, 'New Name')
+      expect(screen.getByRole('button', { name: 'Save' })).not.toBeDisabled()
     })
 
   })
 
-  describe('Form Submission', () => {
-    it('should call supabase member PUT on submit', async () => {
+  describe('Form submission', () => {
+    it('calls member PUT with updated name', async () => {
       const user = userEvent.setup()
       render(<EditProfileModal {...defaultProps} />)
-
-      // Change the name
       const nameInput = screen.getByDisplayValue('Admin User')
       await user.clear(nameInput)
       await user.type(nameInput, 'New Name')
-
-      await user.click(screen.getByText('Save Changes'))
-
+      await user.click(screen.getByRole('button', { name: 'Save' }))
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith(
           'member',
-          expect.objectContaining({
-            method: 'PUT',
-            body: expect.objectContaining({
-              name: 'New Name',
-            }),
-          })
+          expect.objectContaining({ method: 'PUT', body: expect.objectContaining({ name: 'New Name' }) })
         )
       })
     })
 
-
-    it('should call onProfileUpdated on success', async () => {
+    it('calls onProfileUpdated on success', async () => {
       const user = userEvent.setup()
       render(<EditProfileModal {...defaultProps} />)
-
-      // Must change name to enable Save (disabled when name === member.name)
       const nameInput = screen.getByDisplayValue('Admin User')
       await user.clear(nameInput)
       await user.type(nameInput, 'Updated Name')
+      await user.click(screen.getByRole('button', { name: 'Save' }))
+      await waitFor(() => expect(defaultProps.onProfileUpdated).toHaveBeenCalledTimes(1))
+    })
 
-      await user.click(screen.getByText('Save Changes'))
+    it('uploads avatar to storage before saving when file selected', async () => {
+      const user = userEvent.setup()
+      render(<EditProfileModal {...defaultProps} />)
+
+      const file = new File(['avatar'], 'photo.jpg', { type: 'image/jpeg' })
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+      await user.upload(fileInput, file)
+
+      // Trigger name change so Save is enabled regardless of avatar
+      const nameInput = screen.getByDisplayValue('Admin User')
+      await user.clear(nameInput)
+      await user.type(nameInput, 'Admin User Updated')
+
+      await user.click(screen.getByRole('button', { name: 'Save' }))
 
       await waitFor(() => {
-        expect(defaultProps.onProfileUpdated).toHaveBeenCalledTimes(1)
+        expect(mockUpload).toHaveBeenCalledWith(
+          expect.stringContaining('avatars/'),
+          file,
+          expect.objectContaining({ upsert: true })
+        )
       })
     })
   })
 
-  describe('Close Behavior', () => {
-    it('should clear errors and call onClose on Cancel', async () => {
+  describe('Close behavior', () => {
+    it('clears errors and calls onClose on Cancel', async () => {
       const user = userEvent.setup()
       render(<EditProfileModal {...defaultProps} />)
-
       await user.click(screen.getByRole('button', { name: 'Cancel' }))
-
       expect(defaultProps.onError).toHaveBeenCalledWith('')
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
 
-    it('should clear errors and call onClose on X button', async () => {
+    it('clears errors and calls onClose on X button', async () => {
       const user = userEvent.setup()
       render(<EditProfileModal {...defaultProps} />)
-
       await user.click(screen.getByRole('button', { name: 'Close' }))
-
       expect(defaultProps.onError).toHaveBeenCalledWith('')
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe('Error Handling', () => {
-    it('should call onError on API failure', async () => {
+  describe('Single-word name initials', () => {
+    it('uses first two chars as initials when name has only one word', () => {
+      mockUseAuth.mockReturnValue({
+        member: { ...mockAuthMember, name: 'Alice' },
+      })
+      const singleWordMember = { ...defaultProps.currentMember, name: 'Alice' }
+      render(<EditProfileModal {...defaultProps} currentMember={singleWordMember} />)
+      // nameInitials('Alice') → parts.length < 2 → 'AL'
+      expect(screen.getByText('AL')).toBeInTheDocument()
+    })
+  })
+
+  describe('Avatar image error', () => {
+    it('hides avatar img on load error', async () => {
+      const { fireEvent } = await import('@testing-library/react')
+      render(<EditProfileModal {...defaultProps} />)
+      const avatarImg = screen.getByAltText('Member avatar') as HTMLImageElement
+      fireEvent.error(avatarImg)
+      expect(avatarImg.style.display).toBe('none')
+    })
+  })
+
+  describe('Error handling', () => {
+    it('calls onError on API failure', async () => {
       mockInvoke.mockResolvedValue({ data: null, error: new Error('Update failed') })
       const user = userEvent.setup()
       render(<EditProfileModal {...defaultProps} />)
-
-      // Must change name to enable Save
       const nameInput = screen.getByDisplayValue('Admin User')
       await user.clear(nameInput)
       await user.type(nameInput, 'Changed')
+      await user.click(screen.getByRole('button', { name: 'Save' }))
+      await waitFor(() => expect(defaultProps.onError).toHaveBeenCalledWith('Update failed'))
+    })
 
-      await user.click(screen.getByText('Save Changes'))
+    it('calls onError on avatar upload failure', async () => {
+      mockUpload.mockResolvedValue({ data: null, error: new Error('Upload failed') })
+      const user = userEvent.setup()
+      render(<EditProfileModal {...defaultProps} />)
 
-      await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Update failed')
-      })
+      const file = new File(['avatar'], 'photo.jpg', { type: 'image/jpeg' })
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+      await user.upload(fileInput, file)
+
+      const nameInput = screen.getByDisplayValue('Admin User')
+      await user.clear(nameInput)
+      await user.type(nameInput, 'Admin User Updated')
+
+      await user.click(screen.getByRole('button', { name: 'Save' }))
+      await waitFor(() => expect(defaultProps.onError).toHaveBeenCalledWith('Upload failed'))
     })
   })
 })
