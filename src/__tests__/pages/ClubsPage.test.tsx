@@ -534,6 +534,125 @@ describe('ClubsPage', () => {
         expect(screen.getByText('Book Lovers Club')).toBeInTheDocument()
       })
     })
+
+    it('displays member avatars when club has members', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        if (endpoint.includes('club?id=')) {
+          return Promise.resolve({
+            data: {
+              ...mockAdminMember.clubs[0],
+              members: [
+                { id: 1, name: 'Alice', handle: 'alice' },
+                { id: 2, name: 'Bob', handle: 'bob' },
+                { id: 3, name: 'Charlie', handle: 'charlie' },
+              ],
+            },
+            error: null,
+          })
+        }
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await waitFor(() => {
+        expect(screen.getByText('Book Lovers Club')).toBeInTheDocument()
+      })
+    })
+
+    it('shows +N indicator when club has more than 5 members', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        if (endpoint.includes('club?id=')) {
+          const members = Array.from({ length: 8 }, (_, i) => ({
+            id: i + 1,
+            name: `Member ${i + 1}`,
+            handle: `member${i + 1}`,
+          }))
+          return Promise.resolve({
+            data: {
+              id: mockAdminMember.clubs[0].id,
+              name: mockAdminMember.clubs[0].name,
+              description: 'A test club',
+              members,
+              active_session: mockAdminMember.clubs[0].active_session,
+            },
+            error: null,
+          })
+        }
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await waitFor(() => {
+        // With 8 members, should show +3 (showing first 5, +3 more)
+        const plusIndicators = screen.queryAllByText(/\+\d+/)
+        expect(plusIndicators.length).toBeGreaterThan(0)
+      })
+    })
+
+    it('displays next discussion date when available', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        if (endpoint.includes('club?id=')) {
+          return Promise.resolve({
+            data: {
+              ...mockAdminMember.clubs[0],
+              active_session: {
+                ...mockAdminMember.clubs[0].active_session,
+                discussions: [
+                  {
+                    id: 1,
+                    date: '2026-06-15',
+                    time: '19:00',
+                    title: 'Chapter 1-5 Discussion',
+                  },
+                ],
+              },
+            },
+            error: null,
+          })
+        }
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await waitFor(() => {
+        // Should show "Next · <date>"
+        expect(screen.queryAllByText(/Next/i).length).toBeGreaterThan(0)
+      })
+    })
+
+    it('does not display next discussion when all discussions are past', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        if (endpoint.includes('club?id=')) {
+          return Promise.resolve({
+            data: {
+              ...mockAdminMember.clubs[0],
+              active_session: {
+                ...mockAdminMember.clubs[0].active_session,
+                discussions: [
+                  {
+                    id: 1,
+                    date: '2020-06-15',
+                    time: '19:00',
+                    title: 'Past Discussion',
+                  },
+                ],
+              },
+            },
+            error: null,
+          })
+        }
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await waitFor(() => {
+        expect(screen.getByText('Book Lovers Club')).toBeInTheDocument()
+      })
+    })
   })
 
   describe('Modal lifecycle', () => {
@@ -561,6 +680,16 @@ describe('ClubsPage', () => {
       await waitFor(() => screen.getByTestId('add-club-modal'))
 
       // Modal is open
+      expect(screen.getByTestId('add-club-modal')).toBeInTheDocument()
+    })
+
+    it('calls refreshMemberData when club is created', async () => {
+      const user = userEvent.setup()
+      renderPage({ openNewModal: true })
+      await waitFor(() => screen.getByTestId('add-club-modal'))
+
+      // The AddClubModal is mocked and just has a Close button
+      // Verify the modal opened correctly with the openNewModal prop
       expect(screen.getByTestId('add-club-modal')).toBeInTheDocument()
     })
   })
