@@ -1002,10 +1002,13 @@ export default function ClubDetailPage() {
                       </div>
 
                       {/* Dot column */}
-                      <div className="relative flex justify-center pt-4">
+                      <div className="relative flex justify-center pt-2">
                         {/* Connecting line - only on non-last items */}
                         {!isLast && (
-                          <div className="absolute left-1/2 -translate-x-1/2 w-px bg-[rgba(242,237,229,0.14)]" style={{ top: '50%', height: '180px' }} />
+                          <div
+                            className="absolute left-1/2 -translate-x-1/2 w-px bg-[rgba(242,237,229,0.14)]"
+                            style={{ top: '12px', bottom: '-28px', height: 'calc(100% + 28px)' }}
+                          />
                         )}
 
                         <div className="relative z-10">
