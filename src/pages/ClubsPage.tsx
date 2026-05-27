@@ -60,7 +60,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
       <div className="border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-5 py-6">
         <div className="flex items-baseline justify-between gap-4 mb-4">
           <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-            Yours
+            Your
           </span>
           <button
             onClick={() => setShowAddClubModal(true)}

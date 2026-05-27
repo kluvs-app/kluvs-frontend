@@ -788,9 +788,9 @@ export default function ClubDetailPage() {
               <KluvsSpinner size={48} className="mx-auto" />
             </div>
           ) : mobileTab === 'overview' && club.active_session ? (
-            <div className="space-y-12">
+            <div className="space-y-6">
               {/* NOW READING */}
-              <div className="grid grid-cols-[80px_1fr] gap-5">
+              <div className="grid grid-cols-[80px_1fr] gap-5 items-center">
                 <CoverSlot
                   imageUrl={club.active_session.book?.image_url}
                   width={80}
@@ -801,13 +801,13 @@ export default function ClubDetailPage() {
                   <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
                     NOW READING
                   </p>
-                  <h3 className="font-serif italic text-[28px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-1">
+                  <h3 className="font-serif italic text-[28px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-0.5">
                     {club.active_session.book?.title || '(Untitled)'}
                   </h3>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] mb-4">
+                  <p className="text-[13px] text-[var(--color-text-secondary)] mb-2">
                     {club.active_session.book?.author}
                   </p>
-                  <div className="flex items-center justify-between gap-3 mb-2">
+                  <div className="flex items-center justify-between gap-3 mb-1">
                     <div className="flex-1 h-1 rounded-full bg-[#332B24] overflow-hidden">
                       <div
                         className="h-full bg-primary"
