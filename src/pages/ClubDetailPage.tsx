@@ -188,6 +188,15 @@ export default function ClubDetailPage() {
     return total === 0 ? 0 : Math.round((completed / total) * 100)
   }
 
+  const getSortedMembers = (members: Member[]) => {
+    const roleOrder = { 'owner': 0, 'admin': 1, 'member': 2 }
+    return [...members].sort((a, b) => {
+      const aRole = (a as typeof a & { role?: string }).role || 'member'
+      const bRole = (b as typeof b & { role?: string }).role || 'member'
+      return (roleOrder[aRole as keyof typeof roleOrder] ?? 2) - (roleOrder[bRole as keyof typeof roleOrder] ?? 2)
+    })
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -571,7 +580,7 @@ export default function ClubDetailPage() {
 
                         {/* Members list */}
                         <div className="space-y-2.5">
-                          {club.members.map((clubMember) => {
+                          {getSortedMembers(club.members).map((clubMember) => {
                             const memberWithRole = clubMember as Member & { role?: string }
                             const memberRole = memberWithRole.role || 'member'
                             const isYou = member?.id === clubMember.id
@@ -1067,7 +1076,7 @@ export default function ClubDetailPage() {
 
               {/* Members list */}
               <div className="space-y-3">
-                {club.members.map((clubMember) => {
+                {getSortedMembers(club.members).map((clubMember) => {
                   const memberWithRole = clubMember as Member & { role?: string }
                   const memberRole = memberWithRole.role || 'member'
                   const isYou = member?.id === clubMember.id
