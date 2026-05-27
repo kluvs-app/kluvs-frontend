@@ -7,23 +7,12 @@ import type { Club } from '../types'
 import AddClubModal from '../components/modals/AddClubModal'
 import CoverSlot from '../components/ui/CoverSlot'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
+import Avatar from '../components/ui/Avatar'
 
 interface ClubsPageProps {
   openNewModal?: boolean
 }
 
-const AVATAR_HUES = [
-  '#5865F2',
-  '#5BAA5C',
-  '#9B59B6',
-  '#E67E22',
-  '#3498DB',
-  '#E74C3C',
-  '#16A085',
-  '#F39C12',
-  '#8E44AD',
-  '#2ECC71',
-]
 
 export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
   const { member, refreshMemberData } = useAuth()
@@ -152,18 +141,12 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                       {fullClub?.members && fullClub.members.length > 0 && (
                         <div className="flex -space-x-2 items-center">
                           {fullClub.members.slice(0, 5).map((m) => (
-                            <div
-                              key={m.id}
-                              className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[8px] font-medium border border-[var(--color-bg)]"
-                              style={{
-                                backgroundColor:
-                                  AVATAR_HUES[
-                                    Math.abs(Number(m.id)) % AVATAR_HUES.length
-                                  ],
-                              }}
-                              title={m.name}
-                            >
-                              {m.name[0].toUpperCase()}
+                            <div key={m.id} className="border border-[var(--color-bg)] rounded-full">
+                              <Avatar
+                                name={m.name}
+                                userId={String(m.id)}
+                                size="sm"
+                              />
                             </div>
                           ))}
                           {fullClub.members.length > 5 && (

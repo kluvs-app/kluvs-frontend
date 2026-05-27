@@ -18,21 +18,10 @@ import CoverSlot from '../components/ui/CoverSlot'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
 import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
+import Avatar from '../components/ui/Avatar'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
-const AVATAR_HUES = [
-  '#5865F2',
-  '#5BAA5C',
-  '#9B59B6',
-  '#E67E22',
-  '#3498DB',
-  '#E74C3C',
-  '#16A085',
-  '#F39C12',
-  '#8E44AD',
-  '#2ECC71',
-]
 
 export default function ClubDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -593,17 +582,11 @@ export default function ClubDetailPage() {
                                 className="flex items-center gap-3.5 py-2.5 border-b border-[var(--color-divider)]"
                               >
                                 {/* Avatar */}
-                                <div
-                                  className="w-[30px] h-[30px] rounded-full flex-shrink-0 flex items-center justify-center text-white text-[12px] font-medium"
-                                  style={{
-                                    backgroundColor:
-                                      AVATAR_HUES[
-                                        Math.abs(Number(clubMember.id)) % AVATAR_HUES.length
-                                      ],
-                                  }}
-                                >
-                                  {clubMember.name[0].toUpperCase()}
-                                </div>
+                                <Avatar
+                                  name={clubMember.name}
+                                  userId={String(clubMember.id)}
+                                  size="lg"
+                                />
 
                                 {/* Name + handle */}
                                 <div className="flex-1 min-w-0">
@@ -897,18 +880,12 @@ export default function ClubDetailPage() {
                   {/* Avatar row */}
                   <div className="flex -space-x-2 items-center flex-shrink-0">
                     {club.members.slice(0, 4).map((m) => (
-                      <div
-                        key={m.id}
-                        className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[11px] font-medium border-2 border-[var(--color-bg)]"
-                        style={{
-                          backgroundColor:
-                            AVATAR_HUES[
-                              Math.abs(Number(m.id)) % AVATAR_HUES.length
-                            ],
-                        }}
-                        title={m.name}
-                      >
-                        {m.name[0].toUpperCase()}
+                      <div key={m.id} className="border-2 border-[var(--color-bg)] rounded-full">
+                        <Avatar
+                          name={m.name}
+                          userId={String(m.id)}
+                          size="md"
+                        />
                       </div>
                     ))}
                     {club.members.length > 4 && (
@@ -1100,17 +1077,11 @@ export default function ClubDetailPage() {
                       key={clubMember.id}
                       className="flex items-center gap-3 py-3 border-b border-[var(--color-divider)]"
                     >
-                      <div
-                        className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[12px] font-medium"
-                        style={{
-                          backgroundColor:
-                            AVATAR_HUES[
-                              Math.abs(Number(clubMember.id)) % AVATAR_HUES.length
-                            ],
-                        }}
-                      >
-                        {clubMember.name[0].toUpperCase()}
-                      </div>
+                      <Avatar
+                        name={clubMember.name}
+                        userId={String(clubMember.id)}
+                        size="lg"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
