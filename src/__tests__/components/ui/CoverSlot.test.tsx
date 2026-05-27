@@ -101,7 +101,7 @@ describe('CoverSlot', () => {
     })
 
     it('renders with all props provided', () => {
-      const { container } = render(
+      render(
         <CoverSlot
           imageUrl="https://example.com/book.jpg"
           width={100}

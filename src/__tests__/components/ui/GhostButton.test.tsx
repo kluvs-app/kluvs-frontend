@@ -11,14 +11,14 @@ describe('GhostButton', () => {
     })
 
     it('renders with md variant by default', () => {
-      const { container } = render(<GhostButton>Button</GhostButton>)
+      render(<GhostButton>Button</GhostButton>)
       const button = screen.getByRole('button')
       expect(button.className).toContain('px-4')
       expect(button.className).toContain('py-2.5')
     })
 
     it('renders with sm variant when specified', () => {
-      const { container } = render(<GhostButton variant="sm">Button</GhostButton>)
+      render(<GhostButton variant="sm">Button</GhostButton>)
       const button = screen.getByRole('button')
       expect(button.className).toContain('px-3')
       expect(button.className).toContain('py-1.5')
@@ -70,8 +70,7 @@ describe('GhostButton', () => {
       expect(handleClick).toHaveBeenCalledOnce()
     })
 
-    it('applies active scale transform on click', async () => {
-      const user = userEvent.setup()
+    it('applies active scale transform on click', () => {
       render(<GhostButton>Button</GhostButton>)
 
       const button = screen.getByRole('button')

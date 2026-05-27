@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '../utils/test-utils'
 import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import ClubsPage from '../../pages/ClubsPage'
-import { mockAdminMember, mockRegularMember, mockServer } from '../utils/mocks'
+import { mockAdminMember, mockRegularMember, mockServer, mockClub } from '../utils/mocks'
 
 vi.mock('../../supabase', () => {
   const mockClient = {
@@ -319,7 +319,6 @@ describe('ClubsPage', () => {
 
   describe('Club list interactions', () => {
     it('navigates to correct club when list item clicked', async () => {
-      const user = userEvent.setup()
       renderPage()
       await waitFor(() => {
         const link = screen.getByRole('link', { name: /Book Lovers Club/i })
@@ -572,11 +571,8 @@ describe('ClubsPage', () => {
           }))
           return Promise.resolve({
             data: {
-              id: mockAdminMember.clubs[0].id,
-              name: mockAdminMember.clubs[0].name,
-              description: 'A test club',
+              ...mockClub,
               members,
-              active_session: mockAdminMember.clubs[0].active_session,
             },
             error: null,
           })
@@ -598,12 +594,12 @@ describe('ClubsPage', () => {
         if (endpoint.includes('club?id=')) {
           return Promise.resolve({
             data: {
-              ...mockAdminMember.clubs[0],
+              ...mockClub,
               active_session: {
-                ...mockAdminMember.clubs[0].active_session,
+                ...mockClub.active_session,
                 discussions: [
                   {
-                    id: 1,
+                    id: '1',
                     date: '2026-06-15',
                     time: '19:00',
                     title: 'Chapter 1-5 Discussion',
@@ -630,12 +626,12 @@ describe('ClubsPage', () => {
         if (endpoint.includes('club?id=')) {
           return Promise.resolve({
             data: {
-              ...mockAdminMember.clubs[0],
+              ...mockClub,
               active_session: {
-                ...mockAdminMember.clubs[0].active_session,
+                ...mockClub.active_session,
                 discussions: [
                   {
-                    id: 1,
+                    id: '1',
                     date: '2020-06-15',
                     time: '19:00',
                     title: 'Past Discussion',
@@ -684,7 +680,6 @@ describe('ClubsPage', () => {
     })
 
     it('calls refreshMemberData when club is created', async () => {
-      const user = userEvent.setup()
       renderPage({ openNewModal: true })
       await waitFor(() => screen.getByTestId('add-club-modal'))
 
@@ -785,7 +780,6 @@ describe('ClubsPage', () => {
 
   describe('Button state and interaction', () => {
     it('new club button is always visible and clickable', async () => {
-      const user = userEvent.setup()
       renderPage()
       await waitFor(() => {
         const btn = screen.getByRole('button', { name: /new/i })

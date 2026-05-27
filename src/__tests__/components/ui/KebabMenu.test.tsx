@@ -28,7 +28,7 @@ describe('KebabMenu', () => {
     it('closes menu when outside is clicked', async () => {
       const user = userEvent.setup()
       const items = [{ label: 'Edit', onClick: vi.fn() }]
-      const { container } = render(
+      render(
         <div>
           <div data-testid="outside">Outside</div>
           <KebabMenu items={items} />

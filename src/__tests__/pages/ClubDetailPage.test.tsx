@@ -1029,7 +1029,6 @@ describe('ClubDetailPage', () => {
 
   describe('Discussion handlers', () => {
     it('opens discussion modal for adding new discussion', async () => {
-      const user = userEvent.setup()
       renderDetail()
       await waitFor(() => {
         const buttons = screen.queryAllByRole('button')
@@ -1304,7 +1303,6 @@ describe('ClubDetailPage', () => {
 
   describe('Mobile tab navigation', () => {
     it('switches between tabs on mobile', async () => {
-      const user = userEvent.setup()
       renderDetail()
       await waitFor(() => {
         const buttons = screen.queryAllByRole('button')
@@ -1429,7 +1427,6 @@ describe('ClubDetailPage', () => {
 
   describe('Keyboard accessibility', () => {
     it('buttons are keyboard accessible', async () => {
-      const user = userEvent.setup()
       renderDetail()
       await waitFor(() => {
         const buttons = screen.queryAllByRole('button')
