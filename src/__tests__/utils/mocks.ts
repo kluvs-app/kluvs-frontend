@@ -95,6 +95,8 @@ export const mockClub: Club = {
   active_session: mockActiveSession,
   past_sessions: [mockPastSession],
   shame_list: [2, 3],
+  join_policy: 'PRIVATE',
+  invite_token: null,
 }
 
 export const mockClub2: Club = {
@@ -106,6 +108,8 @@ export const mockClub2: Club = {
   active_session: null,
   past_sessions: [],
   shame_list: [],
+  join_policy: 'PRIVATE',
+  invite_token: null,
 }
 
 // Mock Servers

@@ -11,6 +11,7 @@ import DeleteDiscussionModal from '../components/modals/DeleteDiscussionModal'
 import DeleteClubModal from '../components/modals/DeleteClubModal'
 import EditClubModal from '../components/modals/EditClubModal'
 import AddClubModal from '../components/modals/AddClubModal'
+import ShareClubModal from '../components/modals/ShareClubModal'
 import { useAuth } from '../contexts/AuthContext'
 import { parseLocalDate, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
@@ -58,6 +59,7 @@ export default function ClubDetailPage() {
   const [showDeleteMemberModal, setShowDeleteMemberModal] = useState(false)
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null)
   const [showAddClubModal, setShowAddClubModal] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   // Persist last-visited club slug
   useEffect(() => {
@@ -319,12 +321,20 @@ export default function ClubDetailPage() {
                       CLUB
                     </span>
                     {isAdmin && (
-                      <GhostButton
-                        variant="md"
-                        onClick={() => setShowEditClubModal(true)}
-                      >
-                        Edit club
-                      </GhostButton>
+                      <div className="flex items-center gap-2">
+                        <GhostButton
+                          variant="md"
+                          onClick={() => setShowShareModal(true)}
+                        >
+                          Share
+                        </GhostButton>
+                        <GhostButton
+                          variant="md"
+                          onClick={() => setShowEditClubModal(true)}
+                        >
+                          Edit club
+                        </GhostButton>
+                      </div>
                     )}
                   </div>
 
@@ -674,12 +684,20 @@ export default function ClubDetailPage() {
           </Link>
           <div className="flex items-center gap-2">
             {isAdmin && (
-              <GhostButton
-                variant="sm"
-                onClick={() => setShowEditClubModal(true)}
-              >
-                Edit club
-              </GhostButton>
+              <>
+                <GhostButton
+                  variant="sm"
+                  onClick={() => setShowShareModal(true)}
+                >
+                  Share
+                </GhostButton>
+                <GhostButton
+                  variant="sm"
+                  onClick={() => setShowEditClubModal(true)}
+                >
+                  Edit club
+                </GhostButton>
+              </>
             )}
             <KebabMenu
               items={[
@@ -1224,6 +1242,11 @@ export default function ClubDetailPage() {
           refreshMemberData()
         }}
         onError={setError}
+      />
+      <ShareClubModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        club={club}
       />
     </>
   )
