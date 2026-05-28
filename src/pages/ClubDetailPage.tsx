@@ -6,6 +6,7 @@ import EditBookModal from '../components/modals/EditBookModal'
 import NewSessionModal from '../components/modals/NewSessionModal'
 import DiscussionModal from '../components/modals/DiscussionModal'
 import MemberModal from '../components/modals/MemberModal'
+import AddMemberModal from '../components/modals/AddMemberModal'
 import DeleteMemberModal from '../components/modals/DeleteMemberModal'
 import DeleteDiscussionModal from '../components/modals/DeleteDiscussionModal'
 import DeleteClubModal from '../components/modals/DeleteClubModal'
@@ -53,6 +54,7 @@ export default function ClubDetailPage() {
   const [showEditClubModal, setShowEditClubModal] = useState(false)
   const [showDeleteClubModal, setShowDeleteClubModal] = useState(false)
   const [clubToDelete, setClubToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false)
   const [showMemberModal, setShowMemberModal] = useState(false)
   const [editingMember, setEditingMember] = useState<Member | null>(null)
   const [showDeleteMemberModal, setShowDeleteMemberModal] = useState(false)
@@ -138,8 +140,7 @@ export default function ClubDetailPage() {
     setShowDeleteDiscussionModal(true)
   }
   const handleAddMember = () => {
-    setEditingMember(null)
-    setShowMemberModal(true)
+    setShowAddMemberModal(true)
   }
   const handleEditMember = (m: Member) => {
     setEditingMember(m)
@@ -572,13 +573,15 @@ export default function ClubDetailPage() {
                               {club.members.length}
                             </span>
                           </div>
-                          <GhostButton
-                            variant="sm"
-                            icon="+"
-                            onClick={handleAddMember}
-                          >
-                            Invite
-                          </GhostButton>
+                          {isAdmin && (
+                            <GhostButton
+                              variant="sm"
+                              icon="+"
+                              onClick={handleAddMember}
+                            >
+                              Invite
+                            </GhostButton>
+                          )}
                         </div>
 
                         {/* Members list */}
@@ -1169,6 +1172,14 @@ export default function ClubDetailPage() {
         selectedClub={club}
         editingDiscussion={editingDiscussion}
         onDiscussionSaved={refreshClub}
+        onError={setError}
+      />
+      <AddMemberModal
+        isOpen={showAddMemberModal}
+        onClose={() => setShowAddMemberModal(false)}
+        selectedClub={club}
+        onMemberAdded={refreshClub}
+        onClubUpdated={refreshClub}
         onError={setError}
       />
       <MemberModal
