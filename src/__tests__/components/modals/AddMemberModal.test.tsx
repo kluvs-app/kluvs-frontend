@@ -62,12 +62,29 @@ describe('AddMemberModal', () => {
   })
 
   describe('Invite link section', () => {
-    it('shows disabled message when join_policy is PRIVATE', () => {
+    it('shows Private and Invite Link toggle buttons', () => {
       render(<AddMemberModal {...defaultProps} selectedClub={mockClub} />)
-      expect(screen.getByText('Invite link is off — enable it in Share settings.')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Private' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Invite Link' })).toBeInTheDocument()
     })
 
-    it('shows invite URL and Copy button when join_policy is INVITE_LINK and token exists', () => {
+    it('shows Private button as active when join_policy is PRIVATE', () => {
+      render(<AddMemberModal {...defaultProps} selectedClub={mockClub} />)
+      expect(screen.getByRole('button', { name: 'Private' })).toHaveClass('bg-primary')
+    })
+
+    it('shows Invite Link button as active when join_policy is INVITE_LINK', () => {
+      render(<AddMemberModal {...defaultProps} selectedClub={clubWithInviteLink} />)
+      expect(screen.getByRole('button', { name: 'Invite Link' })).toHaveClass('bg-primary')
+    })
+
+    it('does not show invite URL when policy is PRIVATE', () => {
+      render(<AddMemberModal {...defaultProps} selectedClub={mockClub} />)
+      expect(screen.queryByText(/abc123token/)).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
+    })
+
+    it('shows invite URL and Copy button when join_policy is INVITE_LINK', () => {
       render(<AddMemberModal {...defaultProps} selectedClub={clubWithInviteLink} />)
       expect(screen.getByText(/abc123token/)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Copy' })).toBeInTheDocument()
@@ -100,6 +117,106 @@ describe('AddMemberModal', () => {
       await user.click(screen.getByRole('button', { name: 'Copy' }))
 
       expect(screen.getByRole('button', { name: 'Copied!' })).toBeInTheDocument()
+    })
+  })
+
+  describe('Policy toggle', () => {
+    const onClubUpdated = vi.fn()
+
+    beforeEach(() => {
+      vi.clearAllMocks()
+      mockInvoke.mockResolvedValue({ data: { members: [] }, error: null })
+    })
+
+    it('calls PUT /club when switching to Invite Link', async () => {
+      const user = userEvent.setup()
+      mockInvoke.mockResolvedValueOnce({
+        data: { club: { ...mockClub, join_policy: 'INVITE_LINK', invite_token: 'newtoken' } },
+        error: null,
+      })
+
+      render(<AddMemberModal {...defaultProps} onClubUpdated={onClubUpdated} />)
+      await user.click(screen.getByRole('button', { name: 'Invite Link' }))
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'club',
+          expect.objectContaining({
+            method: 'PUT',
+            body: expect.objectContaining({ id: 'club-1', join_policy: 'INVITE_LINK' }),
+          })
+        )
+      })
+    })
+
+    it('shows invite URL after enabling Invite Link', async () => {
+      const user = userEvent.setup()
+      mockInvoke.mockResolvedValueOnce({
+        data: { club: { ...mockClub, join_policy: 'INVITE_LINK', invite_token: 'newtoken' } },
+        error: null,
+      })
+
+      render(<AddMemberModal {...defaultProps} onClubUpdated={onClubUpdated} />)
+      await user.click(screen.getByRole('button', { name: 'Invite Link' }))
+
+      await waitFor(() => {
+        expect(screen.getByText(/newtoken/)).toBeInTheDocument()
+      })
+    })
+
+    it('calls onClubUpdated after successful policy change', async () => {
+      const user = userEvent.setup()
+      mockInvoke.mockResolvedValueOnce({
+        data: { club: { ...mockClub, join_policy: 'INVITE_LINK', invite_token: 'newtoken' } },
+        error: null,
+      })
+
+      render(<AddMemberModal {...defaultProps} onClubUpdated={onClubUpdated} />)
+      await user.click(screen.getByRole('button', { name: 'Invite Link' }))
+
+      await waitFor(() => expect(onClubUpdated).toHaveBeenCalledTimes(1))
+    })
+
+    it('calls PUT /club when switching back to Private', async () => {
+      const user = userEvent.setup()
+      mockInvoke.mockResolvedValueOnce({
+        data: { club: { ...clubWithInviteLink, join_policy: 'PRIVATE', invite_token: null } },
+        error: null,
+      })
+
+      render(<AddMemberModal {...defaultProps} selectedClub={clubWithInviteLink} onClubUpdated={onClubUpdated} />)
+      await user.click(screen.getByRole('button', { name: 'Private' }))
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          'club',
+          expect.objectContaining({
+            method: 'PUT',
+            body: expect.objectContaining({ join_policy: 'PRIVATE' }),
+          })
+        )
+      })
+    })
+
+    it('does not call API when clicking already-active policy', async () => {
+      const user = userEvent.setup()
+      render(<AddMemberModal {...defaultProps} />)
+      await user.click(screen.getByRole('button', { name: 'Private' }))
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+
+    it('shows inline toggle error and reverts on API failure', async () => {
+      const user = userEvent.setup()
+      mockInvoke.mockResolvedValueOnce({ data: null, error: new Error('Server error') })
+
+      render(<AddMemberModal {...defaultProps} onClubUpdated={onClubUpdated} />)
+      await user.click(screen.getByRole('button', { name: 'Invite Link' }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Server error')).toBeInTheDocument()
+      })
+      expect(onClubUpdated).not.toHaveBeenCalled()
+      expect(screen.getByRole('button', { name: 'Private' })).toHaveClass('bg-primary')
     })
   })
 

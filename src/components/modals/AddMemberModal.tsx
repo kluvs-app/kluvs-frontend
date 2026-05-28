@@ -16,6 +16,7 @@ interface AddMemberModalProps {
   onClose: () => void
   selectedClub: Club
   onMemberAdded: () => void
+  onClubUpdated?: () => void
   onError: (error: string) => void
 }
 
@@ -24,6 +25,7 @@ export default function AddMemberModal({
   onClose,
   selectedClub,
   onMemberAdded,
+  onClubUpdated,
   onError,
 }: AddMemberModalProps) {
   const [query, setQuery] = useState('')
@@ -32,12 +34,15 @@ export default function AddMemberModal({
   const [addingId, setAddingId] = useState<number | null>(null)
   const [inlineError, setInlineError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [policy, setPolicy] = useState<'PRIVATE' | 'INVITE_LINK'>(selectedClub.join_policy)
+  const [inviteToken, setInviteToken] = useState<string | null>(selectedClub.invite_token ?? null)
+  const [toggleLoading, setToggleLoading] = useState(false)
+  const [toggleError, setToggleError] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const inviteUrl =
-    selectedClub.join_policy === 'INVITE_LINK' && selectedClub.invite_token
-      ? `${window.location.origin}/join/${selectedClub.invite_token}`
-      : null
+  const inviteUrl = policy === 'INVITE_LINK' && inviteToken
+    ? `${window.location.origin}/join/${inviteToken}`
+    : null
 
   useEffect(() => {
     if (!isOpen) return
@@ -47,7 +52,10 @@ export default function AddMemberModal({
     setAddingId(null)
     setInlineError(null)
     setCopied(false)
-  }, [isOpen])
+    setPolicy(selectedClub.join_policy)
+    setInviteToken(selectedClub.invite_token ?? null)
+    setToggleError(null)
+  }, [isOpen, selectedClub.join_policy, selectedClub.invite_token])
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -108,6 +116,26 @@ export default function AddMemberModal({
     await navigator.clipboard.writeText(inviteUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handlePolicyChange = async (newPolicy: 'PRIVATE' | 'INVITE_LINK') => {
+    if (newPolicy === policy || toggleLoading) return
+    setToggleError(null)
+    setToggleLoading(true)
+    try {
+      const { data, error } = await invokeFunction<{ club: Club }>('club', {
+        method: 'PUT',
+        body: { id: selectedClub.id, join_policy: newPolicy },
+      })
+      if (error) throw error
+      setPolicy(newPolicy)
+      setInviteToken(data?.club?.invite_token ?? null)
+      onClubUpdated?.()
+    } catch (err) {
+      setToggleError((err as { message?: string }).message || 'Failed to update sharing settings')
+    } finally {
+      setToggleLoading(false)
+    }
   }
 
   const sectionLabelStyle = {
@@ -186,34 +214,73 @@ export default function AddMemberModal({
         {/* Section 2 — Invite link */}
         <div>
           <p style={sectionLabelStyle}>Invite link</p>
-          {inviteUrl ? (
-            <div
-              className="flex items-center gap-3 rounded-input px-4 py-3"
-              style={{
-                background: 'var(--color-input-bg)',
-                border: '1px solid var(--color-input-border)',
-              }}
+
+          {/* Policy toggle */}
+          <div
+            className="flex rounded-lg overflow-hidden mb-4"
+            style={{ border: '1px solid var(--color-input-border)' }}
+          >
+            <button
+              onClick={() => handlePolicyChange('PRIVATE')}
+              disabled={toggleLoading}
+              className={[
+                'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                policy === 'PRIVATE'
+                  ? 'bg-primary text-white'
+                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[rgba(242,237,229,0.04)]',
+              ].join(' ')}
             >
-              <p
-                className="flex-1 min-w-0 text-sm text-[var(--color-text-secondary)] truncate font-mono"
-                title={inviteUrl}
+              Private
+            </button>
+            <button
+              onClick={() => handlePolicyChange('INVITE_LINK')}
+              disabled={toggleLoading}
+              className={[
+                'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                policy === 'INVITE_LINK'
+                  ? 'bg-primary text-white'
+                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[rgba(242,237,229,0.04)]',
+              ].join(' ')}
+            >
+              Invite Link
+            </button>
+          </div>
+
+          {toggleError && (
+            <p className="mb-3 text-sm text-red-400">{toggleError}</p>
+          )}
+
+          {policy === 'INVITE_LINK' && (
+            toggleLoading ? (
+              <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                <KluvsSpinner size={16} />
+                <span>Generating link…</span>
+              </div>
+            ) : inviteUrl ? (
+              <div
+                className="flex items-center gap-3 rounded-input px-4 py-3"
+                style={{
+                  background: 'var(--color-input-bg)',
+                  border: '1px solid var(--color-input-border)',
+                }}
               >
-                {inviteUrl}
-              </p>
-              <button
-                onClick={handleCopy}
-                className={[
-                  'shrink-0 text-sm font-medium transition-colors duration-120',
-                  copied ? 'text-[#48A480]' : 'text-primary hover:text-primary-hover',
-                ].join(' ')}
-              >
-                {copied ? 'Copied!' : 'Copy'}
-              </button>
-            </div>
-          ) : (
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              Invite link is off — enable it in Share settings.
-            </p>
+                <p
+                  className="flex-1 min-w-0 text-sm text-[var(--color-text-secondary)] truncate font-mono"
+                  title={inviteUrl}
+                >
+                  {inviteUrl}
+                </p>
+                <button
+                  onClick={handleCopy}
+                  className={[
+                    'shrink-0 text-sm font-medium transition-colors duration-120',
+                    copied ? 'text-[#48A480]' : 'text-primary hover:text-primary-hover',
+                  ].join(' ')}
+                >
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            ) : null
           )}
         </div>
       </div>

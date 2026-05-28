@@ -1179,6 +1179,7 @@ export default function ClubDetailPage() {
         onClose={() => setShowAddMemberModal(false)}
         selectedClub={club}
         onMemberAdded={refreshClub}
+        onClubUpdated={refreshClub}
         onError={setError}
       />
       <MemberModal
