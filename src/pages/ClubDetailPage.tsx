@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { invokeFunction } from '../supabase'
-import type { Club, Server, Discussion, Member } from '../types'
+import type { Club, Discussion, Member } from '../types'
 import EditBookModal from '../components/modals/EditBookModal'
 import NewSessionModal from '../components/modals/NewSessionModal'
 import DiscussionModal from '../components/modals/DiscussionModal'
@@ -33,14 +33,13 @@ export default function ClubDetailPage() {
   const serverId = memberClub?.server_id ?? ''
 
   const [club, setClub] = useState<Club | null>(null)
-  const [servers, setServers] = useState<Server[]>([])
+
   const [loading, setLoading] = useState(true)
   const [clubLoading, setClubLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mobileTab, setMobileTab] = useState<MobileTab>('overview')
   const [idCopied, setIdCopied] = useState(false)
 
-  const selectedServerData = servers.find((s) => s.id === serverId)
   const clubRole = club ? getRoleForClub(club.id) : null
   const isAdmin = clubRole === 'admin' || clubRole === 'owner'
 
@@ -75,11 +74,6 @@ export default function ClubDetailPage() {
   useEffect(() => {
     invokeFunction('session', { method: 'GET' }).catch(() => {})
     invokeFunction('book', { method: 'GET' }).catch(() => {})
-    invokeFunction<{ servers: Server[] }>('server', { method: 'GET' })
-      .then(({ data }) => {
-        if (data?.servers) setServers(data.servers)
-      })
-      .catch(() => {})
   }, [])
 
   // Fetch club details whenever slug changes
@@ -628,7 +622,7 @@ export default function ClubDetailPage() {
                                   <RoleEyebrow
                                     role={memberRole as 'owner' | 'admin' | 'member'}
                                   />
-                                  {isAdmin && !isYou && (
+                                  {isAdmin && !isYou && memberRole !== 'owner' && (
                                     <KebabMenu
                                       items={[
                                         {
@@ -1126,7 +1120,7 @@ export default function ClubDetailPage() {
                         <RoleEyebrow
                           role={memberRole as 'owner' | 'admin' | 'member'}
                         />
-                        {isAdmin && !isYou && (
+                        {isAdmin && !isYou && memberRole !== 'owner' && (
                           <KebabMenu
                             items={[
                               {
@@ -1184,7 +1178,6 @@ export default function ClubDetailPage() {
           setEditingMember(null)
         }}
         selectedClub={club}
-        selectedServerData={selectedServerData}
         editingMember={editingMember}
         onMemberSaved={refreshClub}
         onError={setError}

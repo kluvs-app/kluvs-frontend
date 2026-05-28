@@ -84,7 +84,6 @@ export default function DeleteMemberModal({
         >
           <p className="text-xs font-medium text-danger uppercase tracking-wider mb-2">This will permanently:</p>
           <p className="text-sm text-[var(--color-text-secondary)]">Remove them from this club</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">Remove any shame list entries</p>
           <p className="text-sm text-[var(--color-text-secondary)]">Delete all member associations</p>
         </div>
       </div>
