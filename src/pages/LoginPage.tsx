@@ -147,11 +147,11 @@ export default function LoginPage() {
   const isSignUp = emailMode === 'signup' && !confirmationSent
   const isSignIn = emailMode === 'signin'
 
-  let voicePhrase = 'Welcome back.'
-  if (isSignUp) voicePhrase = 'Welcome in.'
+  let voicePhrase = 'Welcome back'
+  if (isSignUp) voicePhrase = 'Welcome in'
   if (isForgotMode) voicePhrase = 'Forgot it?'
-  if (isResetSent) voicePhrase = 'Check your inbox.'
-  if (isConfirmSent) voicePhrase = 'Let the reading begin.'
+  if (isResetSent) voicePhrase = 'Check your inbox'
+  if (isConfirmSent) voicePhrase = 'Let the reading begin'
 
   let subhead: string | null = 'Sign in to keep reading together.'
   if (isSignUp) subhead = 'Bring your books. Bring your people. Read together.'
