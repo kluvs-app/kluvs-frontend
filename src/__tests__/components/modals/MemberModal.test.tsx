@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MemberModal from '../../../components/modals/MemberModal'
-import { mockClub, mockServer, mockAdminMember, mockRegularMember } from '../../utils/mocks'
+import { mockClub, mockAdminMember, mockRegularMember } from '../../utils/mocks'
 
 // Mock supabase
 const mockInvoke = vi.fn()
@@ -20,7 +20,6 @@ describe('MemberModal', () => {
     isOpen: true,
     onClose: vi.fn(),
     selectedClub: mockClub,
-    selectedServerData: mockServer,
     onMemberSaved: vi.fn(),
     onError: vi.fn(),
   }
@@ -60,7 +59,7 @@ describe('MemberModal', () => {
     it('should pre-populate form in edit mode', () => {
       render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
 
-      expect(screen.getByDisplayValue('Admin User')).toBeInTheDocument()
+      expect(screen.queryByPlaceholderText('e.g., BookLover42')).not.toBeInTheDocument()
       expect(screen.getByDisplayValue('10')).toBeInTheDocument()
     })
 
@@ -202,10 +201,9 @@ describe('MemberModal', () => {
       const user = userEvent.setup()
       render(<MemberModal {...defaultProps} editingMember={mockAdminMember} />)
 
-      // Change name
-      const nameInput = screen.getByDisplayValue('Admin User')
-      await user.clear(nameInput)
-      await user.type(nameInput, 'Updated Name')
+      const booksInput = screen.getByDisplayValue('10')
+      await user.clear(booksInput)
+      await user.type(booksInput, '15')
       await user.click(screen.getByRole('button', { name: 'Update Member' }))
 
       await waitFor(() => {
@@ -259,118 +257,6 @@ describe('MemberModal', () => {
 
       expect(defaultProps.onError).toHaveBeenCalledWith('')
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('Shame List - Add Mode', () => {
-    it('should add member to shame list when checkbox is checked', async () => {
-      const user = userEvent.setup()
-      mockInvoke.mockResolvedValue({ data: { member: { id: 'new-member-id' } }, error: null })
-
-      render(<MemberModal {...defaultProps} />)
-
-      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
-
-      const shameCheckbox = screen.getByRole('checkbox')
-      await user.click(shameCheckbox)
-      await user.click(screen.getByRole('button', { name: 'Add Member' }))
-
-      await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalledWith('club', {
-          method: 'PUT',
-          body: {
-            id: mockClub.id,
-            server_id: mockServer.id,
-            shame_list: expect.arrayContaining(['new-member-id'])
-          }
-        })
-      })
-    })
-
-    it('should handle shame list API error gracefully', async () => {
-      const user = userEvent.setup()
-      mockInvoke
-        .mockResolvedValueOnce({ data: { member: { id: 'new-member-id' } }, error: null })
-        .mockResolvedValueOnce({ data: null, error: new Error('Shame list failed') })
-
-      render(<MemberModal {...defaultProps} />)
-
-      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'New Member')
-
-      const shameCheckbox = screen.getByRole('checkbox')
-      await user.click(shameCheckbox)
-      await user.click(screen.getByRole('button', { name: 'Add Member' }))
-
-      await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Member created but failed to add to shame list')
-      })
-    })
-  })
-
-  describe('Shame List - Edit Mode', () => {
-    it('should update shame list when adding member to shame list', async () => {
-      const user = userEvent.setup()
-      const memberNotInShameList = { ...mockAdminMember, id: 999 }
-      mockInvoke.mockResolvedValue({ data: {}, error: null })
-
-      render(<MemberModal {...defaultProps} editingMember={memberNotInShameList} />)
-
-      const shameCheckbox = screen.getByRole('checkbox')
-      await user.click(shameCheckbox)
-      await user.click(screen.getByRole('button', { name: 'Update Member' }))
-
-      await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalledWith('club', {
-          method: 'PUT',
-          body: {
-            id: mockClub.id,
-            server_id: mockServer.id,
-            shame_list: expect.arrayContaining([999])
-          }
-        })
-      })
-    })
-
-    it('should update shame list when removing member from shame list', async () => {
-      const user = userEvent.setup()
-      mockInvoke.mockResolvedValue({ data: {}, error: null })
-
-      // Use mockRegularMember (id: 2) which IS in mockClub.shame_list
-      render(<MemberModal {...defaultProps} editingMember={mockRegularMember} />)
-
-      const shameCheckbox = screen.getByRole('checkbox')
-      // Mock club has mockRegularMember.id (2) in shame_list, so unchecking should remove it
-      await user.click(shameCheckbox)
-      await user.click(screen.getByRole('button', { name: 'Update Member' }))
-
-      await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalledWith('club', {
-          method: 'PUT',
-          body: {
-            id: mockClub.id,
-            server_id: mockServer.id,
-            shame_list: expect.not.arrayContaining([mockRegularMember.id])
-          }
-        })
-      })
-    })
-
-    it('should handle shame list error when editing', async () => {
-      const user = userEvent.setup()
-      mockInvoke
-        .mockResolvedValueOnce({ data: {}, error: null }) // Member update succeeds
-        .mockResolvedValueOnce({ data: null, error: new Error('Club update failed') }) // Shame list update fails
-
-      const memberNotInShameList = { ...mockAdminMember, id: 999 }
-      render(<MemberModal {...defaultProps} editingMember={memberNotInShameList} />)
-
-      const shameCheckbox = screen.getByRole('checkbox')
-      await user.click(shameCheckbox)
-      await user.click(screen.getByRole('button', { name: 'Update Member' }))
-
-      await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Member updated but failed to update shame list status')
-      })
     })
   })
 
