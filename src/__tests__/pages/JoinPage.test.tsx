@@ -68,8 +68,8 @@ describe('JoinPage', () => {
     it('should show spinner while fetching invite', () => {
       mockFetch.mockReturnValue(new Promise(() => {})) // never resolves
       renderJoinPage()
-      // Spinner is present during loading
-      expect(document.querySelector('.kluvs-spinner, [data-testid="spinner"]') || screen.queryByText('Loading invite…')).toBeTruthy()
+      expect(document.querySelector('.kluvs-spinner')).toBeInTheDocument()
+      expect(screen.getByText('Loading invite…')).toBeInTheDocument()
     })
   })
 
@@ -88,10 +88,11 @@ describe('JoinPage', () => {
       })
     })
 
-    it('should render a Join button with club name', async () => {
+    it('should render Discord and Google sign-in buttons', async () => {
       renderJoinPage()
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Join Book Lovers Club/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /Continue with Discord/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument()
       })
     })
 
@@ -155,16 +156,33 @@ describe('JoinPage', () => {
   })
 
   describe('OAuth flow — unauthenticated', () => {
-    it('should trigger Discord OAuth with correct redirectTo when Join is clicked', async () => {
+    it('should trigger Discord OAuth with correct redirectTo when Discord button is clicked', async () => {
       const user = userEvent.setup()
       renderJoinPage('test-token-abc')
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Join/i })).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /Continue with Discord/i })).toBeInTheDocument()
       })
-      await user.click(screen.getByRole('button', { name: /Join/i }))
+      await user.click(screen.getByRole('button', { name: /Continue with Discord/i }))
       await waitFor(() => {
         expect(mockSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
           provider: 'discord',
+          options: expect.objectContaining({
+            redirectTo: expect.stringContaining('test-token-abc'),
+          }),
+        })
+      })
+    })
+
+    it('should trigger Google OAuth with correct redirectTo when Google button is clicked', async () => {
+      const user = userEvent.setup()
+      renderJoinPage('test-token-abc')
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Continue with Google/i })).toBeInTheDocument()
+      })
+      await user.click(screen.getByRole('button', { name: /Continue with Google/i }))
+      await waitFor(() => {
+        expect(mockSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+          provider: 'google',
           options: expect.objectContaining({
             redirectTo: expect.stringContaining('test-token-abc'),
           }),

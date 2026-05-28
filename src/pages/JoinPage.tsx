@@ -59,6 +59,7 @@ export default function JoinPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [joining, setJoining] = useState(false)
+  const [signingIn, setSigningIn] = useState<'discord' | 'google' | null>(null)
 
   useEffect(() => {
     if (!token) {
@@ -134,6 +135,9 @@ export default function JoinPage() {
             setJoining(false)
           } else if (data?.success) {
             navigate('/app', { replace: true })
+          } else {
+            setError('Failed to join club')
+            setJoining(false)
           }
         }
       } catch {
@@ -147,15 +151,15 @@ export default function JoinPage() {
     return () => { cancelled = true }
   }, [token, navigate])
 
-  const handleJoin = async () => {
+  const handleJoinWithProvider = async (provider: 'discord' | 'google') => {
     if (!token) return
 
     const { data: sessionData } = await supabase.auth.getSession()
 
     if (!sessionData?.session) {
-      // Trigger Discord OAuth; user returns to this page after auth
+      setSigningIn(provider)
       await supabase.auth.signInWithOAuth({
-        provider: 'discord',
+        provider,
         options: {
           redirectTo: `${window.location.origin}/join/${token}`,
         },
@@ -163,7 +167,7 @@ export default function JoinPage() {
       return
     }
 
-    // Already authenticated — join now
+    // Already authenticated — join now (provider choice doesn't matter here)
     try {
       setJoining(true)
       const { data, error: joinError } = await invokeFunction<{ success: boolean; club_id: string }>('join', {
@@ -180,6 +184,8 @@ export default function JoinPage() {
         setError(msg || 'Failed to join club')
       } else if (data?.success) {
         navigate('/app', { replace: true })
+      } else {
+        setError('Failed to join club')
       }
     } catch {
       setError('Something went wrong. Please try again.')
@@ -201,19 +207,24 @@ export default function JoinPage() {
             </p>
           </div>
         ) : error ? (
-          <div className="max-w-sm w-full text-center">
-            <div
-              className="rounded-2xl p-8 mb-6"
-              style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
-            >
-              <p className="font-serif text-[28px] font-medium text-[var(--color-text-primary)] mb-3">
-                {getErrorDisplay(error).title}
-              </p>
-              <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
-                {getErrorDisplay(error).description}
-              </p>
-            </div>
-          </div>
+          (() => {
+            const { title, description } = getErrorDisplay(error)
+            return (
+              <div className="max-w-sm w-full text-center">
+                <div
+                  className="rounded-2xl p-8 mb-6"
+                  style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
+                >
+                  <p className="font-serif text-[28px] font-medium text-[var(--color-text-primary)] mb-3">
+                    {title}
+                  </p>
+                  <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
+                    {description}
+                  </p>
+                </div>
+              </div>
+            )
+          })()
         ) : clubPreview ? (
           <div className="max-w-sm w-full text-center">
             <div
@@ -229,12 +240,32 @@ export default function JoinPage() {
               <h1 className="font-serif text-[40px] font-medium leading-[1.1] text-[var(--color-text-primary)] mb-6 tracking-[-0.015em]">
                 {clubPreview.name}
               </h1>
-              <button
-                onClick={handleJoin}
-                className="w-full bg-primary hover:bg-primary-hover text-white py-3 rounded-btn text-sm font-medium transition-colors"
-              >
-                Join {clubPreview.name}
-              </button>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => handleJoinWithProvider('discord')}
+                  disabled={signingIn !== null || joining}
+                  className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-btn text-sm font-medium transition-colors"
+                >
+                  {signingIn === 'discord' ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                  ) : (
+                    <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
+                  )}
+                  Continue with Discord
+                </button>
+                <button
+                  onClick={() => handleJoinWithProvider('google')}
+                  disabled={signingIn !== null || joining}
+                  className="w-full flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover disabled:opacity-60 disabled:cursor-not-allowed text-google-text py-3 rounded-btn text-sm font-medium transition-colors"
+                >
+                  {signingIn === 'google' ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-google-text border-t-transparent" />
+                  ) : (
+                    <img src="/ic-google.svg" alt="" className="h-4 w-4" />
+                  )}
+                  Continue with Google
+                </button>
+              </div>
             </div>
             <p className="text-[12px] text-[var(--color-text-secondary)]">
               You'll be asked to sign in if you haven't already.

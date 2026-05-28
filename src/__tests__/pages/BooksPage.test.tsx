@@ -150,7 +150,7 @@ describe('BooksPage', () => {
 
     it('shows the empty search prompt by default', () => {
       renderPage()
-      expect(screen.getByText(/search for a book to get started/i)).toBeInTheDocument()
+      expect(screen.getByText(/start typing\./i)).toBeInTheDocument()
     })
 
     it('does not show any results initially', () => {
@@ -373,9 +373,9 @@ describe('BooksPage', () => {
       expect(screen.getByText('Fiction')).toBeInTheDocument()
     })
 
-    it('shows the star rating when averageRating is present', async () => {
+    it('does not show a star rating (Google ratings are not surfaced)', async () => {
       await renderAndSelect()
-      expect(screen.getByText(/3\.9/)).toBeInTheDocument()
+      expect(screen.queryByText(/★/)).not.toBeInTheDocument()
     })
 
     it('still shows the book when getVolume fails', async () => {
