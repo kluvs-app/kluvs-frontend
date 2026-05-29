@@ -448,8 +448,9 @@ export default function ClubDetailPage() {
                 </div>
 
                 {/* Current session */}
-                {club.active_session ? (
-                  <div className="mb-12">
+                <div className="mb-12">
+                  {/* Book / session area */}
+                  {club.active_session ? (
                     <div className="grid grid-cols-[128px_1fr] gap-9 mb-12 pb-12 border-b border-[var(--color-divider)]">
                       <BookCover
                         imageUrl={club.active_session.book?.image_url}
@@ -492,20 +493,44 @@ export default function ClubDetailPage() {
                         </p>
                       </div>
                     </div>
+                  ) : (
+                    <div className="flex flex-col items-center text-center mb-12 pb-12 border-b border-[var(--color-divider)]">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-3">
+                        GETTING STARTED
+                      </p>
+                      <h2 className="font-serif italic text-[48px] font-medium leading-[1.1] tracking-[-0.015em] text-[var(--color-text-primary)] mb-3">
+                        Start reading together.
+                      </h2>
+                      <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed mb-6 max-w-[360px]">
+                        Pick a book and kick off your club's first session.
+                      </p>
+                      {isAdmin && (
+                        <button
+                          onClick={() => setShowNewSessionModal(true)}
+                          className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn text-[14px] font-medium transition-all duration-120 cursor-pointer"
+                        >
+                          Start Session
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-                    {/* Discussions + Members: two-column layout */}
-                    <div className="grid grid-cols-[1.4fr_1fr] gap-14">
-                      {/* Discussions section */}
-                      <div>
-                        <div className="flex items-center justify-between mb-9">
-                          <div className="flex items-center gap-3">
-                            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-                              DISCUSSIONS
-                            </span>
+                  {/* Discussions + Members: two-column layout */}
+                  <div className="grid grid-cols-[1.4fr_1fr] gap-14">
+                    {/* Discussions section */}
+                    <div>
+                      <div className="flex items-center justify-between mb-9">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                            DISCUSSIONS
+                          </span>
+                          {club.active_session && club.active_session.discussions.length > 0 && (
                             <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
                               {club.active_session.discussions.length} scheduled
                             </span>
-                          </div>
+                          )}
+                        </div>
+                        {isAdmin && club.active_session && (
                           <GhostButton
                             variant="sm"
                             icon="+"
@@ -513,8 +538,32 @@ export default function ClubDetailPage() {
                           >
                             Add
                           </GhostButton>
-                        </div>
+                        )}
+                      </div>
 
+                      {!club.active_session ? (
+                        <div className="py-6 flex flex-col items-center text-center">
+                          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug">
+                            {isAdmin
+                              ? 'Start a session above to schedule discussions.'
+                              : 'Discussions will appear here once a session begins.'}
+                          </p>
+                        </div>
+                      ) : club.active_session.discussions.length === 0 ? (
+                        <div className="py-6 flex flex-col items-center text-center">
+                          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-5">
+                            No discussions scheduled yet.
+                          </p>
+                          {isAdmin && (
+                            <button
+                              onClick={handleAddDiscussion}
+                              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                            >
+                              Schedule Discussion
+                            </button>
+                          )}
+                        </div>
+                      ) : (
                         <div className="space-y-7">
                           {club.active_session?.discussions.map((discussion, idx) => {
                             const status = getDiscussionStatus(discussion)
@@ -621,110 +670,111 @@ export default function ClubDetailPage() {
                             )
                           })}
                         </div>
+                      )}
+                    </div>
+
+                    {/* Members section (right column of grid) */}
+                    <div>
+                      <div className="flex items-center justify-between mb-9">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                            MEMBERS
+                          </span>
+                          <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
+                            {club.members.length}
+                          </span>
+                        </div>
+                        {isAdmin && (
+                          <GhostButton
+                            variant="sm"
+                            icon="+"
+                            onClick={handleAddMember}
+                          >
+                            Invite
+                          </GhostButton>
+                        )}
                       </div>
 
-                      {/* Members section (right column of grid) */}
-                      <div>
-                        <div className="flex items-center justify-between mb-9">
-                          <div className="flex items-center gap-3">
-                            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-                              MEMBERS
-                            </span>
-                            <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                              {club.members.length}
-                            </span>
-                          </div>
-                          {isAdmin && (
-                            <GhostButton
-                              variant="sm"
-                              icon="+"
-                              onClick={handleAddMember}
+                      {/* Members list */}
+                      <div className="space-y-2.5">
+                        {getSortedMembers(club.members).map((clubMember) => {
+                          const memberWithRole = clubMember as Member & { role?: string }
+                          const memberRole = memberWithRole.role || 'member'
+                          const isOwn = member?.id != null && member.id === clubMember.id
+
+                          return (
+                            <div
+                              key={clubMember.id}
+                              className="flex items-center gap-3.5 py-2.5 border-b border-[var(--color-divider)]"
                             >
-                              Invite
-                            </GhostButton>
-                          )}
-                        </div>
+                              {/* Avatar */}
+                              <Avatar
+                                name={clubMember.name}
+                                userId={String(clubMember.id)}
+                                size="lg"
+                                isOwn={isOwn}
+                              />
 
-                        {/* Members list */}
-                        <div className="space-y-2.5">
-                          {getSortedMembers(club.members).map((clubMember) => {
-                            const memberWithRole = clubMember as Member & { role?: string }
-                            const memberRole = memberWithRole.role || 'member'
-                            const isOwn = member?.id != null && member.id === clubMember.id
-
-                            return (
-                              <div
-                                key={clubMember.id}
-                                className="flex items-center gap-3.5 py-2.5 border-b border-[var(--color-divider)]"
-                              >
-                                {/* Avatar */}
-                                <Avatar
-                                  name={clubMember.name}
-                                  userId={String(clubMember.id)}
-                                  size="lg"
-                                  isOwn={isOwn}
-                                />
-
-                                {/* Name + handle */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
-                                      {clubMember.name}
-                                    </p>
-                                    {isOwn && (
-                                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
-                                        YOU
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
-                                    @{clubMember.handle || clubMember.discord_id || 'unknown'}
+                              {/* Name + handle */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
+                                    {clubMember.name}
                                   </p>
-                                </div>
-
-                                {/* Role + kebab */}
-                                <div className="flex items-center gap-3">
-                                  <RoleEyebrow
-                                    role={memberRole as 'owner' | 'admin' | 'member'}
-                                  />
-                                  {isAdmin && !isOwn && memberRole !== 'owner' && (
-                                    <KebabMenu
-                                      items={[
-                                        {
-                                          label: 'Edit role',
-                                          onClick: () => handleEditMember(clubMember),
-                                        },
-                                        {
-                                          label: 'Remove',
-                                          danger: true,
-                                          onClick: () => handleDeleteMember(clubMember),
-                                        },
-                                      ]}
-                                    />
+                                  {isOwn && (
+                                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                                      YOU
+                                    </span>
                                   )}
                                 </div>
+                                <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
+                                  @{clubMember.handle || clubMember.discord_id || 'unknown'}
+                                </p>
                               </div>
-                            )
-                          })}
-                        </div>
+
+                              {/* Role + kebab */}
+                              <div className="flex items-center gap-3">
+                                <RoleEyebrow
+                                  role={memberRole as 'owner' | 'admin' | 'member'}
+                                />
+                                {isAdmin && !isOwn && memberRole !== 'owner' && (
+                                  <KebabMenu
+                                    items={[
+                                      {
+                                        label: 'Edit role',
+                                        onClick: () => handleEditMember(clubMember),
+                                      },
+                                      {
+                                        label: 'Remove',
+                                        danger: true,
+                                        onClick: () => handleDeleteMember(clubMember),
+                                      },
+                                    ]}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
                       </div>
+
+                      {/* Invite CTA when flying solo */}
+                      {club.members.length <= 1 && isAdmin && (
+                        <div className="mt-5 flex flex-col items-center text-center py-4">
+                          <p className="font-serif italic text-[20px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                            Invite others to get the conversation going.
+                          </p>
+                          <button
+                            onClick={handleAddMember}
+                            className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                          >
+                            Invite Members
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                ) : (
-                  <div className="mb-12 pb-12 border-b border-[var(--color-divider)]">
-                    <p className="text-[16px] italic text-[var(--color-text-secondary)] mb-4">
-                      No active reading session
-                    </p>
-                    {isAdmin && (
-                      <GhostButton
-                        variant="md"
-                        onClick={() => setShowNewSessionModal(true)}
-                      >
-                        Start session
-                      </GhostButton>
-                    )}
-                  </div>
-                )}
+                </div>
               </div>
             )}
           </div>
@@ -880,9 +930,28 @@ export default function ClubDetailPage() {
             <div className="flex items-center justify-center py-12">
               <KluvsSpinner size={48} className="mx-auto" />
             </div>
-          ) : mobileTab === 'overview' && club.active_session ? (
+          ) : mobileTab === 'overview' ? (
             <div className="space-y-6">
               {/* NOW READING */}
+              {!club.active_session && (
+                <div className="flex flex-col items-center text-center py-4 pb-2">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+                    NO SESSION YET
+                  </p>
+                  <p className="font-serif italic text-[28px] font-medium text-[var(--color-text-primary)] leading-snug mb-4">
+                    Start reading together.
+                  </p>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowNewSessionModal(true)}
+                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn text-[14px] font-medium transition-all duration-120 cursor-pointer"
+                    >
+                      Start Session
+                    </button>
+                  )}
+                </div>
+              )}
+              {club.active_session && (
               <div className="grid grid-cols-[80px_1fr] gap-5 items-center">
                 <BookCover
                   imageUrl={club.active_session.book?.image_url}
@@ -919,6 +988,7 @@ export default function ClubDetailPage() {
                   </p>
                 </div>
               </div>
+              )}
 
               {/* UP NEXT */}
               {club.active_session?.discussions && club.active_session.discussions.length > 0 && (
@@ -1029,20 +1099,56 @@ export default function ClubDetailPage() {
                 </p>
               </div>
             </div>
-          ) : mobileTab === 'discussions' && club.active_session ? (
+          ) : mobileTab === 'discussions' ? (
             <div>
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                  {club.active_session.discussions.length} scheduled
+                  {club.active_session
+                    ? `${club.active_session.discussions.length} scheduled`
+                    : 'Discussions'}
                 </p>
-                <button
-                  onClick={handleAddDiscussion}
-                  className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[rgba(242,237,229,0.04)] transition-colors"
-                >
-                  + Add
-                </button>
+                {isAdmin && club.active_session && (
+                  <button
+                    onClick={handleAddDiscussion}
+                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[rgba(242,237,229,0.04)] transition-colors"
+                  >
+                    + Add
+                  </button>
+                )}
               </div>
+
+              {!club.active_session ? (
+                <div className="flex flex-col items-center text-center py-6">
+                  <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                    {isAdmin
+                      ? 'Start a session first to schedule discussions.'
+                      : 'Discussions will appear here once a session begins.'}
+                  </p>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowNewSessionModal(true)}
+                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                    >
+                      Start Session
+                    </button>
+                  )}
+                </div>
+              ) : club.active_session.discussions.length === 0 ? (
+                <div className="flex flex-col items-center text-center py-6">
+                  <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                    No discussions scheduled yet.
+                  </p>
+                  {isAdmin && (
+                    <button
+                      onClick={handleAddDiscussion}
+                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                    >
+                      Schedule Discussion
+                    </button>
+                  )}
+                </div>
+              ) : null}
 
               {/* Timeline */}
               <div className="space-y-5">
@@ -1224,6 +1330,21 @@ export default function ClubDetailPage() {
                   )
                 })}
               </div>
+
+              {/* Invite CTA when flying solo */}
+              {club.members.length <= 1 && isAdmin && (
+                <div className="mt-5 flex flex-col items-center text-center py-4">
+                  <p className="font-serif italic text-[20px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                    Invite others to get the conversation going.
+                  </p>
+                  <button
+                    onClick={handleAddMember}
+                    className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                  >
+                    Invite Members
+                  </button>
+                </div>
+              )}
             </div>
           ) : null}
         </div>
