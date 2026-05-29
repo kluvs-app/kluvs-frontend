@@ -1,25 +1,30 @@
-export const AVATAR_HUES = [
+const AVATAR_HUES = [
   '#5865F2',
   '#5BAA5C',
   '#9B59B6',
-  '#E67E22',
+  '#0097A7',
   '#3498DB',
   '#E74C3C',
   '#16A085',
-  '#F39C12',
+  '#5C6BC0',
   '#8E44AD',
   '#2ECC71',
 ]
 
-export function getAvatarColor(userId: string | number): string {
-  return AVATAR_HUES[Math.abs(Number(userId)) % AVATAR_HUES.length]
+const OWN_COLOR = 'var(--color-primary)'
+
+function nameInitials(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
 }
 
 interface AvatarProps {
   name: string
   userId: string
   imageUrl?: string | null
-  size?: 'sm' | 'md' | 'lg'
+  isOwn?: boolean
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   title?: string
   className?: string
 }
@@ -28,6 +33,7 @@ export default function Avatar({
   name,
   userId,
   imageUrl,
+  isOwn = false,
   size = 'md',
   title,
   className = '',
@@ -36,10 +42,16 @@ export default function Avatar({
     sm: 'w-5 h-5 text-[8px]',
     md: 'w-6 h-6 text-[10px]',
     lg: 'w-10 h-10 text-[12px]',
+    xl: 'w-[88px] h-[88px] text-[35px]',
+    '2xl': 'w-[112px] h-[112px] text-[45px]',
   }
 
-  const backgroundColor = AVATAR_HUES[Math.abs(Number(userId)) % AVATAR_HUES.length]
-  const initials = name[0].toUpperCase()
+  const backgroundColor = isOwn
+    ? OWN_COLOR
+    : AVATAR_HUES[Math.abs(Number(userId)) % AVATAR_HUES.length]
+
+  const initials = nameInitials(name)
+  const isLarge = size === 'xl' || size === '2xl'
 
   return (
     <div
@@ -52,9 +64,15 @@ export default function Avatar({
           src={imageUrl}
           alt={name}
           className="w-full h-full rounded-full object-cover"
+          onError={e => { e.currentTarget.style.display = 'none' }}
         />
       ) : (
-        <span className="font-serif">{initials}</span>
+        <span
+          className="font-serif"
+          style={isLarge ? { letterSpacing: '-0.015em' } : undefined}
+        >
+          {initials}
+        </span>
       )}
     </div>
   )

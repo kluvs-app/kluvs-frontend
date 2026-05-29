@@ -80,6 +80,7 @@ export default function AppSidebar() {
             userId={String(member?.id ?? '0')}
             imageUrl={member?.avatar_path ? getAvatarUrl(member.avatar_path) : null}
             size="md"
+            isOwn
           />
           <div className="min-w-0">
             <p className="text-sm font-medium text-[var(--color-text-primary)] truncate leading-tight">

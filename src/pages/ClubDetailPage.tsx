@@ -627,7 +627,7 @@ export default function ClubDetailPage() {
                           {getSortedMembers(club.members).map((clubMember) => {
                             const memberWithRole = clubMember as Member & { role?: string }
                             const memberRole = memberWithRole.role || 'member'
-                            const isYou = member?.id === clubMember.id
+                            const isOwn = member?.id != null && member.id === clubMember.id
 
                             return (
                               <div
@@ -639,6 +639,7 @@ export default function ClubDetailPage() {
                                   name={clubMember.name}
                                   userId={String(clubMember.id)}
                                   size="lg"
+                                  isOwn={isOwn}
                                 />
 
                                 {/* Name + handle */}
@@ -647,7 +648,7 @@ export default function ClubDetailPage() {
                                     <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
                                       {clubMember.name}
                                     </p>
-                                    {isYou && (
+                                    {isOwn && (
                                       <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
                                         YOU
                                       </span>
@@ -663,7 +664,7 @@ export default function ClubDetailPage() {
                                   <RoleEyebrow
                                     role={memberRole as 'owner' | 'admin' | 'member'}
                                   />
-                                  {isAdmin && !isYou && memberRole !== 'owner' && (
+                                  {isAdmin && !isOwn && memberRole !== 'owner' && (
                                     <KebabMenu
                                       items={[
                                         {
@@ -962,6 +963,7 @@ export default function ClubDetailPage() {
                           name={m.name}
                           userId={String(m.id)}
                           size="md"
+                          isOwn={member?.id != null && m.id === member.id}
                         />
                       </div>
                     ))}
@@ -1147,7 +1149,7 @@ export default function ClubDetailPage() {
                 {getSortedMembers(club.members).map((clubMember) => {
                   const memberWithRole = clubMember as Member & { role?: string }
                   const memberRole = memberWithRole.role || 'member'
-                  const isYou = member?.id === clubMember.id
+                  const isOwn = member?.id != null && member.id === clubMember.id
 
                   return (
                     <div
@@ -1158,13 +1160,14 @@ export default function ClubDetailPage() {
                         name={clubMember.name}
                         userId={String(clubMember.id)}
                         size="lg"
+                        isOwn={isOwn}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
                             {clubMember.name}
                           </p>
-                          {isYou && (
+                          {isOwn && (
                             <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
                               YOU
                             </span>
@@ -1178,7 +1181,7 @@ export default function ClubDetailPage() {
                         <RoleEyebrow
                           role={memberRole as 'owner' | 'admin' | 'member'}
                         />
-                        {isAdmin && !isYou && memberRole !== 'owner' && (
+                        {isAdmin && !isOwn && memberRole !== 'owner' && (
                           <KebabMenu
                             items={[
                               {

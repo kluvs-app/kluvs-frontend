@@ -143,7 +143,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                       <div className="flex -space-x-2 items-center">
                         {fullClub.members.slice(0, 5).map((m) => (
                           <div key={m.id} className="border border-[var(--color-bg)] rounded-full">
-                            <Avatar name={m.name} userId={String(m.id)} size="sm" />
+                            <Avatar name={m.name} userId={String(m.id)} size="sm" isOwn={member?.id != null && m.id === member.id} />
                           </div>
                         ))}
                         {fullClub.members.length > 5 && (

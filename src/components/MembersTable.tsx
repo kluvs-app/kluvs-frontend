@@ -5,6 +5,7 @@ import Avatar from './ui/Avatar'
 interface MembersTableProps {
   selectedClub: Club
   isAdmin: boolean
+  currentMemberId?: number
   onAddMember: () => void
   onEditMember: (member: Member) => void
   onDeleteMember: (member: Member) => void
@@ -13,6 +14,7 @@ interface MembersTableProps {
 export default function MembersTable({
   selectedClub,
   isAdmin,
+  currentMemberId,
   onAddMember,
   onEditMember,
   onDeleteMember
@@ -47,6 +49,7 @@ export default function MembersTable({
               userId={String(member.id)}
               imageUrl={member.avatar_path ? getAvatarUrl(member.avatar_path) : null}
               size="lg"
+              isOwn={member.id === currentMemberId}
             />
 
             {/* Name + handle */}

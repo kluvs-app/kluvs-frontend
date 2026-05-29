@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase, invokeFunction, getAvatarUrl } from '../../supabase'
-import { getAvatarColor } from '../ui/Avatar'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
@@ -147,7 +146,7 @@ export default function EditProfileModal({
           >
             <div
               className="rounded-full flex items-center justify-center text-white font-serif font-medium overflow-hidden relative"
-              style={{ width: 72, height: 72, fontSize: 72 * 0.40, letterSpacing: '-0.015em', backgroundColor: getAvatarColor(member.id) }}
+              style={{ width: 72, height: 72, fontSize: 72 * 0.40, letterSpacing: '-0.015em', backgroundColor: 'var(--color-primary)' }}
             >
               {initials}
               {currentAvatarUrl && (
