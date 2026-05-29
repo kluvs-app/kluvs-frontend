@@ -24,6 +24,46 @@ import Avatar from '../components/ui/Avatar'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
+function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
+  const hasDiscord = !!club.discord_channel
+  if (!hasDiscord && !isAdmin) return null
+  return (
+    <div className="relative group">
+      <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full cursor-default transition-colors hover:bg-[rgba(88,101,242,0.1)]">
+        <img
+          src="/ic-discord.svg"
+          alt="Discord"
+          className="w-[15px] h-[15px]"
+          style={{ opacity: hasDiscord ? 0.6 : 0.25 }}
+        />
+      </div>
+      <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-[120ms] z-50">
+        <div
+          className="rounded-lg px-3 py-2.5 text-left whitespace-nowrap"
+          style={{ background: '#1A140F', border: '1px solid rgba(242,237,229,0.12)' }}
+        >
+          {hasDiscord ? (
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] mb-2" style={{ color: '#5865F2' }}>Discord</p>
+              {club.server_id && (
+                <div className="flex items-baseline justify-between gap-5">
+                  <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Server</span>
+                  <span className="text-[11px] font-mono text-[var(--color-text-primary)]">{club.server_id}</span>
+                </div>
+              )}
+              <div className="flex items-baseline justify-between gap-5">
+                <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Channel</span>
+                <span className="text-[11px] font-mono text-[var(--color-text-primary)]">{club.discord_channel}</span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-[11px] text-[var(--color-text-secondary)]">Not connected to Discord</p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function ClubDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -359,12 +399,9 @@ export default function ClubDetailPage() {
                   </h1>
 
                   {/* Meta row */}
-                  <div className="flex items-center gap-3.5 flex-wrap">
+                  <div className="flex items-center gap-3.5 flex-wrap mb-3">
                     <RoleEyebrow role={clubRole || 'member'} />
-
-                    {/* Dot separator */}
                     <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
-
                     {club.founded_date && (
                       <>
                         <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
@@ -373,55 +410,41 @@ export default function ClubDetailPage() {
                         <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
                       </>
                     )}
-
                     <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       {club.members.length} MEMBERS
                     </span>
-
-                    {/* Discord badge */}
-                    {club.discord_channel ? (
-                      <>
-                        <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
-                        <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5865F2]">
-                          <img src="/ic-discord.svg" alt="" className="w-3 h-3" />
-                          On Discord
-                        </span>
-                      </>
-                    ) : isAdmin ? (
-                      <>
-                        <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
-                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] opacity-40">
-                          No Discord
-                        </span>
-                      </>
-                    ) : null}
-
-                    {/* Copy ID chip */}
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(club.id)
-                        setIdCopied(true)
-                        setTimeout(() => setIdCopied(false), 1500)
-                      }}
-                      className="transition-all duration-[120ms]"
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 500,
-                        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                        padding: '4px 10px',
-                        borderRadius: 999,
-                        border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
-                        color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        letterSpacing: '0.04em',
-                      }}
-                      title="Copy Club ID for /link_club"
-                    >
-                      {idCopied ? 'Copied!' : 'Copy Club ID'}
-                    </button>
                   </div>
+
+                  {/* Utility row — admin only */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(club.id)
+                          setIdCopied(true)
+                          setTimeout(() => setIdCopied(false), 1500)
+                        }}
+                        className="transition-all duration-[120ms]"
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 500,
+                          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                          padding: '4px 10px',
+                          borderRadius: 999,
+                          border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
+                          color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                          background: 'transparent',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          letterSpacing: '0.04em',
+                        }}
+                        title="Copy Club ID"
+                      >
+                        {idCopied ? 'Copied!' : 'Copy Club ID'}
+                      </button>
+                      <DiscordIndicator club={club} isAdmin={isAdmin} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Current session */}
@@ -762,7 +785,7 @@ export default function ClubDetailPage() {
           <h1 className="font-serif text-[40px] font-medium leading-[1] text-[var(--color-text-primary)] mb-4 tracking-[-0.022em]">
             {club.name}
           </h1>
-          <div className="flex items-center gap-2.5 mb-4 flex-wrap">
+          <div className="flex items-center gap-2.5 mb-3 flex-wrap">
             <RoleEyebrow role={clubRole || 'member'} />
             {club.founded_date && (
               <>
@@ -776,38 +799,38 @@ export default function ClubDetailPage() {
             <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
               {club.members.length} MEMBERS
             </span>
-            {/* Discord badge */}
-            {club.discord_channel ? (
-              <>
-                <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
-                <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5865F2]">
-                  <img src="/ic-discord.svg" alt="" className="w-3 h-3" />
-                  On Discord
-                </span>
-              </>
-            ) : isAdmin ? (
-              <>
-                <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
-                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] opacity-40">
-                  No Discord
-                </span>
-              </>
-            ) : null}
           </div>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(club.id)
-              setIdCopied(true)
-              setTimeout(() => setIdCopied(false), 1500)
-            }}
-            className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] rounded-full px-3 py-1.5 transition-all duration-[120ms]"
-            style={{
-              borderColor: idCopied ? '#48A480' : 'rgba(242,237,229,0.14)',
-              color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
-            }}
-          >
-            {idCopied ? 'Copied!' : 'Copy Club ID'}
-          </button>
+
+          {/* Utility row — admin only */}
+          {isAdmin && (
+            <div className="flex items-center gap-2">
+              <DiscordIndicator club={club} isAdmin={isAdmin} />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(club.id)
+                  setIdCopied(true)
+                  setTimeout(() => setIdCopied(false), 1500)
+                }}
+                className="transition-all duration-[120ms]"
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                  padding: '4px 10px',
+                  borderRadius: 999,
+                  border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
+                  color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  letterSpacing: '0.04em',
+                }}
+                title="Copy Club ID"
+              >
+                {idCopied ? 'Copied!' : 'Copy Club ID'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Tab bar */}
