@@ -1,4 +1,4 @@
-const AVATAR_HUES = [
+export const AVATAR_HUES = [
   '#5865F2',
   '#5BAA5C',
   '#9B59B6',
@@ -10,6 +10,10 @@ const AVATAR_HUES = [
   '#8E44AD',
   '#2ECC71',
 ]
+
+export function getAvatarColor(userId: string | number): string {
+  return AVATAR_HUES[Math.abs(Number(userId)) % AVATAR_HUES.length]
+}
 
 interface AvatarProps {
   name: string

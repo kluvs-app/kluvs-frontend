@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club, Member } from '../../types'
+import type { Club, Member, UserRole } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 
@@ -11,12 +11,14 @@ interface MemberModalProps {
   onMemberSaved: () => void
   onError: (error: string) => void
   editingMember?: Member | null
+  editorRole?: UserRole | null
 }
 
 interface MemberFormData {
   name: string
   books_read: string
   discord_id: string
+  role: 'admin' | 'member'
 }
 
 export default function MemberModal({
@@ -25,27 +27,33 @@ export default function MemberModal({
   selectedClub,
   onMemberSaved,
   onError,
-  editingMember
+  editingMember,
+  editorRole,
 }: MemberModalProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<MemberFormData>({
     name: '',
     books_read: '0',
-    discord_id: ''
+    discord_id: '',
+    role: 'member',
   })
 
   const isEditing = !!editingMember
+  const canEditRole = isEditing && (editorRole === 'owner' || editorRole === 'admin')
 
   useEffect(() => {
     if (isOpen) {
       if (editingMember) {
+        const memberWithRole = editingMember as Member & { role?: string }
+        const currentRole = (memberWithRole.role === 'admin' ? 'admin' : 'member') as 'admin' | 'member'
         setFormData({
           name: editingMember.name,
           books_read: String(editingMember.books_read),
-          discord_id: editingMember.discord_id ?? ''
+          discord_id: editingMember.discord_id ?? '',
+          role: currentRole,
         })
       } else {
-        setFormData({ name: '', books_read: '0', discord_id: '' })
+        setFormData({ name: '', books_read: '0', discord_id: '', role: 'member' })
       }
     }
   }, [isOpen, editingMember])
@@ -73,10 +81,13 @@ export default function MemberModal({
       }
 
       if (isEditing && editingMember) {
-        const { error } = await invokeFunction('member', {
-          method: 'PUT',
-          body: { id: editingMember.id, ...memberData }
-        })
+        const memberWithRole = editingMember as Member & { role?: string }
+        const originalRole = memberWithRole.role === 'admin' ? 'admin' : 'member'
+        const body: Record<string, unknown> = { id: editingMember.id, ...memberData }
+        if (canEditRole && formData.role !== originalRole) {
+          body.club_roles = { [selectedClub.id]: formData.role }
+        }
+        const { error } = await invokeFunction('member', { method: 'PUT', body })
         if (error) throw error
       } else {
         const { error } = await invokeFunction('member', {
@@ -86,7 +97,7 @@ export default function MemberModal({
         if (error) throw error
       }
 
-      setFormData({ name: '', books_read: '0', discord_id: '' })
+      setFormData({ name: '', books_read: '0', discord_id: '', role: 'member' })
       onClose()
       onMemberSaved()
     } catch (err: unknown) {
@@ -101,7 +112,7 @@ export default function MemberModal({
   }
 
   const handleClose = () => {
-    setFormData({ name: '', books_read: '0', discord_id: '' })
+    setFormData({ name: '', books_read: '0', discord_id: '', role: 'member' })
     onError('')
     onClose()
   }
@@ -199,6 +210,32 @@ export default function MemberModal({
             Discord snowflake ID — leave blank to clear
           </p>
         </div>
+
+        {canEditRole && (
+          <div>
+            <label style={{
+              display: 'block',
+              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              marginBottom: 8,
+            }}>Role</label>
+            <div className="relative">
+              <select
+                value={formData.role}
+                onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'admin' | 'member' }))}
+                disabled={loading}
+                className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              >
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+              <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-secondary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          </div>
+        )}
 
         <div
           className="rounded-input px-4 py-3"

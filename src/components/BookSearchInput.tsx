@@ -80,6 +80,8 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
           isbn: book.isbn,
           image_url: book.image_url,
           external_google_id: book.external_google_id,
+          edition: book.edition,
+          page_count: book.page_count,
         },
       })
       if (error) throw error

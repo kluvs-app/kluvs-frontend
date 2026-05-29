@@ -5,6 +5,7 @@ import { getAvatarUrl } from '../../supabase'
 import { VERSION } from '../../version'
 import SignOutModal from '../modals/SignOutModal'
 import DiscordLinkModal from '../modals/DiscordLinkModal'
+import Avatar from '../ui/Avatar'
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 // Material Symbols, weight 600, 24px — sourced from public/icons/
@@ -50,14 +51,14 @@ function getClubsTo(): string {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AppSidebar() {
-  const { member } = useAuth()
+  const { member, isOnline } = useAuth()
   const location = useLocation()
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showDiscordLinkModal, setShowDiscordLinkModal] = useState(false)
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col fixed top-0 left-0 bottom-0 w-[220px] bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] z-30">
+      <aside className={`hidden lg:flex flex-col fixed ${isOnline ? 'top-0' : 'top-9'} left-0 bottom-0 w-[220px] bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] z-30`}>
         {/* Brand */}
         <a
           href={import.meta.env.VITE_OAUTH_REDIRECT_URL?.replace('app.', '') ?? '/'}
@@ -74,19 +75,12 @@ export default function AppSidebar() {
           to="/me"
           className="flex items-center gap-2.5 mx-3 px-3 py-2.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
         >
-          <div className="relative h-8 w-8 shrink-0">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-              {member?.name?.[0]?.toUpperCase() ?? '?'}
-            </div>
-            {member?.avatar_path && (
-              <img
-                src={getAvatarUrl(member.avatar_path)}
-                alt={member.name}
-                className="absolute inset-0 h-8 w-8 rounded-full object-cover"
-                onError={(e) => { e.currentTarget.style.display = 'none' }}
-              />
-            )}
-          </div>
+          <Avatar
+            name={member?.name ?? '?'}
+            userId={String(member?.id ?? '0')}
+            imageUrl={member?.avatar_path ? getAvatarUrl(member.avatar_path) : null}
+            size="md"
+          />
           <div className="min-w-0">
             <p className="text-sm font-medium text-[var(--color-text-primary)] truncate leading-tight">
               {member?.name ?? 'User'}

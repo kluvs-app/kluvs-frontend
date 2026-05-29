@@ -15,11 +15,14 @@ vi.mock('../../../supabase', () => ({
   invokeFunction: (...args: any[]) => mockInvoke(...args),
 }))
 
+const TEST_CLUB_ID = 'club-1'
+
 describe('DeleteMemberModal', () => {
   const defaultProps = {
     isOpen: true,
     onClose: vi.fn(),
     memberToDelete: mockAdminMember,
+    clubId: TEST_CLUB_ID,
     onMemberDeleted: vi.fn(),
     onError: vi.fn(),
   }
@@ -33,26 +36,26 @@ describe('DeleteMemberModal', () => {
     it('should render when isOpen is true with memberToDelete', () => {
       render(<DeleteMemberModal {...defaultProps} />)
 
-      expect(screen.getByRole('heading', { name: 'Delete Member' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Remove from Club' })).toBeInTheDocument()
       expect(screen.getByText(`"${mockAdminMember.name}"`)).toBeInTheDocument()
     })
 
     it('should not render when isOpen is false', () => {
       render(<DeleteMemberModal {...defaultProps} isOpen={false} />)
 
-      expect(screen.queryByText('Delete Member')).not.toBeInTheDocument()
+      expect(screen.queryByText('Remove from Club')).not.toBeInTheDocument()
     })
 
     it('should not render when memberToDelete is null', () => {
       render(<DeleteMemberModal {...defaultProps} memberToDelete={null} />)
 
-      expect(screen.queryByText('Delete Member')).not.toBeInTheDocument()
+      expect(screen.queryByText('Remove from Club')).not.toBeInTheDocument()
     })
 
-    it('should show warning text', () => {
+    it('should show informational text about account not being affected', () => {
       render(<DeleteMemberModal {...defaultProps} />)
 
-      expect(screen.getByText('This action cannot be undone')).toBeInTheDocument()
+      expect(screen.getByText(/account and membership in other clubs will not be affected/i)).toBeInTheDocument()
     })
   })
 
@@ -85,25 +88,31 @@ describe('DeleteMemberModal', () => {
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
 
-    it('should call supabase delete on confirm', async () => {
+    it('should call PUT /member with remaining clubs on confirm', async () => {
       const user = userEvent.setup()
       render(<DeleteMemberModal {...defaultProps} />)
 
-      await user.click(screen.getByText('Delete Member', { selector: 'span' }))
+      await user.click(screen.getByText('Remove from Club', { selector: 'span' }))
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith(
-          expect.stringContaining('member'),
-          expect.objectContaining({ method: 'DELETE' })
+          'member',
+          expect.objectContaining({
+            method: 'PUT',
+            body: expect.objectContaining({
+              id: mockAdminMember.id,
+              clubs: expect.not.arrayContaining([TEST_CLUB_ID]),
+            }),
+          })
         )
       })
     })
 
-    it('should call onMemberDeleted and onClose after successful delete', async () => {
+    it('should call onMemberDeleted and onClose after successful removal', async () => {
       const user = userEvent.setup()
       render(<DeleteMemberModal {...defaultProps} />)
 
-      await user.click(screen.getByText('Delete Member', { selector: 'span' }))
+      await user.click(screen.getByText('Remove from Club', { selector: 'span' }))
 
       await waitFor(() => {
         expect(defaultProps.onMemberDeleted).toHaveBeenCalledTimes(1)
@@ -113,12 +122,12 @@ describe('DeleteMemberModal', () => {
   })
 
   describe('Error Handling', () => {
-    it('should call onError when delete fails with error object', async () => {
+    it('should call onError when removal fails with error object', async () => {
       mockInvoke.mockResolvedValue({ data: null, error: new Error('Server error') })
       const user = userEvent.setup()
       render(<DeleteMemberModal {...defaultProps} />)
 
-      await user.click(screen.getByText('Delete Member', { selector: 'span' }))
+      await user.click(screen.getByText('Remove from Club', { selector: 'span' }))
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Server error')
@@ -130,10 +139,10 @@ describe('DeleteMemberModal', () => {
       const user = userEvent.setup()
       render(<DeleteMemberModal {...defaultProps} />)
 
-      await user.click(screen.getByText('Delete Member', { selector: 'span' }))
+      await user.click(screen.getByText('Remove from Club', { selector: 'span' }))
 
       await waitFor(() => {
-        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to delete member')
+        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to remove member from club')
       })
     })
   })

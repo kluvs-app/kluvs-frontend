@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { invokeFunction } from '../supabase'
 import type { Club, Discussion, Member } from '../types'
@@ -34,6 +34,7 @@ export default function ClubDetailPage() {
   const serverId = memberClub?.server_id ?? ''
 
   const [club, setClub] = useState<Club | null>(null)
+  const [sidebarClubs, setSidebarClubs] = useState<Record<string, Club>>({})
 
   const [loading, setLoading] = useState(true)
   const [clubLoading, setClubLoading] = useState(false)
@@ -61,6 +62,28 @@ export default function ClubDetailPage() {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null)
   const [showAddClubModal, setShowAddClubModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+
+  // Track which club IDs have been fetched for the sidebar to avoid duplicate requests
+  const sidebarFetchedRef = useRef(new Set<string>())
+
+  // Sync the active club into the sidebar map whenever it changes
+  useEffect(() => {
+    if (club) setSidebarClubs(prev => ({ ...prev, [club.id]: club }))
+  }, [club])
+
+  // Pre-fetch all other clubs so the sidebar is always fully populated
+  useEffect(() => {
+    const clubs = member?.clubs ?? []
+    for (const c of clubs) {
+      if (sidebarFetchedRef.current.has(c.id)) continue
+      sidebarFetchedRef.current.add(c.id)
+      invokeFunction<Club>(`club?id=${encodeURIComponent(c.id)}`, { method: 'GET' })
+        .then(({ data }) => {
+          if (data) setSidebarClubs(prev => ({ ...prev, [c.id]: data }))
+        })
+        .catch(() => {})
+    }
+  }, [member?.clubs])
 
   // Persist last-visited club slug
   useEffect(() => {
@@ -266,26 +289,23 @@ export default function ClubDetailPage() {
                     <RoleEyebrow role={c.role} />
                   </div>
 
-                  {/* Book reading - Plex Sans italic */}
-                  {isActive && club.active_session?.book?.title && (
+                  {/* Book reading */}
+                  {sidebarClubs[c.id]?.active_session?.book?.title && (
                     <p className="text-[13px] italic text-[var(--color-text-secondary)] truncate mb-2">
-                      {club.active_session.book.title}
+                      {sidebarClubs[c.id].active_session!.book!.title}
                     </p>
                   )}
 
                   {/* Members + next date */}
-                  {isActive && club.members ? (
+                  {sidebarClubs[c.id]?.members ? (
                     <div className="flex items-center justify-between text-[11px] text-[var(--color-text-secondary)] uppercase tracking-[0.04em]">
-                      <div>{club.members.length} MEMBERS</div>
-                      {club.active_session?.discussions && club.active_session.discussions.length > 0 && (
+                      <div>{sidebarClubs[c.id].members.length} MEMBERS</div>
+                      {sidebarClubs[c.id].active_session?.discussions && sidebarClubs[c.id].active_session!.discussions!.length > 0 && (
                         <div>
                           NEXT · {parseLocalDate(
-                            club.active_session.discussions.find((d) => !isPast(d.date, d.time))
+                            sidebarClubs[c.id].active_session!.discussions!.find((d) => !isPast(d.date, d.time))
                               ?.date || ''
-                          ).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
+                          ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </div>
                       )}
                     </div>
@@ -357,6 +377,24 @@ export default function ClubDetailPage() {
                     <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       {club.members.length} MEMBERS
                     </span>
+
+                    {/* Discord badge */}
+                    {club.discord_channel ? (
+                      <>
+                        <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                        <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5865F2]">
+                          <img src="/ic-discord.svg" alt="" className="w-3 h-3" />
+                          On Discord
+                        </span>
+                      </>
+                    ) : isAdmin ? (
+                      <>
+                        <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] opacity-40">
+                          No Discord
+                        </span>
+                      </>
+                    ) : null}
 
                     {/* Copy ID chip */}
                     <button
@@ -737,6 +775,23 @@ export default function ClubDetailPage() {
             <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
               {club.members.length} MEMBERS
             </span>
+            {/* Discord badge */}
+            {club.discord_channel ? (
+              <>
+                <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5865F2]">
+                  <img src="/ic-discord.svg" alt="" className="w-3 h-3" />
+                  On Discord
+                </span>
+              </>
+            ) : isAdmin ? (
+              <>
+                <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] opacity-40">
+                  No Discord
+                </span>
+              </>
+            ) : null}
           </div>
           <button
             onClick={() => {
@@ -1190,6 +1245,7 @@ export default function ClubDetailPage() {
         }}
         selectedClub={club}
         editingMember={editingMember}
+        editorRole={clubRole}
         onMemberSaved={refreshClub}
         onError={setError}
       />
@@ -1200,6 +1256,7 @@ export default function ClubDetailPage() {
           setMemberToDelete(null)
         }}
         memberToDelete={memberToDelete}
+        clubId={club.id}
         onMemberDeleted={refreshClub}
         onError={setError}
       />
@@ -1235,7 +1292,7 @@ export default function ClubDetailPage() {
         clubToDelete={clubToDelete}
         selectedServer={serverId}
         selectedClub={club}
-        onClubDeleted={() => navigate('/clubs', { replace: true })}
+        onClubDeleted={() => { refreshMemberData(); navigate('/clubs', { replace: true }) }}
         onError={setError}
       />
       <AddClubModal
@@ -1251,6 +1308,7 @@ export default function ClubDetailPage() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         club={club}
+        onUpdated={(patch) => setClub(prev => prev ? { ...prev, ...patch } : prev)}
       />
     </>
   )

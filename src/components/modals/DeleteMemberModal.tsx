@@ -8,6 +8,7 @@ interface DeleteMemberModalProps {
   isOpen: boolean
   onClose: () => void
   memberToDelete: Member | null
+  clubId: string
   onMemberDeleted: () => void
   onError: (error: string) => void
 }
@@ -16,6 +17,7 @@ export default function DeleteMemberModal({
   isOpen,
   onClose,
   memberToDelete,
+  clubId,
   onMemberDeleted,
   onError
 }: DeleteMemberModalProps) {
@@ -26,8 +28,14 @@ export default function DeleteMemberModal({
     try {
       setLoading(true)
       onError('')
-      const { error } = await invokeFunction(`member?id=${encodeURIComponent(memberToDelete.id)}`, {
-        method: 'DELETE'
+      // Remove from this club only by sending the remaining clubs list.
+      // The backend club GET returns clubs as string[] at runtime, but MemberClub[] in TS types.
+      const remainingClubs = (memberToDelete.clubs as unknown as (string | { id: string })[])
+        .map(c => typeof c === 'string' ? c : c.id)
+        .filter(id => id !== clubId)
+      const { error } = await invokeFunction('member', {
+        method: 'PUT',
+        body: { id: memberToDelete.id, clubs: remainingClubs }
       })
       if (error) throw error
       onClose()
@@ -36,7 +44,7 @@ export default function DeleteMemberModal({
       onError(
         err && typeof err === 'object' && 'message' in err
           ? String(err.message)
-          : 'Failed to delete member'
+          : 'Failed to remove member from club'
       )
     } finally {
       setLoading(false)
@@ -49,7 +57,7 @@ export default function DeleteMemberModal({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Delete Member"
+      title="Remove from Club"
       titleVariant="danger"
       loading={loading}
       labelId="modal-title-delete-member"
@@ -66,7 +74,7 @@ export default function DeleteMemberModal({
             className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="#ffffff" />}
-            {loading ? 'Deleting…' : <span>Delete Member</span>}
+            {loading ? 'Removing…' : <span>Remove from Club</span>}
           </button>
         </>
       }
@@ -77,15 +85,7 @@ export default function DeleteMemberModal({
           <span className="font-semibold">"{memberToDelete.name}"</span>{' '}
           from this club?
         </p>
-        <p className="text-sm text-[var(--color-text-secondary)]">This action cannot be undone</p>
-        <div
-          className="rounded-input px-4 py-3 space-y-1"
-          style={{ background: 'rgba(var(--color-danger-rgb, 220 38 38) / 0.06)', border: '1px solid rgba(var(--color-danger-rgb, 220 38 38) / 0.2)' }}
-        >
-          <p className="text-xs font-medium text-danger uppercase tracking-wider mb-2">This will permanently:</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">Remove them from this club</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">Delete all member associations</p>
-        </div>
+        <p className="text-sm text-[var(--color-text-secondary)]">Their account and membership in other clubs will not be affected.</p>
       </div>
     </BaseModal>
   )

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
+import { getAvatarColor } from '../components/ui/Avatar'
 import { useAuth } from '../contexts/AuthContext'
 import type { Club } from '../types'
 import EditProfileModal from '../components/modals/EditProfileModal'
@@ -397,8 +398,8 @@ export default function ProfilePage() {
         <div className="flex items-center gap-[18px] mb-7">
           <div className="relative shrink-0">
             <div
-              className="rounded-full bg-primary flex items-center justify-center text-white font-serif font-medium"
-              style={{ width: 88, height: 88, fontSize: 88 * 0.40, letterSpacing: '-0.015em' }}
+              className="rounded-full flex items-center justify-center text-white font-serif font-medium"
+              style={{ width: 88, height: 88, fontSize: 88 * 0.40, letterSpacing: '-0.015em', backgroundColor: getAvatarColor(member?.id ?? 0) }}
             >{memberInitials}</div>
             {member?.avatar_path && (
               <img
@@ -438,8 +439,8 @@ export default function ProfilePage() {
       >
         <div className="relative shrink-0">
           <div
-            className="rounded-full bg-primary flex items-center justify-center text-white font-serif font-medium"
-            style={{ width: 112, height: 112, fontSize: 112 * 0.40, letterSpacing: '-0.015em' }}
+            className="rounded-full flex items-center justify-center text-white font-serif font-medium"
+            style={{ width: 112, height: 112, fontSize: 112 * 0.40, letterSpacing: '-0.015em', backgroundColor: getAvatarColor(member?.id ?? 0) }}
           >{memberInitials}</div>
           {member?.avatar_path && (
             <img

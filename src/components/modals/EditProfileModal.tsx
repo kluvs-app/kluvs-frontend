@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase, invokeFunction, getAvatarUrl } from '../../supabase'
+import { getAvatarColor } from '../ui/Avatar'
 import { useAuth } from '../../contexts/AuthContext'
 import type { Member } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
@@ -29,6 +30,7 @@ export default function EditProfileModal({
   const { member } = useAuth()
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
+  const [handle, setHandle] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -36,6 +38,7 @@ export default function EditProfileModal({
   useEffect(() => {
     if (isOpen && currentMember) {
       setName(currentMember.name)
+      setHandle(currentMember.handle ?? '')
       setAvatarFile(null)
       setAvatarPreview(null)
     }
@@ -75,6 +78,7 @@ export default function EditProfileModal({
         id: member.id,
         name: name.trim(),
         books_read: member.books_read,
+        handle: handle.trim() || null,
       }
       if (newAvatarPath !== member.avatar_path) body.avatar_path = newAvatarPath
 
@@ -93,6 +97,7 @@ export default function EditProfileModal({
   const handleClose = () => {
     if (loading) return
     setName(currentMember?.name ?? '')
+    setHandle(currentMember?.handle ?? '')
     setAvatarFile(null)
     setAvatarPreview(null)
     onError('')
@@ -103,7 +108,7 @@ export default function EditProfileModal({
 
   const initials = member.name ? nameInitials(member.name) : '?'
   const currentAvatarUrl = avatarPreview ?? (currentMember?.avatar_path ? getAvatarUrl(currentMember.avatar_path) : null)
-  const hasChanges = name.trim() !== member.name || avatarFile !== null
+  const hasChanges = name.trim() !== member.name || (handle.trim() || null) !== (member.handle ?? null) || avatarFile !== null
 
   return (
     <BaseModal
@@ -141,8 +146,8 @@ export default function EditProfileModal({
             aria-label="Change avatar"
           >
             <div
-              className="rounded-full bg-primary flex items-center justify-center text-white font-serif font-medium overflow-hidden relative"
-              style={{ width: 72, height: 72, fontSize: 72 * 0.40, letterSpacing: '-0.015em' }}
+              className="rounded-full flex items-center justify-center text-white font-serif font-medium overflow-hidden relative"
+              style={{ width: 72, height: 72, fontSize: 72 * 0.40, letterSpacing: '-0.015em', backgroundColor: getAvatarColor(member.id) }}
             >
               {initials}
               {currentAvatarUrl && (
@@ -194,6 +199,31 @@ export default function EditProfileModal({
             autoFocus
             className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
           />
+        </div>
+
+        {/* Handle */}
+        <div>
+          <label
+            style={{
+              display: 'block',
+              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              marginBottom: 8,
+            }}
+          >Handle <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+          <div className="flex items-center bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-colors">
+            <span className="pl-4 pr-1 text-sm text-[var(--color-text-secondary)] select-none shrink-0">@</span>
+            <input
+              type="text"
+              value={handle}
+              onChange={e => setHandle(e.target.value)}
+              placeholder="bookworm42"
+              disabled={loading}
+              maxLength={50}
+              className="flex-1 bg-transparent py-3 pr-4 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none"
+            />
+          </div>
         </div>
 
         {/* Discord status */}
