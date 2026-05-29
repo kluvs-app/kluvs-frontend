@@ -1,4 +1,4 @@
-# Terms of Use for Kluvs
+# Terms of Use
 
 **Effective Date:** February 21, 2026.
 

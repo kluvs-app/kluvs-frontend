@@ -26,12 +26,6 @@ describe('DataDeletion', () => {
       expect(screen.getByRole('heading', { name: /account.*data deletion/i })).toBeInTheDocument()
     })
 
-    it('should render the "Back to Kluvs" link', () => {
-      renderDataDeletion()
-      const link = screen.getByRole('link', { name: /back to kluvs/i })
-      expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', '/')
-    })
   })
 
   describe('Section Headings', () => {

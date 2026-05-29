@@ -1,4 +1,4 @@
-# Account & Data Deletion — Kluvs
+# Account & Data Deletion
 
 **Last updated:** February 22, 2026
 

@@ -8,7 +8,7 @@ export default function TermsOfUse() {
       <Header />
 
       <main className="max-w-3xl mx-auto px-6 py-12">
-        <article className="prose prose-neutral dark:prose-invert max-w-none prose-a:text-primary hover:prose-a:text-primary-hover">
+        <article className="prose prose-neutral dark:prose-invert max-w-none prose-a:text-primary hover:prose-a:text-primary-hover prose-h1:font-serif">
           <ReactMarkdown>{content}</ReactMarkdown>
         </article>
       </main>
