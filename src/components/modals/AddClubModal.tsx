@@ -50,7 +50,9 @@ export default function AddClubModal({
           id: clubId,
           name: formData.name.trim(),
           server_id: selectedServer || null,
-          discord_channel: formData.discord_channel.trim() || null
+          discord_channel: formData.discord_channel.trim() || null,
+          founded_date: new Date().toISOString().split('T')[0],
+          members: member ? [{ id: member.id, name: member.name, books_read: member.books_read }] : [],
         }
       })
       if (error) throw error

@@ -8,9 +8,10 @@ interface ShareClubModalProps {
   isOpen: boolean
   onClose: () => void
   club: Club
+  onUpdated?: (patch: Pick<Club, 'join_policy' | 'invite_token'>) => void
 }
 
-export default function ShareClubModal({ isOpen, onClose, club }: ShareClubModalProps) {
+export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: ShareClubModalProps) {
   const [policy, setPolicy] = useState<'PRIVATE' | 'INVITE_LINK'>(club.join_policy)
   const [inviteToken, setInviteToken] = useState<string | null>(club.invite_token ?? null)
   const [loading, setLoading] = useState(false)
@@ -40,8 +41,10 @@ export default function ShareClubModal({ isOpen, onClose, club }: ShareClubModal
         body: { id: club.id, join_policy: newPolicy },
       })
       if (error) throw error
+      const newToken = data?.club?.invite_token ?? null
       setPolicy(newPolicy)
-      setInviteToken(data?.club?.invite_token ?? null)
+      setInviteToken(newToken)
+      onUpdated?.({ join_policy: newPolicy, invite_token: newToken })
     } catch (err) {
       // Policy state stays unchanged (optimistic revert) — surface the failure to the user.
       setError((err as { message?: string }).message || 'Failed to update sharing settings')

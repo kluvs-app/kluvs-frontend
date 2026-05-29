@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { invokeFunction } from '../supabase'
 import type { Club, Discussion, Member } from '../types'
@@ -24,6 +24,46 @@ import Avatar from '../components/ui/Avatar'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
+function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
+  const hasDiscord = !!club.discord_channel
+  if (!hasDiscord && !isAdmin) return null
+  return (
+    <div className="relative group">
+      <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full cursor-default transition-colors hover:bg-[rgba(88,101,242,0.1)]">
+        <img
+          src="/ic-discord.svg"
+          alt="Discord"
+          className="w-[15px] h-[15px]"
+          style={{ opacity: hasDiscord ? 0.6 : 0.25 }}
+        />
+      </div>
+      <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-[120ms] z-50">
+        <div
+          className="rounded-lg px-3 py-2.5 text-left whitespace-nowrap"
+          style={{ background: '#1A140F', border: '1px solid rgba(242,237,229,0.12)' }}
+        >
+          {hasDiscord ? (
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] mb-2" style={{ color: '#5865F2' }}>Discord</p>
+              {club.server_id && (
+                <div className="flex items-baseline justify-between gap-5">
+                  <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Server</span>
+                  <span className="text-[11px] font-mono text-[var(--color-text-primary)]">{club.server_id}</span>
+                </div>
+              )}
+              <div className="flex items-baseline justify-between gap-5">
+                <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Channel</span>
+                <span className="text-[11px] font-mono text-[var(--color-text-primary)]">{club.discord_channel}</span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-[11px] text-[var(--color-text-secondary)]">Not connected to Discord</p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function ClubDetailPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -34,6 +74,7 @@ export default function ClubDetailPage() {
   const serverId = memberClub?.server_id ?? ''
 
   const [club, setClub] = useState<Club | null>(null)
+  const [sidebarClubs, setSidebarClubs] = useState<Record<string, Club>>({})
 
   const [loading, setLoading] = useState(true)
   const [clubLoading, setClubLoading] = useState(false)
@@ -61,6 +102,28 @@ export default function ClubDetailPage() {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null)
   const [showAddClubModal, setShowAddClubModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+
+  // Track which club IDs have been fetched for the sidebar to avoid duplicate requests
+  const sidebarFetchedRef = useRef(new Set<string>())
+
+  // Sync the active club into the sidebar map whenever it changes
+  useEffect(() => {
+    if (club) setSidebarClubs(prev => ({ ...prev, [club.id]: club }))
+  }, [club])
+
+  // Pre-fetch all other clubs so the sidebar is always fully populated
+  useEffect(() => {
+    const clubs = member?.clubs ?? []
+    for (const c of clubs) {
+      if (sidebarFetchedRef.current.has(c.id)) continue
+      sidebarFetchedRef.current.add(c.id)
+      invokeFunction<Club>(`club?id=${encodeURIComponent(c.id)}`, { method: 'GET' })
+        .then(({ data }) => {
+          if (data) setSidebarClubs(prev => ({ ...prev, [c.id]: data }))
+        })
+        .catch(() => {})
+    }
+  }, [member?.clubs])
 
   // Persist last-visited club slug
   useEffect(() => {
@@ -266,26 +329,23 @@ export default function ClubDetailPage() {
                     <RoleEyebrow role={c.role} />
                   </div>
 
-                  {/* Book reading - Plex Sans italic */}
-                  {isActive && club.active_session?.book?.title && (
+                  {/* Book reading */}
+                  {sidebarClubs[c.id]?.active_session?.book?.title && (
                     <p className="text-[13px] italic text-[var(--color-text-secondary)] truncate mb-2">
-                      {club.active_session.book.title}
+                      {sidebarClubs[c.id].active_session!.book!.title}
                     </p>
                   )}
 
                   {/* Members + next date */}
-                  {isActive && club.members ? (
+                  {sidebarClubs[c.id]?.members ? (
                     <div className="flex items-center justify-between text-[11px] text-[var(--color-text-secondary)] uppercase tracking-[0.04em]">
-                      <div>{club.members.length} MEMBERS</div>
-                      {club.active_session?.discussions && club.active_session.discussions.length > 0 && (
+                      <div>{sidebarClubs[c.id].members.length} MEMBERS</div>
+                      {sidebarClubs[c.id].active_session?.discussions && sidebarClubs[c.id].active_session!.discussions!.length > 0 && (
                         <div>
                           NEXT · {parseLocalDate(
-                            club.active_session.discussions.find((d) => !isPast(d.date, d.time))
+                            sidebarClubs[c.id].active_session!.discussions!.find((d) => !isPast(d.date, d.time))
                               ?.date || ''
-                          ).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
+                          ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </div>
                       )}
                     </div>
@@ -339,12 +399,9 @@ export default function ClubDetailPage() {
                   </h1>
 
                   {/* Meta row */}
-                  <div className="flex items-center gap-3.5 flex-wrap">
+                  <div className="flex items-center gap-3.5 flex-wrap mb-3">
                     <RoleEyebrow role={clubRole || 'member'} />
-
-                    {/* Dot separator */}
                     <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
-
                     {club.founded_date && (
                       <>
                         <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
@@ -353,42 +410,47 @@ export default function ClubDetailPage() {
                         <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
                       </>
                     )}
-
                     <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                       {club.members.length} MEMBERS
                     </span>
-
-                    {/* Copy ID chip */}
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(club.id)
-                        setIdCopied(true)
-                        setTimeout(() => setIdCopied(false), 1500)
-                      }}
-                      className="transition-all duration-[120ms]"
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 500,
-                        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                        padding: '4px 10px',
-                        borderRadius: 999,
-                        border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
-                        color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                        whiteSpace: 'nowrap',
-                        letterSpacing: '0.04em',
-                      }}
-                      title="Copy Club ID for /link_club"
-                    >
-                      {idCopied ? 'Copied!' : 'Copy Club ID'}
-                    </button>
                   </div>
+
+                  {/* Utility row — admin only */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(club.id)
+                          setIdCopied(true)
+                          setTimeout(() => setIdCopied(false), 1500)
+                        }}
+                        className="transition-all duration-[120ms]"
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 500,
+                          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                          padding: '4px 10px',
+                          borderRadius: 999,
+                          border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
+                          color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                          background: 'transparent',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          letterSpacing: '0.04em',
+                        }}
+                        title="Copy Club ID"
+                      >
+                        {idCopied ? 'Copied!' : 'Copy Club ID'}
+                      </button>
+                      <DiscordIndicator club={club} isAdmin={isAdmin} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Current session */}
-                {club.active_session ? (
-                  <div className="mb-12">
+                <div className="mb-12">
+                  {/* Book / session area */}
+                  {club.active_session ? (
                     <div className="grid grid-cols-[128px_1fr] gap-9 mb-12 pb-12 border-b border-[var(--color-divider)]">
                       <BookCover
                         imageUrl={club.active_session.book?.image_url}
@@ -431,20 +493,44 @@ export default function ClubDetailPage() {
                         </p>
                       </div>
                     </div>
+                  ) : (
+                    <div className="flex flex-col items-center text-center mb-12 pb-12 border-b border-[var(--color-divider)]">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-3">
+                        GETTING STARTED
+                      </p>
+                      <h2 className="font-serif italic text-[48px] font-medium leading-[1.1] tracking-[-0.015em] text-[var(--color-text-primary)] mb-3">
+                        Start reading together.
+                      </h2>
+                      <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed mb-6 max-w-[360px]">
+                        Pick a book and kick off your club's first session.
+                      </p>
+                      {isAdmin && (
+                        <button
+                          onClick={() => setShowNewSessionModal(true)}
+                          className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn text-[14px] font-medium transition-all duration-120 cursor-pointer"
+                        >
+                          Start Session
+                        </button>
+                      )}
+                    </div>
+                  )}
 
-                    {/* Discussions + Members: two-column layout */}
-                    <div className="grid grid-cols-[1.4fr_1fr] gap-14">
-                      {/* Discussions section */}
-                      <div>
-                        <div className="flex items-center justify-between mb-9">
-                          <div className="flex items-center gap-3">
-                            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-                              DISCUSSIONS
-                            </span>
+                  {/* Discussions + Members: two-column layout */}
+                  <div className="grid grid-cols-[1.4fr_1fr] gap-14">
+                    {/* Discussions section */}
+                    <div>
+                      <div className="flex items-center justify-between mb-9">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                            DISCUSSIONS
+                          </span>
+                          {club.active_session && club.active_session.discussions.length > 0 && (
                             <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
                               {club.active_session.discussions.length} scheduled
                             </span>
-                          </div>
+                          )}
+                        </div>
+                        {isAdmin && club.active_session && (
                           <GhostButton
                             variant="sm"
                             icon="+"
@@ -452,8 +538,32 @@ export default function ClubDetailPage() {
                           >
                             Add
                           </GhostButton>
-                        </div>
+                        )}
+                      </div>
 
+                      {!club.active_session ? (
+                        <div className="py-6 flex flex-col items-center text-center">
+                          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug">
+                            {isAdmin
+                              ? 'Start a session above to schedule discussions.'
+                              : 'Discussions will appear here once a session begins.'}
+                          </p>
+                        </div>
+                      ) : club.active_session.discussions.length === 0 ? (
+                        <div className="py-6 flex flex-col items-center text-center">
+                          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-5">
+                            No discussions scheduled yet.
+                          </p>
+                          {isAdmin && (
+                            <button
+                              onClick={handleAddDiscussion}
+                              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                            >
+                              Schedule Discussion
+                            </button>
+                          )}
+                        </div>
+                      ) : (
                         <div className="space-y-7">
                           {club.active_session?.discussions.map((discussion, idx) => {
                             const status = getDiscussionStatus(discussion)
@@ -560,109 +670,111 @@ export default function ClubDetailPage() {
                             )
                           })}
                         </div>
+                      )}
+                    </div>
+
+                    {/* Members section (right column of grid) */}
+                    <div>
+                      <div className="flex items-center justify-between mb-9">
+                        <div className="flex items-center gap-3">
+                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                            MEMBERS
+                          </span>
+                          <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
+                            {club.members.length}
+                          </span>
+                        </div>
+                        {isAdmin && (
+                          <GhostButton
+                            variant="sm"
+                            icon="+"
+                            onClick={handleAddMember}
+                          >
+                            Invite
+                          </GhostButton>
+                        )}
                       </div>
 
-                      {/* Members section (right column of grid) */}
-                      <div>
-                        <div className="flex items-center justify-between mb-9">
-                          <div className="flex items-center gap-3">
-                            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-                              MEMBERS
-                            </span>
-                            <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                              {club.members.length}
-                            </span>
-                          </div>
-                          {isAdmin && (
-                            <GhostButton
-                              variant="sm"
-                              icon="+"
-                              onClick={handleAddMember}
+                      {/* Members list */}
+                      <div className="space-y-2.5">
+                        {getSortedMembers(club.members).map((clubMember) => {
+                          const memberWithRole = clubMember as Member & { role?: string }
+                          const memberRole = memberWithRole.role || 'member'
+                          const isOwn = member?.id != null && member.id === clubMember.id
+
+                          return (
+                            <div
+                              key={clubMember.id}
+                              className="flex items-center gap-3.5 py-2.5 border-b border-[var(--color-divider)]"
                             >
-                              Invite
-                            </GhostButton>
-                          )}
-                        </div>
+                              {/* Avatar */}
+                              <Avatar
+                                name={clubMember.name}
+                                userId={String(clubMember.id)}
+                                size="lg"
+                                isOwn={isOwn}
+                              />
 
-                        {/* Members list */}
-                        <div className="space-y-2.5">
-                          {getSortedMembers(club.members).map((clubMember) => {
-                            const memberWithRole = clubMember as Member & { role?: string }
-                            const memberRole = memberWithRole.role || 'member'
-                            const isYou = member?.id === clubMember.id
-
-                            return (
-                              <div
-                                key={clubMember.id}
-                                className="flex items-center gap-3.5 py-2.5 border-b border-[var(--color-divider)]"
-                              >
-                                {/* Avatar */}
-                                <Avatar
-                                  name={clubMember.name}
-                                  userId={String(clubMember.id)}
-                                  size="lg"
-                                />
-
-                                {/* Name + handle */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
-                                      {clubMember.name}
-                                    </p>
-                                    {isYou && (
-                                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
-                                        YOU
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
-                                    @{clubMember.handle || clubMember.discord_id || 'unknown'}
+                              {/* Name + handle */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
+                                    {clubMember.name}
                                   </p>
-                                </div>
-
-                                {/* Role + kebab */}
-                                <div className="flex items-center gap-3">
-                                  <RoleEyebrow
-                                    role={memberRole as 'owner' | 'admin' | 'member'}
-                                  />
-                                  {isAdmin && !isYou && memberRole !== 'owner' && (
-                                    <KebabMenu
-                                      items={[
-                                        {
-                                          label: 'Edit role',
-                                          onClick: () => handleEditMember(clubMember),
-                                        },
-                                        {
-                                          label: 'Remove',
-                                          danger: true,
-                                          onClick: () => handleDeleteMember(clubMember),
-                                        },
-                                      ]}
-                                    />
+                                  {isOwn && (
+                                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                                      YOU
+                                    </span>
                                   )}
                                 </div>
+                                <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
+                                  @{clubMember.handle || clubMember.discord_id || 'unknown'}
+                                </p>
                               </div>
-                            )
-                          })}
-                        </div>
+
+                              {/* Role + kebab */}
+                              <div className="flex items-center gap-3">
+                                <RoleEyebrow
+                                  role={memberRole as 'owner' | 'admin' | 'member'}
+                                />
+                                {isAdmin && !isOwn && memberRole !== 'owner' && (
+                                  <KebabMenu
+                                    items={[
+                                      {
+                                        label: 'Edit role',
+                                        onClick: () => handleEditMember(clubMember),
+                                      },
+                                      {
+                                        label: 'Remove',
+                                        danger: true,
+                                        onClick: () => handleDeleteMember(clubMember),
+                                      },
+                                    ]}
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          )
+                        })}
                       </div>
+
+                      {/* Invite CTA when flying solo */}
+                      {club.members.length <= 1 && isAdmin && (
+                        <div className="mt-5 flex flex-col items-center text-center py-4">
+                          <p className="font-serif italic text-[20px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                            Invite others to get the conversation going.
+                          </p>
+                          <button
+                            onClick={handleAddMember}
+                            className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                          >
+                            Invite Members
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
-                ) : (
-                  <div className="mb-12 pb-12 border-b border-[var(--color-divider)]">
-                    <p className="text-[16px] italic text-[var(--color-text-secondary)] mb-4">
-                      No active reading session
-                    </p>
-                    {isAdmin && (
-                      <GhostButton
-                        variant="md"
-                        onClick={() => setShowNewSessionModal(true)}
-                      >
-                        Start session
-                      </GhostButton>
-                    )}
-                  </div>
-                )}
+                </div>
               </div>
             )}
           </div>
@@ -688,30 +800,24 @@ export default function ClubDetailPage() {
                 >
                   Share
                 </GhostButton>
-                <GhostButton
-                  variant="sm"
-                  onClick={() => setShowEditClubModal(true)}
-                >
-                  Edit club
-                </GhostButton>
+                <KebabMenu
+                  items={[
+                    {
+                      label: 'Edit club',
+                      onClick: () => setShowEditClubModal(true),
+                    },
+                    {
+                      label: 'Delete club',
+                      danger: true,
+                      onClick: () => {
+                        setClubToDelete({ id: club.id, name: club.name })
+                        setShowDeleteClubModal(true)
+                      },
+                    },
+                  ]}
+                />
               </>
             )}
-            <KebabMenu
-              items={[
-                {
-                  label: 'Edit club',
-                  onClick: () => setShowEditClubModal(true),
-                },
-                {
-                  label: 'Delete club',
-                  danger: true,
-                  onClick: () => {
-                    setClubToDelete({ id: club.id, name: club.name })
-                    setShowDeleteClubModal(true)
-                  },
-                },
-              ]}
-            />
           </div>
         </div>
 
@@ -723,7 +829,7 @@ export default function ClubDetailPage() {
           <h1 className="font-serif text-[40px] font-medium leading-[1] text-[var(--color-text-primary)] mb-4 tracking-[-0.022em]">
             {club.name}
           </h1>
-          <div className="flex items-center gap-2.5 mb-4 flex-wrap">
+          <div className="flex items-center gap-2.5 mb-3 flex-wrap">
             <RoleEyebrow role={clubRole || 'member'} />
             {club.founded_date && (
               <>
@@ -738,20 +844,37 @@ export default function ClubDetailPage() {
               {club.members.length} MEMBERS
             </span>
           </div>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(club.id)
-              setIdCopied(true)
-              setTimeout(() => setIdCopied(false), 1500)
-            }}
-            className="text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] rounded-full px-3 py-1.5 transition-all duration-[120ms]"
-            style={{
-              borderColor: idCopied ? '#48A480' : 'rgba(242,237,229,0.14)',
-              color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
-            }}
-          >
-            {idCopied ? 'Copied!' : 'Copy Club ID'}
-          </button>
+
+          {/* Utility row — admin only */}
+          {isAdmin && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(club.id)
+                  setIdCopied(true)
+                  setTimeout(() => setIdCopied(false), 1500)
+                }}
+                className="transition-all duration-[120ms]"
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                  padding: '4px 10px',
+                  borderRadius: 999,
+                  border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
+                  color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  letterSpacing: '0.04em',
+                }}
+                title="Copy Club ID"
+              >
+                {idCopied ? 'Copied!' : 'Copy Club ID'}
+              </button>
+              <DiscordIndicator club={club} isAdmin={isAdmin} />
+            </div>
+          )}
         </div>
 
         {/* Tab bar */}
@@ -801,9 +924,28 @@ export default function ClubDetailPage() {
             <div className="flex items-center justify-center py-12">
               <KluvsSpinner size={48} className="mx-auto" />
             </div>
-          ) : mobileTab === 'overview' && club.active_session ? (
+          ) : mobileTab === 'overview' ? (
             <div className="space-y-6">
               {/* NOW READING */}
+              {!club.active_session && (
+                <div className="flex flex-col items-center text-center py-4 pb-2">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+                    NO SESSION YET
+                  </p>
+                  <p className="font-serif italic text-[28px] font-medium text-[var(--color-text-primary)] leading-snug mb-4">
+                    Start reading together.
+                  </p>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowNewSessionModal(true)}
+                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn text-[14px] font-medium transition-all duration-120 cursor-pointer"
+                    >
+                      Start Session
+                    </button>
+                  )}
+                </div>
+              )}
+              {club.active_session && (
               <div className="grid grid-cols-[80px_1fr] gap-5 items-center">
                 <BookCover
                   imageUrl={club.active_session.book?.image_url}
@@ -840,6 +982,7 @@ export default function ClubDetailPage() {
                   </p>
                 </div>
               </div>
+              )}
 
               {/* UP NEXT */}
               {club.active_session?.discussions && club.active_session.discussions.length > 0 && (
@@ -907,6 +1050,7 @@ export default function ClubDetailPage() {
                           name={m.name}
                           userId={String(m.id)}
                           size="md"
+                          isOwn={member?.id != null && m.id === member.id}
                         />
                       </div>
                     ))}
@@ -949,20 +1093,56 @@ export default function ClubDetailPage() {
                 </p>
               </div>
             </div>
-          ) : mobileTab === 'discussions' && club.active_session ? (
+          ) : mobileTab === 'discussions' ? (
             <div>
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                  {club.active_session.discussions.length} scheduled
+                  {club.active_session
+                    ? `${club.active_session.discussions.length} scheduled`
+                    : 'Discussions'}
                 </p>
-                <button
-                  onClick={handleAddDiscussion}
-                  className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[rgba(242,237,229,0.04)] transition-colors"
-                >
-                  + Add
-                </button>
+                {isAdmin && club.active_session && (
+                  <button
+                    onClick={handleAddDiscussion}
+                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[rgba(242,237,229,0.04)] transition-colors"
+                  >
+                    + Add
+                  </button>
+                )}
               </div>
+
+              {!club.active_session ? (
+                <div className="flex flex-col items-center text-center py-6">
+                  <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                    {isAdmin
+                      ? 'Start a session first to schedule discussions.'
+                      : 'Discussions will appear here once a session begins.'}
+                  </p>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowNewSessionModal(true)}
+                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                    >
+                      Start Session
+                    </button>
+                  )}
+                </div>
+              ) : club.active_session.discussions.length === 0 ? (
+                <div className="flex flex-col items-center text-center py-6">
+                  <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                    No discussions scheduled yet.
+                  </p>
+                  {isAdmin && (
+                    <button
+                      onClick={handleAddDiscussion}
+                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                    >
+                      Schedule Discussion
+                    </button>
+                  )}
+                </div>
+              ) : null}
 
               {/* Timeline */}
               <div className="space-y-5">
@@ -1092,7 +1272,7 @@ export default function ClubDetailPage() {
                 {getSortedMembers(club.members).map((clubMember) => {
                   const memberWithRole = clubMember as Member & { role?: string }
                   const memberRole = memberWithRole.role || 'member'
-                  const isYou = member?.id === clubMember.id
+                  const isOwn = member?.id != null && member.id === clubMember.id
 
                   return (
                     <div
@@ -1103,13 +1283,14 @@ export default function ClubDetailPage() {
                         name={clubMember.name}
                         userId={String(clubMember.id)}
                         size="lg"
+                        isOwn={isOwn}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
                             {clubMember.name}
                           </p>
-                          {isYou && (
+                          {isOwn && (
                             <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
                               YOU
                             </span>
@@ -1123,7 +1304,7 @@ export default function ClubDetailPage() {
                         <RoleEyebrow
                           role={memberRole as 'owner' | 'admin' | 'member'}
                         />
-                        {isAdmin && !isYou && memberRole !== 'owner' && (
+                        {isAdmin && !isOwn && memberRole !== 'owner' && (
                           <KebabMenu
                             items={[
                               {
@@ -1143,6 +1324,21 @@ export default function ClubDetailPage() {
                   )
                 })}
               </div>
+
+              {/* Invite CTA when flying solo */}
+              {club.members.length <= 1 && isAdmin && (
+                <div className="mt-5 flex flex-col items-center text-center py-4">
+                  <p className="font-serif italic text-[20px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                    Invite others to get the conversation going.
+                  </p>
+                  <button
+                    onClick={handleAddMember}
+                    className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+                  >
+                    Invite Members
+                  </button>
+                </div>
+              )}
             </div>
           ) : null}
         </div>
@@ -1190,6 +1386,7 @@ export default function ClubDetailPage() {
         }}
         selectedClub={club}
         editingMember={editingMember}
+        editorRole={clubRole}
         onMemberSaved={refreshClub}
         onError={setError}
       />
@@ -1200,6 +1397,7 @@ export default function ClubDetailPage() {
           setMemberToDelete(null)
         }}
         memberToDelete={memberToDelete}
+        clubId={club.id}
         onMemberDeleted={refreshClub}
         onError={setError}
       />
@@ -1235,7 +1433,7 @@ export default function ClubDetailPage() {
         clubToDelete={clubToDelete}
         selectedServer={serverId}
         selectedClub={club}
-        onClubDeleted={() => navigate('/clubs', { replace: true })}
+        onClubDeleted={() => { refreshMemberData(); navigate('/clubs', { replace: true }) }}
         onError={setError}
       />
       <AddClubModal
@@ -1251,6 +1449,7 @@ export default function ClubDetailPage() {
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         club={club}
+        onUpdated={(patch) => setClub(prev => prev ? { ...prev, ...patch } : prev)}
       />
     </>
   )

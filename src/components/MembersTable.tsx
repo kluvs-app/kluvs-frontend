@@ -1,9 +1,11 @@
 import { getAvatarUrl } from '../supabase'
 import type { Club, Member } from '../types'
+import Avatar from './ui/Avatar'
 
 interface MembersTableProps {
   selectedClub: Club
   isAdmin: boolean
+  currentMemberId?: number
   onAddMember: () => void
   onEditMember: (member: Member) => void
   onDeleteMember: (member: Member) => void
@@ -12,6 +14,7 @@ interface MembersTableProps {
 export default function MembersTable({
   selectedClub,
   isAdmin,
+  currentMemberId,
   onAddMember,
   onEditMember,
   onDeleteMember
@@ -41,21 +44,13 @@ export default function MembersTable({
             className="flex items-center gap-4 py-3.5 border-b border-[var(--color-divider)] last:border-b-0 group"
           >
             {/* Avatar */}
-            <div className="relative flex-shrink-0">
-              <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-primary font-bold text-base">
-                  {member.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-              {member.avatar_path && (
-                <img
-                  src={getAvatarUrl(member.avatar_path)}
-                  alt={member.name}
-                  className="absolute inset-0 h-11 w-11 rounded-full object-cover"
-                  onError={(e) => { e.currentTarget.style.display = 'none' }}
-                />
-              )}
-            </div>
+            <Avatar
+              name={member.name}
+              userId={String(member.id)}
+              imageUrl={member.avatar_path ? getAvatarUrl(member.avatar_path) : null}
+              size="lg"
+              isOwn={member.id === currentMemberId}
+            />
 
             {/* Name + handle */}
             <div className="flex-1 min-w-0">

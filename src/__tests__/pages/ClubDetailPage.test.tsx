@@ -200,7 +200,7 @@ describe('ClubDetailPage', () => {
       })
     })
 
-    it('shows no session message when club has no active session', async () => {
+    it('shows no session CTA when club has no active session', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
         if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: null }, error: null })
@@ -208,7 +208,7 @@ describe('ClubDetailPage', () => {
         return Promise.resolve({ data: null, error: null })
       })
       renderDetail()
-      await waitFor(() => expect(screen.getByText(/No active reading session/i)).toBeInTheDocument())
+      await waitFor(() => expect(screen.getAllByText(/Start reading together/i).length).toBeGreaterThan(0))
     })
   })
 
@@ -272,7 +272,10 @@ describe('ClubDetailPage', () => {
         return Promise.resolve({ data: null, error: null })
       })
       renderDetail()
-      await waitFor(() => expect(screen.getByRole('button', { name: /start session/i })).toBeInTheDocument())
+      await waitFor(() => {
+        const btns = screen.queryAllByRole('button', { name: /start session/i })
+        expect(btns.length).toBeGreaterThan(0)
+      })
     })
   })
 
@@ -299,8 +302,11 @@ describe('ClubDetailPage', () => {
       })
       const user = userEvent.setup()
       renderDetail()
-      await waitFor(() => screen.getByRole('button', { name: /start session/i }))
-      await user.click(screen.getByRole('button', { name: /start session/i }))
+      await waitFor(() => {
+        const btns = screen.queryAllByRole('button', { name: /start session/i })
+        expect(btns.length).toBeGreaterThan(0)
+      })
+      await user.click(screen.getAllByRole('button', { name: /start session/i })[0])
       await waitFor(() => expect(screen.getByTestId('new-session-modal')).toBeInTheDocument())
     })
   })
@@ -662,7 +668,7 @@ describe('ClubDetailPage', () => {
   })
 
   describe('No active session state', () => {
-    it('shows No active reading session message when club has no session', async () => {
+    it('shows "Start reading together" CTA when club has no session', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
         if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: null }, error: null })
@@ -670,7 +676,7 @@ describe('ClubDetailPage', () => {
         return Promise.resolve({ data: null, error: null })
       })
       renderDetail()
-      await waitFor(() => expect(screen.getByText(/No active reading session/i)).toBeInTheDocument())
+      await waitFor(() => expect(screen.getAllByText(/Start reading together/i).length).toBeGreaterThan(0))
     })
 
     it('shows Start Session button for admin with no active session', async () => {
@@ -685,6 +691,146 @@ describe('ClubDetailPage', () => {
         const startButtons = screen.queryAllByRole('button', { name: /start session/i })
         expect(startButtons.length).toBeGreaterThan(0)
       })
+    })
+
+    it('still renders discussions and members columns with no active session', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: null }, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() => {
+        expect(screen.queryAllByText(/^discussions$/i).length).toBeGreaterThan(0)
+        expect(screen.queryAllByText(/^members$/i).length).toBeGreaterThan(0)
+      })
+    })
+
+    it('shows guidance text in discussions column when no session', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: null }, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() =>
+        expect(screen.queryAllByText(/start a session above to schedule discussions/i).length).toBeGreaterThan(0)
+      )
+    })
+
+    it('hides Start Session button from regular members when no session', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockRegularMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: null }, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() => expect(screen.queryAllByText(/discussions/i).length).toBeGreaterThan(0))
+      expect(screen.queryAllByRole('button', { name: /start session/i }).length).toBe(0)
+    })
+  })
+
+  describe('Empty discussions state', () => {
+    const sessionWithNoDiscussions = { ...mockClub.active_session!, discussions: [] }
+
+    it('shows "No discussions scheduled yet" when session has no discussions', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: sessionWithNoDiscussions }, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() =>
+        expect(screen.queryAllByText(/No discussions scheduled yet/i).length).toBeGreaterThan(0)
+      )
+    })
+
+    it('shows Schedule Discussion button for admin when discussions are empty', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: sessionWithNoDiscussions }, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() => {
+        const btns = screen.queryAllByRole('button', { name: /schedule discussion/i })
+        expect(btns.length).toBeGreaterThan(0)
+      })
+    })
+
+    it('opens DiscussionModal when Schedule Discussion is clicked', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: { ...mockClub, active_session: sessionWithNoDiscussions }, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      const user = userEvent.setup()
+      renderDetail()
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /schedule discussion/i }).length).toBeGreaterThan(0))
+      await user.click(screen.getAllByRole('button', { name: /schedule discussion/i })[0])
+      await waitFor(() => expect(screen.getByTestId('discussion-modal')).toBeInTheDocument())
+    })
+  })
+
+  describe('Solo member invite CTA', () => {
+    it('shows invite CTA when only one member and user is admin', async () => {
+      const soloClub = { ...mockClub, members: [mockAdminMember] }
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: soloClub, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() =>
+        expect(screen.queryAllByText(/Invite others to get the conversation going/i).length).toBeGreaterThan(0)
+      )
+    })
+
+    it('shows Invite Members button when solo admin', async () => {
+      const soloClub = { ...mockClub, members: [mockAdminMember] }
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: soloClub, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() => {
+        const btns = screen.queryAllByRole('button', { name: /invite members/i })
+        expect(btns.length).toBeGreaterThan(0)
+      })
+    })
+
+    it('does not show invite CTA when club has multiple members', async () => {
+      renderDetail()
+      await waitFor(() => expect(screen.queryAllByText(/now reading/i).length).toBeGreaterThan(0))
+      expect(screen.queryAllByText(/Invite others to get the conversation going/i).length).toBe(0)
+    })
+  })
+
+  describe('Mobile header consolidation', () => {
+    it('shows Share button for admin', async () => {
+      renderDetail()
+      await waitFor(() => {
+        const shareBtns = screen.queryAllByRole('button', { name: /^share$/i })
+        expect(shareBtns.length).toBeGreaterThan(0)
+      })
+    })
+
+    it('does not show a standalone Edit club ghost button on mobile header', async () => {
+      // Desktop still renders it, but we verify the mobile header has no duplicate inline Edit club btn
+      // alongside the kebab — the total Edit club buttons should be exactly 1 (desktop only)
+      renderDetail()
+      await waitFor(() => expect(screen.queryAllByText(/Book Lovers Club/i).length).toBeGreaterThan(0))
+      const editClubBtns = screen.queryAllByRole('button', { name: /^edit club$/i })
+      expect(editClubBtns.length).toBe(1)
     })
   })
 

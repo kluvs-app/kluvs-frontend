@@ -27,6 +27,15 @@ vi.mock('../../components/modals/EditProfileModal', () => ({
     ) : null,
 }))
 
+vi.mock('../../components/modals/SignOutModal', () => ({
+  default: ({ isOpen, onClose }: any) =>
+    isOpen ? (
+      <div role="dialog" data-testid="sign-out-modal">
+        <button onClick={onClose}>Cancel</button>
+      </div>
+    ) : null,
+}))
+
 let mockSupabase: any
 
 beforeEach(async () => {
@@ -232,6 +241,43 @@ describe('ProfilePage', () => {
       expect(screen.getByTestId('edit-profile-modal')).toBeInTheDocument()
       await user.click(screen.getByTestId('profile-updated-btn'))
       expect(screen.queryByTestId('edit-profile-modal')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Mobile sign-out', () => {
+    it('renders a kebab menu on mobile (no standalone Edit profile button on mobile)', async () => {
+      renderPage()
+      await waitFor(() => expect(screen.queryAllByText(/profile/i).length).toBeGreaterThan(0))
+      // Desktop has aria-label="Edit profile"; mobile replaced it with a kebab
+      // So there should be exactly 1 such button (desktop only)
+      const editProfileBtns = screen.queryAllByLabelText('Edit profile')
+      expect(editProfileBtns.length).toBe(1)
+    })
+
+    it('opens SignOutModal when Sign out is chosen from mobile kebab', async () => {
+      const user = userEvent.setup()
+      renderPage()
+      await waitFor(() => expect(screen.queryAllByText(/profile/i).length).toBeGreaterThan(0))
+      // The kebab trigger button is the last button before the desktop content
+      const kebabTriggers = screen.queryAllByRole('button', { name: /open menu/i })
+      // KebabMenu renders a button with aria-label="Open menu"
+      expect(kebabTriggers.length).toBeGreaterThan(0)
+      await user.click(kebabTriggers[0])
+      const signOutItem = await screen.findByText(/sign out/i)
+      await user.click(signOutItem)
+      await waitFor(() => expect(screen.getByTestId('sign-out-modal')).toBeInTheDocument())
+    })
+
+    it('opens EditProfileModal when Edit profile is chosen from mobile kebab', async () => {
+      const user = userEvent.setup()
+      renderPage()
+      await waitFor(() => expect(screen.queryAllByText(/profile/i).length).toBeGreaterThan(0))
+      const kebabTriggers = screen.queryAllByRole('button', { name: /open menu/i })
+      expect(kebabTriggers.length).toBeGreaterThan(0)
+      await user.click(kebabTriggers[0])
+      const editProfileItem = await screen.findAllByText(/edit profile/i)
+      await user.click(editProfileItem[0])
+      await waitFor(() => expect(screen.getByTestId('edit-profile-modal')).toBeInTheDocument())
     })
   })
 })
