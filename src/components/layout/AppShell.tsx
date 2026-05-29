@@ -26,7 +26,7 @@ export default function AppShell() {
     <div className="min-h-screen bg-[var(--color-bg)]">
       {!isOnline && (
         <div
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center gap-2 py-2 px-4"
+          className="flex items-center justify-center gap-2 py-2 px-4"
           style={{ background: '#1A140F', borderBottom: '1px solid rgba(242,237,229,0.08)' }}
           role="status"
           aria-live="polite"

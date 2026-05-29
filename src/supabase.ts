@@ -36,6 +36,19 @@ export async function invokeFunction<T = unknown>(
     }
   }
 
+  // Supabase wraps all non-2xx responses as FunctionsHttpError with the generic
+  // message "Edge Function returned a non2xx status code". Unwrap the actual
+  // backend error body ({ success: false, error: "..." }) so callers see the
+  // real message (e.g. "Already a member", "Invalid or expired invite").
+  if (result.error instanceof FunctionsHttpError) {
+    try {
+      const body = await result.error.context.json()
+      if (body?.error) {
+        return { data: null, error: new Error(body.error) }
+      }
+    } catch { /* parse failed — fall through and return the original error */ }
+  }
+
   return result
 }
 

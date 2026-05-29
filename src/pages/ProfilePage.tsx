@@ -1,31 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
+import Avatar from '../components/ui/Avatar'
 import { useAuth } from '../contexts/AuthContext'
 import type { Club } from '../types'
 import EditProfileModal from '../components/modals/EditProfileModal'
+import SignOutModal from '../components/modals/SignOutModal'
+import KebabMenu from '../components/ui/KebabMenu'
 import { isPast, parseLocalDate } from '../utils/dates'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const AVATAR_PALETTE = [
-  '#5865F2', '#5BAA5C', '#9B59B6', '#E67E22', '#3498DB',
-  '#E74C3C', '#16A085', '#F39C12', '#8E44AD', '#2ECC71',
-]
-
-function avatarHue(id: number | string | null | undefined): string {
-  if (id == null) return AVATAR_PALETTE[0]
-  const n = typeof id === 'number'
-    ? Math.abs(id)
-    : String(id).split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return AVATAR_PALETTE[n % AVATAR_PALETTE.length]
-}
-
-function nameInitials(name: string): string {
-  const parts = name.trim().split(/\s+/)
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-  return name.slice(0, 2).toUpperCase()
-}
 
 function formatUpNextDate(dateStr: string): string {
   return parseLocalDate(dateStr)
@@ -89,59 +74,36 @@ function CoverSlot({ url, w, h }: { url?: string | null; w: number; h: number })
 
 // ─── AvatarStack ──────────────────────────────────────────────────────────────
 
-function AvatarStack({ members, totalCount, size = 26 }: {
+function AvatarStack({ members, totalCount, currentMemberId }: {
   members: Array<{ id?: number | string | null; name?: string | null; avatar_path?: string | null }>;
   totalCount: number;
-  size?: number;
+  currentMemberId?: number;
 }) {
   const shown = members.slice(0, 3)
   const extra = totalCount - shown.length
   return (
-    <div style={{ display: 'flex', flexShrink: 0 }}>
+    <div className="flex shrink-0">
       {shown.map((m, i) => (
-        <div key={i} style={{
-          width: size, height: size, borderRadius: '50%',
-          background: avatarHue(m.id),
-          outline: '2px solid var(--color-bg-elevated)',
-          outlineOffset: '-2px',
-          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontWeight: 600, fontSize: size * 0.40, lineHeight: 1,
-          letterSpacing: '-0.02em',
-          flexShrink: 0,
-          marginLeft: i === 0 ? 0 : -(size * 0.32),
-          zIndex: shown.length - i,
-          position: 'relative',
-          overflow: 'hidden',
-        }}>
-          {m.name ? nameInitials(m.name) : '?'}
-          {m.avatar_path && (
-            <img
-              src={getAvatarUrl(m.avatar_path)}
-              alt={m.name ?? ''}
-              style={{
-                position: 'absolute', inset: 0,
-                width: '100%', height: '100%',
-                objectFit: 'cover',
-              }}
-              onError={e => { e.currentTarget.style.display = 'none' }}
-            />
-          )}
+        <div
+          key={i}
+          className="relative shrink-0"
+          style={{ marginLeft: i === 0 ? 0 : -8, zIndex: shown.length - i }}
+        >
+          <Avatar
+            name={m.name ?? '?'}
+            userId={String(m.id ?? 0)}
+            imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
+            isOwn={m.id === currentMemberId}
+            size="md"
+            className="ring-2 ring-[var(--color-bg-elevated)]"
+          />
         </div>
       ))}
       {extra > 0 && (
-        <div style={{
-          width: size, height: size, borderRadius: '50%',
-          background: TRACK_COLOR,
-          outline: '2px solid var(--color-bg-elevated)',
-          outlineOffset: '-2px',
-          color: LABEL_COLOR, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontWeight: 500, fontSize: size * 0.34,
-          flexShrink: 0,
-          marginLeft: -(size * 0.32),
-          position: 'relative',
-        }}>+{extra}</div>
+        <div
+          className="relative shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ring-2 ring-[var(--color-bg-elevated)]"
+          style={{ marginLeft: -8, background: TRACK_COLOR, color: LABEL_COLOR }}
+        >+{extra}</div>
       )}
     </div>
   )
@@ -233,10 +195,11 @@ function ShelfRow({ title, author, coverUrl, clubName, done, total, nextDate }: 
 
 // ─── ClubCard ─────────────────────────────────────────────────────────────────
 
-function ClubCard({ id, name, role, members, memberCount }: {
+function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
   id: string; name: string; role: string;
   members: Array<{ id?: number | string | null; name?: string | null; avatar_path?: string | null }>;
   memberCount: number;
+  currentMemberId?: number;
 }) {
   return (
     <Link
@@ -265,7 +228,7 @@ function ClubCard({ id, name, role, members, memberCount }: {
           <RoleEyebrow role={role} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <AvatarStack members={members} totalCount={memberCount} size={26} />
+          <AvatarStack members={members} totalCount={memberCount} currentMemberId={currentMemberId} />
           <span style={{
             fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
             fontSize: 13, color: 'var(--color-text-secondary)',
@@ -284,6 +247,7 @@ export default function ProfilePage() {
   const [clubs, setClubs] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [showSignOutModal, setShowSignOutModal] = useState(false)
 
   useEffect(() => {
     if (!member?.clubs.length) { setLoading(false); return }
@@ -350,8 +314,6 @@ export default function ProfilePage() {
     ? (member.handle.startsWith('@') ? member.handle : `@${member.handle}`)
     : null
 
-  const memberInitials = member?.name ? nameInitials(member.name) : '?'
-
   const nextDiscDate = nextDiscussion ? formatUpNextDate(nextDiscussion.date) : null
 
   const desktopStats = [
@@ -379,36 +341,22 @@ export default function ProfilePage() {
             fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
             textTransform: 'uppercase', color: 'var(--color-text-secondary)',
           }}>Profile</span>
-          <button
-            onClick={() => setShowEditProfileModal(true)}
-            aria-label="Edit profile"
-            className="transition-[background,transform] duration-[120ms] hover:bg-[rgba(242,237,229,0.06)] active:scale-[0.97]"
-            style={{
-              background: 'transparent',
-              border: `1px solid ${OUTLINE_BORDER}`,
-              color: 'var(--color-text-primary)',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 12, fontWeight: 500,
-              padding: '8px 14px', borderRadius: 8,
-              whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
-            }}
-          >Edit profile</button>
+          <KebabMenu
+            items={[
+              { label: 'Edit profile', onClick: () => setShowEditProfileModal(true) },
+              { label: 'Sign out', danger: true, onClick: () => setShowSignOutModal(true) },
+            ]}
+          />
         </div>
         <div className="flex items-center gap-[18px] mb-7">
-          <div className="relative shrink-0">
-            <div
-              className="rounded-full bg-primary flex items-center justify-center text-white font-serif font-medium"
-              style={{ width: 88, height: 88, fontSize: 88 * 0.40, letterSpacing: '-0.015em' }}
-            >{memberInitials}</div>
-            {member?.avatar_path && (
-              <img
-                src={getAvatarUrl(member.avatar_path)} alt={member.name}
-                className="absolute inset-0 rounded-full object-cover"
-                style={{ width: 88, height: 88 }}
-                onError={e => { e.currentTarget.style.display = 'none' }}
-              />
-            )}
-          </div>
+          <Avatar
+            name={member?.name ?? '?'}
+            userId={String(member?.id ?? 0)}
+            imageUrl={member?.avatar_path ? getAvatarUrl(member.avatar_path) : null}
+            size="xl"
+            isOwn
+            className="shrink-0"
+          />
           <div className="min-w-0">
             <p style={{
               fontFamily: '"EB Garamond", Georgia, serif',
@@ -436,20 +384,14 @@ export default function ProfilePage() {
         className="hidden md:flex items-center gap-7 pb-9"
         style={{ borderBottom: `1px solid ${HAIRLINE}` }}
       >
-        <div className="relative shrink-0">
-          <div
-            className="rounded-full bg-primary flex items-center justify-center text-white font-serif font-medium"
-            style={{ width: 112, height: 112, fontSize: 112 * 0.40, letterSpacing: '-0.015em' }}
-          >{memberInitials}</div>
-          {member?.avatar_path && (
-            <img
-              src={getAvatarUrl(member.avatar_path)} alt={member?.name}
-              className="absolute inset-0 rounded-full object-cover"
-              style={{ width: 112, height: 112 }}
-              onError={e => { e.currentTarget.style.display = 'none' }}
-            />
-          )}
-        </div>
+        <Avatar
+          name={member?.name ?? '?'}
+          userId={String(member?.id ?? 0)}
+          imageUrl={member?.avatar_path ? getAvatarUrl(member.avatar_path) : null}
+          size="2xl"
+          isOwn
+          className="shrink-0"
+        />
 
         <div className="flex-1 min-w-0">
           <span style={{
@@ -728,6 +670,7 @@ export default function ProfilePage() {
                   role={c.role}
                   members={c.members}
                   memberCount={c.memberCount}
+                  currentMemberId={member?.id}
                 />
               ))
             )}
@@ -745,6 +688,10 @@ export default function ProfilePage() {
         }}
         onError={() => {}}
         currentMember={member}
+      />
+      <SignOutModal
+        isOpen={showSignOutModal}
+        onClose={() => setShowSignOutModal(false)}
       />
     </div>
   )

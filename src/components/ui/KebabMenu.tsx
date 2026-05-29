@@ -31,6 +31,7 @@ export default function KebabMenu({ items }: KebabMenuProps) {
     <div ref={menuRef} className="relative inline-block">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Open menu"
         className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[rgba(242,237,229,0.06)] text-[var(--color-text-secondary)]"
       >
         <span className="flex items-center gap-0.5">

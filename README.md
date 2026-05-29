@@ -136,46 +136,50 @@ See [CLAUDE.md - Testing Section](CLAUDE.md#testing) for guidelines on writing t
 kluvs-frontend/
 ├── src/
 │   ├── components/                 # React components
-│   │   ├── modals/                # Modal dialogs (AddClub, DeleteClub, EditProfile, etc.)
-│   │   ├── layout/                # Layout components (Sidebar, TopNavbar)
+│   │   ├── modals/                # 15 modal dialogs
+│   │   ├── layout/                # AppShell, AppSidebar, Sidebar, TopNavbar
+│   │   ├── ui/                    # Reusable primitives (Avatar, BookCover, etc.)
+│   │   ├── icons/                 # SVG icon components
 │   │   ├── Header.tsx             # Shared header (public pages)
 │   │   ├── Footer.tsx             # Shared footer (all pages)
-│   │   ├── ClubsSidebar.tsx
-│   │   ├── CurrentReadingCard.tsx
 │   │   ├── DiscussionsTimeline.tsx
 │   │   ├── MembersTable.tsx
-│   │   └── ThemeToggle.tsx        # Dark/light theme toggle
-│   ├── content/                   # Markdown content files
+│   │   └── ThemeToggle.tsx        # Light/dark/system theme toggle
+│   ├── content/                   # Markdown content files (legal pages)
 │   │   ├── privacy-policy.md
 │   │   ├── terms-of-use.md
 │   │   └── data-deletion.md
 │   ├── contexts/                  # React contexts
-│   │   └── AuthContext.tsx        # Authentication state
-│   ├── pages/                     # Page components
-│   │   ├── LandingPage.tsx
-│   │   ├── ClubsDashboard.tsx
-│   │   ├── LoginPage.tsx
+│   │   ├── AuthContext.tsx        # Authentication state
+│   │   └── ThemeContext.tsx       # Theme state (light/dark/system)
+│   ├── pages/                     # Page components (12 total)
+│   │   ├── LandingPage.tsx        # Public marketing page
+│   │   ├── LoginPage.tsx          # OAuth + email/password auth
+│   │   ├── ProfilePage.tsx        # /me — user profile & settings
+│   │   ├── ClubsPage.tsx          # /clubs — club list
+│   │   ├── ClubDetailPage.tsx     # /clubs/:slug — full club view
+│   │   ├── BooksPage.tsx          # /books — book discovery
+│   │   ├── JoinPage.tsx           # /join/:token — invite link handler
+│   │   ├── SetNewPasswordPage.tsx # Password recovery
 │   │   ├── PrivacyPolicy.tsx
 │   │   ├── TermsOfUse.tsx
 │   │   ├── DataDeletion.tsx
 │   │   └── DiscordPage.tsx
 │   ├── types/                     # TypeScript type definitions
 │   │   └── index.ts
-│   ├── __tests__/                 # Test files (25 test files, 469 tests)
+│   ├── __tests__/                 # ~1,093 tests across 44 test files
 │   │   ├── setup.ts
 │   │   ├── utils/                 # Test utilities & mocks
 │   │   ├── contexts/
 │   │   ├── components/
-│   │   ├── pages/
-│   │   └── [component].test.tsx
-│   ├── App.tsx                    # Root component & routing
-│   ├── supabase.ts                # Supabase client config
+│   │   └── pages/
+│   ├── App.tsx                    # Root component — domain-based routing
+│   ├── supabase.ts                # Supabase client + invokeFunction helper
 │   └── version.ts                 # Version string
 ├── .husky/                        # Git hooks
 │   └── pre-push                   # Runs validation on push
 ├── public/                        # Static assets
 ├── .env.local                     # Local environment vars (create this)
-├── .env.production                # Production env vars
 ├── package.json                   # Dependencies & scripts
 ├── vite.config.ts                 # Vite configuration
 ├── vitest.config.ts               # Test configuration
@@ -185,22 +189,23 @@ kluvs-frontend/
 
 ## 🔐 Authentication
 
-The app uses **OAuth 2.0** with Supabase Auth for authentication:
+The app uses Supabase Auth with multiple providers:
 
-- **Providers:** Discord, Google (*iOS coming soon...*)
+- **OAuth Providers:** Discord, Google (*iOS coming soon...*)
+- **Email/Password:** Sign up, sign in, password recovery via email link
 - **Session:** Stored in localStorage with auto-refresh
-- **Roles:** Admin (full access) vs Member (read-only)
+- **Roles:** Per-club roles — `owner`, `admin` (full access), `member` (read-only)
 
 ### First-Time Login
 
-1. Click "Sign in with Discord" or "Sign in with Google"
-2. Authorize the app
-3. You'll be redirected back to the dashboard
-4. A member profile is automatically created
+1. Click "Sign in with Discord", "Sign in with Google", or use email/password
+2. For OAuth: authorize the app and you'll be redirected back automatically
+3. For email: confirm your email if signing up, then log in
+4. A member profile is automatically created on first sign-in
 
 ### Role Management
 
-User roles are managed via the backend API. Contact an admin to upgrade your role from `member` to `admin`.
+Roles are per-club and managed via the backend API. Contact a club admin or owner to change your role.
 
 ## 🎨 Tech Stack
 
@@ -210,7 +215,7 @@ User roles are managed via the backend API. Contact an admin to upgrade your rol
 - **Markdown:** `react-markdown` for rendering legal pages
 - **Routing:** React Router v7
 - **Backend:** Supabase (Edge Functions + Auth)
-- **Testing:** Vitest + React Testing Library
+- **Testing:** Vitest + React Testing Library (~1,093 tests across 44 files)
 - **Linting:** ESLint with TypeScript support
 - **Pre-commit Hooks:** Husky (runs validation on push)
 
@@ -227,7 +232,7 @@ User roles are managed via the backend API. Contact an admin to upgrade your rol
 All PRs must pass (via Husky pre-push hook):
 - ✅ ESLint (no errors)
 - ✅ TypeScript type checking (no errors)
-- ✅ Tests (469 tests must pass across 25 test files)
+- ✅ Tests (~1,093 tests must pass across 44 test files)
 - ✅ Build (must compile successfully)
 
 Run `npm run validate` to check all of these locally before pushing.

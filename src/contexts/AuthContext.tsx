@@ -12,6 +12,7 @@ interface AuthContextType {
   getRoleForClub: (clubId: string) => UserRole | null
   signInWithDiscord: () => Promise<void>
   signInWithGoogle: () => Promise<void>
+  signInWithApple: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
   signUpWithEmail: (email: string, password: string) => Promise<{ needsConfirmation: boolean }>
   resetPasswordForEmail: (email: string) => Promise<void>
@@ -200,6 +201,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Sign in with Apple
+  const signInWithApple = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: import.meta.env.VITE_OAUTH_REDIRECT_URL
+        }
+      })
+      if (error) throw error
+    } catch (error) {
+      console.error('Error signing in with Apple:', error)
+      throw error
+    }
+  }
+
   // Sign in with email and password
   const signInWithEmail = async (email: string, password: string) => {
     try {
@@ -345,6 +362,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getRoleForClub,
     signInWithDiscord,
     signInWithGoogle,
+    signInWithApple,
     signInWithEmail,
     signUpWithEmail,
     resetPasswordForEmail,
