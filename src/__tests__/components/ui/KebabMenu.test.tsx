@@ -1,111 +1,134 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '../../utils/test-utils'
+import { render, screen, waitFor } from '../../utils/test-utils'
 import userEvent from '@testing-library/user-event'
 import KebabMenu from '../../../components/ui/KebabMenu'
 
 describe('KebabMenu', () => {
   describe('Rendering', () => {
-    it('renders trigger button', () => {
-      const items = [{ label: 'Edit', onClick: vi.fn() }]
-      render(<KebabMenu items={items} />)
-      const buttons = screen.getAllByRole('button')
-      expect(buttons.length).toBeGreaterThan(0)
+    it('renders trigger button with accessible label', () => {
+      render(<KebabMenu items={[{ label: 'Edit', onClick: vi.fn() }]} />)
+      expect(screen.getByRole('button', { name: /open menu/i })).toBeInTheDocument()
+    })
+
+    it('does not render menu items before trigger is clicked', () => {
+      render(<KebabMenu items={[{ label: 'Edit', onClick: vi.fn() }]} />)
+      expect(screen.queryByText('Edit')).not.toBeInTheDocument()
     })
 
     it('opens menu when trigger is clicked', async () => {
       const user = userEvent.setup()
-      const items = [{ label: 'Edit', onClick: vi.fn() }]
-      render(<KebabMenu items={items} />)
-
-      const buttons = screen.getAllByRole('button')
-      if (buttons.length > 0) {
-        await user.click(buttons[0])
-        // Menu should open (items visible)
-        expect(screen.queryAllByRole('button').length).toBeGreaterThan(1)
-      }
+      render(<KebabMenu items={[{ label: 'Edit', onClick: vi.fn() }]} />)
+      await user.click(screen.getByRole('button', { name: /open menu/i }))
+      expect(screen.getByText('Edit')).toBeInTheDocument()
     })
 
-    it('closes menu when outside is clicked', async () => {
+    it('closes menu when trigger is clicked again', async () => {
       const user = userEvent.setup()
-      const items = [{ label: 'Edit', onClick: vi.fn() }]
+      render(<KebabMenu items={[{ label: 'Edit', onClick: vi.fn() }]} />)
+      const trigger = screen.getByRole('button', { name: /open menu/i })
+      await user.click(trigger)
+      expect(screen.getByText('Edit')).toBeInTheDocument()
+      await user.click(trigger)
+      expect(screen.queryByText('Edit')).not.toBeInTheDocument()
+    })
+
+    it('closes menu when clicking outside', async () => {
+      const user = userEvent.setup()
       render(
         <div>
           <div data-testid="outside">Outside</div>
-          <KebabMenu items={items} />
+          <KebabMenu items={[{ label: 'Edit', onClick: vi.fn() }]} />
         </div>
       )
-
-      // Open menu
-      const buttons = screen.getAllByRole('button')
-      if (buttons.length > 0) {
-        await user.click(buttons[0])
-      }
-
-      // Click outside
-      const outside = screen.getByTestId('outside')
-      await user.click(outside)
+      await user.click(screen.getByRole('button', { name: /open menu/i }))
+      expect(screen.getByText('Edit')).toBeInTheDocument()
+      await user.click(screen.getByTestId('outside'))
+      await waitFor(() => expect(screen.queryByText('Edit')).not.toBeInTheDocument())
     })
   })
 
   describe('Menu items', () => {
-    it('renders all menu items', async () => {
+    it('renders all provided items', async () => {
       const user = userEvent.setup()
-      const items = [
-        { label: 'Edit', onClick: vi.fn() },
-        { label: 'Delete', onClick: vi.fn(), danger: true },
-      ]
-      render(<KebabMenu items={items} />)
-
-      const buttons = screen.getAllByRole('button')
-      if (buttons.length > 0) {
-        await user.click(buttons[0])
-        // Menu items should be visible
-        expect(screen.queryAllByText(/Edit|Delete/i).length).toBeGreaterThan(0)
-      }
+      render(
+        <KebabMenu items={[
+          { label: 'Edit', onClick: vi.fn() },
+          { label: 'Delete', onClick: vi.fn(), danger: true },
+        ]} />
+      )
+      await user.click(screen.getByRole('button', { name: /open menu/i }))
+      expect(screen.getByText('Edit')).toBeInTheDocument()
+      expect(screen.getByText('Delete')).toBeInTheDocument()
     })
 
-    it('calls onClick when menu item is clicked', async () => {
+    it('calls onClick when a menu item is clicked', async () => {
       const user = userEvent.setup()
       const handleEdit = vi.fn()
-      const items = [{ label: 'Edit', onClick: handleEdit }]
-      render(<KebabMenu items={items} />)
-
-      const buttons = screen.getAllByRole('button')
-      if (buttons.length > 0) {
-        await user.click(buttons[0])
-        // Click menu item if available
-        const editItems = screen.queryAllByText('Edit')
-        if (editItems.length > 1) {
-          const menuItem = editItems[editItems.length - 1]
-          if (menuItem) {
-            await user.click(menuItem)
-          }
-        }
-      }
+      render(<KebabMenu items={[{ label: 'Edit', onClick: handleEdit }]} />)
+      await user.click(screen.getByRole('button', { name: /open menu/i }))
+      await user.click(screen.getByText('Edit'))
+      expect(handleEdit).toHaveBeenCalledTimes(1)
     })
 
-    it('styles danger items differently', async () => {
+    it('closes menu after a menu item is clicked', async () => {
       const user = userEvent.setup()
-      const items = [
-        { label: 'Delete', onClick: vi.fn(), danger: true },
-      ]
-      render(<KebabMenu items={items} />)
+      render(<KebabMenu items={[{ label: 'Edit', onClick: vi.fn() }]} />)
+      await user.click(screen.getByRole('button', { name: /open menu/i }))
+      await user.click(screen.getByText('Edit'))
+      await waitFor(() => expect(screen.queryByText('Edit')).not.toBeInTheDocument())
+    })
 
-      const buttons = screen.getAllByRole('button')
-      if (buttons.length > 0) {
-        await user.click(buttons[0])
-        // Danger item should be rendered
-        expect(screen.queryAllByText(/Delete/i).length).toBeGreaterThan(0)
-      }
+    it('applies danger styling to danger items', async () => {
+      const user = userEvent.setup()
+      render(
+        <KebabMenu items={[
+          { label: 'Safe action', onClick: vi.fn() },
+          { label: 'Danger action', onClick: vi.fn(), danger: true },
+        ]} />
+      )
+      await user.click(screen.getByRole('button', { name: /open menu/i }))
+      const dangerBtn = screen.getByText('Danger action').closest('button')
+      expect(dangerBtn?.className).toMatch(/danger/)
+      const safeBtn = screen.getByText('Safe action').closest('button')
+      expect(safeBtn?.className).not.toMatch(/danger/)
+    })
+
+    it('calls the correct handler when multiple items are present', async () => {
+      const user = userEvent.setup()
+      const handleEdit = vi.fn()
+      const handleDelete = vi.fn()
+      render(
+        <KebabMenu items={[
+          { label: 'Edit', onClick: handleEdit },
+          { label: 'Delete', onClick: handleDelete, danger: true },
+        ]} />
+      )
+      await user.click(screen.getByRole('button', { name: /open menu/i }))
+      await user.click(screen.getByText('Delete'))
+      expect(handleDelete).toHaveBeenCalledTimes(1)
+      expect(handleEdit).not.toHaveBeenCalled()
     })
   })
 
   describe('Accessibility', () => {
-    it('trigger button is accessible', () => {
-      const items = [{ label: 'Edit', onClick: vi.fn() }]
-      render(<KebabMenu items={items} />)
-      const buttons = screen.getAllByRole('button')
-      expect(buttons.length).toBeGreaterThan(0)
+    it('trigger button has aria-label', () => {
+      render(<KebabMenu items={[{ label: 'Edit', onClick: vi.fn() }]} />)
+      const trigger = screen.getByRole('button', { name: /open menu/i })
+      expect(trigger).toHaveAttribute('aria-label', 'Open menu')
+    })
+
+    it('menu items are buttons', async () => {
+      const user = userEvent.setup()
+      render(
+        <KebabMenu items={[
+          { label: 'Edit', onClick: vi.fn() },
+          { label: 'Delete', onClick: vi.fn(), danger: true },
+        ]} />
+      )
+      await user.click(screen.getByRole('button', { name: /open menu/i }))
+      const allButtons = screen.getAllByRole('button')
+      // trigger + 2 item buttons
+      expect(allButtons.length).toBe(3)
     })
   })
 })
