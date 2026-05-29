@@ -772,7 +772,7 @@ describe('ClubDetailPage', () => {
       })
       const user = userEvent.setup()
       renderDetail()
-      await waitFor(() => screen.queryAllByRole('button', { name: /schedule discussion/i }).length > 0)
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /schedule discussion/i }).length).toBeGreaterThan(0))
       await user.click(screen.getAllByRole('button', { name: /schedule discussion/i })[0])
       await waitFor(() => expect(screen.getByTestId('discussion-modal')).toBeInTheDocument())
     })
