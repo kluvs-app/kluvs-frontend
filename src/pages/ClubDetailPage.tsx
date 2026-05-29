@@ -800,30 +800,24 @@ export default function ClubDetailPage() {
                 >
                   Share
                 </GhostButton>
-                <GhostButton
-                  variant="sm"
-                  onClick={() => setShowEditClubModal(true)}
-                >
-                  Edit club
-                </GhostButton>
+                <KebabMenu
+                  items={[
+                    {
+                      label: 'Edit club',
+                      onClick: () => setShowEditClubModal(true),
+                    },
+                    {
+                      label: 'Delete club',
+                      danger: true,
+                      onClick: () => {
+                        setClubToDelete({ id: club.id, name: club.name })
+                        setShowDeleteClubModal(true)
+                      },
+                    },
+                  ]}
+                />
               </>
             )}
-            <KebabMenu
-              items={[
-                {
-                  label: 'Edit club',
-                  onClick: () => setShowEditClubModal(true),
-                },
-                {
-                  label: 'Delete club',
-                  danger: true,
-                  onClick: () => {
-                    setClubToDelete({ id: club.id, name: club.name })
-                    setShowDeleteClubModal(true)
-                  },
-                },
-              ]}
-            />
           </div>
         </div>
 
@@ -854,7 +848,6 @@ export default function ClubDetailPage() {
           {/* Utility row — admin only */}
           {isAdmin && (
             <div className="flex items-center gap-2">
-              <DiscordIndicator club={club} isAdmin={isAdmin} />
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(club.id)
@@ -879,6 +872,7 @@ export default function ClubDetailPage() {
               >
                 {idCopied ? 'Copied!' : 'Copy Club ID'}
               </button>
+              <DiscordIndicator club={club} isAdmin={isAdmin} />
             </div>
           )}
         </div>

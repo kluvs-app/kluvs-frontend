@@ -5,6 +5,8 @@ import Avatar from '../components/ui/Avatar'
 import { useAuth } from '../contexts/AuthContext'
 import type { Club } from '../types'
 import EditProfileModal from '../components/modals/EditProfileModal'
+import SignOutModal from '../components/modals/SignOutModal'
+import KebabMenu from '../components/ui/KebabMenu'
 import { isPast, parseLocalDate } from '../utils/dates'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -245,6 +247,7 @@ export default function ProfilePage() {
   const [clubs, setClubs] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
+  const [showSignOutModal, setShowSignOutModal] = useState(false)
 
   useEffect(() => {
     if (!member?.clubs.length) { setLoading(false); return }
@@ -338,20 +341,12 @@ export default function ProfilePage() {
             fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
             textTransform: 'uppercase', color: 'var(--color-text-secondary)',
           }}>Profile</span>
-          <button
-            onClick={() => setShowEditProfileModal(true)}
-            aria-label="Edit profile"
-            className="transition-[background,transform] duration-[120ms] hover:bg-[rgba(242,237,229,0.06)] active:scale-[0.97]"
-            style={{
-              background: 'transparent',
-              border: `1px solid ${OUTLINE_BORDER}`,
-              color: 'var(--color-text-primary)',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 12, fontWeight: 500,
-              padding: '8px 14px', borderRadius: 8,
-              whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
-            }}
-          >Edit profile</button>
+          <KebabMenu
+            items={[
+              { label: 'Edit profile', onClick: () => setShowEditProfileModal(true) },
+              { label: 'Sign out', danger: true, onClick: () => setShowSignOutModal(true) },
+            ]}
+          />
         </div>
         <div className="flex items-center gap-[18px] mb-7">
           <Avatar
@@ -693,6 +688,10 @@ export default function ProfilePage() {
         }}
         onError={() => {}}
         currentMember={member}
+      />
+      <SignOutModal
+        isOpen={showSignOutModal}
+        onClose={() => setShowSignOutModal(false)}
       />
     </div>
   )
