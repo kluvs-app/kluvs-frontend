@@ -155,11 +155,14 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                     )}
                     {fullClub?.active_session?.discussions && fullClub.active_session.discussions.length > 0 && (() => {
                       const next = fullClub.active_session.discussions.find((d) => !isPast(d.date, d.time))
-                      return next ? (
+                      if (!next || !next.date) return null
+                      const parsedDate = parseLocalDate(next.date)
+                      if (isNaN(parsedDate.getTime())) return null
+                      return (
                         <span className="text-[12px] text-[var(--color-text-secondary)] font-medium uppercase tracking-[0.02em]">
-                          Next · {parseLocalDate(next.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          Next · {parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
-                      ) : null
+                      )
                     })()}
                   </div>
                 </div>

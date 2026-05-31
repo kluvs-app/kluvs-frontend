@@ -5,8 +5,10 @@
  * Also handles ISO datetime strings by extracting the date part.
  */
 export function parseLocalDate(dateStr: string): Date {
+  if (!dateStr) return new Date(NaN)
   const dateOnly = dateStr.split('T')[0]
-  return new Date(dateOnly + 'T00:00:00')
+  const parsed = new Date(dateOnly + 'T00:00:00')
+  return isNaN(parsed.getTime()) ? new Date(NaN) : parsed
 }
 
 /**
