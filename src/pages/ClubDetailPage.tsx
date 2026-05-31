@@ -13,6 +13,7 @@ import DeleteClubModal from '../components/modals/DeleteClubModal'
 import EditClubModal from '../components/modals/EditClubModal'
 import AddClubModal from '../components/modals/AddClubModal'
 import ShareClubModal from '../components/modals/ShareClubModal'
+import EndSessionModal from '../components/modals/EndSessionModal'
 import { useAuth } from '../contexts/AuthContext'
 import { parseLocalDate, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
@@ -103,10 +104,7 @@ export default function ClubDetailPage() {
   const [showAddClubModal, setShowAddClubModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
 
-  // Finish session state
-  const [showFinishConfirm, setShowFinishConfirm] = useState(false)
-  const [finishLoading, setFinishLoading] = useState(false)
-  const [finishError, setFinishError] = useState<string | null>(null)
+  const [showEndSessionModal, setShowEndSessionModal] = useState(false)
   const [togglingMemberId, setTogglingMemberId] = useState<number | null>(null)
 
   // Track which club IDs have been fetched for the sidebar to avoid duplicate requests
@@ -259,29 +257,6 @@ export default function ClubDetailPage() {
     const sm = club.active_session.members.find(m => m.member_id === memberId)
     if (!sm) return null
     return sm.is_reading ? 'reading' : 'skipping'
-  }
-
-  const handleFinishSession = async () => {
-    if (!club?.active_session) return
-    setFinishLoading(true)
-    setFinishError(null)
-    try {
-      const { error: err } = await invokeFunction<{ success: boolean; members_credited: number }>(
-        'session',
-        { method: 'PUT', body: { id: club.active_session.id, finish: true } }
-      )
-      if (err) throw err
-      setShowFinishConfirm(false)
-      await refreshClub()
-    } catch (err: unknown) {
-      setFinishError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
-          : 'Failed to finish session'
-      )
-    } finally {
-      setFinishLoading(false)
-    }
   }
 
   const handleToggleMember = async (memberId: number, newValue: boolean) => {
@@ -521,7 +496,7 @@ export default function ClubDetailPage() {
                           </p>
                           {isAdmin && club.active_session.status === 'active' && (
                             <KebabMenu
-                              items={[{ label: 'End Session', onClick: () => { setFinishError(null); setShowFinishConfirm(true) } }]}
+                              items={[{ label: 'End Session', onClick: () => setShowEndSessionModal(true) }]}
                             />
                           )}
                         </div>
@@ -619,32 +594,6 @@ export default function ClubDetailPage() {
                             </div>
                           )
                         })()}
-
-                        {/* End Session confirm — triggered by the kebab in the NOW READING header */}
-                        {isAdmin && club.active_session.status === 'active' && showFinishConfirm && (
-                          <div className="mt-5 pt-4 border-t border-[var(--color-divider)]">
-                            <div className="space-y-2">
-                              <p className="text-[12px] text-[var(--color-text-secondary)]">
-                                {(club.active_session.members ?? []).filter(m => m.is_reading).length} member(s) will receive credit. This cannot be undone.
-                              </p>
-                              {finishError && (
-                                <p className="text-[12px] text-danger">{finishError}</p>
-                              )}
-                              <div className="flex items-center gap-2">
-                                <button
-                                  disabled={finishLoading}
-                                  onClick={handleFinishSession}
-                                  className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
-                                >
-                                  {finishLoading ? 'Finishing…' : 'Confirm End'}
-                                </button>
-                                <GhostButton variant="sm" onClick={() => setShowFinishConfirm(false)}>
-                                  Cancel
-                                </GhostButton>
-                              </div>
-                            </div>
-                          </div>
-                        )}
 
                         {/* Finished badge */}
                         {club.active_session.status === 'finished' && (
@@ -1139,7 +1088,7 @@ export default function ClubDetailPage() {
                         </p>
                         {isAdmin && club.active_session.status === 'active' && (
                           <KebabMenu
-                            items={[{ label: 'End Session', onClick: () => { setFinishError(null); setShowFinishConfirm(true) } }]}
+                            items={[{ label: 'End Session', onClick: () => setShowEndSessionModal(true) }]}
                           />
                         )}
                       </div>
@@ -1234,31 +1183,6 @@ export default function ClubDetailPage() {
                       </div>
                     )
                   })()}
-
-                  {/* End Session confirm */}
-                  {isAdmin && club.active_session.status === 'active' && showFinishConfirm && (
-                    <div className="mt-4 pt-4 border-t border-[var(--color-divider)] space-y-2">
-                      <p className="text-[12px] text-[var(--color-text-secondary)]">
-                        {(club.active_session.members ?? []).filter(m => m.is_reading).length} member(s) will receive credit. This cannot be undone.
-                      </p>
-                      {finishError && <p className="text-[12px] text-danger">{finishError}</p>}
-                      <div className="flex items-center gap-2">
-                        <button
-                          disabled={finishLoading}
-                          onClick={handleFinishSession}
-                          className="bg-primary hover:bg-primary-hover text-white px-4 py-1.5 rounded-btn text-[13px] font-medium transition-all disabled:opacity-50"
-                        >
-                          {finishLoading ? 'Finishing…' : 'Confirm End'}
-                        </button>
-                        <button
-                          onClick={() => setShowFinishConfirm(false)}
-                          className="text-[13px] text-[var(--color-text-secondary)] px-3 py-1.5"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
 
                   {club.active_session.status === 'finished' && (
                     <div className="mt-3">
@@ -1757,6 +1681,12 @@ export default function ClubDetailPage() {
         onClose={() => setShowShareModal(false)}
         club={club}
         onUpdated={(patch) => setClub(prev => prev ? { ...prev, ...patch } : prev)}
+      />
+      <EndSessionModal
+        isOpen={showEndSessionModal}
+        onClose={() => setShowEndSessionModal(false)}
+        club={club}
+        onSessionEnded={refreshClub}
       />
     </>
   )
