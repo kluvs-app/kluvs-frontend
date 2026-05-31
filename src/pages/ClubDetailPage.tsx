@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
-import { invokeFunction } from '../supabase'
+import { invokeFunction, getAvatarUrl } from '../supabase'
 import type { Club, Discussion, Member } from '../types'
 import EditBookModal from '../components/modals/EditBookModal'
 import NewSessionModal from '../components/modals/NewSessionModal'
@@ -711,6 +711,7 @@ export default function ClubDetailPage() {
                               <Avatar
                                 name={clubMember.name}
                                 userId={String(clubMember.id)}
+                                imageUrl={clubMember.avatar_path ? getAvatarUrl(clubMember.avatar_path) : null}
                                 size="lg"
                                 isOwn={isOwn}
                               />
@@ -1049,6 +1050,7 @@ export default function ClubDetailPage() {
                         <Avatar
                           name={m.name}
                           userId={String(m.id)}
+                          imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
                           size="md"
                           isOwn={member?.id != null && m.id === member.id}
                         />
