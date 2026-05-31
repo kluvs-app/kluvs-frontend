@@ -74,6 +74,11 @@ export const mockActiveSession: Session = {
   id: 'session-1',
   book: mockBook,
   due_date: '2024-12-31',
+  status: 'active',
+  members: [
+    { member_id: 1, member_name: 'Alice', is_reading: true },
+    { member_id: 2, member_name: 'Bob', is_reading: false },
+  ],
   discussions: [mockDiscussion, mockDiscussion2],
 }
 
@@ -81,6 +86,8 @@ export const mockPastSession: Session = {
   id: 'session-2',
   book: mockBook2,
   due_date: '2024-01-01',
+  status: 'finished',
+  members: [],
   discussions: [mockDiscussion],
 }
 

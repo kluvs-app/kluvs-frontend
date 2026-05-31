@@ -103,6 +103,12 @@ export default function ClubDetailPage() {
   const [showAddClubModal, setShowAddClubModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
 
+  // Finish session state
+  const [showFinishConfirm, setShowFinishConfirm] = useState(false)
+  const [finishLoading, setFinishLoading] = useState(false)
+  const [finishError, setFinishError] = useState<string | null>(null)
+  const [togglingMemberId, setTogglingMemberId] = useState<number | null>(null)
+
   // Track which club IDs have been fetched for the sidebar to avoid duplicate requests
   const sidebarFetchedRef = useRef(new Set<string>())
 
@@ -246,6 +252,54 @@ export default function ClubDetailPage() {
   const getProgressPercent = () => {
     const { completed, total } = getSessionProgress()
     return total === 0 ? 0 : Math.round((completed / total) * 100)
+  }
+
+  const getMemberSessionStatus = (memberId: number): 'reading' | 'skipping' | null => {
+    if (!club?.active_session?.members) return null
+    const sm = club.active_session.members.find(m => m.member_id === memberId)
+    if (!sm) return null
+    return sm.is_reading ? 'reading' : 'skipping'
+  }
+
+  const handleFinishSession = async () => {
+    if (!club?.active_session) return
+    setFinishLoading(true)
+    setFinishError(null)
+    try {
+      const { error: err } = await invokeFunction<{ success: boolean; members_credited: number }>(
+        'session',
+        { method: 'PUT', body: { id: club.active_session.id, finish: true } }
+      )
+      if (err) throw err
+      setShowFinishConfirm(false)
+      await refreshClub()
+    } catch (err: unknown) {
+      setFinishError(
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : 'Failed to finish session'
+      )
+    } finally {
+      setFinishLoading(false)
+    }
+  }
+
+  const handleToggleMember = async (memberId: number, newValue: boolean) => {
+    if (!club?.active_session) return
+    setTogglingMemberId(memberId)
+    try {
+      const { error: err } = await invokeFunction(
+        'session',
+        { method: 'PUT', body: { id: club.active_session.id, session_members: [{ member_id: memberId, is_reading: newValue }] } }
+      )
+      if (err) throw err
+      await refreshClub()
+    } catch {
+      // refresh will restore correct state
+      await refreshClub()
+    } finally {
+      setTogglingMemberId(null)
+    }
   }
 
   const getSortedMembers = (members: Member[]) => {
@@ -452,16 +506,25 @@ export default function ClubDetailPage() {
                   {/* Book / session area */}
                   {club.active_session ? (
                     <div className="grid grid-cols-[128px_1fr] gap-9 mb-12 pb-12 border-b border-[var(--color-divider)]">
+                      {/* Left column: cover */}
                       <BookCover
                         imageUrl={club.active_session.book?.image_url}
                         title={club.active_session.book?.title || 'Book cover'}
                         size="lg"
                       />
 
+                      {/* Right column: metadata + CTA */}
                       <div>
-                        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-3.5">
-                          NOW READING
-                        </p>
+                        <div className="flex items-center justify-between mb-3.5">
+                          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                            NOW READING
+                          </p>
+                          {isAdmin && club.active_session.status === 'active' && (
+                            <KebabMenu
+                              items={[{ label: 'End Session', onClick: () => { setFinishError(null); setShowFinishConfirm(true) } }]}
+                            />
+                          )}
+                        </div>
                         <h2 className="font-serif italic text-[52px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-2 tracking-[-0.015em]">
                           {club.active_session.book?.title || '(Untitled)'}
                         </h2>
@@ -474,9 +537,7 @@ export default function ClubDetailPage() {
                           <div className="flex-1 h-1 rounded-full bg-[#332B24] overflow-hidden">
                             <div
                               className="h-full bg-primary transition-all duration-300"
-                              style={{
-                                width: `${getProgressPercent()}%`,
-                              }}
+                              style={{ width: `${getProgressPercent()}%` }}
                             />
                           </div>
                           <span className="text-[13px] text-[var(--color-text-secondary)] font-mono">
@@ -491,6 +552,108 @@ export default function ClubDetailPage() {
                             day: 'numeric',
                           })}
                         </p>
+
+                        {/* Participation row: facepile + count + opt-in/out */}
+                        {(() => {
+                          const readingMembers = (club.active_session.members ?? [])
+                            .filter(sm => sm.is_reading)
+                            .map(sm => club.members.find(m => m.id === sm.member_id))
+                            .filter((m): m is Member => m != null)
+                          const sessionMember = member && club.active_session.members
+                            ? club.active_session.members.find(s => s.member_id === member.id)
+                            : undefined
+                          const isReading = sessionMember?.is_reading === true
+                          const showCTA = member && club.active_session.status === 'active'
+                          return (
+                            <div className="mt-5 pt-4 border-t border-[var(--color-divider)] flex items-center justify-between gap-3">
+                              {/* Left: facepile + reading count */}
+                              <div className="flex items-center gap-2.5">
+                                {readingMembers.length > 0 ? (
+                                  <>
+                                    <div className="flex -space-x-1.5">
+                                      {readingMembers.slice(0, 5).map(m => (
+                                        <div key={m.id} className="border-[1.5px] border-[var(--color-bg)] rounded-full">
+                                          <Avatar
+                                            name={m.name}
+                                            userId={String(m.id)}
+                                            imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
+                                            size="sm"
+                                            isOwn={member?.id === m.id}
+                                          />
+                                        </div>
+                                      ))}
+                                      {readingMembers.length > 5 && (
+                                        <div className="w-5 h-5 rounded-full bg-[#4D4033] border-[1.5px] border-[var(--color-bg)] text-[9px] text-white flex items-center justify-center font-medium flex-shrink-0">
+                                          +{readingMembers.length - 5}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <span className="text-[12px] text-[var(--color-text-secondary)]">
+                                      {readingMembers.length} of {club.members.length} reading
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-[12px] text-[var(--color-text-secondary)]">No participants yet</span>
+                                )}
+                              </div>
+                              {/* Right: opt-in/out CTA */}
+                              {showCTA && (
+                                isReading ? (
+                                  <GhostButton
+                                    variant="sm"
+                                    onClick={() => handleToggleMember(member.id, false)}
+                                    disabled={togglingMemberId === member.id}
+                                  >
+                                    Opt out
+                                  </GhostButton>
+                                ) : (
+                                  <button
+                                    onClick={() => handleToggleMember(member.id, true)}
+                                    disabled={togglingMemberId === member.id}
+                                    className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
+                                  >
+                                    Join this Read
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          )
+                        })()}
+
+                        {/* End Session confirm — triggered by the kebab in the NOW READING header */}
+                        {isAdmin && club.active_session.status === 'active' && showFinishConfirm && (
+                          <div className="mt-5 pt-4 border-t border-[var(--color-divider)]">
+                            <div className="space-y-2">
+                              <p className="text-[12px] text-[var(--color-text-secondary)]">
+                                {(club.active_session.members ?? []).filter(m => m.is_reading).length} member(s) will receive credit. This cannot be undone.
+                              </p>
+                              {finishError && (
+                                <p className="text-[12px] text-danger">{finishError}</p>
+                              )}
+                              <div className="flex items-center gap-2">
+                                <button
+                                  disabled={finishLoading}
+                                  onClick={handleFinishSession}
+                                  className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
+                                >
+                                  {finishLoading ? 'Finishing…' : 'Confirm End'}
+                                </button>
+                                <GhostButton variant="sm" onClick={() => setShowFinishConfirm(false)}>
+                                  Cancel
+                                </GhostButton>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Finished badge */}
+                        {club.active_session.status === 'finished' && (
+                          <div className="mt-4">
+                            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full">
+                              Session finished
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -705,9 +868,8 @@ export default function ClubDetailPage() {
                           return (
                             <div
                               key={clubMember.id}
-                              className="flex items-center gap-3.5 py-2.5 border-b border-[var(--color-divider)]"
+                              className="flex items-start gap-3.5 py-3 border-b border-[var(--color-divider)]"
                             >
-                              {/* Avatar */}
                               <Avatar
                                 name={clubMember.name}
                                 userId={String(clubMember.id)}
@@ -719,11 +881,11 @@ export default function ClubDetailPage() {
                               {/* Name + handle */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
+                                  <p className="text-[14px] font-medium text-[var(--color-text-primary)] truncate">
                                     {clubMember.name}
                                   </p>
                                   {isOwn && (
-                                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary flex-shrink-0">
                                       YOU
                                     </span>
                                   )}
@@ -733,26 +895,42 @@ export default function ClubDetailPage() {
                                 </p>
                               </div>
 
-                              {/* Role + kebab */}
-                              <div className="flex items-center gap-3">
-                                <RoleEyebrow
-                                  role={memberRole as 'owner' | 'admin' | 'member'}
-                                />
-                                {isAdmin && !isOwn && memberRole !== 'owner' && (
-                                  <KebabMenu
-                                    items={[
-                                      {
-                                        label: 'Edit role',
-                                        onClick: () => handleEditMember(clubMember),
-                                      },
-                                      {
-                                        label: 'Remove',
-                                        danger: true,
-                                        onClick: () => handleDeleteMember(clubMember),
-                                      },
-                                    ]}
-                                  />
-                                )}
+                              {/* Right column: role + kebab on top, reading icon below */}
+                              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <RoleEyebrow role={memberRole as 'owner' | 'admin' | 'member'} />
+                                  {isAdmin && !isOwn && memberRole !== 'owner' && (
+                                    <KebabMenu
+                                      items={[
+                                        { label: 'Edit role', onClick: () => handleEditMember(clubMember) },
+                                        { label: 'Remove', danger: true, onClick: () => handleDeleteMember(clubMember) },
+                                      ]}
+                                    />
+                                  )}
+                                </div>
+                                {(() => {
+                                  const status = getMemberSessionStatus(clubMember.id)
+                                  if (!status) return null
+                                  const isReadingStatus = status === 'reading'
+                                  return (
+                                    <span
+                                      className="w-[14px] h-[14px] block"
+                                      title={isReadingStatus ? 'Reading' : 'Skipping'}
+                                      style={{
+                                        backgroundColor: isReadingStatus ? '#D16D30' : 'var(--color-text-secondary)',
+                                        opacity: isReadingStatus ? 1 : 0.4,
+                                        maskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
+                                        maskSize: 'contain',
+                                        maskRepeat: 'no-repeat',
+                                        maskPosition: 'center',
+                                        WebkitMaskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
+                                        WebkitMaskSize: 'contain',
+                                        WebkitMaskRepeat: 'no-repeat',
+                                        WebkitMaskPosition: 'center',
+                                      } as React.CSSProperties}
+                                    />
+                                  )
+                                })()}
                               </div>
                             </div>
                           )
@@ -947,42 +1125,149 @@ export default function ClubDetailPage() {
                 </div>
               )}
               {club.active_session && (
-              <div className="grid grid-cols-[80px_1fr] gap-5 items-center">
-                <BookCover
-                  imageUrl={club.active_session.book?.image_url}
-                  title={club.active_session.book?.title || 'Book cover'}
-                  size="md"
-                />
                 <div>
-                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
-                    NOW READING
-                  </p>
-                  <h3 className="font-serif italic text-[28px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-0.5">
-                    {club.active_session.book?.title || '(Untitled)'}
-                  </h3>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] mb-2">
-                    {club.active_session.book?.author}
-                  </p>
-                  <div className="flex items-center justify-between gap-3 mb-1">
-                    <div className="flex-1 h-1 rounded-full bg-[#332B24] overflow-hidden">
-                      <div
-                        className="h-full bg-primary"
-                        style={{ width: `${getProgressPercent()}%` }}
-                      />
+                  <div className="grid grid-cols-[80px_1fr] gap-5 items-start">
+                    <BookCover
+                      imageUrl={club.active_session.book?.image_url}
+                      title={club.active_session.book?.title || 'Book cover'}
+                      size="md"
+                    />
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                          NOW READING
+                        </p>
+                        {isAdmin && club.active_session.status === 'active' && (
+                          <KebabMenu
+                            items={[{ label: 'End Session', onClick: () => { setFinishError(null); setShowFinishConfirm(true) } }]}
+                          />
+                        )}
+                      </div>
+                      <h3 className="font-serif italic text-[28px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-0.5">
+                        {club.active_session.book?.title || '(Untitled)'}
+                      </h3>
+                      <p className="text-[13px] text-[var(--color-text-secondary)] mb-2">
+                        {club.active_session.book?.author}
+                      </p>
+                      <div className="flex items-center justify-between gap-3 mb-1">
+                        <div className="flex-1 h-1 rounded-full bg-[#332B24] overflow-hidden">
+                          <div
+                            className="h-full bg-primary"
+                            style={{ width: `${getProgressPercent()}%` }}
+                          />
+                        </div>
+                        <span className="text-[11px] text-[var(--color-text-secondary)] font-mono whitespace-nowrap ml-2">
+                          {getSessionProgress().completed} of {getSessionProgress().total}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[var(--color-text-secondary)]">
+                        {getProgressPercent()}% through · started{' '}
+                        {getSessionStartDate()?.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </p>
                     </div>
-                    <span className="text-[11px] text-[var(--color-text-secondary)] font-mono whitespace-nowrap ml-2">
-                      {getSessionProgress().completed} of {getSessionProgress().total}
-                    </span>
                   </div>
-                  <p className="text-[11px] text-[var(--color-text-secondary)]">
-                    {getProgressPercent()}% through · started{' '}
-                    {getSessionStartDate()?.toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </p>
+
+                  {/* Participation row: facepile + count + opt-in/out */}
+                  {(() => {
+                    const readingMembers = (club.active_session.members ?? [])
+                      .filter(sm => sm.is_reading)
+                      .map(sm => club.members.find(m => m.id === sm.member_id))
+                      .filter((m): m is Member => m != null)
+                    const sessionMember = member && club.active_session.members
+                      ? club.active_session.members.find(s => s.member_id === member.id)
+                      : undefined
+                    const isReading = sessionMember?.is_reading === true
+                    const showCTA = member && club.active_session.status === 'active'
+                    return (
+                      <div className="mt-4 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          {readingMembers.length > 0 ? (
+                            <>
+                              <div className="flex -space-x-1.5">
+                                {readingMembers.slice(0, 5).map(m => (
+                                  <div key={m.id} className="border-[1.5px] border-[var(--color-bg)] rounded-full">
+                                    <Avatar
+                                      name={m.name}
+                                      userId={String(m.id)}
+                                      imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
+                                      size="sm"
+                                      isOwn={member?.id === m.id}
+                                    />
+                                  </div>
+                                ))}
+                                {readingMembers.length > 5 && (
+                                  <div className="w-5 h-5 rounded-full bg-[#4D4033] border-[1.5px] border-[var(--color-bg)] text-[9px] text-white flex items-center justify-center font-medium flex-shrink-0">
+                                    +{readingMembers.length - 5}
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-[12px] text-[var(--color-text-secondary)]">
+                                {readingMembers.length} of {club.members.length} reading
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-[12px] text-[var(--color-text-secondary)]">No participants yet</span>
+                          )}
+                        </div>
+                        {showCTA && (
+                          isReading ? (
+                            <GhostButton
+                              variant="sm"
+                              onClick={() => handleToggleMember(member.id, false)}
+                              disabled={togglingMemberId === member.id}
+                            >
+                              Opt out
+                            </GhostButton>
+                          ) : (
+                            <button
+                              onClick={() => handleToggleMember(member.id, true)}
+                              disabled={togglingMemberId === member.id}
+                              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
+                            >
+                              Join this Read
+                            </button>
+                          )
+                        )}
+                      </div>
+                    )
+                  })()}
+
+                  {/* End Session confirm */}
+                  {isAdmin && club.active_session.status === 'active' && showFinishConfirm && (
+                    <div className="mt-4 pt-4 border-t border-[var(--color-divider)] space-y-2">
+                      <p className="text-[12px] text-[var(--color-text-secondary)]">
+                        {(club.active_session.members ?? []).filter(m => m.is_reading).length} member(s) will receive credit. This cannot be undone.
+                      </p>
+                      {finishError && <p className="text-[12px] text-danger">{finishError}</p>}
+                      <div className="flex items-center gap-2">
+                        <button
+                          disabled={finishLoading}
+                          onClick={handleFinishSession}
+                          className="bg-primary hover:bg-primary-hover text-white px-4 py-1.5 rounded-btn text-[13px] font-medium transition-all disabled:opacity-50"
+                        >
+                          {finishLoading ? 'Finishing…' : 'Confirm End'}
+                        </button>
+                        <button
+                          onClick={() => setShowFinishConfirm(false)}
+                          className="text-[13px] text-[var(--color-text-secondary)] px-3 py-1.5"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {club.active_session.status === 'finished' && (
+                    <div className="mt-3">
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full inline-block">
+                        Session finished
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
               )}
 
               {/* UP NEXT */}
@@ -1279,7 +1564,7 @@ export default function ClubDetailPage() {
                   return (
                     <div
                       key={clubMember.id}
-                      className="flex items-center gap-3 py-3 border-b border-[var(--color-divider)]"
+                      className="flex items-start gap-3 py-3 border-b border-[var(--color-divider)]"
                     >
                       <Avatar
                         name={clubMember.name}
@@ -1287,40 +1572,60 @@ export default function ClubDetailPage() {
                         size="lg"
                         isOwn={isOwn}
                       />
+
+                      {/* Name + handle */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
+                        <div className="flex items-center gap-2">
+                          <p className="text-[14px] font-medium text-[var(--color-text-primary)] truncate">
                             {clubMember.name}
                           </p>
                           {isOwn && (
-                            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
+                            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary flex-shrink-0">
                               YOU
                             </span>
                           )}
                         </div>
-                        <p className="text-[12px] text-[var(--color-text-secondary)]">
+                        <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
                           @{clubMember.handle || clubMember.discord_id || 'unknown'}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <RoleEyebrow
-                          role={memberRole as 'owner' | 'admin' | 'member'}
-                        />
-                        {isAdmin && !isOwn && memberRole !== 'owner' && (
-                          <KebabMenu
-                            items={[
-                              {
-                                label: 'Edit role',
-                                onClick: () => handleEditMember(clubMember),
-                              },
-                              {
-                                label: 'Remove',
-                                danger: true,
-                                onClick: () => handleDeleteMember(clubMember),
-                              },
-                            ]}
-                          />
-                        )}
+
+                      {/* Right column: role + kebab on top, reading icon below */}
+                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                        <div className="flex items-center gap-2">
+                          <RoleEyebrow role={memberRole as 'owner' | 'admin' | 'member'} />
+                          {isAdmin && !isOwn && memberRole !== 'owner' && (
+                            <KebabMenu
+                              items={[
+                                { label: 'Edit role', onClick: () => handleEditMember(clubMember) },
+                                { label: 'Remove', danger: true, onClick: () => handleDeleteMember(clubMember) },
+                              ]}
+                            />
+                          )}
+                        </div>
+                        {(() => {
+                          const status = getMemberSessionStatus(clubMember.id)
+                          if (!status) return null
+                          const isReadingStatus = status === 'reading'
+                          return (
+                            <span
+                              className="w-[14px] h-[14px] block"
+                              title={isReadingStatus ? 'Reading' : 'Skipping'}
+                              style={{
+                                backgroundColor: isReadingStatus ? '#D16D30' : 'var(--color-text-secondary)',
+                                opacity: isReadingStatus ? 1 : 0.4,
+                                maskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
+                                maskSize: 'contain',
+                                maskRepeat: 'no-repeat',
+                                maskPosition: 'center',
+                                WebkitMaskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
+                                WebkitMaskSize: 'contain',
+                                WebkitMaskRepeat: 'no-repeat',
+                                WebkitMaskPosition: 'center',
+                              } as React.CSSProperties}
+                            />
+                          )
+                        })()}
                       </div>
                     </div>
                   )
