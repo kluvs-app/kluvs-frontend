@@ -25,6 +25,7 @@ export default function NewSessionModal({
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null)
   const [dueDate, setDueDate] = useState('')
   const [bookKey, setBookKey] = useState(0)
+  const [allReading, setAllReading] = useState(true)
 
   const validateDueDate = (dateString: string): boolean => {
     if (!dateString) return true
@@ -44,11 +45,12 @@ export default function NewSessionModal({
       onError('')
       const { error } = await invokeFunction('session', {
         method: 'POST',
-        body: { club_id: selectedClub.id, book_id: selectedBookId, due_date: dueDate }
+        body: { club_id: selectedClub.id, book_id: selectedBookId, due_date: dueDate, all_reading: allReading }
       })
       if (error) throw error
       setSelectedBookId(null)
       setDueDate('')
+      setAllReading(true)
       setBookKey(k => k + 1)
       onClose()
       onSessionCreated()
@@ -66,6 +68,7 @@ export default function NewSessionModal({
   const handleClose = () => {
     setSelectedBookId(null)
     setDueDate('')
+    setAllReading(true)
     setBookKey(k => k + 1)
     onError('')
     onClose()
@@ -136,6 +139,39 @@ export default function NewSessionModal({
           <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
             When should members finish reading this book?
           </p>
+        </div>
+
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase' as const, color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>Participation</label>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-[var(--color-text-primary)]">
+              {allReading ? 'All members reading' : 'No members reading (opt-in later)'}
+            </p>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={allReading}
+              disabled={loading}
+              onClick={() => setAllReading(prev => !prev)}
+              className={[
+                'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
+                allReading ? 'bg-primary' : 'bg-[#4D4033]',
+              ].join(' ')}
+            >
+              <span className={[
+                'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-150',
+                allReading ? 'translate-x-4' : 'translate-x-0',
+              ].join(' ')} />
+            </button>
+          </div>
         </div>
 
         <div
