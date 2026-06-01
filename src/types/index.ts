@@ -18,10 +18,18 @@ export interface Club {
   invite_token?: string | null
 }
 
+export interface SessionMember {
+  member_id: number
+  member_name: string
+  is_reading: boolean
+}
+
 export interface Session {
   id: string
   book: Book
   due_date: string
+  status: 'active' | 'finished'
+  members: SessionMember[]
   discussions: Discussion[]
 }
 
