@@ -22,6 +22,7 @@ import RoleEyebrow from '../components/ui/RoleEyebrow'
 import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
 import Avatar from '../components/ui/Avatar'
+import DiscussionsTimeline from '../components/DiscussionsTimeline'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
@@ -216,19 +217,6 @@ export default function ClubDetailPage() {
   const handleDeleteMember = (m: Member) => {
     setMemberToDelete(m)
     setShowDeleteMemberModal(true)
-  }
-
-  const getDiscussionStatus = (discussion: Discussion) => {
-    if (isPast(discussion.date, discussion.time)) return 'past'
-    // Find the first non-past discussion (the "next" one)
-    if (club?.active_session?.discussions) {
-      const nextIdx = club.active_session.discussions.findIndex(
-        (d) => !isPast(d.date, d.time)
-      )
-      const isNext = nextIdx >= 0 && club.active_session.discussions[nextIdx]?.id === discussion.id
-      return isNext ? 'next' : 'upcoming'
-    }
-    return 'upcoming'
   }
 
   const getSessionProgress = () => {
@@ -630,160 +618,13 @@ export default function ClubDetailPage() {
                   {/* Discussions + Members: two-column layout */}
                   <div className="grid grid-cols-[1.4fr_1fr] gap-14">
                     {/* Discussions section */}
-                    <div>
-                      <div className="flex items-center justify-between mb-9">
-                        <div className="flex items-center gap-3">
-                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-                            DISCUSSIONS
-                          </span>
-                          {club.active_session && club.active_session.discussions.length > 0 && (
-                            <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                              {club.active_session.discussions.length} scheduled
-                            </span>
-                          )}
-                        </div>
-                        {isAdmin && club.active_session && (
-                          <GhostButton
-                            variant="sm"
-                            icon="+"
-                            onClick={handleAddDiscussion}
-                          >
-                            Add
-                          </GhostButton>
-                        )}
-                      </div>
-
-                      {!club.active_session ? (
-                        <div className="py-6 flex flex-col items-center text-center">
-                          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug">
-                            {isAdmin
-                              ? 'Start a session above to schedule discussions.'
-                              : 'Discussions will appear here once a session begins.'}
-                          </p>
-                        </div>
-                      ) : club.active_session.discussions.length === 0 ? (
-                        <div className="py-6 flex flex-col items-center text-center">
-                          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-5">
-                            No discussions scheduled yet.
-                          </p>
-                          {isAdmin && (
-                            <button
-                              onClick={handleAddDiscussion}
-                              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
-                            >
-                              Schedule Discussion
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-7">
-                          {club.active_session?.discussions.map((discussion, idx) => {
-                            const status = getDiscussionStatus(discussion)
-                            const isLast = idx === (club.active_session?.discussions.length ?? 0) - 1
-
-                            return (
-                              <div
-                                key={discussion.id}
-                                className={[
-                                  'grid grid-cols-[76px_24px_1fr] gap-6',
-                                  status === 'past' && 'opacity-50',
-                                ].join(' ')}
-                              >
-                                {/* Date column */}
-                                <div className="text-right pr-3.5">
-                                  <p
-                                    className={[
-                                      'text-[12px] font-medium font-mono tracking-[0.02em]',
-                                      status === 'past'
-                                        ? 'text-[var(--color-text-secondary)]'
-                                        : status === 'next'
-                                          ? 'text-primary'
-                                          : 'text-[var(--color-text-secondary)]',
-                                    ].join(' ')}
-                                  >
-                                    {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
-                                      month: 'short',
-                                      day: 'numeric',
-                                    })}
-                                  </p>
-                                  <p className="text-[11px] text-[var(--color-text-secondary)] mt-1 opacity-80">
-                                    {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
-                                      weekday: 'short',
-                                    })}
-                                  </p>
-                                </div>
-
-                                {/* Rail column */}
-                                <div className="relative flex justify-center">
-                                  {/* Dot */}
-                                  <div className="relative z-10 mt-1">
-                                    {status === 'past' && (
-                                      <div className="w-2 h-2 rounded-full bg-[#4D4033]" />
-                                    )}
-                                    {status === 'next' && (
-                                      <div
-                                        className="w-3.5 h-3.5 rounded-full bg-primary"
-                                        style={{
-                                          boxShadow: '0 0 0 5px rgba(209,109,48,0.10)',
-                                        }}
-                                      />
-                                    )}
-                                    {status === 'upcoming' && (
-                                      <div className="w-2 h-2 rounded-full bg-[var(--color-bg)] border-[1.5px] border-[#4D4033]" />
-                                    )}
-                                  </div>
-
-                                  {/* Rail line */}
-                                  {!isLast && (
-                                    <div
-                                      className="absolute top-[12px] bottom-[-28px] left-[50%] w-px bg-[rgba(242,237,229,0.14)] transform -translate-x-1/2"
-                                      style={{
-                                        height: 'calc(100% + 28px)',
-                                      }}
-                                    />
-                                  )}
-                                </div>
-
-                                {/* Content column */}
-                                <div className="flex items-start justify-between gap-4 pt-0.5">
-                                  <div>
-                                    {status === 'next' && (
-                                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-1">
-                                        UP NEXT
-                                      </p>
-                                    )}
-                                    <p className="font-serif text-[24px] font-medium leading-[1.2] text-[var(--color-text-primary)] tracking-[-0.005em]">
-                                      {discussion.title}
-                                    </p>
-                                    {discussion.location && (
-                                      <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">
-                                        {discussion.location}
-                                      </p>
-                                    )}
-                                  </div>
-
-                                  {isAdmin && (
-                                    <KebabMenu
-                                      items={[
-                                        {
-                                          label: 'Edit',
-                                          onClick: () => handleEditDiscussion(discussion),
-                                        },
-                                        {
-                                          label: 'Delete',
-                                          danger: true,
-                                          onClick: () => handleDeleteDiscussion(discussion),
-                                        },
-                                      ]}
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <DiscussionsTimeline
+                      selectedClub={club}
+                      isAdmin={isAdmin}
+                      onAddDiscussion={handleAddDiscussion}
+                      onEditDiscussion={handleEditDiscussion}
+                      onDeleteDiscussion={handleDeleteDiscussion}
+                    />
 
                     {/* Members section (right column of grid) */}
                     <div>
@@ -1305,162 +1146,14 @@ export default function ClubDetailPage() {
               </div>
             </div>
           ) : mobileTab === 'discussions' ? (
-            <div>
-              {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                  {club.active_session
-                    ? `${club.active_session.discussions.length} scheduled`
-                    : 'Discussions'}
-                </p>
-                {isAdmin && club.active_session && (
-                  <button
-                    onClick={handleAddDiscussion}
-                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[rgba(242,237,229,0.04)] transition-colors"
-                  >
-                    + Add
-                  </button>
-                )}
-              </div>
-
-              {!club.active_session ? (
-                <div className="flex flex-col items-center text-center py-6">
-                  <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
-                    {isAdmin
-                      ? 'Start a session first to schedule discussions.'
-                      : 'Discussions will appear here once a session begins.'}
-                  </p>
-                  {isAdmin && (
-                    <button
-                      onClick={() => setShowNewSessionModal(true)}
-                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
-                    >
-                      Start Session
-                    </button>
-                  )}
-                </div>
-              ) : club.active_session.discussions.length === 0 ? (
-                <div className="flex flex-col items-center text-center py-6">
-                  <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
-                    No discussions scheduled yet.
-                  </p>
-                  {isAdmin && (
-                    <button
-                      onClick={handleAddDiscussion}
-                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
-                    >
-                      Schedule Discussion
-                    </button>
-                  )}
-                </div>
-              ) : null}
-
-              {/* Timeline */}
-              <div className="space-y-5">
-                {club.active_session?.discussions.map((discussion, idx) => {
-                  const status = getDiscussionStatus(discussion)
-                  const isLast = idx === (club.active_session?.discussions.length ?? 1) - 1
-
-                  return (
-                    <div
-                      key={discussion.id}
-                      className={[
-                        'grid grid-cols-[54px_16px_1fr] gap-3',
-                        status === 'past' && 'opacity-60',
-                      ].join(' ')}
-                    >
-                      {/* Date column */}
-                      <div className="text-right pr-1">
-                        <p className={[
-                          'text-[13px] font-medium font-mono tracking-[0.02em]',
-                          status === 'past'
-                            ? 'text-[var(--color-text-secondary)]'
-                            : status === 'next'
-                              ? 'text-primary font-medium'
-                              : 'text-[var(--color-text-secondary)]',
-                        ].join(' ')}>
-                          {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </p>
-                        <p className="text-[10px] text-[var(--color-text-secondary)] mt-0.5 opacity-70">
-                          {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                          })}
-                        </p>
-                      </div>
-
-                      {/* Dot column */}
-                      <div className="relative flex justify-center pt-2">
-                        {/* Connecting line - only on non-last items */}
-                        {!isLast && (
-                          <div
-                            className="absolute left-1/2 -translate-x-1/2 w-px bg-[rgba(242,237,229,0.14)]"
-                            style={{ top: '12px', bottom: '-28px', height: 'calc(100% + 28px)' }}
-                          />
-                        )}
-
-                        <div className="relative z-10">
-                          {status === 'past' && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#4D4033]" />
-                          )}
-                          {status === 'next' && (
-                            <div
-                              className="w-3 h-3 rounded-full bg-primary"
-                              style={{
-                                boxShadow: '0 0 0 4px rgba(209,109,48,0.10)',
-                              }}
-                            />
-                          )}
-                          {status === 'upcoming' && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-bg)] border border-[#4D4033]" />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Content column */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          {status === 'next' && (
-                            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-1">
-                              UP NEXT
-                            </p>
-                          )}
-                          <p className={[
-                            'font-serif font-medium text-[var(--color-text-primary)]',
-                            status === 'next' ? 'text-[22px]' : 'text-[18px]',
-                          ].join(' ')}>
-                            {discussion.title}
-                          </p>
-                          {discussion.location && (
-                            <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">
-                              {discussion.location}
-                            </p>
-                          )}
-                        </div>
-
-                        {isAdmin && (
-                          <KebabMenu
-                            items={[
-                              {
-                                label: 'Edit',
-                                onClick: () => handleEditDiscussion(discussion),
-                              },
-                              {
-                                label: 'Delete',
-                                danger: true,
-                                onClick: () => handleDeleteDiscussion(discussion),
-                              },
-                            ]}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            <DiscussionsTimeline
+              selectedClub={club}
+              isAdmin={isAdmin}
+              onAddDiscussion={handleAddDiscussion}
+              onEditDiscussion={handleEditDiscussion}
+              onDeleteDiscussion={handleDeleteDiscussion}
+              onStartSession={() => setShowNewSessionModal(true)}
+            />
           ) : mobileTab === 'members' ? (
             <div>
               {/* Header */}

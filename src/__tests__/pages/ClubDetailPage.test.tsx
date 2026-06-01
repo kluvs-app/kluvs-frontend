@@ -716,7 +716,7 @@ describe('ClubDetailPage', () => {
       })
       renderDetail()
       await waitFor(() =>
-        expect(screen.queryAllByText(/start a session above to schedule discussions/i).length).toBeGreaterThan(0)
+        expect(screen.queryAllByText(/start a session first to schedule discussions/i).length).toBeGreaterThan(0)
       )
     })
 
