@@ -18,6 +18,7 @@ vi.mock('../../services/googleBooks', async (importOriginal) => {
     ...mod,
     getVolume: (id: string) => mockGetVolume(id),
     getAuthor: (name: string) => mockGetAuthor(name),
+    searchVolumes: () => Promise.resolve([]),
   }
 })
 

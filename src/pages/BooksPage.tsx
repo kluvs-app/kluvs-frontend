@@ -3,12 +3,14 @@ import { invokeFunction } from '../supabase'
 import {
   getVolume,
   getAuthor,
+  searchVolumes,
   bestCoverUrl,
   extractYear,
   stripHtml,
   preferredIsbn,
   displayLanguage,
   type GBVolumeInfo,
+  type GBVolume,
   type KGPerson,
 } from '../services/googleBooks'
 import type { Book } from '../types'
@@ -98,6 +100,8 @@ export default function BooksPage() {
   const [authorInfo, setAuthorInfo]         = useState<KGPerson | null>(null)
   const [loadingAuthor, setLoadingAuthor]   = useState(false)
   const [authorPhotoFailed, setAuthorPhotoFailed] = useState(false)
+  const [authorBooks, setAuthorBooks]       = useState<GBVolume[]>([])
+  const [loadingAuthorBooks, setLoadingAuthorBooks] = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeId    = useRef<string | null>(null)
@@ -137,6 +141,8 @@ export default function BooksPage() {
     setVolumeInfo(null)
     setAuthorInfo(null)
     setAuthorPhotoFailed(false)
+    setAuthorBooks([])
+    setLoadingAuthorBooks(false)
 
     const id = book.external_google_id
     if (id) activeId.current = id
@@ -152,11 +158,19 @@ export default function BooksPage() {
 
     if (book.author) {
       const primaryAuthor = book.author.split(/\s*(?:,|&| and )\s*/i)[0].trim()
+
       setLoadingAuthor(true)
       getAuthor(primaryAuthor).then(person => {
         if (id && activeId.current !== id) return
         setAuthorInfo(person)
         setLoadingAuthor(false)
+      })
+
+      setLoadingAuthorBooks(true)
+      searchVolumes(`inauthor:"${primaryAuthor}"`, 10).then(vols => {
+        if (id && activeId.current !== id) return
+        setAuthorBooks(vols.filter(v => v.id !== id))
+        setLoadingAuthorBooks(false)
       })
     }
 
@@ -493,6 +507,62 @@ export default function BooksPage() {
                         </div>
                       </div>
                     )}
+                  </section>
+                </>
+              )}
+
+              {/* ── More by this author ───────────────────────────────────────── */}
+              {(loadingAuthorBooks || authorBooks.length > 0) && (
+                <>
+                  <hr className="border-[var(--color-divider)] my-9" />
+                  <section>
+                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
+                      More by {selectedBook?.author?.split(/\s*(?:,|&| and )\s*/i)[0]}
+                    </span>
+                    <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+                      {loadingAuthorBooks && authorBooks.length === 0
+                        ? Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="flex flex-col gap-2 shrink-0 w-[96px]">
+                              <Shimmer className="w-[96px] h-[138px] rounded-sm" />
+                              <Shimmer className="h-3 w-4/5" />
+                              <Shimmer className="h-3 w-1/2" />
+                            </div>
+                          ))
+                        : authorBooks.map(vol => {
+                            const vi = vol.volumeInfo
+                            const coverUrl = bestCoverUrl(vi.imageLinks)
+                            const year = extractYear(vi.publishedDate)
+                            const book: Book = {
+                              title: vi.title,
+                              author: vi.authors?.join(', ') ?? '',
+                              year: year ? parseInt(year) : undefined,
+                              isbn: preferredIsbn(vi.industryIdentifiers),
+                              image_url: coverUrl,
+                              external_google_id: vol.id,
+                              page_count: vi.pageCount,
+                            }
+                            return (
+                              <button
+                                key={vol.id}
+                                onClick={() => handleSelect(book)}
+                                className="flex flex-col gap-2 shrink-0 w-[96px] text-left group"
+                              >
+                                <Cover
+                                  url={coverUrl}
+                                  title={vi.title}
+                                  className="w-[96px] h-[138px] group-hover:opacity-80 transition-opacity"
+                                />
+                                <p className="text-[12px] text-[var(--color-text-primary)] leading-[1.3] line-clamp-2 font-medium">
+                                  {vi.title}
+                                </p>
+                                {year && (
+                                  <p className="text-[11px] text-[var(--color-text-secondary)]">{year}</p>
+                                )}
+                              </button>
+                            )
+                          })
+                      }
+                    </div>
                   </section>
                 </>
               )}
