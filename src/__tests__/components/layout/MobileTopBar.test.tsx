@@ -11,13 +11,14 @@ import { MobileTopBarProvider, useMobileTopBar } from '../../../contexts/MobileT
 const mockRefreshMemberData = vi.fn()
 const mockSetTheme = vi.fn()
 const mockUseAuth = vi.fn()
+const mockUseTheme = vi.fn()
 
 vi.mock('../../../contexts/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
 }))
 
 vi.mock('../../../contexts/ThemeContext', () => ({
-  useTheme: () => ({ theme: 'dark', setTheme: mockSetTheme }),
+  useTheme: () => mockUseTheme(),
 }))
 
 vi.mock('../../../supabase', () => ({
@@ -29,8 +30,14 @@ vi.mock('../../../components/modals/SignOutModal', () => ({
     isOpen ? <div data-testid="sign-out-modal"><button onClick={onClose}>Close</button></div> : null,
 }))
 vi.mock('../../../components/modals/EditProfileModal', () => ({
-  default: ({ isOpen, onProfileUpdated }: any) =>
-    isOpen ? <div data-testid="edit-profile-modal"><button onClick={() => onProfileUpdated()}>Save</button></div> : null,
+  default: ({ isOpen, onClose, onProfileUpdated, onError }: any) =>
+    isOpen ? (
+      <div data-testid="edit-profile-modal">
+        <button onClick={() => onProfileUpdated()}>Save</button>
+        <button onClick={onClose}>Cancel</button>
+        <button onClick={() => onError(new Error('test'))}>TriggerError</button>
+      </div>
+    ) : null,
 }))
 vi.mock('../../../components/modals/DiscordLinkModal', () => ({
   default: ({ isOpen, onClose }: any) =>
@@ -82,6 +89,7 @@ beforeEach(() => {
     member: { id: 1, name: 'Jane Doe', handle: '@jane' },
     refreshMemberData: mockRefreshMemberData,
   })
+  mockUseTheme.mockReturnValue({ theme: 'dark', setTheme: mockSetTheme })
 })
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -256,6 +264,87 @@ describe('MobileTopBar', () => {
       renderBar()
       await user.click(screen.getByLabelText('Open user menu'))
       expect(screen.getByText('User')).toBeInTheDocument()
+    })
+
+    it('closes Sign Out modal when its onClose is called', async () => {
+      const user = userEvent.setup()
+      renderBar()
+      await user.click(screen.getByLabelText('Open user menu'))
+      await user.click(screen.getByRole('menuitem', { name: 'Sign Out' }))
+      expect(screen.getByTestId('sign-out-modal')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('sign-out-modal')).not.toBeInTheDocument()
+    })
+
+    it('closes Edit Profile modal when its onClose is called', async () => {
+      const user = userEvent.setup()
+      renderBar()
+      await user.click(screen.getByLabelText('Open user menu'))
+      await user.click(screen.getByRole('menuitem', { name: 'Edit Profile' }))
+      expect(screen.getByTestId('edit-profile-modal')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Cancel' }))
+      expect(screen.queryByTestId('edit-profile-modal')).not.toBeInTheDocument()
+    })
+
+    it('handles Edit Profile onError without crashing', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const user = userEvent.setup()
+      renderBar()
+      await user.click(screen.getByLabelText('Open user menu'))
+      await user.click(screen.getByRole('menuitem', { name: 'Edit Profile' }))
+      await user.click(screen.getByRole('button', { name: 'TriggerError' }))
+      expect(consoleSpy).toHaveBeenCalled()
+      consoleSpy.mockRestore()
+    })
+
+    it('closes Discord Link modal when its onClose is called', async () => {
+      const user = userEvent.setup()
+      renderBar()
+      await user.click(screen.getByLabelText('Open user menu'))
+      await user.click(screen.getByRole('menuitem', { name: /connect discord/i }))
+      expect(screen.getByTestId('discord-link-modal')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Close' }))
+      expect(screen.queryByTestId('discord-link-modal')).not.toBeInTheDocument()
+    })
+
+    it('cycles theme from system to light', async () => {
+      mockUseTheme.mockReturnValue({ theme: 'system', setTheme: mockSetTheme })
+      const user = userEvent.setup()
+      renderBar()
+      await user.click(screen.getByLabelText('Open user menu'))
+      await user.click(screen.getByRole('menuitem', { name: /appearance/i }))
+      expect(mockSetTheme).toHaveBeenCalledWith('light')
+    })
+
+    it('cycles theme from light to dark', async () => {
+      mockUseTheme.mockReturnValue({ theme: 'light', setTheme: mockSetTheme })
+      const user = userEvent.setup()
+      renderBar()
+      await user.click(screen.getByLabelText('Open user menu'))
+      await user.click(screen.getByRole('menuitem', { name: /appearance/i }))
+      expect(mockSetTheme).toHaveBeenCalledWith('dark')
+    })
+
+    it('prepends @ to handle that lacks it', async () => {
+      mockUseAuth.mockReturnValue({
+        member: { id: 1, name: 'Jane Doe', handle: 'janedoe' },
+        refreshMemberData: mockRefreshMemberData,
+      })
+      const user = userEvent.setup()
+      renderBar()
+      await user.click(screen.getByLabelText('Open user menu'))
+      expect(screen.getByText('@janedoe')).toBeInTheDocument()
+    })
+
+    it('renders avatar image when member has avatar_path', () => {
+      mockUseAuth.mockReturnValue({
+        member: { id: 1, name: 'Jane Doe', avatar_path: 'avatars/jane.jpg' },
+        refreshMemberData: mockRefreshMemberData,
+      })
+      renderBar()
+      const avatar = document.querySelector('img[alt="Jane Doe"]') as HTMLImageElement
+      expect(avatar).toBeInTheDocument()
+      expect(avatar.src).toContain('jane.jpg')
     })
   })
 })
