@@ -302,7 +302,7 @@ export default function ClubDetailPage() {
   return (
     <>
       {/* Desktop split-view: lg+ only */}
-      <div className="hidden lg:grid lg:grid-cols-[320px_1fr] h-screen bg-[var(--color-bg)] overflow-hidden">
+      <div className="hidden lg:grid lg:grid-cols-[minmax(280px,22%)_1fr] h-screen bg-[var(--color-bg)] overflow-hidden">
         {/* Left rail */}
         <div className="border-r border-[var(--color-divider)] overflow-y-auto bg-[var(--color-bg)]">
           {/* Rail header */}
@@ -384,7 +384,7 @@ export default function ClubDetailPage() {
                 <KluvsSpinner size={48} className="mx-auto" />
               </div>
             ) : (
-              <div className="px-14 pt-10 pb-16 max-w-[1080px]">
+              <div className="px-14 pt-10 pb-16 max-w-[1300px] mx-auto">
                 {/* Masthead */}
                 <div className="mb-10 pb-8 border-b border-[var(--color-divider)]">
                   {/* Util row */}

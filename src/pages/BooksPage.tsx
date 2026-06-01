@@ -210,7 +210,7 @@ export default function BooksPage() {
     <div className="flex lg:h-screen lg:overflow-hidden">
 
       {/* ── List panel ─────────────────────────────────────────────────────── */}
-      <div className={`flex flex-col w-full lg:w-80 lg:shrink-0 lg:border-r lg:border-[var(--color-divider)] lg:overflow-y-auto ${selectedBook ? 'hidden lg:flex' : 'flex'}`}>
+      <div className={`flex flex-col w-full lg:w-[22%] lg:min-w-[280px] lg:max-w-[420px] lg:shrink-0 lg:border-r lg:border-[var(--color-divider)] lg:overflow-y-auto ${selectedBook ? 'hidden lg:flex' : 'flex'}`}>
 
         <div className="px-[22px] pt-[28px] pb-[22px] border-b border-[var(--color-divider)]">
           <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-[10px]">
@@ -310,7 +310,7 @@ export default function BooksPage() {
       <div className={`flex-1 lg:overflow-y-auto ${selectedBook ? 'block' : 'hidden lg:block'}`}>
         {selectedBook ? (
           <div className="px-[22px] pt-6 pb-12 lg:px-[56px] lg:pt-[40px] lg:pb-[64px]">
-            <div className="max-w-[880px]">
+            <div className="max-w-[1300px] mx-auto">
 
               {/* Mobile back */}
               <button
@@ -389,57 +389,62 @@ export default function BooksPage() {
 
               <hr className="border-[var(--color-divider)] mb-9" />
 
-              {/* ── About ────────────────────────────────────────────────────── */}
-              <section className="mb-10">
-                <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
-                  About
-                </span>
-                {loadingDetail && !description ? (
-                  <div className="space-y-2">
-                    {[100, 90, 95, 85, 70].map(w => (
-                      <Shimmer key={w} className="h-4" style={{ width: `${w}%` }} />
-                    ))}
-                  </div>
-                ) : description ? (
-                  <p className="text-[14px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line max-w-[680px]">
-                    {description}
-                  </p>
-                ) : (
-                  <p className="text-[14px] text-[var(--color-text-secondary)] italic">No description available.</p>
-                )}
-              </section>
+              {/* ── Details | About ──────────────────────────────────────────── */}
+              <div className="lg:grid lg:grid-cols-2 lg:gap-16 mb-10">
 
-              {/* ── Details ──────────────────────────────────────────────────── */}
-              {(metaRows.length > 0 || loadingDetail) && (
-                <section className="mb-10">
-                  <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
-                    Details
+                {/* Details — left column */}
+                {(metaRows.length > 0 || loadingDetail) && (
+                  <section>
+                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+                      Details
+                    </span>
+                    {loadingDetail && metaRows.length === 0 ? (
+                      <div className="divide-y divide-[var(--color-divider)]">
+                        {[160, 112, 192, 256].map(w => (
+                          <div key={w} className="flex gap-6 py-[12px]">
+                            <Shimmer className="h-4 shrink-0" style={{ width: 110 }} />
+                            <Shimmer className="h-4" style={{ width: w }} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <dl className="divide-y divide-[var(--color-divider)]">
+                        {metaRows.map(({ label, value, mono }) => (
+                          <div key={label} className="flex gap-6 py-[12px]">
+                            <dt className="text-[13px] text-[var(--color-text-secondary)] shrink-0" style={{ width: 110 }}>
+                              {label}
+                            </dt>
+                            <dd className={`text-[13px] text-[var(--color-text-primary)] font-medium tracking-[0.005em] ${mono ? 'font-mono tracking-[0.01em]' : ''}`}>
+                              {value}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+                  </section>
+                )}
+
+                {/* About — right column */}
+                <section className="mt-8 lg:mt-0">
+                  <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
+                    About
                   </span>
-                  {loadingDetail && metaRows.length === 0 ? (
-                    <div className="divide-y divide-[var(--color-divider)] max-w-[520px]">
-                      {[160, 112, 192, 256].map(w => (
-                        <div key={w} className="flex gap-6 py-[12px]">
-                          <Shimmer className="h-4 shrink-0" style={{ width: 110 }} />
-                          <Shimmer className="h-4" style={{ width: w }} />
-                        </div>
+                  {loadingDetail && !description ? (
+                    <div className="space-y-2">
+                      {[100, 90, 95, 85, 70].map(w => (
+                        <Shimmer key={w} className="h-4" style={{ width: `${w}%` }} />
                       ))}
                     </div>
+                  ) : description ? (
+                    <p className="text-[14px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line">
+                      {description}
+                    </p>
                   ) : (
-                    <dl className="divide-y divide-[var(--color-divider)] max-w-[520px]">
-                      {metaRows.map(({ label, value, mono }) => (
-                        <div key={label} className="flex gap-6 py-[12px]">
-                          <dt className="text-[13px] text-[var(--color-text-secondary)] shrink-0" style={{ width: 110 }}>
-                            {label}
-                          </dt>
-                          <dd className={`text-[13px] text-[var(--color-text-primary)] font-medium tracking-[0.005em] ${mono ? 'font-mono tracking-[0.01em]' : ''}`}>
-                            {value}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
+                    <p className="text-[14px] text-[var(--color-text-secondary)] italic">No description available.</p>
                   )}
                 </section>
-              )}
+
+              </div>
 
               {/* ── About the Author ─────────────────────────────────────────── */}
               {(loadingAuthor || authorInfo) && (
@@ -481,7 +486,7 @@ export default function BooksPage() {
                             </span>
                           )}
                           {authorInfo.detailedDescription?.articleBody && (
-                            <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em] max-w-[560px]">
+                            <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em] max-w-[65ch]">
                               {authorInfo.detailedDescription.articleBody}
                             </p>
                           )}
