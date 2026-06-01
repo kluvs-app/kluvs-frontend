@@ -3,6 +3,7 @@ import { invokeFunction } from '../supabase'
 import {
   getVolume,
   getAuthor,
+  getWikipediaAuthorInfo,
   searchVolumes,
   bestCoverUrl,
   extractYear,
@@ -100,6 +101,8 @@ export default function BooksPage() {
   const [authorInfo, setAuthorInfo]         = useState<KGPerson | null>(null)
   const [loadingAuthor, setLoadingAuthor]   = useState(false)
   const [authorPhotoFailed, setAuthorPhotoFailed] = useState(false)
+  const [wikipediaImage, setWikipediaImage]       = useState<string | null>(null)
+  const [wikipediaExtract, setWikipediaExtract]   = useState<string | null>(null)
   const [authorBooks, setAuthorBooks]       = useState<GBVolume[]>([])
   const [loadingAuthorBooks, setLoadingAuthorBooks] = useState(false)
 
@@ -141,6 +144,8 @@ export default function BooksPage() {
     setVolumeInfo(null)
     setAuthorInfo(null)
     setAuthorPhotoFailed(false)
+    setWikipediaImage(null)
+    setWikipediaExtract(null)
     setAuthorBooks([])
     setLoadingAuthorBooks(false)
 
@@ -160,9 +165,14 @@ export default function BooksPage() {
       const primaryAuthor = book.author.split(/\s*(?:,|&| and )\s*/i)[0].trim()
 
       setLoadingAuthor(true)
-      getAuthor(primaryAuthor).then(person => {
+      Promise.all([
+        getAuthor(primaryAuthor),
+        getWikipediaAuthorInfo(primaryAuthor),
+      ]).then(([person, wiki]) => {
         if (id && activeId.current !== id) return
         setAuthorInfo(person)
+        setWikipediaImage(wiki.imageUrl)
+        setWikipediaExtract(wiki.extract)
         setLoadingAuthor(false)
       })
 
@@ -321,7 +331,7 @@ export default function BooksPage() {
       </div>
 
       {/* ── Detail panel ────────────────────────────────────────────────────── */}
-      <div className={`flex-1 lg:overflow-y-auto ${selectedBook ? 'block' : 'hidden lg:block'}`}>
+      <div className={`flex-1 min-w-0 lg:overflow-y-auto ${selectedBook ? 'block' : 'hidden lg:block'}`}>
         {selectedBook ? (
           <div className="px-[22px] pt-6 pb-12 lg:px-[56px] lg:pt-[40px] lg:pb-[64px]">
             <div className="max-w-[1300px] mx-auto">
@@ -450,7 +460,7 @@ export default function BooksPage() {
                       ))}
                     </div>
                   ) : description ? (
-                    <p className="text-[14px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line">
+                    <p className="text-[14px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line break-words">
                       {description}
                     </p>
                   ) : (
@@ -480,9 +490,9 @@ export default function BooksPage() {
                       </div>
                     ) : authorInfo && (
                       <div className="flex gap-5">
-                        {authorInfo.image?.contentUrl && !authorPhotoFailed && (
+                        {(wikipediaImage || authorInfo.image?.contentUrl) && !authorPhotoFailed && (
                           <img
-                            src={authorInfo.image.contentUrl}
+                            src={wikipediaImage ?? authorInfo.image!.contentUrl!}
                             alt={authorInfo.name ?? ''}
                             className="h-[72px] w-[72px] rounded-full object-cover shrink-0"
                             onError={() => setAuthorPhotoFailed(true)}
@@ -499,9 +509,9 @@ export default function BooksPage() {
                               {authorInfo.description}
                             </span>
                           )}
-                          {authorInfo.detailedDescription?.articleBody && (
+                          {(wikipediaExtract || authorInfo.detailedDescription?.articleBody) && (
                             <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em] max-w-[65ch]">
-                              {authorInfo.detailedDescription.articleBody}
+                              {wikipediaExtract ?? authorInfo.detailedDescription!.articleBody}
                             </p>
                           )}
                         </div>

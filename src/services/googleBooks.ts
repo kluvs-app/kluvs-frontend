@@ -177,6 +177,60 @@ export interface KGPerson {
   }
 }
 
+export interface WikipediaAuthorInfo {
+  imageUrl: string | null
+  extract: string | null
+}
+
+/**
+ * Fetch an author's thumbnail and bio extract from Wikipedia.
+ * Tries a near-title match first to avoid full-text false positives (e.g. an author's
+ * name appearing inside an unrelated article). Falls back to full-text search only if
+ * near-match finds nothing, and validates the result shares a word with the query.
+ * Free, no key required, CORS-friendly.
+ */
+export async function getWikipediaAuthorInfo(name: string): Promise<WikipediaAuthorInfo> {
+  const empty: WikipediaAuthorInfo = { imageUrl: null, extract: null }
+  if (!name.trim()) return empty
+
+  const queryWords = name.trim().toLowerCase().split(/\s+/).filter(w => w.length > 3)
+
+  const findPageTitle = async (srwhat: 'nearmatch' | 'text'): Promise<string | null> => {
+    const res = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name.trim())}&srwhat=${srwhat}&srlimit=1&format=json&origin=*`,
+      { headers: { Accept: 'application/json' } }
+    )
+    if (!res.ok) return null
+    const json = await res.json()
+    const title: string | undefined = json.query?.search?.[0]?.title
+    if (!title) return null
+    // For full-text fallback, reject if the title shares no words with the query
+    if (srwhat === 'text') {
+      const titleLower = title.toLowerCase()
+      if (!queryWords.some(w => titleLower.includes(w))) return null
+    }
+    return title
+  }
+
+  try {
+    const pageTitle = await findPageTitle('nearmatch') ?? await findPageTitle('text')
+    if (!pageTitle) return empty
+
+    const summaryRes = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle)}`,
+      { headers: { Accept: 'application/json' } }
+    )
+    if (!summaryRes.ok) return empty
+    const summaryJson = await summaryRes.json()
+    return {
+      imageUrl: (summaryJson.thumbnail?.source as string) ?? null,
+      extract:  (summaryJson.extract as string) ?? null,
+    }
+  } catch {
+    return empty
+  }
+}
+
 /**
  * Look up a person (author) in the Google Knowledge Graph.
  * Returns null when no API key is configured — the section simply won't render.
