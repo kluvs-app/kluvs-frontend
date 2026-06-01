@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback, Fragment } from 'react'
+import { useState, useRef, useCallback, useEffect, Fragment } from 'react'
 import { invokeFunction } from '../supabase'
+import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import {
   getVolume,
   getAuthor,
@@ -108,6 +109,16 @@ export default function BooksPage() {
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeId    = useRef<string | null>(null)
+
+  const { setTopBar, resetTopBar } = useMobileTopBar()
+  useEffect(() => {
+    if (selectedBook) {
+      setTopBar({ title: selectedBook.title, backLabel: 'Books', onBack: () => setSelectedBook(null) })
+    } else {
+      resetTopBar()
+    }
+    return resetTopBar
+  }, [selectedBook?.title, setTopBar, resetTopBar])
 
   const search = useCallback(async (q: string) => {
     if (!q.trim()) { setResults([]); return }
@@ -335,17 +346,6 @@ export default function BooksPage() {
         {selectedBook ? (
           <div className="px-[22px] pt-6 pb-12 lg:px-[56px] lg:pt-[40px] lg:pb-[64px]">
             <div className="max-w-[1300px] mx-auto">
-
-              {/* Mobile back */}
-              <button
-                onClick={() => setSelectedBook(null)}
-                className="lg:hidden inline-flex items-center gap-1.5 text-[13px] text-primary font-medium mb-6"
-              >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                </svg>
-                Results
-              </button>
 
               {/* ── Hero: cover + identity ──────────────────────────────────── */}
               <div className="flex flex-col sm:flex-row gap-[18px] sm:gap-[40px] mb-[44px]">

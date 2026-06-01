@@ -1,6 +1,8 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import AppSidebar from './AppSidebar'
+import MobileTopBar from './MobileTopBar'
 import { useAuth } from '../../contexts/AuthContext'
+import { MobileTopBarProvider } from '../../contexts/MobileTopBarContext'
 
 const MS_VIEWBOX = "0 -960 960 960"
 
@@ -23,6 +25,7 @@ export default function AppShell() {
   const { isOnline } = useAuth()
 
   return (
+    <MobileTopBarProvider>
     <div className="min-h-screen bg-[var(--color-bg)]">
       {!isOnline && (
         <div
@@ -43,11 +46,14 @@ export default function AppShell() {
           </span>
         </div>
       )}
+      {/* Mobile top bar */}
+      <MobileTopBar />
+
       {/* Desktop sidebar */}
       <AppSidebar />
 
       {/* Main content — offset right on desktop, clear bottom on mobile */}
-      <main className="lg:pl-[220px] pb-16 lg:pb-0">
+      <main className="lg:pl-[220px] pt-14 lg:pt-0 pb-16 lg:pb-0">
         <Outlet />
       </main>
 
@@ -73,5 +79,6 @@ export default function AppShell() {
         ))}
       </nav>
     </div>
+    </MobileTopBarProvider>
   )
 }

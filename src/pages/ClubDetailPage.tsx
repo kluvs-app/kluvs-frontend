@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
 import type { Club, Discussion, Member } from '../types'
 import EditBookModal from '../components/modals/EditBookModal'
@@ -15,6 +15,7 @@ import AddClubModal from '../components/modals/AddClubModal'
 import ShareClubModal from '../components/modals/ShareClubModal'
 import EndSessionModal from '../components/modals/EndSessionModal'
 import { useAuth } from '../contexts/AuthContext'
+import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import { parseLocalDate, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
 import BookCover from '../components/ui/BookCover'
@@ -71,6 +72,7 @@ export default function ClubDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { member, getRoleForClub, refreshMemberData } = useAuth()
+  const { setTopBar, resetTopBar } = useMobileTopBar()
 
   const memberClub = member?.clubs.find((c) => c.id === slug)
   const serverId = memberClub?.server_id ?? ''
@@ -134,6 +136,13 @@ export default function ClubDetailPage() {
   useEffect(() => {
     if (slug) localStorage.setItem('kluvs:lastClub', slug)
   }, [slug])
+
+  // Set mobile top bar context
+  useEffect(() => {
+    if (!club) return
+    setTopBar({ title: club.name, backLabel: 'Clubs', backPath: '/clubs' })
+    return resetTopBar
+  }, [club?.name, setTopBar, resetTopBar])
 
   // Redirect if this club isn't in the member's list
   useEffect(() => {
@@ -752,43 +761,6 @@ export default function ClubDetailPage() {
 
       {/* Mobile layout: < lg */}
       <div className="lg:hidden min-h-screen bg-[var(--color-bg)] flex flex-col">
-        {/* Mobile header with back, title, edit, kebab */}
-        <div className="px-5 py-3 border-b border-[var(--color-divider)] flex items-center justify-between gap-3">
-          <Link
-            to="/clubs"
-            className="text-[var(--color-text-secondary)] text-[16px] hover:text-[var(--color-text-primary)] transition-colors"
-          >
-            ← Clubs
-          </Link>
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <>
-                <GhostButton
-                  variant="sm"
-                  onClick={() => setShowShareModal(true)}
-                >
-                  Share
-                </GhostButton>
-                <KebabMenu
-                  items={[
-                    {
-                      label: 'Edit club',
-                      onClick: () => setShowEditClubModal(true),
-                    },
-                    {
-                      label: 'Delete club',
-                      danger: true,
-                      onClick: () => {
-                        setClubToDelete({ id: club.id, name: club.name })
-                        setShowDeleteClubModal(true)
-                      },
-                    },
-                  ]}
-                />
-              </>
-            )}
-          </div>
-        </div>
 
         {/* Masthead */}
         <div className="px-5 py-6 border-b border-[var(--color-divider)]">
@@ -816,38 +788,58 @@ export default function ClubDetailPage() {
 
           {/* Utility row — admin only */}
           {isAdmin && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(club.id)
-                  setIdCopied(true)
-                  setTimeout(() => setIdCopied(false), 1500)
-                }}
-                className="transition-all duration-[120ms]"
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                  padding: '4px 10px',
-                  borderRadius: 999,
-                  border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
-                  color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  letterSpacing: '0.04em',
-                }}
-                title="Copy Club ID"
-              >
-                {idCopied ? 'Copied!' : 'Copy Club ID'}
-              </button>
-              <DiscordIndicator club={club} isAdmin={isAdmin} />
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(club.id)
+                    setIdCopied(true)
+                    setTimeout(() => setIdCopied(false), 1500)
+                  }}
+                  className="transition-all duration-[120ms]"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
+                    color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: '0.04em',
+                  }}
+                  title="Copy Club ID"
+                >
+                  {idCopied ? 'Copied!' : 'Copy Club ID'}
+                </button>
+                <DiscordIndicator club={club} isAdmin={isAdmin} />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <GhostButton variant="sm" onClick={() => setShowShareModal(true)}>
+                  Share
+                </GhostButton>
+                <KebabMenu
+                  items={[
+                    { label: 'Edit club', onClick: () => setShowEditClubModal(true) },
+                    {
+                      label: 'Delete club',
+                      danger: true,
+                      onClick: () => {
+                        setClubToDelete({ id: club.id, name: club.name })
+                        setShowDeleteClubModal(true)
+                      },
+                    },
+                  ]}
+                />
+              </div>
             </div>
           )}
         </div>
 
         {/* Tab bar */}
-        <div className="sticky top-0 z-20 border-b border-[var(--color-divider)] bg-[var(--color-bg)] flex">
+        <div className="sticky top-14 z-20 border-b border-[var(--color-divider)] bg-[var(--color-bg)] flex">
           {(['overview', 'discussions', 'members'] as const).map((tab) => {
             const isActive = mobileTab === tab
             const tabCounts = {
