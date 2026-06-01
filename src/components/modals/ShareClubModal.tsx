@@ -95,7 +95,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
                 'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
                   ? 'bg-primary text-white'
-                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[rgba(242,237,229,0.04)]',
+                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
               Private
@@ -107,7 +107,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
                 'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
                   ? 'bg-primary text-white'
-                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[rgba(242,237,229,0.04)]',
+                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
               Invite Link

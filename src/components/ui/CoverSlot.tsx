@@ -19,7 +19,7 @@ export default function CoverSlot({
   return (
     <div
       style={{ width, height }}
-      className="relative flex-shrink-0 rounded-sm overflow-hidden bg-[#1A140F]"
+      className="relative flex-shrink-0 rounded-sm overflow-hidden bg-[var(--color-bg-raised)]"
     >
       {showPlaceholder ? (
         <div
@@ -27,10 +27,10 @@ export default function CoverSlot({
           style={{
             backgroundImage: `repeating-linear-gradient(
               45deg,
-              #332B24,
-              #332B24 3px,
-              #241C17 3px,
-              #241C17 6px
+              var(--color-divider),
+              var(--color-divider) 3px,
+              var(--color-bg-elevated) 3px,
+              var(--color-bg-elevated) 6px
             )`,
           }}
         />

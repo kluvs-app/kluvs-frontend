@@ -58,7 +58,7 @@ describe('RoleEyebrow', () => {
     it('applies muted color for member', () => {
       const { container } = render(<RoleEyebrow role="member" />)
       const span = container.querySelector('span')
-      expect(span?.className).toContain('text-[rgba(201,189,168,0.7)]')
+      expect(span?.className).toContain('text-[#48A480]')
     })
   })
 

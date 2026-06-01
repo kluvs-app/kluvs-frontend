@@ -245,8 +245,8 @@ describe('MobileTopBar', () => {
       renderBar()
       await user.click(screen.getByLabelText('Open user menu'))
       await user.click(screen.getByRole('menuitem', { name: /appearance/i }))
-      // theme is 'dark' → cycle goes to 'system'
-      expect(mockSetTheme).toHaveBeenCalledWith('system')
+      // theme is 'dark' → toggle goes to 'light'
+      expect(mockSetTheme).toHaveBeenCalledWith('light')
     })
 
     it('calls refreshMemberData after Edit Profile is saved', async () => {
@@ -307,13 +307,13 @@ describe('MobileTopBar', () => {
       expect(screen.queryByTestId('discord-link-modal')).not.toBeInTheDocument()
     })
 
-    it('cycles theme from system to light', async () => {
+    it('cycles theme from system to dark (system treated as light)', async () => {
       mockUseTheme.mockReturnValue({ theme: 'system', setTheme: mockSetTheme })
       const user = userEvent.setup()
       renderBar()
       await user.click(screen.getByLabelText('Open user menu'))
       await user.click(screen.getByRole('menuitem', { name: /appearance/i }))
-      expect(mockSetTheme).toHaveBeenCalledWith('light')
+      expect(mockSetTheme).toHaveBeenCalledWith('dark')
     })
 
     it('cycles theme from light to dark', async () => {

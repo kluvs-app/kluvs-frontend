@@ -111,7 +111,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
               <Link
                 key={club.id}
                 to={`/clubs/${club.id}`}
-                className="flex items-center gap-3 px-5 py-3 border-b border-[rgba(242,237,229,0.08)] hover:bg-[rgba(242,237,229,0.04)] active:bg-[rgba(242,237,229,0.08)] transition-colors"
+                className="flex items-center gap-3 px-5 py-3 border-b border-[var(--color-divider)] hover:bg-[var(--color-bg-elevated)] active:bg-[var(--color-bg-elevated)] transition-colors"
               >
                 {/* Cover */}
                 <BookCover

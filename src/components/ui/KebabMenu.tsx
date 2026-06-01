@@ -32,7 +32,7 @@ export default function KebabMenu({ items }: KebabMenuProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Open menu"
-        className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[rgba(242,237,229,0.06)] text-[var(--color-text-secondary)]"
+        className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]"
       >
         <span className="flex items-center gap-0.5">
           <span className="w-0.5 h-0.5 rounded-full bg-current" />
@@ -54,7 +54,7 @@ export default function KebabMenu({ items }: KebabMenuProps) {
                 'w-full text-left px-4 py-2 text-[13px] transition-colors duration-120',
                 item.danger
                   ? 'text-danger hover:bg-danger/10'
-                  : 'text-[var(--color-text-primary)] hover:bg-[rgba(242,237,229,0.06)]',
+                  : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
               {item.label}
