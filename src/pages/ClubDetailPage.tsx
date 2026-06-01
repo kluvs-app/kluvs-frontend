@@ -686,7 +686,7 @@ export default function ClubDetailPage() {
                                 key={discussion.id}
                                 className={[
                                   'grid grid-cols-[76px_24px_1fr] gap-6',
-                                  status === 'past' && 'opacity-72',
+                                  status === 'past' && 'opacity-50',
                                 ].join(' ')}
                               >
                                 {/* Date column */}
@@ -851,7 +851,7 @@ export default function ClubDetailPage() {
                                   {isAdmin && !isOwn && memberRole !== 'owner' && (
                                     <KebabMenu
                                       items={[
-                                        { label: 'Edit role', onClick: () => handleEditMember(clubMember) },
+                                        { label: 'Edit Member', onClick: () => handleEditMember(clubMember) },
                                         { label: 'Remove', danger: true, onClick: () => handleDeleteMember(clubMember) },
                                       ]}
                                     />
@@ -1521,7 +1521,7 @@ export default function ClubDetailPage() {
                           {isAdmin && !isOwn && memberRole !== 'owner' && (
                             <KebabMenu
                               items={[
-                                { label: 'Edit role', onClick: () => handleEditMember(clubMember) },
+                                { label: 'Edit Member', onClick: () => handleEditMember(clubMember) },
                                 { label: 'Remove', danger: true, onClick: () => handleDeleteMember(clubMember) },
                               ]}
                             />

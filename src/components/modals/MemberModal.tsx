@@ -111,8 +111,6 @@ export default function MemberModal({
           method: 'PUT',
           body: {
             id: editingMember.id,
-            books_read: editingMember.books_read,
-            discord_id: editingMember.discord_id ?? null,
             club_roles: { [selectedClub.id]: formData.role },
           }
         })
