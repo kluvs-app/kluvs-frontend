@@ -304,8 +304,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // awaiting would hold the lock for the entire member HTTP round-trip,
         // blocking every getSession() call in the app until the edge function responds.
         handleUserChange(session?.user ?? null)
+        setLoading(false)
       }
-      setLoading(false)
+      // When !initialized, loading is set to false by the getSession() promise below.
+      // Setting it here early would cause a frame where loading=false but user=null,
+      // triggering ProtectedRoute to redirect to /login then back to /me on refresh.
     })
 
     // Only refresh the token when it's within 5 minutes of expiring (or already
