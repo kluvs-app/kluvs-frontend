@@ -54,6 +54,15 @@ const mockKGPerson: KGPerson = {
   },
 }
 
+// ── MobileTopBarContext mock ───────────────────────────────────────────────────
+
+const mockSetTopBar = vi.fn()
+const mockResetTopBar = vi.fn()
+
+vi.mock('../../contexts/MobileTopBarContext', () => ({
+  useMobileTopBar: () => ({ setTopBar: mockSetTopBar, resetTopBar: mockResetTopBar, state: {} }),
+}))
+
 // ── Supabase mock ──────────────────────────────────────────────────────────────
 
 vi.mock('../../supabase', () => {
@@ -102,6 +111,9 @@ beforeEach(async () => {
   const mod = await import('../../supabase')
   mockSupabase = (mod.supabase as any)
   vi.clearAllMocks()
+
+  mockSetTopBar.mockClear()
+  mockResetTopBar.mockClear()
 
   mockSupabase.auth.getSession.mockResolvedValue({
     data: { session: { user: { id: 'user-1' } } },
@@ -278,14 +290,26 @@ describe('BooksPage', () => {
       expect(screen.getByText('978-0-7432-7356-5')).toBeInTheDocument()
     })
 
-    it('back button returns to list view', async () => {
+    it('calls setTopBar with title, backLabel "Books", and an onBack fn when a book is selected', async () => {
+      await renderWithResults()
+      await selectBook()
+
+      expect(mockSetTopBar).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'The Great Gatsby',
+          backLabel: 'Books',
+          onBack: expect.any(Function),
+        })
+      )
+    })
+
+    it('onBack callback from setTopBar returns to list view', async () => {
       await renderWithResults()
       await selectBook()
       expect(screen.getByRole('heading', { name: /the great gatsby/i })).toBeInTheDocument()
 
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: /results/i }))
-      })
+      const { onBack } = mockSetTopBar.mock.calls.at(-1)![0]
+      await act(async () => { onBack() })
 
       expect(screen.queryByRole('heading', { name: /the great gatsby/i })).not.toBeInTheDocument()
     })
