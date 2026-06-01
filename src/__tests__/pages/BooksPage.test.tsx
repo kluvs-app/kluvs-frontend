@@ -308,7 +308,7 @@ describe('BooksPage', () => {
       await selectBook()
       expect(screen.getByRole('heading', { name: /the great gatsby/i })).toBeInTheDocument()
 
-      const { onBack } = mockSetTopBar.mock.calls.at(-1)![0]
+      const { onBack } = mockSetTopBar.mock.calls[mockSetTopBar.mock.calls.length - 1][0]
       await act(async () => { onBack() })
 
       expect(screen.queryByRole('heading', { name: /the great gatsby/i })).not.toBeInTheDocument()
