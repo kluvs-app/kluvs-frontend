@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-
-function DiscordGlyph() {
-  return <img src="/ic-discord.svg" alt="" className="h-[18px] w-[18px]" aria-hidden="true" />
-}
+import DiscordIcon from '../components/icons/DiscordIcon'
 
 function GoogleGlyph() {
   return (
@@ -41,7 +38,7 @@ function ErrorBanner({ message }: { message: string }) {
 
 function ConfirmCard({ eyebrow, email, body }: { eyebrow: string; email: string; body: string }) {
   return (
-    <div className="bg-[#241C17] border border-[rgba(242,237,229,0.14)] rounded-[12px] py-5 px-[22px] text-center">
+    <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-[12px] py-5 px-[22px] text-center">
       <span className="block font-sans text-[11px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)] mb-[10px]">
         {eyebrow}
       </span>
@@ -258,7 +255,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isBusy}
-                className="w-full h-11 px-4 bg-primary border border-primary rounded-btn font-sans text-sm font-semibold tracking-[0.01em] text-white disabled:bg-[#332B24] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
+                className="w-full h-11 px-4 bg-primary border border-primary rounded-btn font-sans text-sm font-semibold tracking-[0.01em] text-white disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
               >
                 {signingIn === 'email' ? 'Sending…' : 'Send reset link'}
               </button>
@@ -277,7 +274,7 @@ export default function LoginPage() {
                 disabled={isBusy}
                 className="w-full h-11 flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover rounded-btn px-4 font-sans text-sm font-medium text-white disabled:cursor-not-allowed transition-colors"
               >
-                <DiscordGlyph />
+                <DiscordIcon className="h-[18px] w-[18px]" />
                 <span>{providerLabel('Discord')}</span>
               </button>
               <button
@@ -334,7 +331,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isBusy}
-                  className="w-full h-11 px-4 bg-primary border border-primary rounded-btn font-sans text-sm font-semibold tracking-[0.01em] text-white disabled:bg-[#332B24] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
+                  className="w-full h-11 px-4 bg-primary border border-primary rounded-btn font-sans text-sm font-semibold tracking-[0.01em] text-white disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
                 >
                   {signingIn === 'email'
                     ? (emailMode === 'signin' ? 'Signing in…' : 'Creating account…')

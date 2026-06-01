@@ -10,6 +10,7 @@ import AddMemberModal from '../components/modals/AddMemberModal'
 import DeleteMemberModal from '../components/modals/DeleteMemberModal'
 import DeleteDiscussionModal from '../components/modals/DeleteDiscussionModal'
 import DeleteClubModal from '../components/modals/DeleteClubModal'
+import DiscordIcon from '../components/icons/DiscordIcon'
 import EditClubModal from '../components/modals/EditClubModal'
 import AddClubModal from '../components/modals/AddClubModal'
 import ShareClubModal from '../components/modals/ShareClubModal'
@@ -33,17 +34,12 @@ function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
   return (
     <div className="relative group">
       <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full cursor-default transition-colors hover:bg-[rgba(88,101,242,0.1)]">
-        <img
-          src="/ic-discord.svg"
-          alt="Discord"
-          className="w-[15px] h-[15px]"
-          style={{ opacity: hasDiscord ? 0.6 : 0.25 }}
-        />
+        <DiscordIcon className={`w-[15px] h-[15px] text-[#5865F2] ${!hasDiscord ? 'opacity-25' : ''}`} />
       </div>
       <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-[120ms] z-50">
         <div
           className="rounded-lg px-3 py-2.5 text-left whitespace-nowrap"
-          style={{ background: '#1A140F', border: '1px solid rgba(242,237,229,0.12)' }}
+          style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
         >
           {hasDiscord ? (
             <div className="space-y-1.5">
@@ -322,7 +318,7 @@ export default function ClubDetailPage() {
               </span>
               <button
                 onClick={() => setShowAddClubModal(true)}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[rgba(242,237,229,0.06)] text-[var(--color-text-secondary)] text-[20px] font-light leading-none"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-[20px] font-light leading-none"
                 title="Add club"
               >
                 +
@@ -344,7 +340,7 @@ export default function ClubDetailPage() {
                     'w-full text-left px-6 py-3.5 border-l-[3px] transition-colors duration-120 relative',
                     isActive
                       ? 'border-l-primary bg-[rgba(209,109,48,0.06)]'
-                      : 'border-l-transparent hover:bg-[rgba(242,237,229,0.03)]',
+                      : 'border-l-transparent hover:bg-[var(--color-bg-elevated)]',
                   ].join(' ')}
                 >
                   {/* Club name + role */}
@@ -427,13 +423,13 @@ export default function ClubDetailPage() {
                   {/* Meta row */}
                   <div className="flex items-center gap-3.5 flex-wrap mb-3">
                     <RoleEyebrow role={clubRole || 'member'} />
-                    <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                    <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                     {club.founded_date && (
                       <>
                         <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                           FOUNDED {parseLocalDate(club.founded_date).getFullYear()}
                         </span>
-                        <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                        <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                       </>
                     )}
                     <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
@@ -457,7 +453,7 @@ export default function ClubDetailPage() {
                           fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
                           padding: '4px 10px',
                           borderRadius: 999,
-                          border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
+                          border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
                           color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
                           background: 'transparent',
                           cursor: 'pointer',
@@ -506,7 +502,7 @@ export default function ClubDetailPage() {
 
                         {/* Progress bar */}
                         <div className="flex items-center gap-4 max-w-[420px] mb-3">
-                          <div className="flex-1 h-1 rounded-full bg-[#332B24] overflow-hidden">
+                          <div className="flex-1 h-1 rounded-full bg-[var(--color-divider)] overflow-hidden">
                             <div
                               className="h-full bg-primary transition-all duration-300"
                               style={{ width: `${getProgressPercent()}%` }}
@@ -774,13 +770,13 @@ export default function ClubDetailPage() {
             <RoleEyebrow role={clubRole || 'member'} />
             {club.founded_date && (
               <>
-                <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                 <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                   FOUNDED {parseLocalDate(club.founded_date).getFullYear()}
                 </span>
               </>
             )}
-            <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+            <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
             <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
               {club.members.length} MEMBERS
             </span>
@@ -803,7 +799,7 @@ export default function ClubDetailPage() {
                     fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
                     padding: '4px 10px',
                     borderRadius: 999,
-                    border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
+                    border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
                     color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
                     background: 'transparent',
                     cursor: 'pointer',
@@ -932,7 +928,7 @@ export default function ClubDetailPage() {
                         {club.active_session.book?.author}
                       </p>
                       <div className="flex items-center justify-between gap-3 mb-1">
-                        <div className="flex-1 h-1 rounded-full bg-[#332B24] overflow-hidden">
+                        <div className="flex-1 h-1 rounded-full bg-[var(--color-divider)] overflow-hidden">
                           <div
                             className="h-full bg-primary"
                             style={{ width: `${getProgressPercent()}%` }}
@@ -1156,7 +1152,7 @@ export default function ClubDetailPage() {
                 {isAdmin && (
                   <button
                     onClick={handleAddMember}
-                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[rgba(242,237,229,0.04)] transition-colors"
+                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
                   >
                     + Invite
                   </button>

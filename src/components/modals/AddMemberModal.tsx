@@ -188,7 +188,7 @@ export default function AddMemberModal({
                     key={r.id}
                     onClick={() => handleAdd(r)}
                     disabled={addingId !== null}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-input text-left hover:bg-[rgba(242,237,229,0.05)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-input text-left hover:bg-[var(--color-bg-elevated)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="w-8 h-8 rounded-full bg-[#4D4033] flex items-center justify-center flex-shrink-0">
                       <span className="text-[13px] font-medium text-[var(--color-text-primary)]">
@@ -227,7 +227,7 @@ export default function AddMemberModal({
                 'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
                   ? 'bg-primary text-white'
-                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[rgba(242,237,229,0.04)]',
+                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
               Private
@@ -239,7 +239,7 @@ export default function AddMemberModal({
                 'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
                   ? 'bg-primary text-white'
-                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[rgba(242,237,229,0.04)]',
+                  : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
               Invite Link

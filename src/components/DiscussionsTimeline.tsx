@@ -130,14 +130,14 @@ export default function DiscussionsTimeline({
                       />
                     )}
                     {status === 'upcoming' && (
-                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-[var(--color-bg)] border border-[#4D4033] lg:border-[1.5px]" />
+                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-[var(--color-bg)] border border-[var(--color-divider)] lg:border-[1.5px]" />
                     )}
                   </div>
 
                   {/* Rail line */}
                   {!isLast && (
                     <div
-                      className="absolute left-1/2 -translate-x-1/2 w-px bg-[rgba(242,237,229,0.14)]"
+                      className="absolute left-1/2 -translate-x-1/2 w-px bg-[var(--color-divider)]"
                       style={{ top: '12px', bottom: '-28px', height: 'calc(100% + 28px)' }}
                     />
                   )}

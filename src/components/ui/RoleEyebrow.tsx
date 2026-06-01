@@ -17,7 +17,7 @@ export default function RoleEyebrow({ role, className = '' }: RoleEyebrowProps) 
           ? 'text-[#C9900A]'
           : isAdmin
             ? 'text-[#7BA8B8]'
-            : 'text-[rgba(201,189,168,0.7)]',
+            : 'text-[#48A480]',
         className,
       ].join(' ')}
     >

@@ -7,6 +7,7 @@ import { getAvatarUrl } from '../../supabase'
 import SignOutModal from '../modals/SignOutModal'
 import EditProfileModal from '../modals/EditProfileModal'
 import DiscordLinkModal from '../modals/DiscordLinkModal'
+import DiscordIcon from '../icons/DiscordIcon'
 
 const MS_VIEWBOX = '0 -960 960 960'
 
@@ -174,7 +175,7 @@ export default function MobileTopBar() {
                       onClick={() => { setShowDiscordLink(true); setMenuOpen(false) }}
                       className={`${menuItemBase} text-[#5865F2] hover:bg-[var(--color-bg-elevated)]`}
                     >
-                      <img src="/ic-discord.svg" alt="" className="w-[18px] h-[18px] shrink-0" />
+                      <DiscordIcon className="w-[18px] h-[18px] shrink-0" />
                       Connect Discord
                     </button>
                   )}

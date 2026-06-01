@@ -8,6 +8,7 @@ import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
 import KebabMenu from '../components/ui/KebabMenu'
 import { isPast, parseLocalDate } from '../utils/dates'
+import DiscordIcon from '../components/icons/DiscordIcon'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -371,7 +372,7 @@ export default function ProfilePage() {
               }}>
                 {handle}
                 {member?.discord_id && (
-                  <img src="/ic-discord.svg" alt="" style={{ width: 13, height: 13, opacity: 0.6, flexShrink: 0, display: 'block' }} />
+                  <DiscordIcon className="w-[13px] h-[13px] shrink-0 text-[#5865F2]" />
                 )}
               </p>
             )}
@@ -414,7 +415,7 @@ export default function ProfilePage() {
             }}>
               {handle}
               {member?.discord_id && (
-                <img src="/ic-discord.svg" alt="" style={{ width: 14, height: 14, opacity: 0.6, flexShrink: 0, display: 'block' }} />
+                <DiscordIcon className="w-[14px] h-[14px] shrink-0 text-[#5865F2]" />
               )}
             </p>
           )}
@@ -423,7 +424,7 @@ export default function ProfilePage() {
         <button
           onClick={() => setShowEditProfileModal(true)}
           aria-label="Edit profile"
-          className="transition-[background,transform] duration-[120ms] hover:bg-[rgba(242,237,229,0.06)] active:scale-[0.97]"
+          className="transition-[background,transform] duration-[120ms] hover:bg-[var(--color-bg-elevated)] active:scale-[0.97]"
           style={{
             background: 'transparent',
             border: `1px solid ${OUTLINE_BORDER}`,

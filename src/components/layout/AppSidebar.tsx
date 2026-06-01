@@ -7,6 +7,7 @@ import { VERSION } from '../../version'
 import SignOutModal from '../modals/SignOutModal'
 import DiscordLinkModal from '../modals/DiscordLinkModal'
 import Avatar from '../ui/Avatar'
+import DiscordIcon from '../icons/DiscordIcon'
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 // Material Symbols, weight 600, 24px — sourced from public/icons/
@@ -135,7 +136,7 @@ export default function AppSidebar() {
               onClick={() => setShowDiscordLinkModal(true)}
               className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[#5865F2] hover:bg-[var(--color-bg-elevated)] transition-colors"
             >
-              <img src="/ic-discord.svg" alt="" className="w-5 h-5 shrink-0" />
+              <DiscordIcon className="w-5 h-5 shrink-0" />
               Connect Discord
             </button>
           )}
