@@ -66,6 +66,7 @@ describe('DiscussionModal', () => {
       render(<DiscussionModal {...defaultProps} editingDiscussion={mockDiscussion} />)
 
       expect(screen.getByDisplayValue('Chapter 1-3 Discussion')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('19:30')).toBeInTheDocument()
       expect(screen.getByDisplayValue('Discord Voice Channel')).toBeInTheDocument()
     })
   })
@@ -251,6 +252,25 @@ describe('DiscussionModal', () => {
       await user.type(locationInput, 'Library Room B')
 
       expect(locationInput).toHaveValue('Library Room B')
+    })
+  })
+
+  describe('Time field', () => {
+    it('should render a time input', () => {
+      render(<DiscussionModal {...defaultProps} />)
+
+      const timeInputs = document.querySelectorAll('input[type="time"]')
+      expect(timeInputs).toHaveLength(1)
+    })
+
+    it('should update time field when changed', async () => {
+      const { fireEvent } = await import('@testing-library/react')
+      render(<DiscussionModal {...defaultProps} />)
+
+      const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement
+      fireEvent.change(timeInput, { target: { value: '14:00' } })
+
+      expect(timeInput).toHaveValue('14:00')
     })
   })
 })

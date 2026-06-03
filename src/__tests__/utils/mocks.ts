@@ -60,6 +60,7 @@ export const mockDiscussion: Discussion = {
   id: 'discussion-1',
   title: 'Chapter 1-3 Discussion',
   date: '2024-06-15',
+  time: '19:30',
   location: 'Discord Voice Channel',
 }
 
