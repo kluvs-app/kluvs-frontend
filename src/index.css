@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.85;
+  filter: brightness(0) saturate(100%) invert(46%) sepia(69%) saturate(658%) hue-rotate(350deg) brightness(103%) contrast(87%);
+}
+
 @keyframes tab-fade {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }

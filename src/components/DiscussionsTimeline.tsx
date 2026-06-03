@@ -26,6 +26,13 @@ export default function DiscussionsTimeline({
       )
     : []
 
+  const formatTime = (t: string) => {
+    const [h, m] = t.split(':').map(Number)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
+  }
+
   const getStatus = (discussion: Discussion): 'past' | 'next' | 'upcoming' => {
     if (isPast(discussion.date, discussion.time)) return 'past'
     const nextIdx = sortedDiscussions.findIndex(d => !isPast(d.date, d.time))
@@ -160,6 +167,14 @@ export default function DiscussionsTimeline({
                     {discussion.location && (
                       <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">
                         {discussion.location}
+                      </p>
+                    )}
+                    {discussion.time && (
+                      <p className="flex items-center gap-1.5 text-[13px] text-[var(--color-text-secondary)] mt-1">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        {formatTime(discussion.time)}
                       </p>
                     )}
                   </div>

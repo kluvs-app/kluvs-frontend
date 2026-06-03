@@ -199,4 +199,44 @@ describe('DiscussionsTimeline', () => {
       expect(screen.getByText(`${count} scheduled`)).toBeInTheDocument()
     })
   })
+
+  describe('Time display', () => {
+    it('should show formatted time when discussion has a time set', () => {
+      const futureDate = new Date()
+      futureDate.setMonth(futureDate.getMonth() + 1)
+
+      const clubWithTimedDiscussion = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [
+            { id: 'disc-1', title: 'Timed Discussion', date: futureDate.toISOString().split('T')[0], time: '19:30' },
+          ],
+        },
+      }
+
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithTimedDiscussion} />)
+
+      expect(screen.getByText('7:30 PM')).toBeInTheDocument()
+    })
+
+    it('should not show time when discussion has no time set', () => {
+      const futureDate = new Date()
+      futureDate.setMonth(futureDate.getMonth() + 1)
+
+      const clubWithUntimed = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [
+            { id: 'disc-1', title: 'Untimed Discussion', date: futureDate.toISOString().split('T')[0] },
+          ],
+        },
+      }
+
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithUntimed} />)
+
+      expect(screen.queryByText(/AM|PM/)).not.toBeInTheDocument()
+    })
+  })
 })
