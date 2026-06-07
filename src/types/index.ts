@@ -82,3 +82,23 @@ export interface Member {
   discord_id?: string | null
   avatar_path?: string | null
 }
+
+export interface ReadingLogEntry {
+  id: string
+  book: {
+    id: number
+    title: string
+    author: string
+    image_url: string | null
+  }
+  club: {
+    id: string
+    name: string
+  }
+  due_date: string | null
+}
+
+export interface ReadingLog {
+  active: ReadingLogEntry[]
+  finished: ReadingLogEntry[]
+}
