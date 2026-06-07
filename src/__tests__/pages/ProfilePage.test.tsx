@@ -36,6 +36,15 @@ vi.mock('../../components/modals/SignOutModal', () => ({
     ) : null,
 }))
 
+vi.mock('../../components/modals/ReadingLogModal', () => ({
+  default: ({ isOpen, onClose }: any) =>
+    isOpen ? (
+      <div role="dialog" data-testid="reading-log-modal">
+        <button onClick={onClose}>Close</button>
+      </div>
+    ) : null,
+}))
+
 let mockSupabase: any
 
 beforeEach(async () => {
@@ -173,20 +182,21 @@ describe('ProfilePage', () => {
   })
 
   describe('Edit Profile', () => {
-    it('opens EditProfileModal when Edit profile button is clicked', async () => {
+    it('opens EditProfileModal via kebab menu', async () => {
       const user = userEvent.setup()
       renderPage()
-      // Both mobile and desktop buttons have aria-label="Edit profile" — click the first
-      await waitFor(() => expect(screen.getAllByLabelText('Edit profile').length).toBeGreaterThan(0))
-      await user.click(screen.getAllByLabelText('Edit profile')[0])
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThan(0))
+      await user.click(screen.getAllByRole('button', { name: /open menu/i })[0])
+      await user.click(await screen.findByText('Edit Profile'))
       expect(screen.getByTestId('edit-profile-modal')).toBeInTheDocument()
     })
 
     it('closes EditProfileModal on dismiss', async () => {
       const user = userEvent.setup()
       renderPage()
-      await waitFor(() => expect(screen.getAllByLabelText('Edit profile').length).toBeGreaterThan(0))
-      await user.click(screen.getAllByLabelText('Edit profile')[0])
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThan(0))
+      await user.click(screen.getAllByRole('button', { name: /open menu/i })[0])
+      await user.click(await screen.findByText('Edit Profile'))
       await user.click(screen.getByRole('button', { name: /close/i }))
       expect(screen.queryByTestId('edit-profile-modal')).not.toBeInTheDocument()
     })
@@ -236,22 +246,42 @@ describe('ProfilePage', () => {
     it('closes EditProfileModal after onProfileUpdated is called', async () => {
       const user = userEvent.setup()
       renderPage()
-      await waitFor(() => expect(screen.getAllByLabelText('Edit profile').length).toBeGreaterThan(0))
-      await user.click(screen.getAllByLabelText('Edit profile')[0])
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThan(0))
+      await user.click(screen.getAllByRole('button', { name: /open menu/i })[0])
+      await user.click(await screen.findByText('Edit Profile'))
       expect(screen.getByTestId('edit-profile-modal')).toBeInTheDocument()
       await user.click(screen.getByTestId('profile-updated-btn'))
       expect(screen.queryByTestId('edit-profile-modal')).not.toBeInTheDocument()
     })
   })
 
-  describe('Mobile sign-out', () => {
-    it('renders a kebab menu on mobile (no standalone Edit profile button on mobile)', async () => {
+  describe('Reading Log', () => {
+    it('opens ReadingLogModal via kebab menu', async () => {
+      const user = userEvent.setup()
       renderPage()
-      await waitFor(() => expect(screen.queryAllByText(/profile/i).length).toBeGreaterThan(0))
-      // Desktop has aria-label="Edit profile"; mobile replaced it with a kebab
-      // So there should be exactly 1 such button (desktop only)
-      const editProfileBtns = screen.queryAllByLabelText('Edit profile')
-      expect(editProfileBtns.length).toBe(1)
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThan(0))
+      await user.click(screen.getAllByRole('button', { name: /open menu/i })[0])
+      await user.click(await screen.findByText('Reading Log'))
+      expect(screen.getByTestId('reading-log-modal')).toBeInTheDocument()
+    })
+
+    it('closes ReadingLogModal on dismiss', async () => {
+      const user = userEvent.setup()
+      renderPage()
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThan(0))
+      await user.click(screen.getAllByRole('button', { name: /open menu/i })[0])
+      await user.click(await screen.findByText('Reading Log'))
+      await user.click(screen.getByRole('button', { name: /close/i }))
+      expect(screen.queryByTestId('reading-log-modal')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Mobile sign-out', () => {
+    it('renders kebab menus (no standalone Edit Profile button anywhere)', async () => {
+      renderPage()
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThan(0))
+      // Standalone button with aria-label="Edit profile" was removed; menus are used everywhere
+      expect(screen.queryAllByLabelText('Edit profile').length).toBe(0)
     })
 
     it('opens SignOutModal when Sign out is chosen from mobile kebab', async () => {
