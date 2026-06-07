@@ -57,6 +57,10 @@ export interface Book {
   language?: string
 }
 
+export interface LikeStatus {
+  liked: boolean
+}
+
 export type UserRole = 'owner' | 'admin' | 'member'
 
 export interface MemberClub {

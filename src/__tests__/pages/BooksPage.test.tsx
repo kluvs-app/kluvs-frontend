@@ -524,6 +524,173 @@ describe('BooksPage', () => {
     })
   })
 
+  describe('Like feature', () => {
+    async function renderWithRegisteredBook() {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+    }
+
+    async function selectBook() {
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+    }
+
+    it('renders a like button after selecting a registered book', async () => {
+      await renderWithRegisteredBook()
+      await selectBook()
+
+      expect(screen.getByRole('button', { name: /like this book/i })).toBeInTheDocument()
+    })
+
+    it('fetches like status via GET /like?book_id= after book is registered', async () => {
+      await renderWithRegisteredBook()
+      await selectBook()
+
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        expect.stringMatching(/^like\?book_id=42$/),
+        expect.objectContaining({ method: 'GET' })
+      )
+    })
+
+    it('like button is disabled when the book has no id', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        // POST /book returns no id
+        if (endpoint === 'book') return Promise.resolve({ data: { ...mockSearchResult, id: undefined }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+
+      expect(screen.getByRole('button', { name: /like this book/i })).toBeDisabled()
+    })
+
+    it('POSTs to /like and optimistically toggles liked state on click', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint === 'like') return Promise.resolve({ data: { success: true, liked: true }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+
+      const likeButton = screen.getByRole('button', { name: /like this book/i })
+      await act(async () => {
+        fireEvent.click(likeButton)
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        'like',
+        expect.objectContaining({ method: 'POST', body: { book_id: 42 } })
+      )
+    })
+
+    it('reverts optimistic like state when POST /like fails', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint === 'like') return Promise.resolve({ data: null, error: new Error('toggle failed') })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+
+      // Initially shows ♡ (not liked)
+      expect(screen.getByText('♡')).toBeInTheDocument()
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /like this book/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      // After revert, back to ♡
+      expect(screen.getByText('♡')).toBeInTheDocument()
+    })
+
+    it('shows liked state when GET /like returns liked: true', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: true }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+
+      expect(screen.getByRole('button', { name: /unlike this book/i })).toBeInTheDocument()
+      expect(screen.getByText('♥')).toBeInTheDocument()
+    })
+
+    it('reverts optimistic like state when POST /like throws a network error', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint === 'like') return Promise.reject(new Error('network error'))
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+
+      expect(screen.getByText('♡')).toBeInTheDocument()
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /like this book/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.getByText('♡')).toBeInTheDocument()
+    })
+
+    it('resets like state when a different book is selected', async () => {
+      let likeGetCallCount = 0
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult, mockSearchResult2], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) {
+          likeGetCallCount++
+          // First book is liked, second is not
+          return Promise.resolve({ data: { success: true, liked: likeGetCallCount === 1 }, error: null })
+        }
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+
+      await act(async () => {
+        fireEvent.click(screen.getAllByText('The Great Gatsby')[0])
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.getByText('♥')).toBeInTheDocument()
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('1984'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.getByRole('button', { name: /like this book/i })).toBeInTheDocument()
+      expect(screen.getByText('♡')).toBeInTheDocument()
+    })
+  })
+
   describe('"More by this author" section', () => {
     async function renderAndSelectWithAuthorBooks() {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {

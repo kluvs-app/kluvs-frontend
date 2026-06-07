@@ -15,7 +15,7 @@ import {
   type GBVolume,
   type KGPerson,
 } from '../services/googleBooks'
-import type { Book } from '../types'
+import type { Book, LikeStatus } from '../types'
 import KluvsSpinner from '../components/KluvsSpinner'
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -106,6 +106,7 @@ export default function BooksPage() {
   const [wikipediaExtract, setWikipediaExtract]   = useState<string | null>(null)
   const [authorBooks, setAuthorBooks]       = useState<GBVolume[]>([])
   const [loadingAuthorBooks, setLoadingAuthorBooks] = useState(false)
+  const [liked, setLiked]           = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeId    = useRef<string | null>(null)
@@ -159,6 +160,7 @@ export default function BooksPage() {
     setWikipediaExtract(null)
     setAuthorBooks([])
     setLoadingAuthorBooks(false)
+    setLiked(false)
 
     const id = book.external_google_id
     if (id) activeId.current = id
@@ -210,9 +212,38 @@ export default function BooksPage() {
     }).then(({ data, error }) => {
       if (!error) {
         const saved = (data && 'title' in data ? data : (data as { book?: Book })?.book) as Book | undefined
-        if (saved) setSelectedBook(saved)
+        if (saved) {
+          setSelectedBook(saved)
+          if (saved.id) {
+            invokeFunction<{ success: boolean } & LikeStatus>('like?book_id=' + saved.id, { method: 'GET' })
+              .then(({ data: likeData, error: likeError }) => {
+                if (!likeError && likeData) {
+                  setLiked(likeData.liked)
+                }
+              }).catch(() => {})
+          }
+        }
       }
     }).catch(() => {})
+  }
+
+  const handleToggleLike = () => {
+    if (!selectedBook?.id) return
+    const bookId = selectedBook.id
+    const prevLiked = liked
+    setLiked(!prevLiked)
+    invokeFunction<{ success: boolean } & LikeStatus>('like', {
+      method: 'POST',
+      body: { book_id: bookId },
+    }).then(({ data, error }) => {
+      if (!error && data) {
+        setLiked(data.liked)
+      } else {
+        setLiked(prevLiked)
+      }
+    }).catch(() => {
+      setLiked(prevLiked)
+    })
   }
 
   // ── Derived display values ─────────────────────────────────────────────────
@@ -408,6 +439,18 @@ export default function BooksPage() {
                       ))}
                     </div>
                   )}
+
+                  {/* Like button */}
+                  <div className="mt-[22px]">
+                    <button
+                      onClick={selectedBook?.id ? handleToggleLike : undefined}
+                      disabled={!selectedBook?.id}
+                      aria-label={liked ? 'Unlike this book' : 'Like this book'}
+                      className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <span>{liked ? '♥' : '♡'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
