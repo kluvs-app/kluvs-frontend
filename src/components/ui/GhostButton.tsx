@@ -24,8 +24,8 @@ export default function GhostButton({
       {...props}
       className={[
         'inline-flex items-center gap-1.5 font-medium rounded-lg cursor-pointer whitespace-nowrap flex-shrink-0',
-        'bg-transparent border border-[rgba(242,237,229,0.14)] text-[var(--color-text-primary)]',
-        'hover:bg-[rgba(242,237,229,0.06)] active:scale-[0.97] transition-[background,transform] duration-[120ms]',
+        'bg-transparent border border-[var(--color-divider)] text-[var(--color-text-primary)]',
+        'hover:bg-[var(--color-bg-elevated)] active:scale-[0.97] transition-[background,transform] duration-[120ms]',
         sizeClasses,
         className,
       ].join(' ')}

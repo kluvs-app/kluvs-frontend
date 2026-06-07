@@ -2,9 +2,13 @@
  * Parse a DATE-only string (YYYY-MM-DD) as local midnight.
  * new Date("YYYY-MM-DD") is parsed as UTC midnight, which shifts the date
  * by the user's UTC offset. Appending T00:00:00 forces local time interpretation.
+ * Also handles ISO datetime strings by extracting the date part.
  */
 export function parseLocalDate(dateStr: string): Date {
-  return new Date(dateStr + 'T00:00:00')
+  if (!dateStr) return new Date(NaN)
+  const dateOnly = dateStr.split('T')[0]
+  const parsed = new Date(dateOnly + 'T00:00:00')
+  return isNaN(parsed.getTime()) ? new Date(NaN) : parsed
 }
 
 /**

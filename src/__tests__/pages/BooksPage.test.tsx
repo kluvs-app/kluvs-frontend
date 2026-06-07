@@ -3,7 +3,7 @@ import { render, screen, act, fireEvent } from '../utils/test-utils'
 import { MemoryRouter } from 'react-router-dom'
 import BooksPage from '../../pages/BooksPage'
 import type { Book } from '../../types'
-import type { GBVolumeInfo, KGPerson } from '../../services/googleBooks'
+import type { GBVolumeInfo, GBVolume, KGPerson } from '../../services/googleBooks'
 
 // ── googleBooks service mock ───────────────────────────────────────────────────
 // getAuthor has an early return when API_KEY is absent (which it always is in CI),
@@ -11,6 +11,7 @@ import type { GBVolumeInfo, KGPerson } from '../../services/googleBooks'
 
 const mockGetVolume = vi.fn<(id: string) => Promise<GBVolumeInfo | null>>()
 const mockGetAuthor = vi.fn<(name: string) => Promise<KGPerson | null>>()
+const mockSearchVolumes = vi.fn()
 
 vi.mock('../../services/googleBooks', async (importOriginal) => {
   const mod = await importOriginal<typeof import('../../services/googleBooks')>()
@@ -18,6 +19,8 @@ vi.mock('../../services/googleBooks', async (importOriginal) => {
     ...mod,
     getVolume: (id: string) => mockGetVolume(id),
     getAuthor: (name: string) => mockGetAuthor(name),
+    getWikipediaAuthorInfo: () => Promise.resolve({ imageUrl: null, extract: null }),
+    searchVolumes: (...args: any[]) => mockSearchVolumes(...args),
   }
 })
 
@@ -51,6 +54,30 @@ const mockKGPerson: KGPerson = {
     articleBody: 'Francis Scott Key Fitzgerald was an American novelist.',
   },
 }
+
+const mockKGPersonWithImage: KGPerson = {
+  ...mockKGPerson,
+  image: { contentUrl: 'https://example.com/fitzgerald.jpg' },
+}
+
+const mockAuthorBook: GBVolume = {
+  id: 'tender-is-the-night',
+  volumeInfo: {
+    title: 'Tender Is the Night',
+    authors: ['F. Scott Fitzgerald'],
+    publishedDate: '1934',
+    pageCount: 320,
+  },
+}
+
+// ── MobileTopBarContext mock ───────────────────────────────────────────────────
+
+const mockSetTopBar = vi.fn()
+const mockResetTopBar = vi.fn()
+
+vi.mock('../../contexts/MobileTopBarContext', () => ({
+  useMobileTopBar: () => ({ setTopBar: mockSetTopBar, resetTopBar: mockResetTopBar, state: {} }),
+}))
 
 // ── Supabase mock ──────────────────────────────────────────────────────────────
 
@@ -101,6 +128,9 @@ beforeEach(async () => {
   mockSupabase = (mod.supabase as any)
   vi.clearAllMocks()
 
+  mockSetTopBar.mockClear()
+  mockResetTopBar.mockClear()
+
   mockSupabase.auth.getSession.mockResolvedValue({
     data: { session: { user: { id: 'user-1' } } },
     error: null,
@@ -113,6 +143,7 @@ beforeEach(async () => {
   // Default: service functions return nothing
   mockGetVolume.mockResolvedValue(null)
   mockGetAuthor.mockResolvedValue(null)
+  mockSearchVolumes.mockResolvedValue([])
   mockFetch.mockResolvedValue(fetchFail())
 })
 
@@ -276,14 +307,26 @@ describe('BooksPage', () => {
       expect(screen.getByText('978-0-7432-7356-5')).toBeInTheDocument()
     })
 
-    it('back button returns to list view', async () => {
+    it('calls setTopBar with title, backLabel "Books", and an onBack fn when a book is selected', async () => {
+      await renderWithResults()
+      await selectBook()
+
+      expect(mockSetTopBar).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'The Great Gatsby',
+          backLabel: 'Books',
+          onBack: expect.any(Function),
+        })
+      )
+    })
+
+    it('onBack callback from setTopBar returns to list view', async () => {
       await renderWithResults()
       await selectBook()
       expect(screen.getByRole('heading', { name: /the great gatsby/i })).toBeInTheDocument()
 
-      await act(async () => {
-        fireEvent.click(screen.getByRole('button', { name: /results/i }))
-      })
+      const { onBack } = mockSetTopBar.mock.calls[mockSetTopBar.mock.calls.length - 1][0]
+      await act(async () => { onBack() })
 
       expect(screen.queryByRole('heading', { name: /the great gatsby/i })).not.toBeInTheDocument()
     })
@@ -439,6 +482,89 @@ describe('BooksPage', () => {
         await vi.advanceTimersByTimeAsync(100)
       })
       expect(screen.queryByText(/about the author/i)).not.toBeInTheDocument()
+    })
+
+    it('renders author photo when authorInfo has image.contentUrl', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      mockGetVolume.mockResolvedValue(mockVolumeInfo)
+      mockGetAuthor.mockResolvedValue(mockKGPersonWithImage)
+      renderPage()
+      await typeAndSearch('gatsby')
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(500)
+      })
+      const photo = document.querySelector('img[alt="Francis Scott Fitzgerald"]') as HTMLImageElement
+      expect(photo).toBeInTheDocument()
+      expect(photo.src).toContain('fitzgerald.jpg')
+    })
+
+    it('hides author photo when the image errors', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      mockGetVolume.mockResolvedValue(mockVolumeInfo)
+      mockGetAuthor.mockResolvedValue(mockKGPersonWithImage)
+      renderPage()
+      await typeAndSearch('gatsby')
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(500)
+      })
+      const photo = document.querySelector('img[alt="Francis Scott Fitzgerald"]') as HTMLImageElement
+      expect(photo).toBeInTheDocument()
+      await act(async () => { fireEvent.error(photo) })
+      expect(document.querySelector('img[alt="Francis Scott Fitzgerald"]')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('"More by this author" section', () => {
+    async function renderAndSelectWithAuthorBooks() {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      mockGetVolume.mockResolvedValue(mockVolumeInfo)
+      mockGetAuthor.mockResolvedValue(mockKGPerson)
+      mockSearchVolumes.mockResolvedValue([mockAuthorBook])
+      renderPage()
+      await typeAndSearch('gatsby')
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(500)
+      })
+    }
+
+    it('renders the "More by" section when searchVolumes returns books', async () => {
+      await renderAndSelectWithAuthorBooks()
+      expect(screen.getByText(/more by/i)).toBeInTheDocument()
+    })
+
+    it('shows the related book title in the carousel', async () => {
+      await renderAndSelectWithAuthorBooks()
+      expect(screen.getByText('Tender Is the Night')).toBeInTheDocument()
+    })
+
+    it('clicking a related book selects it', async () => {
+      await renderAndSelectWithAuthorBooks()
+      await act(async () => {
+        fireEvent.click(screen.getByText('Tender Is the Night'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        'book',
+        expect.objectContaining({
+          method: 'POST',
+          body: expect.objectContaining({ title: 'Tender Is the Night' }),
+        })
+      )
     })
   })
 })

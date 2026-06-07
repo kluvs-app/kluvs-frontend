@@ -101,6 +101,11 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => mockNavigate }
 })
 
+const mockSetTopBar = vi.fn()
+vi.mock('../../contexts/MobileTopBarContext', () => ({
+  useMobileTopBar: () => ({ setTopBar: mockSetTopBar, resetTopBar: vi.fn(), state: {} }),
+}))
+
 let mockSupabase: any
 beforeEach(async () => {
   const mod = await import('../../supabase')
@@ -716,7 +721,7 @@ describe('ClubDetailPage', () => {
       })
       renderDetail()
       await waitFor(() =>
-        expect(screen.queryAllByText(/start a session above to schedule discussions/i).length).toBeGreaterThan(0)
+        expect(screen.queryAllByText(/start a session first to schedule discussions/i).length).toBeGreaterThan(0)
       )
     })
 
@@ -1584,6 +1589,43 @@ describe('ClubDetailPage', () => {
         firstButton.focus()
         expect(firstButton).toHaveFocus()
       }
+    })
+  })
+
+  describe('MobileTopBar context integration', () => {
+    it('calls setTopBar with club name and back details after load', async () => {
+      renderDetail()
+      await waitFor(() => {
+        expect(mockSetTopBar).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: mockClub.name,
+            backLabel: 'Clubs',
+            backPath: '/clubs',
+          })
+        )
+      })
+    })
+
+    it('does not call setTopBar before club data is available', () => {
+      mockSupabase.functions.invoke.mockImplementation(() => new Promise(() => {}))
+      renderDetail()
+      expect(mockSetTopBar).not.toHaveBeenCalled()
+    })
+
+    it('updates setTopBar when club name changes', async () => {
+      const updatedClub = { ...mockClub, name: 'Renamed Club' }
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: updatedClub, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() => {
+        expect(mockSetTopBar).toHaveBeenCalledWith(
+          expect.objectContaining({ title: 'Renamed Club' })
+        )
+      })
     })
   })
 

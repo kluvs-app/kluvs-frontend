@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../../supabase'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import DiscordIcon from '../icons/DiscordIcon'
 
 interface DiscordLinkModalProps {
   isOpen: boolean
@@ -75,7 +76,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
             </>
           ) : (
             <>
-              <img src="/ic-discord.svg" alt="" className="h-5 w-5" />
+              <DiscordIcon className="h-5 w-5" />
               <span>Sign in with Discord</span>
             </>
           )}

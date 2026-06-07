@@ -16,9 +16,19 @@ interface MemberModalProps {
 
 interface MemberFormData {
   name: string
-  books_read: string
-  discord_id: string
   role: 'admin' | 'member'
+  is_reading: boolean
+}
+
+const labelStyle = {
+  display: 'block',
+  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+  fontSize: 11,
+  fontWeight: 500,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase' as const,
+  color: 'var(--color-text-secondary)',
+  marginBottom: 8,
 }
 
 export default function MemberModal({
@@ -31,79 +41,120 @@ export default function MemberModal({
   editorRole,
 }: MemberModalProps) {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState<MemberFormData>({
     name: '',
-    books_read: '0',
-    discord_id: '',
     role: 'member',
+    is_reading: false,
   })
 
   const isEditing = !!editingMember
   const canEditRole = isEditing && (editorRole === 'owner' || editorRole === 'admin')
+  const hasActiveSession = selectedClub.active_session?.status === 'active'
 
   useEffect(() => {
     if (isOpen) {
       if (editingMember) {
         const memberWithRole = editingMember as Member & { role?: string }
         const currentRole = (memberWithRole.role === 'admin' ? 'admin' : 'member') as 'admin' | 'member'
+        const sessionMember = selectedClub.active_session?.members?.find(sm => sm.member_id === editingMember.id)
         setFormData({
           name: editingMember.name,
-          books_read: String(editingMember.books_read),
-          discord_id: editingMember.discord_id ?? '',
           role: currentRole,
+          is_reading: sessionMember?.is_reading ?? false,
         })
       } else {
-        setFormData({ name: '', books_read: '0', discord_id: '', role: 'member' })
+        setFormData({ name: '', role: 'member', is_reading: false })
       }
     }
-  }, [isOpen, editingMember])
-
-  const validateForm = (): boolean => {
-    if (!isEditing && !formData.name.trim()) { onError('Member name is required'); return false }
-    const booksRead = parseInt(formData.books_read)
-    if (isNaN(booksRead) || booksRead < 0) { onError('Books read must be a non-negative number'); return false }
-    if (formData.discord_id.trim() && !/^\d{17,19}$/.test(formData.discord_id.trim())) {
-      onError('Discord ID must be a 17–19 digit number')
-      return false
-    }
-    return true
-  }
+  }, [isOpen, editingMember, selectedClub.active_session])
 
   const handleSubmit = async () => {
-    if (!validateForm()) return
+    setLoading(true)
+    setError(null)
+    onError('')
+
     try {
-      setLoading(true)
-      onError('')
-
-      const memberData = {
-        books_read: parseInt(formData.books_read),
-        discord_id: formData.discord_id.trim() || null
-      }
-
-      if (isEditing && editingMember) {
-        const memberWithRole = editingMember as Member & { role?: string }
-        const originalRole = memberWithRole.role === 'admin' ? 'admin' : 'member'
-        const body: Record<string, unknown> = { id: editingMember.id, ...memberData }
-        if (canEditRole && formData.role !== originalRole) {
-          body.club_roles = { [selectedClub.id]: formData.role }
-        }
-        const { error } = await invokeFunction('member', { method: 'PUT', body })
-        if (error) throw error
-      } else {
-        const { error } = await invokeFunction('member', {
+      if (!isEditing) {
+        if (!formData.name.trim()) { setError('Member name is required'); return }
+        const { error: err } = await invokeFunction('member', {
           method: 'POST',
-          body: { name: formData.name.trim(), ...memberData, clubs: [selectedClub.id] }
+          body: { name: formData.name.trim(), clubs: [selectedClub.id] }
         })
-        if (error) throw error
+        if (err) throw err
+        handleClose()
+        onMemberSaved()
+        return
       }
 
-      setFormData({ name: '', books_read: '0', discord_id: '', role: 'member' })
-      onClose()
-      onMemberSaved()
+      if (!editingMember) return
+
+      const memberWithRole = editingMember as Member & { role?: string }
+      const originalRole = (memberWithRole.role === 'admin' ? 'admin' : 'member') as 'admin' | 'member'
+      const sessionMember = selectedClub.active_session?.members?.find(sm => sm.member_id === editingMember.id)
+      const originalIsReading = sessionMember?.is_reading ?? false
+
+      const roleChanged = canEditRole && formData.role !== originalRole
+      const readingChanged = hasActiveSession && !!selectedClub.active_session && formData.is_reading !== originalIsReading
+
+      if (!roleChanged && !readingChanged) {
+        handleClose()
+        onMemberSaved()
+        return
+      }
+
+      let errorMsg: string | null = null
+      let anySucceeded = false
+
+      if (roleChanged) {
+        const { error: err } = await invokeFunction('member', {
+          method: 'PUT',
+          body: {
+            id: editingMember.id,
+            club_roles: { [selectedClub.id]: formData.role },
+          }
+        })
+        if (err) {
+          const raw = err && typeof err === 'object' && 'message' in err
+            ? String((err as { message: unknown }).message)
+            : 'Failed to update role'
+          errorMsg = raw === 'Forbidden'
+            ? "You don't have permission to change this member's role."
+            : raw
+        } else {
+          anySucceeded = true
+        }
+      }
+
+      if (readingChanged) {
+        const { error: err } = await invokeFunction('session', {
+          method: 'PUT',
+          body: {
+            id: selectedClub.active_session!.id,
+            session_members: [{ member_id: editingMember.id, is_reading: formData.is_reading }]
+          }
+        })
+        if (err) {
+          const raw = err && typeof err === 'object' && 'message' in err
+            ? String((err as { message: unknown }).message)
+            : 'Failed to update reading status'
+          errorMsg = errorMsg ? `${errorMsg} ${raw}` : raw
+        } else {
+          anySucceeded = true
+        }
+      }
+
+      if (anySucceeded) onMemberSaved()
+
+      if (errorMsg) {
+        setError(errorMsg)
+      } else {
+        handleClose()
+      }
     } catch (err: unknown) {
-      onError(
+      setError(
         err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+          ? String((err as { message: unknown }).message)
           : `Failed to ${isEditing ? 'update' : 'add'} member`
       )
     } finally {
@@ -112,7 +163,8 @@ export default function MemberModal({
   }
 
   const handleClose = () => {
-    setFormData({ name: '', books_read: '0', discord_id: '', role: 'member' })
+    setFormData({ name: '', role: 'member', is_reading: false })
+    setError(null)
     onError('')
     onClose()
   }
@@ -149,13 +201,7 @@ export default function MemberModal({
       <div className="space-y-5">
         {!isEditing && (
           <div>
-            <label style={{
-              display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-              marginBottom: 8,
-            }}>Member Name</label>
+            <label style={labelStyle}>Member Name</label>
             <input
               type="text"
               value={formData.name}
@@ -169,57 +215,9 @@ export default function MemberModal({
           </div>
         )}
 
-        <div>
-          <label style={{
-            display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-            marginBottom: 8,
-          }}>Books Read</label>
-          <input
-            type="number"
-            value={formData.books_read}
-            onChange={(e) => setFormData(prev => ({ ...prev, books_read: e.target.value }))}
-            placeholder="0"
-            min="0"
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-            disabled={loading}
-            autoFocus={isEditing}
-          />
-        </div>
-
-        <div>
-          <label style={{
-            display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-            marginBottom: 8,
-          }}>Discord ID <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
-          <input
-            type="text"
-            value={formData.discord_id}
-            onChange={(e) => setFormData(prev => ({ ...prev, discord_id: e.target.value }))}
-            placeholder="e.g., 123456789012345678"
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-            disabled={loading}
-            maxLength={19}
-          />
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
-            Discord snowflake ID — leave blank to clear
-          </p>
-        </div>
-
         {canEditRole && (
           <div>
-            <label style={{
-              display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-              marginBottom: 8,
-            }}>Role</label>
+            <label style={labelStyle}>Role</label>
             <div className="relative">
               <select
                 value={formData.role}
@@ -235,6 +233,46 @@ export default function MemberModal({
               </svg>
             </div>
           </div>
+        )}
+
+        {isEditing && (
+          <div>
+            <label style={labelStyle}>Reading this session</label>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-[var(--color-text-primary)]">
+                {formData.is_reading ? 'Reading' : 'Not reading'}
+              </p>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={formData.is_reading}
+                disabled={!hasActiveSession || loading}
+                onClick={() => setFormData(prev => ({ ...prev, is_reading: !prev.is_reading }))}
+                className={[
+                  'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+                  !hasActiveSession || loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
+                  formData.is_reading && hasActiveSession ? 'bg-primary' : 'bg-[#4D4033]',
+                ].join(' ')}
+              >
+                <span
+                  className={[
+                    'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-150',
+                    formData.is_reading ? 'translate-x-4' : 'translate-x-0',
+                  ].join(' ')}
+                />
+              </button>
+            </div>
+            {!hasActiveSession && (
+              <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
+                Start a session to enable this option.
+              </p>
+            )}
+          </div>
+        )}
+
+        {error && (
+          <p className="text-sm text-danger">{error}</p>
         )}
 
         <div

@@ -4,9 +4,6 @@ import userEvent from '@testing-library/user-event'
 import DiscussionsTimeline from '../../components/DiscussionsTimeline'
 import { mockClub, mockClub2 } from '../utils/mocks'
 
-// Mock scrollTo (not available in jsdom)
-Element.prototype.scrollTo = vi.fn()
-
 describe('DiscussionsTimeline', () => {
   const defaultProps = {
     selectedClub: mockClub,
@@ -21,44 +18,51 @@ describe('DiscussionsTimeline', () => {
   })
 
   describe('Rendering', () => {
-    it('should show Discussion Timeline heading', () => {
+    it('should show DISCUSSIONS section label', () => {
       render(<DiscussionsTimeline {...defaultProps} />)
 
-      expect(screen.getByText('Discussion Timeline')).toBeInTheDocument()
+      expect(screen.getByText('DISCUSSIONS')).toBeInTheDocument()
     })
 
-    it('should render all discussion cards', () => {
+    it('should render all discussion titles', () => {
       render(<DiscussionsTimeline {...defaultProps} />)
 
-      // Titles may appear in both mobile and desktop renders
       mockClub.active_session!.discussions.forEach(discussion => {
-        const titleElements = screen.getAllByText(discussion.title)
-        expect(titleElements.length).toBeGreaterThan(0)
+        expect(screen.getByText(discussion.title)).toBeInTheDocument()
       })
     })
 
     it('should show discussion location when available', () => {
       render(<DiscussionsTimeline {...defaultProps} />)
 
-      // mockDiscussion has location 'Discord Voice Channel' — may appear in mobile + desktop views
-      const locationElements = screen.getAllByText('Discord Voice Channel')
-      expect(locationElements.length).toBeGreaterThan(0)
+      expect(screen.getByText('Discord Voice Channel')).toBeInTheDocument()
     })
 
-    it('should show Location TBD when location is missing', () => {
+    it('should not show location when missing', () => {
       render(<DiscussionsTimeline {...defaultProps} />)
 
-      // mockDiscussion2 has no location — desktop card shows "Location TBD"
-      const locationTBDElements = screen.getAllByText('Location TBD')
-      expect(locationTBDElements.length).toBeGreaterThan(0)
+      expect(screen.queryByText('Location TBD')).not.toBeInTheDocument()
     })
   })
 
   describe('No Active Session', () => {
-    it('should return null when no active session', () => {
-      const { container } = render(<DiscussionsTimeline {...defaultProps} selectedClub={mockClub2} />)
+    it('should show empty state message when no active session', () => {
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={mockClub2} />)
 
-      expect(container.innerHTML).toBe('')
+      expect(screen.getByText(/start a session first/i)).toBeInTheDocument()
+    })
+
+    it('should show Start Session button for admin when onStartSession is provided', () => {
+      const onStartSession = vi.fn()
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={mockClub2} onStartSession={onStartSession} />)
+
+      expect(screen.getByRole('button', { name: /start session/i })).toBeInTheDocument()
+    })
+
+    it('should not show Start Session button when onStartSession is not provided', () => {
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={mockClub2} />)
+
+      expect(screen.queryByRole('button', { name: /start session/i })).not.toBeInTheDocument()
     })
   })
 
@@ -74,20 +78,26 @@ describe('DiscussionsTimeline', () => {
 
       render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithNoDiscussions} />)
 
-      expect(screen.getByText('No discussions scheduled')).toBeInTheDocument()
+      expect(screen.getByText('No discussions scheduled yet.')).toBeInTheDocument()
+    })
+
+    it('should show Schedule Discussion button for admin in empty state', () => {
+      const clubWithNoDiscussions = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [],
+        },
+      }
+
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithNoDiscussions} isAdmin={true} />)
+
+      expect(screen.getByRole('button', { name: /schedule discussion/i })).toBeInTheDocument()
     })
   })
 
   describe('Discussion Status', () => {
-    it('should mark past discussions as Completed', () => {
-      // mockDiscussion dates are in 2024 which are past
-      render(<DiscussionsTimeline {...defaultProps} />)
-
-      const completedLabels = screen.getAllByText('Completed')
-      expect(completedLabels.length).toBeGreaterThan(0)
-    })
-
-    it('should mark future discussions as Upcoming or Next Up', () => {
+    it('should show UP NEXT label for the next upcoming discussion', () => {
       const futureDate1 = new Date()
       futureDate1.setMonth(futureDate1.getMonth() + 1)
       const futureDate2 = new Date()
@@ -106,90 +116,127 @@ describe('DiscussionsTimeline', () => {
 
       render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithFutureDiscussions} />)
 
-      expect(screen.getByText('Next Up')).toBeInTheDocument()
-      expect(screen.getByText('Upcoming')).toBeInTheDocument()
+      expect(screen.getByText('UP NEXT')).toBeInTheDocument()
+    })
+
+    it('should not show UP NEXT when all discussions are past', () => {
+      render(<DiscussionsTimeline {...defaultProps} />)
+
+      expect(screen.queryByText('UP NEXT')).not.toBeInTheDocument()
+    })
+
+    it('should apply reduced opacity to past discussion rows', () => {
+      render(<DiscussionsTimeline {...defaultProps} />)
+
+      const rows = document.querySelectorAll('.opacity-50')
+      expect(rows.length).toBeGreaterThan(0)
     })
   })
 
   describe('Admin Controls', () => {
-    it('should show Add Discussion button for admin', () => {
+    it('should show Add button for admin', () => {
       render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
 
-      expect(screen.getByRole('button', { name: /Add Discussion/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^Add$/i })).toBeInTheDocument()
     })
 
-    it('should hide Add Discussion button for non-admin', () => {
+    it('should hide Add button for non-admin', () => {
       render(<DiscussionsTimeline {...defaultProps} isAdmin={false} />)
 
-      expect(screen.queryByRole('button', { name: /Add Discussion/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /^Add$/i })).not.toBeInTheDocument()
     })
 
-    it('should call onAddDiscussion when Add Discussion is clicked', async () => {
+    it('should call onAddDiscussion when Add is clicked', async () => {
       const user = userEvent.setup()
       render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
 
-      await user.click(screen.getByRole('button', { name: /Add Discussion/i }))
+      await user.click(screen.getByRole('button', { name: /^Add$/i }))
 
       expect(defaultProps.onAddDiscussion).toHaveBeenCalledTimes(1)
     })
 
-    it('should show edit buttons for admin', () => {
+    it('should show kebab menus for admin', () => {
       render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
 
-      const editButtons = screen.getAllByLabelText(/^Edit /)
-      expect(editButtons.length).toBeGreaterThan(0)
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i })
+      expect(menuButtons.length).toBeGreaterThan(0)
     })
 
-    it('should show delete buttons for admin', () => {
-      render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
-
-      const deleteButtons = screen.getAllByLabelText(/^Delete /)
-      expect(deleteButtons.length).toBeGreaterThan(0)
-    })
-
-    it('should hide edit/delete buttons for non-admin', () => {
+    it('should hide kebab menus for non-admin', () => {
       render(<DiscussionsTimeline {...defaultProps} isAdmin={false} />)
 
-      expect(screen.queryAllByLabelText(/^Edit /).length).toBe(0)
-      expect(screen.queryAllByLabelText(/^Delete /).length).toBe(0)
+      expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBe(0)
     })
 
-    it('should call onEditDiscussion with correct discussion', async () => {
+    it('should call onEditDiscussion when Edit is clicked in kebab menu', async () => {
       const user = userEvent.setup()
       render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
 
-      const editButtons = screen.getAllByLabelText(/^Edit /)
-      await user.click(editButtons[0])
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i })
+      await user.click(menuButtons[0])
+      await user.click(screen.getByRole('button', { name: 'Edit' }))
 
       expect(defaultProps.onEditDiscussion).toHaveBeenCalledTimes(1)
     })
 
-    it('should call onDeleteDiscussion with correct discussion', async () => {
+    it('should call onDeleteDiscussion when Delete is clicked in kebab menu', async () => {
       const user = userEvent.setup()
       render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
 
-      const deleteButtons = screen.getAllByLabelText(/^Delete /)
-      await user.click(deleteButtons[0])
+      const menuButtons = screen.getAllByRole('button', { name: /open menu/i })
+      await user.click(menuButtons[0])
+      await user.click(screen.getByRole('button', { name: 'Delete' }))
 
       expect(defaultProps.onDeleteDiscussion).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe('Accessibility', () => {
-    it('should have aria-labels on edit buttons', () => {
-      render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
+  describe('Scheduled count', () => {
+    it('should show the number of scheduled discussions', () => {
+      render(<DiscussionsTimeline {...defaultProps} />)
 
-      mockClub.active_session!.discussions.forEach(discussion => {
-        expect(screen.getAllByLabelText(`Edit ${discussion.title}`).length).toBeGreaterThan(0)
-      })
+      const count = mockClub.active_session!.discussions.length
+      expect(screen.getByText(`${count} scheduled`)).toBeInTheDocument()
+    })
+  })
+
+  describe('Time display', () => {
+    it('should show formatted time when discussion has a time set', () => {
+      const futureDate = new Date()
+      futureDate.setMonth(futureDate.getMonth() + 1)
+
+      const clubWithTimedDiscussion = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [
+            { id: 'disc-1', title: 'Timed Discussion', date: futureDate.toISOString().split('T')[0], time: '19:30' },
+          ],
+        },
+      }
+
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithTimedDiscussion} />)
+
+      expect(screen.getByText('7:30 PM')).toBeInTheDocument()
     })
 
-    it('should have aria-labels on delete buttons', () => {
-      render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
+    it('should not show time when discussion has no time set', () => {
+      const futureDate = new Date()
+      futureDate.setMonth(futureDate.getMonth() + 1)
 
-      mockClub.active_session!.discussions.forEach(discussion => {
-        expect(screen.getAllByLabelText(`Delete ${discussion.title}`).length).toBeGreaterThan(0)
-      })
+      const clubWithUntimed = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [
+            { id: 'disc-1', title: 'Untimed Discussion', date: futureDate.toISOString().split('T')[0] },
+          ],
+        },
+      }
+
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithUntimed} />)
+
+      expect(screen.queryByText(/AM|PM/)).not.toBeInTheDocument()
     })
   })
 })

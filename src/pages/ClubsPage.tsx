@@ -111,7 +111,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
               <Link
                 key={club.id}
                 to={`/clubs/${club.id}`}
-                className="flex items-center gap-3 px-5 py-3 border-b border-[rgba(242,237,229,0.08)] hover:bg-[rgba(242,237,229,0.04)] active:bg-[rgba(242,237,229,0.08)] transition-colors"
+                className="flex items-center gap-3 px-5 py-3 border-b border-[var(--color-divider)] hover:bg-[var(--color-bg-elevated)] active:bg-[var(--color-bg-elevated)] transition-colors"
               >
                 {/* Cover */}
                 <BookCover
@@ -155,11 +155,14 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                     )}
                     {fullClub?.active_session?.discussions && fullClub.active_session.discussions.length > 0 && (() => {
                       const next = fullClub.active_session.discussions.find((d) => !isPast(d.date, d.time))
-                      return next ? (
+                      if (!next || !next.date) return null
+                      const parsedDate = parseLocalDate(next.date)
+                      if (isNaN(parsedDate.getTime())) return null
+                      return (
                         <span className="text-[12px] text-[var(--color-text-secondary)] font-medium uppercase tracking-[0.02em]">
-                          Next · {parseLocalDate(next.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          Next · {parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
-                      ) : null
+                      )
                     })()}
                   </div>
                 </div>

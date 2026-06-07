@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import DiscordIcon from '../icons/DiscordIcon'
 
 interface AddClubModalProps {
   isOpen: boolean
@@ -158,7 +159,7 @@ export default function AddClubModal({
             style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
           >
             <div className="flex items-center gap-2">
-              <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0" />
+              <DiscordIcon className="w-4 h-4 shrink-0 text-[#5865F2]" />
               <span style={{
                 fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
                 fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',

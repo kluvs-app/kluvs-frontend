@@ -1,14 +1,18 @@
-import { useState, useRef, useCallback, Fragment } from 'react'
+import { useState, useRef, useCallback, useEffect, Fragment } from 'react'
 import { invokeFunction } from '../supabase'
+import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import {
   getVolume,
   getAuthor,
+  getWikipediaAuthorInfo,
+  searchVolumes,
   bestCoverUrl,
   extractYear,
   stripHtml,
   preferredIsbn,
   displayLanguage,
   type GBVolumeInfo,
+  type GBVolume,
   type KGPerson,
 } from '../services/googleBooks'
 import type { Book } from '../types'
@@ -98,9 +102,23 @@ export default function BooksPage() {
   const [authorInfo, setAuthorInfo]         = useState<KGPerson | null>(null)
   const [loadingAuthor, setLoadingAuthor]   = useState(false)
   const [authorPhotoFailed, setAuthorPhotoFailed] = useState(false)
+  const [wikipediaImage, setWikipediaImage]       = useState<string | null>(null)
+  const [wikipediaExtract, setWikipediaExtract]   = useState<string | null>(null)
+  const [authorBooks, setAuthorBooks]       = useState<GBVolume[]>([])
+  const [loadingAuthorBooks, setLoadingAuthorBooks] = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeId    = useRef<string | null>(null)
+
+  const { setTopBar, resetTopBar } = useMobileTopBar()
+  useEffect(() => {
+    if (selectedBook) {
+      setTopBar({ title: selectedBook.title, backLabel: 'Books', onBack: () => setSelectedBook(null) })
+    } else {
+      resetTopBar()
+    }
+    return resetTopBar
+  }, [selectedBook?.title, setTopBar, resetTopBar])
 
   const search = useCallback(async (q: string) => {
     if (!q.trim()) { setResults([]); return }
@@ -137,6 +155,10 @@ export default function BooksPage() {
     setVolumeInfo(null)
     setAuthorInfo(null)
     setAuthorPhotoFailed(false)
+    setWikipediaImage(null)
+    setWikipediaExtract(null)
+    setAuthorBooks([])
+    setLoadingAuthorBooks(false)
 
     const id = book.external_google_id
     if (id) activeId.current = id
@@ -152,11 +174,24 @@ export default function BooksPage() {
 
     if (book.author) {
       const primaryAuthor = book.author.split(/\s*(?:,|&| and )\s*/i)[0].trim()
+
       setLoadingAuthor(true)
-      getAuthor(primaryAuthor).then(person => {
+      Promise.all([
+        getAuthor(primaryAuthor),
+        getWikipediaAuthorInfo(primaryAuthor),
+      ]).then(([person, wiki]) => {
         if (id && activeId.current !== id) return
         setAuthorInfo(person)
+        setWikipediaImage(wiki.imageUrl)
+        setWikipediaExtract(wiki.extract)
         setLoadingAuthor(false)
+      })
+
+      setLoadingAuthorBooks(true)
+      searchVolumes(`inauthor:"${primaryAuthor}"`, 10).then(vols => {
+        if (id && activeId.current !== id) return
+        setAuthorBooks(vols.filter(v => v.id !== id))
+        setLoadingAuthorBooks(false)
       })
     }
 
@@ -210,7 +245,7 @@ export default function BooksPage() {
     <div className="flex lg:h-screen lg:overflow-hidden">
 
       {/* ── List panel ─────────────────────────────────────────────────────── */}
-      <div className={`flex flex-col w-full lg:w-80 lg:shrink-0 lg:border-r lg:border-[var(--color-divider)] lg:overflow-y-auto ${selectedBook ? 'hidden lg:flex' : 'flex'}`}>
+      <div className={`flex flex-col w-full lg:w-[22%] lg:min-w-[280px] lg:max-w-[420px] lg:shrink-0 lg:border-r lg:border-[var(--color-divider)] lg:overflow-y-auto ${selectedBook ? 'hidden lg:flex' : 'flex'}`}>
 
         <div className="px-[22px] pt-[28px] pb-[22px] border-b border-[var(--color-divider)]">
           <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-[10px]">
@@ -307,21 +342,10 @@ export default function BooksPage() {
       </div>
 
       {/* ── Detail panel ────────────────────────────────────────────────────── */}
-      <div className={`flex-1 lg:overflow-y-auto ${selectedBook ? 'block' : 'hidden lg:block'}`}>
+      <div className={`flex-1 min-w-0 lg:overflow-y-auto ${selectedBook ? 'block' : 'hidden lg:block'}`}>
         {selectedBook ? (
           <div className="px-[22px] pt-6 pb-12 lg:px-[56px] lg:pt-[40px] lg:pb-[64px]">
-            <div className="max-w-[880px]">
-
-              {/* Mobile back */}
-              <button
-                onClick={() => setSelectedBook(null)}
-                className="lg:hidden inline-flex items-center gap-1.5 text-[13px] text-primary font-medium mb-6"
-              >
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                </svg>
-                Results
-              </button>
+            <div className="max-w-[1300px] mx-auto">
 
               {/* ── Hero: cover + identity ──────────────────────────────────── */}
               <div className="flex flex-col sm:flex-row gap-[18px] sm:gap-[40px] mb-[44px]">
@@ -389,57 +413,62 @@ export default function BooksPage() {
 
               <hr className="border-[var(--color-divider)] mb-9" />
 
-              {/* ── About ────────────────────────────────────────────────────── */}
-              <section className="mb-10">
-                <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
-                  About
-                </span>
-                {loadingDetail && !description ? (
-                  <div className="space-y-2">
-                    {[100, 90, 95, 85, 70].map(w => (
-                      <Shimmer key={w} className="h-4" style={{ width: `${w}%` }} />
-                    ))}
-                  </div>
-                ) : description ? (
-                  <p className="text-[14px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line max-w-[680px]">
-                    {description}
-                  </p>
-                ) : (
-                  <p className="text-[14px] text-[var(--color-text-secondary)] italic">No description available.</p>
-                )}
-              </section>
+              {/* ── Details | About ──────────────────────────────────────────── */}
+              <div className="lg:grid lg:grid-cols-2 lg:gap-16 mb-10">
 
-              {/* ── Details ──────────────────────────────────────────────────── */}
-              {(metaRows.length > 0 || loadingDetail) && (
-                <section className="mb-10">
-                  <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
-                    Details
+                {/* Details — left column */}
+                {(metaRows.length > 0 || loadingDetail) && (
+                  <section>
+                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+                      Details
+                    </span>
+                    {loadingDetail && metaRows.length === 0 ? (
+                      <div className="divide-y divide-[var(--color-divider)]">
+                        {[160, 112, 192, 256].map(w => (
+                          <div key={w} className="flex gap-6 py-[12px]">
+                            <Shimmer className="h-4 shrink-0" style={{ width: 110 }} />
+                            <Shimmer className="h-4" style={{ width: w }} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <dl className="divide-y divide-[var(--color-divider)]">
+                        {metaRows.map(({ label, value, mono }) => (
+                          <div key={label} className="flex gap-6 py-[12px]">
+                            <dt className="text-[13px] text-[var(--color-text-secondary)] shrink-0" style={{ width: 110 }}>
+                              {label}
+                            </dt>
+                            <dd className={`text-[13px] text-[var(--color-text-primary)] font-medium tracking-[0.005em] ${mono ? 'font-mono tracking-[0.01em]' : ''}`}>
+                              {value}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+                  </section>
+                )}
+
+                {/* About — right column */}
+                <section className="mt-8 lg:mt-0">
+                  <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
+                    About
                   </span>
-                  {loadingDetail && metaRows.length === 0 ? (
-                    <div className="divide-y divide-[var(--color-divider)] max-w-[520px]">
-                      {[160, 112, 192, 256].map(w => (
-                        <div key={w} className="flex gap-6 py-[12px]">
-                          <Shimmer className="h-4 shrink-0" style={{ width: 110 }} />
-                          <Shimmer className="h-4" style={{ width: w }} />
-                        </div>
+                  {loadingDetail && !description ? (
+                    <div className="space-y-2">
+                      {[100, 90, 95, 85, 70].map(w => (
+                        <Shimmer key={w} className="h-4" style={{ width: `${w}%` }} />
                       ))}
                     </div>
+                  ) : description ? (
+                    <p className="text-[14px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line break-words">
+                      {description}
+                    </p>
                   ) : (
-                    <dl className="divide-y divide-[var(--color-divider)] max-w-[520px]">
-                      {metaRows.map(({ label, value, mono }) => (
-                        <div key={label} className="flex gap-6 py-[12px]">
-                          <dt className="text-[13px] text-[var(--color-text-secondary)] shrink-0" style={{ width: 110 }}>
-                            {label}
-                          </dt>
-                          <dd className={`text-[13px] text-[var(--color-text-primary)] font-medium tracking-[0.005em] ${mono ? 'font-mono tracking-[0.01em]' : ''}`}>
-                            {value}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
+                    <p className="text-[14px] text-[var(--color-text-secondary)] italic">No description available.</p>
                   )}
                 </section>
-              )}
+
+              </div>
 
               {/* ── About the Author ─────────────────────────────────────────── */}
               {(loadingAuthor || authorInfo) && (
@@ -461,9 +490,9 @@ export default function BooksPage() {
                       </div>
                     ) : authorInfo && (
                       <div className="flex gap-5">
-                        {authorInfo.image?.contentUrl && !authorPhotoFailed && (
+                        {(wikipediaImage || authorInfo.image?.contentUrl) && !authorPhotoFailed && (
                           <img
-                            src={authorInfo.image.contentUrl}
+                            src={wikipediaImage ?? authorInfo.image!.contentUrl!}
                             alt={authorInfo.name ?? ''}
                             className="h-[72px] w-[72px] rounded-full object-cover shrink-0"
                             onError={() => setAuthorPhotoFailed(true)}
@@ -480,14 +509,70 @@ export default function BooksPage() {
                               {authorInfo.description}
                             </span>
                           )}
-                          {authorInfo.detailedDescription?.articleBody && (
-                            <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em] max-w-[560px]">
-                              {authorInfo.detailedDescription.articleBody}
+                          {(wikipediaExtract || authorInfo.detailedDescription?.articleBody) && (
+                            <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em] max-w-[65ch]">
+                              {wikipediaExtract ?? authorInfo.detailedDescription!.articleBody}
                             </p>
                           )}
                         </div>
                       </div>
                     )}
+                  </section>
+                </>
+              )}
+
+              {/* ── More by this author ───────────────────────────────────────── */}
+              {(loadingAuthorBooks || authorBooks.length > 0) && (
+                <>
+                  <hr className="border-[var(--color-divider)] my-9" />
+                  <section>
+                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
+                      More by {selectedBook?.author?.split(/\s*(?:,|&| and )\s*/i)[0]}
+                    </span>
+                    <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+                      {loadingAuthorBooks && authorBooks.length === 0
+                        ? Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="flex flex-col gap-2 shrink-0 w-[96px]">
+                              <Shimmer className="w-[96px] h-[138px] rounded-sm" />
+                              <Shimmer className="h-3 w-4/5" />
+                              <Shimmer className="h-3 w-1/2" />
+                            </div>
+                          ))
+                        : authorBooks.map(vol => {
+                            const vi = vol.volumeInfo
+                            const coverUrl = bestCoverUrl(vi.imageLinks)
+                            const year = extractYear(vi.publishedDate)
+                            const book: Book = {
+                              title: vi.title,
+                              author: vi.authors?.join(', ') ?? '',
+                              year: year ? parseInt(year) : undefined,
+                              isbn: preferredIsbn(vi.industryIdentifiers),
+                              image_url: coverUrl,
+                              external_google_id: vol.id,
+                              page_count: vi.pageCount,
+                            }
+                            return (
+                              <button
+                                key={vol.id}
+                                onClick={() => handleSelect(book)}
+                                className="flex flex-col gap-2 shrink-0 w-[96px] text-left group"
+                              >
+                                <Cover
+                                  url={coverUrl}
+                                  title={vi.title}
+                                  className="w-[96px] h-[138px] group-hover:opacity-80 transition-opacity"
+                                />
+                                <p className="text-[12px] text-[var(--color-text-primary)] leading-[1.3] line-clamp-2 font-medium">
+                                  {vi.title}
+                                </p>
+                                {year && (
+                                  <p className="text-[11px] text-[var(--color-text-secondary)]">{year}</p>
+                                )}
+                              </button>
+                            )
+                          })
+                      }
+                    </div>
                   </section>
                 </>
               )}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
-import { invokeFunction } from '../supabase'
+import { useParams, useNavigate } from 'react-router-dom'
+import { invokeFunction, getAvatarUrl } from '../supabase'
 import type { Club, Discussion, Member } from '../types'
 import EditBookModal from '../components/modals/EditBookModal'
 import NewSessionModal from '../components/modals/NewSessionModal'
@@ -10,10 +10,13 @@ import AddMemberModal from '../components/modals/AddMemberModal'
 import DeleteMemberModal from '../components/modals/DeleteMemberModal'
 import DeleteDiscussionModal from '../components/modals/DeleteDiscussionModal'
 import DeleteClubModal from '../components/modals/DeleteClubModal'
+import DiscordIcon from '../components/icons/DiscordIcon'
 import EditClubModal from '../components/modals/EditClubModal'
 import AddClubModal from '../components/modals/AddClubModal'
 import ShareClubModal from '../components/modals/ShareClubModal'
+import EndSessionModal from '../components/modals/EndSessionModal'
 import { useAuth } from '../contexts/AuthContext'
+import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import { parseLocalDate, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
 import BookCover from '../components/ui/BookCover'
@@ -21,6 +24,7 @@ import RoleEyebrow from '../components/ui/RoleEyebrow'
 import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
 import Avatar from '../components/ui/Avatar'
+import DiscussionsTimeline from '../components/DiscussionsTimeline'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
@@ -30,17 +34,12 @@ function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
   return (
     <div className="relative group">
       <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full cursor-default transition-colors hover:bg-[rgba(88,101,242,0.1)]">
-        <img
-          src="/ic-discord.svg"
-          alt="Discord"
-          className="w-[15px] h-[15px]"
-          style={{ opacity: hasDiscord ? 0.6 : 0.25 }}
-        />
+        <DiscordIcon className={`w-[15px] h-[15px] text-[#5865F2] ${!hasDiscord ? 'opacity-25' : ''}`} />
       </div>
       <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-[120ms] z-50">
         <div
           className="rounded-lg px-3 py-2.5 text-left whitespace-nowrap"
-          style={{ background: '#1A140F', border: '1px solid rgba(242,237,229,0.12)' }}
+          style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
         >
           {hasDiscord ? (
             <div className="space-y-1.5">
@@ -69,6 +68,7 @@ export default function ClubDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const { member, getRoleForClub, refreshMemberData } = useAuth()
+  const { setTopBar, resetTopBar } = useMobileTopBar()
 
   const memberClub = member?.clubs.find((c) => c.id === slug)
   const serverId = memberClub?.server_id ?? ''
@@ -103,6 +103,9 @@ export default function ClubDetailPage() {
   const [showAddClubModal, setShowAddClubModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
 
+  const [showEndSessionModal, setShowEndSessionModal] = useState(false)
+  const [togglingMemberId, setTogglingMemberId] = useState<number | null>(null)
+
   // Track which club IDs have been fetched for the sidebar to avoid duplicate requests
   const sidebarFetchedRef = useRef(new Set<string>())
 
@@ -129,6 +132,13 @@ export default function ClubDetailPage() {
   useEffect(() => {
     if (slug) localStorage.setItem('kluvs:lastClub', slug)
   }, [slug])
+
+  // Set mobile top bar context
+  useEffect(() => {
+    if (!club) return
+    setTopBar({ title: club.name, backLabel: 'Clubs', backPath: '/clubs' })
+    return resetTopBar
+  }, [club?.name, setTopBar, resetTopBar])
 
   // Redirect if this club isn't in the member's list
   useEffect(() => {
@@ -214,19 +224,6 @@ export default function ClubDetailPage() {
     setShowDeleteMemberModal(true)
   }
 
-  const getDiscussionStatus = (discussion: Discussion) => {
-    if (isPast(discussion.date, discussion.time)) return 'past'
-    // Find the first non-past discussion (the "next" one)
-    if (club?.active_session?.discussions) {
-      const nextIdx = club.active_session.discussions.findIndex(
-        (d) => !isPast(d.date, d.time)
-      )
-      const isNext = nextIdx >= 0 && club.active_session.discussions[nextIdx]?.id === discussion.id
-      return isNext ? 'next' : 'upcoming'
-    }
-    return 'upcoming'
-  }
-
   const getSessionProgress = () => {
     if (!club?.active_session?.discussions) return { completed: 0, total: 0 }
     const total = club.active_session.discussions.length
@@ -246,6 +243,31 @@ export default function ClubDetailPage() {
   const getProgressPercent = () => {
     const { completed, total } = getSessionProgress()
     return total === 0 ? 0 : Math.round((completed / total) * 100)
+  }
+
+  const getMemberSessionStatus = (memberId: number): 'reading' | 'skipping' | null => {
+    if (!club?.active_session?.members) return null
+    const sm = club.active_session.members.find(m => m.member_id === memberId)
+    if (!sm) return null
+    return sm.is_reading ? 'reading' : 'skipping'
+  }
+
+  const handleToggleMember = async (memberId: number, newValue: boolean) => {
+    if (!club?.active_session) return
+    setTogglingMemberId(memberId)
+    try {
+      const { error: err } = await invokeFunction(
+        'session',
+        { method: 'PUT', body: { id: club.active_session.id, session_members: [{ member_id: memberId, is_reading: newValue }] } }
+      )
+      if (err) throw err
+      await refreshClub()
+    } catch {
+      // refresh will restore correct state
+      await refreshClub()
+    } finally {
+      setTogglingMemberId(null)
+    }
   }
 
   const getSortedMembers = (members: Member[]) => {
@@ -285,7 +307,7 @@ export default function ClubDetailPage() {
   return (
     <>
       {/* Desktop split-view: lg+ only */}
-      <div className="hidden lg:grid lg:grid-cols-[320px_1fr] h-screen bg-[var(--color-bg)] overflow-hidden">
+      <div className="hidden lg:grid lg:grid-cols-[minmax(280px,22%)_1fr] h-screen bg-[var(--color-bg)] overflow-hidden">
         {/* Left rail */}
         <div className="border-r border-[var(--color-divider)] overflow-y-auto bg-[var(--color-bg)]">
           {/* Rail header */}
@@ -296,7 +318,7 @@ export default function ClubDetailPage() {
               </span>
               <button
                 onClick={() => setShowAddClubModal(true)}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[rgba(242,237,229,0.06)] text-[var(--color-text-secondary)] text-[20px] font-light leading-none"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-[20px] font-light leading-none"
                 title="Add club"
               >
                 +
@@ -318,7 +340,7 @@ export default function ClubDetailPage() {
                     'w-full text-left px-6 py-3.5 border-l-[3px] transition-colors duration-120 relative',
                     isActive
                       ? 'border-l-primary bg-[rgba(209,109,48,0.06)]'
-                      : 'border-l-transparent hover:bg-[rgba(242,237,229,0.03)]',
+                      : 'border-l-transparent hover:bg-[var(--color-bg-elevated)]',
                   ].join(' ')}
                 >
                   {/* Club name + role */}
@@ -367,7 +389,7 @@ export default function ClubDetailPage() {
                 <KluvsSpinner size={48} className="mx-auto" />
               </div>
             ) : (
-              <div className="px-14 pt-10 pb-16 max-w-[1080px]">
+              <div className="px-14 pt-10 pb-16 max-w-[1300px] mx-auto">
                 {/* Masthead */}
                 <div className="mb-10 pb-8 border-b border-[var(--color-divider)]">
                   {/* Util row */}
@@ -401,13 +423,13 @@ export default function ClubDetailPage() {
                   {/* Meta row */}
                   <div className="flex items-center gap-3.5 flex-wrap mb-3">
                     <RoleEyebrow role={clubRole || 'member'} />
-                    <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                    <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                     {club.founded_date && (
                       <>
                         <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                           FOUNDED {parseLocalDate(club.founded_date).getFullYear()}
                         </span>
-                        <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                        <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                       </>
                     )}
                     <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
@@ -431,7 +453,7 @@ export default function ClubDetailPage() {
                           fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
                           padding: '4px 10px',
                           borderRadius: 999,
-                          border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
+                          border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
                           color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
                           background: 'transparent',
                           cursor: 'pointer',
@@ -452,16 +474,25 @@ export default function ClubDetailPage() {
                   {/* Book / session area */}
                   {club.active_session ? (
                     <div className="grid grid-cols-[128px_1fr] gap-9 mb-12 pb-12 border-b border-[var(--color-divider)]">
+                      {/* Left column: cover */}
                       <BookCover
                         imageUrl={club.active_session.book?.image_url}
                         title={club.active_session.book?.title || 'Book cover'}
                         size="lg"
                       />
 
+                      {/* Right column: metadata + CTA */}
                       <div>
-                        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-3.5">
-                          NOW READING
-                        </p>
+                        <div className="flex items-center justify-between mb-3.5">
+                          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                            NOW READING
+                          </p>
+                          {isAdmin && club.active_session.status === 'active' && (
+                            <KebabMenu
+                              items={[{ label: 'End Session', onClick: () => setShowEndSessionModal(true) }]}
+                            />
+                          )}
+                        </div>
                         <h2 className="font-serif italic text-[52px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-2 tracking-[-0.015em]">
                           {club.active_session.book?.title || '(Untitled)'}
                         </h2>
@@ -471,12 +502,10 @@ export default function ClubDetailPage() {
 
                         {/* Progress bar */}
                         <div className="flex items-center gap-4 max-w-[420px] mb-3">
-                          <div className="flex-1 h-1 rounded-full bg-[#332B24] overflow-hidden">
+                          <div className="flex-1 h-1 rounded-full bg-[var(--color-divider)] overflow-hidden">
                             <div
                               className="h-full bg-primary transition-all duration-300"
-                              style={{
-                                width: `${getProgressPercent()}%`,
-                              }}
+                              style={{ width: `${getProgressPercent()}%` }}
                             />
                           </div>
                           <span className="text-[13px] text-[var(--color-text-secondary)] font-mono">
@@ -491,6 +520,82 @@ export default function ClubDetailPage() {
                             day: 'numeric',
                           })}
                         </p>
+
+                        {/* Participation row: facepile + count + opt-in/out */}
+                        {(() => {
+                          const readingMembers = (club.active_session.members ?? [])
+                            .filter(sm => sm.is_reading)
+                            .map(sm => club.members.find(m => m.id === sm.member_id))
+                            .filter((m): m is Member => m != null)
+                          const sessionMember = member && club.active_session.members
+                            ? club.active_session.members.find(s => s.member_id === member.id)
+                            : undefined
+                          const isReading = sessionMember?.is_reading === true
+                          const showCTA = member && club.active_session.status === 'active'
+                          return (
+                            <div className="mt-5 pt-4 border-t border-[var(--color-divider)] flex items-center justify-between gap-3">
+                              {/* Left: facepile + reading count */}
+                              <div className="flex items-center gap-2.5">
+                                {readingMembers.length > 0 ? (
+                                  <>
+                                    <div className="flex -space-x-1.5">
+                                      {readingMembers.slice(0, 5).map(m => (
+                                        <div key={m.id} className="border-[1.5px] border-[var(--color-bg)] rounded-full">
+                                          <Avatar
+                                            name={m.name}
+                                            userId={String(m.id)}
+                                            imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
+                                            size="sm"
+                                            isOwn={member?.id === m.id}
+                                          />
+                                        </div>
+                                      ))}
+                                      {readingMembers.length > 5 && (
+                                        <div className="w-5 h-5 rounded-full bg-[#4D4033] border-[1.5px] border-[var(--color-bg)] text-[9px] text-white flex items-center justify-center font-medium flex-shrink-0">
+                                          +{readingMembers.length - 5}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <span className="text-[12px] text-[var(--color-text-secondary)]">
+                                      {readingMembers.length} of {club.members.length} reading
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-[12px] text-[var(--color-text-secondary)]">No participants yet</span>
+                                )}
+                              </div>
+                              {/* Right: opt-in/out CTA */}
+                              {showCTA && (
+                                isReading ? (
+                                  <GhostButton
+                                    variant="sm"
+                                    onClick={() => handleToggleMember(member.id, false)}
+                                    disabled={togglingMemberId === member.id}
+                                  >
+                                    Opt out
+                                  </GhostButton>
+                                ) : (
+                                  <button
+                                    onClick={() => handleToggleMember(member.id, true)}
+                                    disabled={togglingMemberId === member.id}
+                                    className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
+                                  >
+                                    Join this Read
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          )
+                        })()}
+
+                        {/* Finished badge */}
+                        {club.active_session.status === 'finished' && (
+                          <div className="mt-4">
+                            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full">
+                              Session finished
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
@@ -518,160 +623,13 @@ export default function ClubDetailPage() {
                   {/* Discussions + Members: two-column layout */}
                   <div className="grid grid-cols-[1.4fr_1fr] gap-14">
                     {/* Discussions section */}
-                    <div>
-                      <div className="flex items-center justify-between mb-9">
-                        <div className="flex items-center gap-3">
-                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-                            DISCUSSIONS
-                          </span>
-                          {club.active_session && club.active_session.discussions.length > 0 && (
-                            <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                              {club.active_session.discussions.length} scheduled
-                            </span>
-                          )}
-                        </div>
-                        {isAdmin && club.active_session && (
-                          <GhostButton
-                            variant="sm"
-                            icon="+"
-                            onClick={handleAddDiscussion}
-                          >
-                            Add
-                          </GhostButton>
-                        )}
-                      </div>
-
-                      {!club.active_session ? (
-                        <div className="py-6 flex flex-col items-center text-center">
-                          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug">
-                            {isAdmin
-                              ? 'Start a session above to schedule discussions.'
-                              : 'Discussions will appear here once a session begins.'}
-                          </p>
-                        </div>
-                      ) : club.active_session.discussions.length === 0 ? (
-                        <div className="py-6 flex flex-col items-center text-center">
-                          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-5">
-                            No discussions scheduled yet.
-                          </p>
-                          {isAdmin && (
-                            <button
-                              onClick={handleAddDiscussion}
-                              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
-                            >
-                              Schedule Discussion
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-7">
-                          {club.active_session?.discussions.map((discussion, idx) => {
-                            const status = getDiscussionStatus(discussion)
-                            const isLast = idx === (club.active_session?.discussions.length ?? 0) - 1
-
-                            return (
-                              <div
-                                key={discussion.id}
-                                className={[
-                                  'grid grid-cols-[76px_24px_1fr] gap-6',
-                                  status === 'past' && 'opacity-72',
-                                ].join(' ')}
-                              >
-                                {/* Date column */}
-                                <div className="text-right pr-3.5">
-                                  <p
-                                    className={[
-                                      'text-[12px] font-medium font-mono tracking-[0.02em]',
-                                      status === 'past'
-                                        ? 'text-[var(--color-text-secondary)]'
-                                        : status === 'next'
-                                          ? 'text-primary'
-                                          : 'text-[var(--color-text-secondary)]',
-                                    ].join(' ')}
-                                  >
-                                    {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
-                                      month: 'short',
-                                      day: 'numeric',
-                                    })}
-                                  </p>
-                                  <p className="text-[11px] text-[var(--color-text-secondary)] mt-1 opacity-80">
-                                    {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
-                                      weekday: 'short',
-                                    })}
-                                  </p>
-                                </div>
-
-                                {/* Rail column */}
-                                <div className="relative flex justify-center">
-                                  {/* Dot */}
-                                  <div className="relative z-10 mt-1">
-                                    {status === 'past' && (
-                                      <div className="w-2 h-2 rounded-full bg-[#4D4033]" />
-                                    )}
-                                    {status === 'next' && (
-                                      <div
-                                        className="w-3.5 h-3.5 rounded-full bg-primary"
-                                        style={{
-                                          boxShadow: '0 0 0 5px rgba(209,109,48,0.10)',
-                                        }}
-                                      />
-                                    )}
-                                    {status === 'upcoming' && (
-                                      <div className="w-2 h-2 rounded-full bg-[var(--color-bg)] border-[1.5px] border-[#4D4033]" />
-                                    )}
-                                  </div>
-
-                                  {/* Rail line */}
-                                  {!isLast && (
-                                    <div
-                                      className="absolute top-[12px] bottom-[-28px] left-[50%] w-px bg-[rgba(242,237,229,0.14)] transform -translate-x-1/2"
-                                      style={{
-                                        height: 'calc(100% + 28px)',
-                                      }}
-                                    />
-                                  )}
-                                </div>
-
-                                {/* Content column */}
-                                <div className="flex items-start justify-between gap-4 pt-0.5">
-                                  <div>
-                                    {status === 'next' && (
-                                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-1">
-                                        UP NEXT
-                                      </p>
-                                    )}
-                                    <p className="font-serif text-[24px] font-medium leading-[1.2] text-[var(--color-text-primary)] tracking-[-0.005em]">
-                                      {discussion.title}
-                                    </p>
-                                    {discussion.location && (
-                                      <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">
-                                        {discussion.location}
-                                      </p>
-                                    )}
-                                  </div>
-
-                                  {isAdmin && (
-                                    <KebabMenu
-                                      items={[
-                                        {
-                                          label: 'Edit',
-                                          onClick: () => handleEditDiscussion(discussion),
-                                        },
-                                        {
-                                          label: 'Delete',
-                                          danger: true,
-                                          onClick: () => handleDeleteDiscussion(discussion),
-                                        },
-                                      ]}
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <DiscussionsTimeline
+                      selectedClub={club}
+                      isAdmin={isAdmin}
+                      onAddDiscussion={handleAddDiscussion}
+                      onEditDiscussion={handleEditDiscussion}
+                      onDeleteDiscussion={handleDeleteDiscussion}
+                    />
 
                     {/* Members section (right column of grid) */}
                     <div>
@@ -705,12 +663,12 @@ export default function ClubDetailPage() {
                           return (
                             <div
                               key={clubMember.id}
-                              className="flex items-center gap-3.5 py-2.5 border-b border-[var(--color-divider)]"
+                              className="flex items-start gap-3.5 py-3 border-b border-[var(--color-divider)]"
                             >
-                              {/* Avatar */}
                               <Avatar
                                 name={clubMember.name}
                                 userId={String(clubMember.id)}
+                                imageUrl={clubMember.avatar_path ? getAvatarUrl(clubMember.avatar_path) : null}
                                 size="lg"
                                 isOwn={isOwn}
                               />
@@ -718,11 +676,11 @@ export default function ClubDetailPage() {
                               {/* Name + handle */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
+                                  <p className="text-[14px] font-medium text-[var(--color-text-primary)] truncate">
                                     {clubMember.name}
                                   </p>
                                   {isOwn && (
-                                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary flex-shrink-0">
                                       YOU
                                     </span>
                                   )}
@@ -732,26 +690,42 @@ export default function ClubDetailPage() {
                                 </p>
                               </div>
 
-                              {/* Role + kebab */}
-                              <div className="flex items-center gap-3">
-                                <RoleEyebrow
-                                  role={memberRole as 'owner' | 'admin' | 'member'}
-                                />
-                                {isAdmin && !isOwn && memberRole !== 'owner' && (
-                                  <KebabMenu
-                                    items={[
-                                      {
-                                        label: 'Edit role',
-                                        onClick: () => handleEditMember(clubMember),
-                                      },
-                                      {
-                                        label: 'Remove',
-                                        danger: true,
-                                        onClick: () => handleDeleteMember(clubMember),
-                                      },
-                                    ]}
-                                  />
-                                )}
+                              {/* Right column: role + kebab on top, reading icon below */}
+                              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                <div className="flex items-center gap-2">
+                                  <RoleEyebrow role={memberRole as 'owner' | 'admin' | 'member'} />
+                                  {isAdmin && !isOwn && memberRole !== 'owner' && (
+                                    <KebabMenu
+                                      items={[
+                                        { label: 'Edit Member', onClick: () => handleEditMember(clubMember) },
+                                        { label: 'Remove', danger: true, onClick: () => handleDeleteMember(clubMember) },
+                                      ]}
+                                    />
+                                  )}
+                                </div>
+                                {(() => {
+                                  const status = getMemberSessionStatus(clubMember.id)
+                                  if (!status) return null
+                                  const isReadingStatus = status === 'reading'
+                                  return (
+                                    <span
+                                      className="w-[14px] h-[14px] block"
+                                      title={isReadingStatus ? 'Reading' : 'Skipping'}
+                                      style={{
+                                        backgroundColor: isReadingStatus ? '#D16D30' : 'var(--color-text-secondary)',
+                                        opacity: isReadingStatus ? 1 : 0.4,
+                                        maskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
+                                        maskSize: 'contain',
+                                        maskRepeat: 'no-repeat',
+                                        maskPosition: 'center',
+                                        WebkitMaskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
+                                        WebkitMaskSize: 'contain',
+                                        WebkitMaskRepeat: 'no-repeat',
+                                        WebkitMaskPosition: 'center',
+                                      } as React.CSSProperties}
+                                    />
+                                  )
+                                })()}
                               </div>
                             </div>
                           )
@@ -783,43 +757,6 @@ export default function ClubDetailPage() {
 
       {/* Mobile layout: < lg */}
       <div className="lg:hidden min-h-screen bg-[var(--color-bg)] flex flex-col">
-        {/* Mobile header with back, title, edit, kebab */}
-        <div className="px-5 py-3 border-b border-[var(--color-divider)] flex items-center justify-between gap-3">
-          <Link
-            to="/clubs"
-            className="text-[var(--color-text-secondary)] text-[16px] hover:text-[var(--color-text-primary)] transition-colors"
-          >
-            ← Clubs
-          </Link>
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <>
-                <GhostButton
-                  variant="sm"
-                  onClick={() => setShowShareModal(true)}
-                >
-                  Share
-                </GhostButton>
-                <KebabMenu
-                  items={[
-                    {
-                      label: 'Edit club',
-                      onClick: () => setShowEditClubModal(true),
-                    },
-                    {
-                      label: 'Delete club',
-                      danger: true,
-                      onClick: () => {
-                        setClubToDelete({ id: club.id, name: club.name })
-                        setShowDeleteClubModal(true)
-                      },
-                    },
-                  ]}
-                />
-              </>
-            )}
-          </div>
-        </div>
 
         {/* Masthead */}
         <div className="px-5 py-6 border-b border-[var(--color-divider)]">
@@ -833,13 +770,13 @@ export default function ClubDetailPage() {
             <RoleEyebrow role={clubRole || 'member'} />
             {club.founded_date && (
               <>
-                <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+                <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                 <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                   FOUNDED {parseLocalDate(club.founded_date).getFullYear()}
                 </span>
               </>
             )}
-            <span className="inline-block w-1 h-1 rounded-full bg-[#332B24]" />
+            <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
             <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
               {club.members.length} MEMBERS
             </span>
@@ -847,38 +784,58 @@ export default function ClubDetailPage() {
 
           {/* Utility row — admin only */}
           {isAdmin && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(club.id)
-                  setIdCopied(true)
-                  setTimeout(() => setIdCopied(false), 1500)
-                }}
-                className="transition-all duration-[120ms]"
-                style={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                  padding: '4px 10px',
-                  borderRadius: 999,
-                  border: `1px solid ${idCopied ? '#48A480' : 'rgba(242,237,229,0.14)'}`,
-                  color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  letterSpacing: '0.04em',
-                }}
-                title="Copy Club ID"
-              >
-                {idCopied ? 'Copied!' : 'Copy Club ID'}
-              </button>
-              <DiscordIndicator club={club} isAdmin={isAdmin} />
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(club.id)
+                    setIdCopied(true)
+                    setTimeout(() => setIdCopied(false), 1500)
+                  }}
+                  className="transition-all duration-[120ms]"
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
+                    color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    letterSpacing: '0.04em',
+                  }}
+                  title="Copy Club ID"
+                >
+                  {idCopied ? 'Copied!' : 'Copy Club ID'}
+                </button>
+                <DiscordIndicator club={club} isAdmin={isAdmin} />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <GhostButton variant="sm" onClick={() => setShowShareModal(true)}>
+                  Share
+                </GhostButton>
+                <KebabMenu
+                  items={[
+                    { label: 'Edit club', onClick: () => setShowEditClubModal(true) },
+                    {
+                      label: 'Delete club',
+                      danger: true,
+                      onClick: () => {
+                        setClubToDelete({ id: club.id, name: club.name })
+                        setShowDeleteClubModal(true)
+                      },
+                    },
+                  ]}
+                />
+              </div>
             </div>
           )}
         </div>
 
         {/* Tab bar */}
-        <div className="sticky top-0 z-20 border-b border-[var(--color-divider)] bg-[var(--color-bg)] flex">
+        <div className="sticky top-14 z-20 border-b border-[var(--color-divider)] bg-[var(--color-bg)] flex">
           {(['overview', 'discussions', 'members'] as const).map((tab) => {
             const isActive = mobileTab === tab
             const tabCounts = {
@@ -946,42 +903,124 @@ export default function ClubDetailPage() {
                 </div>
               )}
               {club.active_session && (
-              <div className="grid grid-cols-[80px_1fr] gap-5 items-center">
-                <BookCover
-                  imageUrl={club.active_session.book?.image_url}
-                  title={club.active_session.book?.title || 'Book cover'}
-                  size="md"
-                />
                 <div>
-                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-2">
-                    NOW READING
-                  </p>
-                  <h3 className="font-serif italic text-[28px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-0.5">
-                    {club.active_session.book?.title || '(Untitled)'}
-                  </h3>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] mb-2">
-                    {club.active_session.book?.author}
-                  </p>
-                  <div className="flex items-center justify-between gap-3 mb-1">
-                    <div className="flex-1 h-1 rounded-full bg-[#332B24] overflow-hidden">
-                      <div
-                        className="h-full bg-primary"
-                        style={{ width: `${getProgressPercent()}%` }}
-                      />
+                  <div className="grid grid-cols-[80px_1fr] gap-5 items-start">
+                    <BookCover
+                      imageUrl={club.active_session.book?.image_url}
+                      title={club.active_session.book?.title || 'Book cover'}
+                      size="md"
+                    />
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                          NOW READING
+                        </p>
+                        {isAdmin && club.active_session.status === 'active' && (
+                          <KebabMenu
+                            items={[{ label: 'End Session', onClick: () => setShowEndSessionModal(true) }]}
+                          />
+                        )}
+                      </div>
+                      <h3 className="font-serif italic text-[28px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-0.5">
+                        {club.active_session.book?.title || '(Untitled)'}
+                      </h3>
+                      <p className="text-[13px] text-[var(--color-text-secondary)] mb-2">
+                        {club.active_session.book?.author}
+                      </p>
+                      <div className="flex items-center justify-between gap-3 mb-1">
+                        <div className="flex-1 h-1 rounded-full bg-[var(--color-divider)] overflow-hidden">
+                          <div
+                            className="h-full bg-primary"
+                            style={{ width: `${getProgressPercent()}%` }}
+                          />
+                        </div>
+                        <span className="text-[11px] text-[var(--color-text-secondary)] font-mono whitespace-nowrap ml-2">
+                          {getSessionProgress().completed} of {getSessionProgress().total}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[var(--color-text-secondary)]">
+                        {getProgressPercent()}% through · started{' '}
+                        {getSessionStartDate()?.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </p>
                     </div>
-                    <span className="text-[11px] text-[var(--color-text-secondary)] font-mono whitespace-nowrap ml-2">
-                      {getSessionProgress().completed} of {getSessionProgress().total}
-                    </span>
                   </div>
-                  <p className="text-[11px] text-[var(--color-text-secondary)]">
-                    {getProgressPercent()}% through · started{' '}
-                    {getSessionStartDate()?.toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </p>
+
+                  {/* Participation row: facepile + count + opt-in/out */}
+                  {(() => {
+                    const readingMembers = (club.active_session.members ?? [])
+                      .filter(sm => sm.is_reading)
+                      .map(sm => club.members.find(m => m.id === sm.member_id))
+                      .filter((m): m is Member => m != null)
+                    const sessionMember = member && club.active_session.members
+                      ? club.active_session.members.find(s => s.member_id === member.id)
+                      : undefined
+                    const isReading = sessionMember?.is_reading === true
+                    const showCTA = member && club.active_session.status === 'active'
+                    return (
+                      <div className="mt-4 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          {readingMembers.length > 0 ? (
+                            <>
+                              <div className="flex -space-x-1.5">
+                                {readingMembers.slice(0, 5).map(m => (
+                                  <div key={m.id} className="border-[1.5px] border-[var(--color-bg)] rounded-full">
+                                    <Avatar
+                                      name={m.name}
+                                      userId={String(m.id)}
+                                      imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
+                                      size="sm"
+                                      isOwn={member?.id === m.id}
+                                    />
+                                  </div>
+                                ))}
+                                {readingMembers.length > 5 && (
+                                  <div className="w-5 h-5 rounded-full bg-[#4D4033] border-[1.5px] border-[var(--color-bg)] text-[9px] text-white flex items-center justify-center font-medium flex-shrink-0">
+                                    +{readingMembers.length - 5}
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-[12px] text-[var(--color-text-secondary)]">
+                                {readingMembers.length} of {club.members.length} reading
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-[12px] text-[var(--color-text-secondary)]">No participants yet</span>
+                          )}
+                        </div>
+                        {showCTA && (
+                          isReading ? (
+                            <GhostButton
+                              variant="sm"
+                              onClick={() => handleToggleMember(member.id, false)}
+                              disabled={togglingMemberId === member.id}
+                            >
+                              Opt out
+                            </GhostButton>
+                          ) : (
+                            <button
+                              onClick={() => handleToggleMember(member.id, true)}
+                              disabled={togglingMemberId === member.id}
+                              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
+                            >
+                              Join this Read
+                            </button>
+                          )
+                        )}
+                      </div>
+                    )
+                  })()}
+
+                  {club.active_session.status === 'finished' && (
+                    <div className="mt-3">
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full inline-block">
+                        Session finished
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
               )}
 
               {/* UP NEXT */}
@@ -1049,6 +1088,7 @@ export default function ClubDetailPage() {
                         <Avatar
                           name={m.name}
                           userId={String(m.id)}
+                          imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
                           size="md"
                           isOwn={member?.id != null && m.id === member.id}
                         />
@@ -1094,162 +1134,14 @@ export default function ClubDetailPage() {
               </div>
             </div>
           ) : mobileTab === 'discussions' ? (
-            <div>
-              {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                  {club.active_session
-                    ? `${club.active_session.discussions.length} scheduled`
-                    : 'Discussions'}
-                </p>
-                {isAdmin && club.active_session && (
-                  <button
-                    onClick={handleAddDiscussion}
-                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[rgba(242,237,229,0.04)] transition-colors"
-                  >
-                    + Add
-                  </button>
-                )}
-              </div>
-
-              {!club.active_session ? (
-                <div className="flex flex-col items-center text-center py-6">
-                  <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
-                    {isAdmin
-                      ? 'Start a session first to schedule discussions.'
-                      : 'Discussions will appear here once a session begins.'}
-                  </p>
-                  {isAdmin && (
-                    <button
-                      onClick={() => setShowNewSessionModal(true)}
-                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
-                    >
-                      Start Session
-                    </button>
-                  )}
-                </div>
-              ) : club.active_session.discussions.length === 0 ? (
-                <div className="flex flex-col items-center text-center py-6">
-                  <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
-                    No discussions scheduled yet.
-                  </p>
-                  {isAdmin && (
-                    <button
-                      onClick={handleAddDiscussion}
-                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
-                    >
-                      Schedule Discussion
-                    </button>
-                  )}
-                </div>
-              ) : null}
-
-              {/* Timeline */}
-              <div className="space-y-5">
-                {club.active_session?.discussions.map((discussion, idx) => {
-                  const status = getDiscussionStatus(discussion)
-                  const isLast = idx === (club.active_session?.discussions.length ?? 1) - 1
-
-                  return (
-                    <div
-                      key={discussion.id}
-                      className={[
-                        'grid grid-cols-[54px_16px_1fr] gap-3',
-                        status === 'past' && 'opacity-60',
-                      ].join(' ')}
-                    >
-                      {/* Date column */}
-                      <div className="text-right pr-1">
-                        <p className={[
-                          'text-[13px] font-medium font-mono tracking-[0.02em]',
-                          status === 'past'
-                            ? 'text-[var(--color-text-secondary)]'
-                            : status === 'next'
-                              ? 'text-primary font-medium'
-                              : 'text-[var(--color-text-secondary)]',
-                        ].join(' ')}>
-                          {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </p>
-                        <p className="text-[10px] text-[var(--color-text-secondary)] mt-0.5 opacity-70">
-                          {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                          })}
-                        </p>
-                      </div>
-
-                      {/* Dot column */}
-                      <div className="relative flex justify-center pt-2">
-                        {/* Connecting line - only on non-last items */}
-                        {!isLast && (
-                          <div
-                            className="absolute left-1/2 -translate-x-1/2 w-px bg-[rgba(242,237,229,0.14)]"
-                            style={{ top: '12px', bottom: '-28px', height: 'calc(100% + 28px)' }}
-                          />
-                        )}
-
-                        <div className="relative z-10">
-                          {status === 'past' && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-[#4D4033]" />
-                          )}
-                          {status === 'next' && (
-                            <div
-                              className="w-3 h-3 rounded-full bg-primary"
-                              style={{
-                                boxShadow: '0 0 0 4px rgba(209,109,48,0.10)',
-                              }}
-                            />
-                          )}
-                          {status === 'upcoming' && (
-                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-bg)] border border-[#4D4033]" />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Content column */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          {status === 'next' && (
-                            <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-1">
-                              UP NEXT
-                            </p>
-                          )}
-                          <p className={[
-                            'font-serif font-medium text-[var(--color-text-primary)]',
-                            status === 'next' ? 'text-[22px]' : 'text-[18px]',
-                          ].join(' ')}>
-                            {discussion.title}
-                          </p>
-                          {discussion.location && (
-                            <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">
-                              {discussion.location}
-                            </p>
-                          )}
-                        </div>
-
-                        {isAdmin && (
-                          <KebabMenu
-                            items={[
-                              {
-                                label: 'Edit',
-                                onClick: () => handleEditDiscussion(discussion),
-                              },
-                              {
-                                label: 'Delete',
-                                danger: true,
-                                onClick: () => handleDeleteDiscussion(discussion),
-                              },
-                            ]}
-                          />
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            <DiscussionsTimeline
+              selectedClub={club}
+              isAdmin={isAdmin}
+              onAddDiscussion={handleAddDiscussion}
+              onEditDiscussion={handleEditDiscussion}
+              onDeleteDiscussion={handleDeleteDiscussion}
+              onStartSession={() => setShowNewSessionModal(true)}
+            />
           ) : mobileTab === 'members' ? (
             <div>
               {/* Header */}
@@ -1260,7 +1152,7 @@ export default function ClubDetailPage() {
                 {isAdmin && (
                   <button
                     onClick={handleAddMember}
-                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[rgba(242,237,229,0.04)] transition-colors"
+                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
                   >
                     + Invite
                   </button>
@@ -1277,7 +1169,7 @@ export default function ClubDetailPage() {
                   return (
                     <div
                       key={clubMember.id}
-                      className="flex items-center gap-3 py-3 border-b border-[var(--color-divider)]"
+                      className="flex items-start gap-3 py-3 border-b border-[var(--color-divider)]"
                     >
                       <Avatar
                         name={clubMember.name}
@@ -1285,40 +1177,60 @@ export default function ClubDetailPage() {
                         size="lg"
                         isOwn={isOwn}
                       />
+
+                      {/* Name + handle */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-[14px] font-medium text-[var(--color-text-primary)]">
+                        <div className="flex items-center gap-2">
+                          <p className="text-[14px] font-medium text-[var(--color-text-primary)] truncate">
                             {clubMember.name}
                           </p>
                           {isOwn && (
-                            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">
+                            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary flex-shrink-0">
                               YOU
                             </span>
                           )}
                         </div>
-                        <p className="text-[12px] text-[var(--color-text-secondary)]">
+                        <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
                           @{clubMember.handle || clubMember.discord_id || 'unknown'}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <RoleEyebrow
-                          role={memberRole as 'owner' | 'admin' | 'member'}
-                        />
-                        {isAdmin && !isOwn && memberRole !== 'owner' && (
-                          <KebabMenu
-                            items={[
-                              {
-                                label: 'Edit role',
-                                onClick: () => handleEditMember(clubMember),
-                              },
-                              {
-                                label: 'Remove',
-                                danger: true,
-                                onClick: () => handleDeleteMember(clubMember),
-                              },
-                            ]}
-                          />
-                        )}
+
+                      {/* Right column: role + kebab on top, reading icon below */}
+                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                        <div className="flex items-center gap-2">
+                          <RoleEyebrow role={memberRole as 'owner' | 'admin' | 'member'} />
+                          {isAdmin && !isOwn && memberRole !== 'owner' && (
+                            <KebabMenu
+                              items={[
+                                { label: 'Edit Member', onClick: () => handleEditMember(clubMember) },
+                                { label: 'Remove', danger: true, onClick: () => handleDeleteMember(clubMember) },
+                              ]}
+                            />
+                          )}
+                        </div>
+                        {(() => {
+                          const status = getMemberSessionStatus(clubMember.id)
+                          if (!status) return null
+                          const isReadingStatus = status === 'reading'
+                          return (
+                            <span
+                              className="w-[14px] h-[14px] block"
+                              title={isReadingStatus ? 'Reading' : 'Skipping'}
+                              style={{
+                                backgroundColor: isReadingStatus ? '#D16D30' : 'var(--color-text-secondary)',
+                                opacity: isReadingStatus ? 1 : 0.4,
+                                maskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
+                                maskSize: 'contain',
+                                maskRepeat: 'no-repeat',
+                                maskPosition: 'center',
+                                WebkitMaskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
+                                WebkitMaskSize: 'contain',
+                                WebkitMaskRepeat: 'no-repeat',
+                                WebkitMaskPosition: 'center',
+                              } as React.CSSProperties}
+                            />
+                          )
+                        })()}
                       </div>
                     </div>
                   )
@@ -1450,6 +1362,12 @@ export default function ClubDetailPage() {
         onClose={() => setShowShareModal(false)}
         club={club}
         onUpdated={(patch) => setClub(prev => prev ? { ...prev, ...patch } : prev)}
+      />
+      <EndSessionModal
+        isOpen={showEndSessionModal}
+        onClose={() => setShowEndSessionModal(false)}
+        club={club}
+        onSessionEnded={refreshClub}
       />
     </>
   )

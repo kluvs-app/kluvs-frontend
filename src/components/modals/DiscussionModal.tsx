@@ -17,6 +17,7 @@ interface DiscussionModalProps {
 interface DiscussionFormData {
   title: string
   date: string
+  time: string
   location: string
 }
 
@@ -29,7 +30,7 @@ export default function DiscussionModal({
   editingDiscussion
 }: DiscussionModalProps) {
   const [loading, setLoading] = useState(false)
-  const [formData, setFormData] = useState<DiscussionFormData>({ title: '', date: '', location: '' })
+  const [formData, setFormData] = useState<DiscussionFormData>({ title: '', date: '', time: '', location: '' })
 
   const isEditing = !!editingDiscussion
 
@@ -39,10 +40,11 @@ export default function DiscussionModal({
         setFormData({
           title: editingDiscussion.title,
           date: editingDiscussion.date,
+          time: editingDiscussion.time ?? '',
           location: editingDiscussion.location || ''
         })
       } else {
-        setFormData({ title: '', date: '', location: '' })
+        setFormData({ title: '', date: '', time: '', location: '' })
       }
     }
   }, [isOpen, editingDiscussion])
@@ -70,7 +72,7 @@ export default function DiscussionModal({
       if (isEditing && editingDiscussion) {
         updatedDiscussions = existingDiscussions.map(d =>
           d.id === editingDiscussion.id
-            ? { id: d.id, title: formData.title.trim(), date: formData.date, location: formData.location.trim() || null }
+            ? { id: d.id, title: formData.title.trim(), date: formData.date, time: formData.time.trim() || null, location: formData.location.trim() || null }
             : d
         )
       } else {
@@ -78,6 +80,7 @@ export default function DiscussionModal({
           id: crypto.randomUUID(),
           title: formData.title.trim(),
           date: formData.date,
+          time: formData.time.trim() || undefined,
           location: formData.location.trim() || undefined
         }]
       }
@@ -88,7 +91,7 @@ export default function DiscussionModal({
       })
       if (error) throw error
 
-      setFormData({ title: '', date: '', location: '' })
+      setFormData({ title: '', date: '', time: '', location: '' })
       onClose()
       onDiscussionSaved()
     } catch (err: unknown) {
@@ -103,7 +106,7 @@ export default function DiscussionModal({
   }
 
   const handleClose = () => {
-    setFormData({ title: '', date: '', location: '' })
+    setFormData({ title: '', date: '', time: '', location: '' })
     onError('')
     onClose()
   }
@@ -173,6 +176,23 @@ export default function DiscussionModal({
             value={formData.date}
             onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
             min={today}
+            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            disabled={loading}
+          />
+        </div>
+
+        <div>
+          <label style={{
+            display: 'block',
+            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            marginBottom: 8,
+          }}>Time <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+          <input
+            type="time"
+            value={formData.time}
+            onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
             className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
           />
