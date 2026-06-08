@@ -191,6 +191,44 @@ describe('DiscussionsTimeline', () => {
     })
   })
 
+  describe('Note button (onOpenNote)', () => {
+    it('should render note buttons when onOpenNote is provided', () => {
+      const onOpenNote = vi.fn()
+      render(<DiscussionsTimeline {...defaultProps} onOpenNote={onOpenNote} />)
+
+      const noteButtons = screen.getAllByRole('button', { name: /food for thought/i })
+      expect(noteButtons.length).toBeGreaterThan(0)
+    })
+
+    it('should not render note buttons when onOpenNote is omitted', () => {
+      render(<DiscussionsTimeline {...defaultProps} />)
+
+      expect(screen.queryAllByRole('button', { name: /food for thought/i }).length).toBe(0)
+    })
+
+    it('should call onOpenNote with the correct discussion when clicked', async () => {
+      const user = userEvent.setup()
+      const onOpenNote = vi.fn()
+      render(<DiscussionsTimeline {...defaultProps} onOpenNote={onOpenNote} />)
+
+      const noteButtons = screen.getAllByRole('button', { name: /food for thought/i })
+      await user.click(noteButtons[0])
+
+      expect(onOpenNote).toHaveBeenCalledTimes(1)
+      expect(onOpenNote).toHaveBeenCalledWith(
+        expect.objectContaining({ id: mockClub.active_session!.discussions[0].id })
+      )
+    })
+
+    it('should show note button for non-admin users', () => {
+      const onOpenNote = vi.fn()
+      render(<DiscussionsTimeline {...defaultProps} isAdmin={false} onOpenNote={onOpenNote} />)
+
+      const noteButtons = screen.getAllByRole('button', { name: /food for thought/i })
+      expect(noteButtons.length).toBeGreaterThan(0)
+    })
+  })
+
   describe('Scheduled count', () => {
     it('should show the number of scheduled discussions', () => {
       render(<DiscussionsTimeline {...defaultProps} />)

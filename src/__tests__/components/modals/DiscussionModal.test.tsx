@@ -141,7 +141,7 @@ describe('DiscussionModal', () => {
           expect.objectContaining({
             method: 'POST',
             body: expect.objectContaining({
-              session_id: defaultProps.selectedClub.active_session.id,
+              session_id: defaultProps.selectedClub.active_session!.id,
               title: 'New Discussion',
             }),
           })
@@ -162,7 +162,7 @@ describe('DiscussionModal', () => {
           expect.objectContaining({
             method: 'POST',
             body: expect.objectContaining({
-              session_id: defaultProps.selectedClub.active_session.id,
+              session_id: defaultProps.selectedClub.active_session!.id,
               title: 'Test Discussion',
               time: '14:00',
               location: 'Library',
@@ -523,7 +523,7 @@ describe('DiscussionModal', () => {
         const calls = mockInvoke.mock.calls
         const lastCall = calls[calls.length - 1]
         expect(lastCall[1].body).toHaveProperty('session_id')
-        expect(lastCall[1].body.session_id).toBe(defaultProps.selectedClub.active_session.id)
+        expect(lastCall[1].body.session_id).toBe(defaultProps.selectedClub.active_session!.id)
       })
     })
 
