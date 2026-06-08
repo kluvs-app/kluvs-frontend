@@ -86,7 +86,7 @@ describe('DeleteDiscussionModal', () => {
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
 
-    it('should call supabase session PUT on confirm', async () => {
+    it('should call discussion DELETE endpoint on confirm', async () => {
       const user = userEvent.setup()
       render(<DeleteDiscussionModal {...defaultProps} />)
 
@@ -94,12 +94,9 @@ describe('DeleteDiscussionModal', () => {
 
       await waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith(
-          'session',
+          `discussion?id=${encodeURIComponent(mockDiscussion.id)}`,
           expect.objectContaining({
-            method: 'PUT',
-            body: expect.objectContaining({
-              discussion_ids_to_delete: [mockDiscussion.id],
-            }),
+            method: 'DELETE',
           })
         )
       })
@@ -140,6 +137,46 @@ describe('DeleteDiscussionModal', () => {
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Failed to delete discussion')
+      })
+    })
+  })
+
+  describe('Discussion ID Encoding', () => {
+    it('should properly encode special characters in discussion ID', async () => {
+      const discussionWithSpecialChars = { ...mockDiscussion, id: 'id?with&special=chars' }
+      const user = userEvent.setup()
+      render(<DeleteDiscussionModal {...defaultProps} discussionToDelete={discussionWithSpecialChars} />)
+
+      await user.click(screen.getByText('Delete Discussion', { selector: 'span' }))
+
+      await waitFor(() => {
+        expect(mockInvoke).toHaveBeenCalledWith(
+          `discussion?id=${encodeURIComponent(discussionWithSpecialChars.id)}`,
+          expect.any(Object)
+        )
+      })
+    })
+  })
+
+  describe('Loading State', () => {
+    it('should disable button during deletion', async () => {
+      let resolveInvoke: () => void
+      mockInvoke.mockImplementationOnce(() =>
+        new Promise(resolve => { resolveInvoke = () => resolve({ data: {}, error: null }) })
+      )
+      const user = userEvent.setup()
+      render(<DeleteDiscussionModal {...defaultProps} />)
+
+      const deleteButton = screen.getByRole('button', { name: /delete discussion/i })
+      await user.click(deleteButton)
+
+      // Button should be disabled during loading
+      expect(deleteButton).toBeDisabled()
+
+      resolveInvoke!()
+
+      await waitFor(() => {
+        expect(defaultProps.onDiscussionDeleted).toHaveBeenCalledTimes(1)
       })
     })
   })
