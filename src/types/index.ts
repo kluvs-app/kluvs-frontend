@@ -41,6 +41,15 @@ export interface Discussion {
   location?: string
 }
 
+export interface DiscussionNote {
+  id: string
+  discussion_id: string
+  content: string
+  visibility: 'private' | 'public'
+  created_at: string
+  updated_at: string
+}
+
 export interface Book {
   id?: number
   title: string
