@@ -137,11 +137,12 @@ export default function ClubDetailPage() {
   }, [slug])
 
   // Set mobile top bar context
+  const clubName = club?.name
   useEffect(() => {
-    if (!club) return
-    setTopBar({ title: club.name, backLabel: 'Clubs', backPath: '/clubs' })
+    if (!clubName) return
+    setTopBar({ title: clubName, backLabel: 'Clubs', backPath: '/clubs' })
     return resetTopBar
-  }, [club?.name, setTopBar, resetTopBar])
+  }, [clubName, setTopBar, resetTopBar])
 
   // Redirect if this club isn't in the member's list
   useEffect(() => {
