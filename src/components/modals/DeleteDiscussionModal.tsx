@@ -28,14 +28,10 @@ export default function DeleteDiscussionModal({
     try {
       setLoading(true)
       onError('')
-      const { error } = await invokeFunction('session', {
-        method: 'PUT',
-        body: {
-          id: selectedClub.active_session.id,
-          discussions: selectedClub.active_session.discussions,
-          discussion_ids_to_delete: [discussionToDelete.id]
-        }
-      })
+      const { error } = await invokeFunction(
+        `discussion?id=${encodeURIComponent(discussionToDelete.id)}`,
+        { method: 'DELETE' }
+      )
       if (error) throw error
       onClose()
       onDiscussionDeleted()
