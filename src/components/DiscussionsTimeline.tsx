@@ -1,6 +1,7 @@
 import { parseLocalDate, isPast } from '../utils/dates'
 import type { Club, Discussion } from '../types'
 import KebabMenu from './ui/KebabMenu'
+import AttendanceControl from './AttendanceControl'
 import GhostButton from './ui/GhostButton'
 
 interface DiscussionsTimelineProps {
@@ -181,35 +182,38 @@ export default function DiscussionsTimeline({
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    {onOpenNote && (
-                      <button
-                        onClick={() => onOpenNote(discussion)}
-                        aria-label="Food for thought note"
-                        title="Food for thought"
-                        className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
-                      >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
-                        </svg>
-                      </button>
-                    )}
-                    {isAdmin && (
-                      <KebabMenu
-                        items={[
-                          {
-                            label: 'Edit',
-                            onClick: () => onEditDiscussion?.(discussion),
-                          },
-                          {
-                            label: 'Delete',
-                            danger: true,
-                            onClick: () => onDeleteDiscussion?.(discussion),
-                          },
-                        ]}
-                      />
-                    )}
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1">
+                      {onOpenNote && (
+                        <button
+                          onClick={() => onOpenNote(discussion)}
+                          aria-label="Food for thought note"
+                          title="Food for thought"
+                          className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
+                          </svg>
+                        </button>
+                      )}
+                      {isAdmin && (
+                        <KebabMenu
+                          items={[
+                            {
+                              label: 'Edit',
+                              onClick: () => onEditDiscussion?.(discussion),
+                            },
+                            {
+                              label: 'Delete',
+                              danger: true,
+                              onClick: () => onDeleteDiscussion?.(discussion),
+                            },
+                          ]}
+                        />
+                      )}
+                    </div>
+                    <AttendanceControl discussion={discussion} />
                   </div>
                 </div>
               </div>
