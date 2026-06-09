@@ -1,5 +1,18 @@
-import type { Book } from '../types'
+import type { Book, ShelfValue } from '../types'
 import { parseLocalDate } from '../utils/dates'
+
+const SHELF_LABELS: Record<ShelfValue, string> = {
+  want_to_read: 'Want to Read',
+  read: 'Read',
+  not_finished: 'Not Finished',
+}
+
+const SHELF_OPTIONS: Array<{ value: ShelfValue | null; label: string }> = [
+  { value: null, label: 'None' },
+  { value: 'want_to_read', label: 'Want to Read' },
+  { value: 'read', label: 'Read' },
+  { value: 'not_finished', label: 'Not Finished' },
+]
 
 interface BookInfoProps {
   book: Book
@@ -7,9 +20,11 @@ interface BookInfoProps {
   isAdmin?: boolean
   onEditBook?: () => void
   onNewSession?: () => void
+  shelf?: ShelfValue | null
+  onShelfChange?: (shelf: ShelfValue | null) => void
 }
 
-export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSession }: BookInfoProps) {
+export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSession, shelf, onShelfChange }: BookInfoProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
@@ -54,6 +69,36 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
           </button>
         </div>
       )}
+      {onShelfChange !== undefined && (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-xs text-[var(--color-text-secondary)] font-medium uppercase tracking-[0.08em]">
+            My Shelf
+          </span>
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Select shelf">
+            {SHELF_OPTIONS.map(({ value, label }) => {
+              const isActive = shelf === value
+              return (
+                <button
+                  key={label}
+                  onClick={() => onShelfChange(value)}
+                  disabled={!book.id}
+                  aria-pressed={isActive}
+                  aria-label={`Shelf: ${label}`}
+                  className={`text-sm px-3 py-1.5 rounded-btn border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                    isActive
+                      ? 'border-primary text-primary bg-primary/10'
+                      : 'border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                  }`}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
+export { SHELF_LABELS }

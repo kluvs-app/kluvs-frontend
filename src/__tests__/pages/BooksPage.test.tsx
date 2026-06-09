@@ -1,13 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, act, fireEvent } from '../utils/test-utils'
+import { render, screen, act, fireEvent, within } from '../utils/test-utils'
 import { MemoryRouter } from 'react-router-dom'
 import BooksPage from '../../pages/BooksPage'
-import type { Book } from '../../types'
+import type { Book, ShelfEntry } from '../../types'
 import type { GBVolumeInfo, GBVolume, KGPerson } from '../../services/googleBooks'
 
 // ── googleBooks service mock ───────────────────────────────────────────────────
-// getAuthor has an early return when API_KEY is absent (which it always is in CI),
-// so we mock the module to control its return value directly.
 
 const mockGetVolume = vi.fn<(id: string) => Promise<GBVolumeInfo | null>>()
 const mockGetAuthor = vi.fn<(name: string) => Promise<KGPerson | null>>()
@@ -24,7 +22,7 @@ vi.mock('../../services/googleBooks', async (importOriginal) => {
   }
 })
 
-// ── fetch mock (kept for any remaining direct fetch usage) ─────────────────────
+// ── fetch mock ─────────────────────────────────────────────────────────────────
 
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
@@ -140,7 +138,6 @@ beforeEach(async () => {
   })
   mockSupabase.functions.invoke.mockResolvedValue({ data: [], error: null })
 
-  // Default: service functions return nothing
   mockGetVolume.mockResolvedValue(null)
   mockGetAuthor.mockResolvedValue(null)
   mockSearchVolumes.mockResolvedValue([])
@@ -155,7 +152,6 @@ function renderPage() {
   return render(<MemoryRouter><BooksPage /></MemoryRouter>)
 }
 
-/** Fire change on the search input then flush the 400ms debounce + promises. */
 async function typeAndSearch(query: string) {
   const input = screen.getByRole('textbox', { name: /search for a book/i })
   fireEvent.change(input, { target: { value: query } })
@@ -187,6 +183,94 @@ describe('BooksPage', () => {
     it('does not show any results initially', () => {
       renderPage()
       expect(screen.queryByText('The Great Gatsby')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Tabs', () => {
+    it('renders Search and Shelves tabs', () => {
+      renderPage()
+      expect(screen.getByRole('button', { name: /^search$/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^shelves$/i })).toBeInTheDocument()
+    })
+
+    it('Search tab is active by default (shows search input)', () => {
+      renderPage()
+      expect(screen.getByRole('textbox', { name: /search for a book/i })).toBeInTheDocument()
+    })
+
+    it('switching to Shelves tab hides the search input', async () => {
+      renderPage()
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /^shelves$/i })) })
+      expect(screen.queryByRole('textbox', { name: /search for a book/i })).not.toBeInTheDocument()
+    })
+
+    it('switching to Shelves tab calls GET /shelf', async () => {
+      mockSupabase.functions.invoke.mockResolvedValue({ data: [], error: null })
+      renderPage()
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^shelves$/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        'shelf',
+        expect.objectContaining({ method: 'GET' })
+      )
+    })
+
+    it('shows empty state when shelves returns no books', async () => {
+      mockSupabase.functions.invoke.mockResolvedValue({ data: [], error: null })
+      renderPage()
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^shelves$/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      expect(screen.getByText(/nothing shelved yet/i)).toBeInTheDocument()
+    })
+
+    it('shows shelved books grouped by shelf', async () => {
+      const entries: ShelfEntry[] = [
+        { shelf: 'want_to_read', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
+        { shelf: 'read', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+      ]
+      mockSupabase.functions.invoke.mockResolvedValue({ data: entries, error: null })
+      renderPage()
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^shelves$/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      expect(screen.getByText('Book A')).toBeInTheDocument()
+      expect(screen.getByText('Book B')).toBeInTheDocument()
+      expect(screen.getByText('Want to Read')).toBeInTheDocument()
+      expect(screen.getByText('Read')).toBeInTheDocument()
+    })
+
+    it('shows error message when shelves fetch fails', async () => {
+      mockSupabase.functions.invoke.mockRejectedValue(new Error('network'))
+      renderPage()
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^shelves$/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      expect(screen.getByText(/could not load shelves/i)).toBeInTheDocument()
+    })
+
+    it('clicking a shelved book opens the detail panel', async () => {
+      const shelvedGatsby: Book = { ...mockRegisteredBook, id: 42 }
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint === 'shelf') return Promise.resolve({ data: [{ shelf: 'read', book: shelvedGatsby }], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^shelves$/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      expect(screen.getByRole('heading', { name: /the great gatsby/i })).toBeInTheDocument()
     })
   })
 
@@ -294,7 +378,6 @@ describe('BooksPage', () => {
       await renderWithResults()
       await selectBook()
 
-      // Label text is unique to the detail metadata rows
       expect(screen.getByText('Published')).toBeInTheDocument()
       expect(screen.getByText('Pages')).toBeInTheDocument()
     })
@@ -303,7 +386,6 @@ describe('BooksPage', () => {
       await renderWithResults()
       await selectBook()
 
-      // ISBN only appears in the detail panel, not in list results
       expect(screen.getByText('978-0-7432-7356-5')).toBeInTheDocument()
     })
 
@@ -359,7 +441,6 @@ describe('BooksPage', () => {
       renderPage()
       await typeAndSearch('gatsby')
 
-      // Click the list button (first DOM match — panel is CSS-hidden but still in DOM)
       await act(async () => {
         fireEvent.click(screen.getAllByText('The Great Gatsby')[0])
         await vi.advanceTimersByTimeAsync(0)
@@ -563,7 +644,6 @@ describe('BooksPage', () => {
     it('like button is disabled when the book has no id', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        // POST /book returns no id
         if (endpoint === 'book') return Promise.resolve({ data: { ...mockSearchResult, id: undefined }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
@@ -610,7 +690,6 @@ describe('BooksPage', () => {
       await typeAndSearch('gatsby')
       await selectBook()
 
-      // Initially shows ♡ (not liked)
       expect(screen.getByText('♡')).toBeInTheDocument()
 
       await act(async () => {
@@ -618,7 +697,6 @@ describe('BooksPage', () => {
         await vi.advanceTimersByTimeAsync(0)
       })
 
-      // After revert, back to ♡
       expect(screen.getByText('♡')).toBeInTheDocument()
     })
 
@@ -666,7 +744,6 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
         if (endpoint.startsWith('like?book_id=')) {
           likeGetCallCount++
-          // First book is liked, second is not
           return Promise.resolve({ data: { success: true, liked: likeGetCallCount === 1 }, error: null })
         }
         return Promise.resolve({ data: null, error: null })
@@ -688,6 +765,228 @@ describe('BooksPage', () => {
 
       expect(screen.getByRole('button', { name: /like this book/i })).toBeInTheDocument()
       expect(screen.getByText('♡')).toBeInTheDocument()
+    })
+  })
+
+  describe('Shelf feature', () => {
+    async function renderWithRegisteredBook(shelfGetResponse: { shelf: string | null } = { shelf: null }) {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, ...shelfGetResponse }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+    }
+
+    async function selectBook() {
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+    }
+
+    async function openShelfDropdown() {
+      const trigger = screen.getByRole('button', { name: /add to shelf|shelf:/i })
+      await act(async () => { fireEvent.click(trigger) })
+    }
+
+    it('renders the shelf button after selecting a registered book', async () => {
+      await renderWithRegisteredBook()
+      await selectBook()
+      expect(screen.getByRole('button', { name: /add to shelf/i })).toBeInTheDocument()
+    })
+
+    it('shelf button is disabled when book has no id', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { ...mockSearchResult, id: undefined }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+      expect(screen.getByRole('button', { name: /add to shelf/i })).toBeDisabled()
+    })
+
+    it('fetches shelf status via GET /shelf?book_id= after book is registered', async () => {
+      await renderWithRegisteredBook()
+      await selectBook()
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        expect.stringMatching(/^shelf\?book_id=42$/),
+        expect.objectContaining({ method: 'GET' })
+      )
+    })
+
+    it('shows current shelf label on the button when GET /shelf returns a value', async () => {
+      await renderWithRegisteredBook({ shelf: 'want_to_read' })
+      await selectBook()
+      expect(screen.getByRole('button', { name: /shelf: want to read/i })).toBeInTheDocument()
+    })
+
+    it('opens the dropdown on button click and shows all options', async () => {
+      await renderWithRegisteredBook()
+      await selectBook()
+      await openShelfDropdown()
+
+      const listbox = screen.getByRole('listbox', { name: /select shelf/i })
+      expect(within(listbox).getByRole('option', { name: /none/i })).toBeInTheDocument()
+      expect(within(listbox).getByRole('option', { name: /want to read/i })).toBeInTheDocument()
+      expect(within(listbox).getByRole('option', { name: /^read$/i })).toBeInTheDocument()
+      expect(within(listbox).getByRole('option', { name: /not finished/i })).toBeInTheDocument()
+    })
+
+    it('active option shows a checkmark (aria-selected=true)', async () => {
+      await renderWithRegisteredBook({ shelf: 'read' })
+      await selectBook()
+      await openShelfDropdown()
+
+      const listbox = screen.getByRole('listbox', { name: /select shelf/i })
+      expect(within(listbox).getByRole('option', { name: /^read$/i })).toHaveAttribute('aria-selected', 'true')
+      expect(within(listbox).getByRole('option', { name: /none/i })).toHaveAttribute('aria-selected', 'false')
+    })
+
+    it('closes the dropdown after selecting an option', async () => {
+      await renderWithRegisteredBook()
+      await selectBook()
+      await openShelfDropdown()
+
+      const listbox = screen.getByRole('listbox', { name: /select shelf/i })
+      await act(async () => {
+        fireEvent.click(within(listbox).getByRole('option', { name: /want to read/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    })
+
+    it('POSTs to /shelf when a non-None option is selected', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+      await openShelfDropdown()
+
+      await act(async () => {
+        fireEvent.click(within(screen.getByRole('listbox')).getByRole('option', { name: /^read$/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        'shelf',
+        expect.objectContaining({ method: 'POST', body: { book_id: 42, shelf: 'read' } })
+      )
+    })
+
+    it('DELETEs /shelf when None option is selected while shelf is set', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+      await openShelfDropdown()
+
+      await act(async () => {
+        fireEvent.click(within(screen.getByRole('listbox')).getByRole('option', { name: /none/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        expect.stringMatching(/^shelf\?book_id=42$/),
+        expect.objectContaining({ method: 'DELETE' })
+      )
+    })
+
+    it('optimistically updates shelf state and confirms from server response', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelf: 'not_finished' }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+      await openShelfDropdown()
+
+      await act(async () => {
+        fireEvent.click(within(screen.getByRole('listbox')).getByRole('option', { name: /not finished/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.getByRole('button', { name: /shelf: not finished/i })).toBeInTheDocument()
+    })
+
+    it('reverts shelf state when POST /shelf fails', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: null, error: new Error('shelf failed') })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+      await selectBook()
+
+      // No shelf set → button shows "Add to shelf"
+      expect(screen.getByRole('button', { name: /add to shelf/i })).toBeInTheDocument()
+
+      await openShelfDropdown()
+      await act(async () => {
+        fireEvent.click(within(screen.getByRole('listbox')).getByRole('option', { name: /^read$/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      // Reverted — back to "Add to shelf"
+      expect(screen.getByRole('button', { name: /add to shelf/i })).toBeInTheDocument()
+    })
+
+    it('resets shelf state when a different book is selected', async () => {
+      let shelfGetCount = 0
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult, mockSearchResult2], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('shelf?book_id=')) {
+          shelfGetCount++
+          return Promise.resolve({ data: { success: true, shelf: shelfGetCount === 1 ? 'read' : null }, error: null })
+        }
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await typeAndSearch('gatsby')
+
+      await act(async () => {
+        fireEvent.click(screen.getAllByText('The Great Gatsby')[0])
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.getByRole('button', { name: /shelf: read/i })).toBeInTheDocument()
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('1984'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.getByRole('button', { name: /add to shelf/i })).toBeInTheDocument()
     })
   })
 
