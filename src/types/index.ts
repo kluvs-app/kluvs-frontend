@@ -66,6 +66,18 @@ export interface Book {
   language?: string
 }
 
+export interface DiscussionAttendance {
+  member_id: number
+  name: string
+  status: 'yes' | 'no' | 'maybe'
+}
+
+export interface AttendanceRoster {
+  responses: DiscussionAttendance[]
+  my_status: 'yes' | 'no' | 'maybe' | null
+  total_members: number
+}
+
 export interface LikeStatus {
   liked: boolean
 }

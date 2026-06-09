@@ -4,6 +4,10 @@ import userEvent from '@testing-library/user-event'
 import DiscussionsTimeline from '../../components/DiscussionsTimeline'
 import { mockClub, mockClub2 } from '../utils/mocks'
 
+vi.mock('../../components/AttendanceControl', () => ({
+  default: () => null,
+}))
+
 describe('DiscussionsTimeline', () => {
   const defaultProps = {
     selectedClub: mockClub,
