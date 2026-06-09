@@ -2,13 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import AttendanceControl from '../../components/AttendanceControl'
-import { mockDiscussion } from '../utils/mocks'
+import { mockDiscussion, mockAdminMember } from '../utils/mocks'
 import type { AttendanceRoster } from '../../types'
 
 const mockInvokeFunction = vi.fn()
 
 vi.mock('../../supabase', () => ({
   invokeFunction: (...args: unknown[]) => mockInvokeFunction(...args),
+}))
+
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({ member: mockAdminMember }),
 }))
 
 const rosterWithNoResponse: AttendanceRoster = {
@@ -19,11 +23,11 @@ const rosterWithNoResponse: AttendanceRoster = {
 
 const rosterWithResponses: AttendanceRoster = {
   responses: [
-    { member_id: 1, name: 'Alice', status: 'yes' },
+    { member_id: mockAdminMember.id, name: mockAdminMember.name, status: 'yes' },
     { member_id: 2, name: 'Bob', status: 'no' },
     { member_id: 3, name: 'Carol', status: 'maybe' },
   ],
-  my_status: null,
+  my_status: 'yes',
   total_members: 3,
 }
 
@@ -72,6 +76,7 @@ describe('AttendanceControl', () => {
     })
 
     it('no button is pressed when my_status is null', async () => {
+      mockInvokeFunction.mockResolvedValue({ data: rosterWithNoResponse, error: null })
       render(<AttendanceControl discussion={mockDiscussion} />)
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /rsvp yes/i })).toHaveAttribute('aria-pressed', 'false')
@@ -81,10 +86,6 @@ describe('AttendanceControl', () => {
     })
 
     it('marks the correct button as pressed when my_status is set', async () => {
-      mockInvokeFunction.mockResolvedValue({
-        data: { ...rosterWithResponses, my_status: 'yes' },
-        error: null,
-      })
       render(<AttendanceControl discussion={mockDiscussion} />)
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /rsvp yes/i })).toHaveAttribute('aria-pressed', 'true')
@@ -95,7 +96,7 @@ describe('AttendanceControl', () => {
   })
 
   describe('Interactions', () => {
-    it('POSTs and optimistically selects a status', async () => {
+    it('POSTs and optimistically selects a status, incrementing the count', async () => {
       const user = userEvent.setup()
       mockInvokeFunction
         .mockResolvedValueOnce({ data: rosterWithNoResponse, error: null }) // GET
@@ -104,31 +105,65 @@ describe('AttendanceControl', () => {
       render(<AttendanceControl discussion={mockDiscussion} />)
       await waitFor(() => screen.getByRole('button', { name: /rsvp yes/i }))
 
+      expect(screen.getByText(/0 yes/i)).toBeInTheDocument()
       await user.click(screen.getByRole('button', { name: /rsvp yes/i }))
 
       expect(screen.getByRole('button', { name: /rsvp yes/i })).toHaveAttribute('aria-pressed', 'true')
+      expect(screen.getByText(/1 yes/i)).toBeInTheDocument()
       expect(mockInvokeFunction).toHaveBeenCalledWith(
         'discussion-attendance',
         expect.objectContaining({ method: 'POST', body: expect.objectContaining({ status: 'yes' }) })
       )
     })
 
-    it('DELETEs (clears) when the already-selected status is clicked again', async () => {
+    it('DELETEs (clears) when the already-selected status is clicked again, decrementing the count', async () => {
       const user = userEvent.setup()
       mockInvokeFunction
-        .mockResolvedValueOnce({ data: { ...rosterWithNoResponse, my_status: 'yes' }, error: null })
+        .mockResolvedValueOnce({
+          data: {
+            responses: [{ member_id: mockAdminMember.id, name: mockAdminMember.name, status: 'yes' }],
+            my_status: 'yes',
+            total_members: 3,
+          },
+          error: null,
+        })
         .mockResolvedValue({ data: null, error: null }) // DELETE
 
       render(<AttendanceControl discussion={mockDiscussion} />)
       await waitFor(() => screen.getByRole('button', { name: /rsvp yes/i }))
 
+      expect(screen.getByText(/1 yes/i)).toBeInTheDocument()
       await user.click(screen.getByRole('button', { name: /rsvp yes/i }))
 
       expect(screen.getByRole('button', { name: /rsvp yes/i })).toHaveAttribute('aria-pressed', 'false')
+      expect(screen.getByText(/0 yes/i)).toBeInTheDocument()
       expect(mockInvokeFunction).toHaveBeenCalledWith(
         expect.stringContaining('discussion-attendance'),
         expect.objectContaining({ method: 'DELETE' })
       )
+    })
+
+    it('switches status and updates counts when a different option is clicked', async () => {
+      const user = userEvent.setup()
+      mockInvokeFunction
+        .mockResolvedValueOnce({
+          data: {
+            responses: [{ member_id: mockAdminMember.id, name: mockAdminMember.name, status: 'yes' }],
+            my_status: 'yes',
+            total_members: 3,
+          },
+          error: null,
+        })
+        .mockResolvedValue({ data: null, error: null }) // POST
+
+      render(<AttendanceControl discussion={mockDiscussion} />)
+      await waitFor(() => screen.getByRole('button', { name: /rsvp yes/i }))
+
+      expect(screen.getByText(/1 yes/i)).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: /rsvp maybe/i }))
+
+      expect(screen.getByText(/0 yes/i)).toBeInTheDocument()
+      expect(screen.getByText(/1 maybe/i)).toBeInTheDocument()
     })
 
     it('rolls back the optimistic update when POST fails', async () => {
@@ -144,13 +179,21 @@ describe('AttendanceControl', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /rsvp yes/i })).toHaveAttribute('aria-pressed', 'false')
+        expect(screen.getByText(/0 yes/i)).toBeInTheDocument()
       })
     })
 
     it('rolls back the optimistic update when DELETE fails', async () => {
       const user = userEvent.setup()
       mockInvokeFunction
-        .mockResolvedValueOnce({ data: { ...rosterWithNoResponse, my_status: 'maybe' }, error: null })
+        .mockResolvedValueOnce({
+          data: {
+            responses: [{ member_id: mockAdminMember.id, name: mockAdminMember.name, status: 'maybe' }],
+            my_status: 'maybe',
+            total_members: 3,
+          },
+          error: null,
+        })
         .mockResolvedValue({ data: null, error: new Error('server error') })
 
       render(<AttendanceControl discussion={mockDiscussion} />)
@@ -160,6 +203,7 @@ describe('AttendanceControl', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /rsvp maybe/i })).toHaveAttribute('aria-pressed', 'true')
+        expect(screen.getByText(/1 maybe/i)).toBeInTheDocument()
       })
     })
   })

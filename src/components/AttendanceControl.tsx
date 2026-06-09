@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../supabase'
+import { useAuth } from '../contexts/AuthContext'
 import type { Discussion, AttendanceRoster } from '../types'
 
 interface AttendanceControlProps {
@@ -39,6 +40,7 @@ const SEGMENTS: Array<{ value: Status; icon: React.ReactNode; pressedClass: stri
 ]
 
 export default function AttendanceControl({ discussion }: AttendanceControlProps) {
+  const { member } = useAuth()
   const [roster, setRoster] = useState<AttendanceRoster | null>(null)
 
   useEffect(() => {
@@ -62,12 +64,25 @@ export default function AttendanceControl({ discussion }: AttendanceControlProps
   }, [discussion.id])
 
   const handleClick = async (status: Status) => {
-    if (!roster) return
+    if (!roster || !member) return
 
     const isClearing = roster.my_status === status
     const previous = roster
+    const newStatus = isClearing ? null : status
 
-    setRoster({ ...roster, my_status: isClearing ? null : status })
+    // Keep responses in sync so counts update immediately
+    let updatedResponses = [...roster.responses]
+    if (isClearing) {
+      updatedResponses = updatedResponses.filter(r => r.member_id !== member.id)
+    } else if (roster.my_status !== null) {
+      updatedResponses = updatedResponses.map(r =>
+        r.member_id === member.id ? { ...r, status } : r
+      )
+    } else {
+      updatedResponses = [...updatedResponses, { member_id: member.id, name: member.name, status }]
+    }
+
+    setRoster({ ...roster, my_status: newStatus, responses: updatedResponses })
 
     if (isClearing) {
       const { error } = await invokeFunction(
