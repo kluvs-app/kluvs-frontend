@@ -227,6 +227,17 @@ describe('BooksPage', () => {
       expect(screen.getByText(/nothing shelved yet/i)).toBeInTheDocument()
     })
 
+    it('CTA button in empty state switches back to Search tab', async () => {
+      mockSupabase.functions.invoke.mockResolvedValue({ data: [], error: null })
+      renderPage()
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /^shelves$/i }))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      fireEvent.click(screen.getByRole('button', { name: /search for a book/i }))
+      expect(screen.getByRole('textbox', { name: /search for a book/i })).toBeInTheDocument()
+    })
+
     it('shows shelved books grouped by shelf', async () => {
       const entries: ShelfEntry[] = [
         { shelf: 'want_to_read', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },

@@ -198,12 +198,14 @@ function ShelvesPanel({
   error,
   selectedBook,
   onSelect,
+  onGoToSearch,
 }: {
   entries: ShelfEntry[]
   loading: boolean
   error: string
   selectedBook: Book | null
   onSelect: (book: Book) => void
+  onGoToSearch: () => void
 }) {
   if (loading) {
     return (
@@ -236,13 +238,21 @@ function ShelvesPanel({
     return (
       <div className="flex flex-col items-center justify-center py-10 px-8 text-center gap-6">
         <StackedCoverPlaceholder size="sm" />
-        <div>
-          <p className="font-serif italic font-medium text-[24px] leading-none tracking-[-0.008em] text-[var(--color-text-secondary)] mb-[10px]">
-            Nothing shelved yet.
-          </p>
-          <p className="text-[12px] text-[var(--color-text-meta)] leading-[1.5] max-w-[220px] mx-auto">
-            Search for a book and add it to your shelf.
-          </p>
+        <div className="flex flex-col items-center gap-4">
+          <div>
+            <p className="font-serif italic font-medium text-[24px] leading-none tracking-[-0.008em] text-[var(--color-text-secondary)] mb-[10px]">
+              Nothing shelved yet.
+            </p>
+            <p className="text-[12px] text-[var(--color-text-meta)] leading-[1.5] max-w-[200px] mx-auto">
+              Save books as you find them — they'll live here by shelf.
+            </p>
+          </div>
+          <button
+            onClick={onGoToSearch}
+            className="text-sm font-medium px-4 py-2 rounded-btn bg-primary hover:bg-primary-hover text-white transition-colors"
+          >
+            Search for a book
+          </button>
         </div>
       </div>
     )
@@ -341,7 +351,11 @@ export default function BooksPage() {
     invokeFunction<ShelfEntry[] | { shelves?: ShelfEntry[] }>('shelf', { method: 'GET' })
       .then(({ data, error }) => {
         if (error) throw error
-        const entries = Array.isArray(data) ? data : (data as { shelves?: ShelfEntry[] })?.shelves ?? []
+        const raw: any[] = Array.isArray(data) ? data : (data as any)?.shelves ?? []
+        // Normalize both { shelf, book } and flat { shelf, ...bookFields } shapes
+        const entries: ShelfEntry[] = raw.map(e =>
+          e.book ? e : { shelf: e.shelf, book: e }
+        )
         setShelvedBooks(entries)
       })
       .catch(() => setShelvesError('Could not load shelves.'))
@@ -686,6 +700,7 @@ export default function BooksPage() {
               error={shelvesError}
               selectedBook={selectedBook}
               onSelect={handleSelect}
+              onGoToSearch={() => setActiveTab('search')}
             />
           </div>
         )}
