@@ -7,6 +7,8 @@ import type { Club } from '../types'
 import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
 import ReadingLogModal from '../components/modals/ReadingLogModal'
+import DiscussionNoteModal from '../components/modals/DiscussionNoteModal'
+import AttendanceControl from '../components/AttendanceControl'
 import KebabMenu from '../components/ui/KebabMenu'
 import { isPast, parseLocalDate } from '../utils/dates'
 import DiscordIcon from '../components/icons/DiscordIcon'
@@ -250,6 +252,7 @@ export default function ProfilePage() {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showReadingLogModal, setShowReadingLogModal] = useState(false)
+  const [showNoteModal, setShowNoteModal] = useState(false)
 
   useEffect(() => {
     if (!member?.clubs.length) { setLoading(false); return }
@@ -498,23 +501,41 @@ export default function ProfilePage() {
                 textTransform: 'uppercase', color: COPPER,
               }}>{nextDiscDate}</span>
             </div>
-            <p style={{
-              fontFamily: '"EB Garamond", Georgia, serif',
-              fontWeight: 500, fontStyle: 'italic', fontSize: 26, lineHeight: 1.15,
-              letterSpacing: '-0.012em', color: 'var(--color-text-primary)',
-              marginBottom: 10,
-            } as React.CSSProperties}>
-              {nextDiscussion.title}
-            </p>
-            <p style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5,
-            }}>
-              {nextDiscussion.clubName}
-              {nextDiscussion.location && (
-                <> <span style={{ opacity: 0.5 }}>—</span> {nextDiscussion.location}</>
-              )}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <p style={{
+                  fontFamily: '"EB Garamond", Georgia, serif',
+                  fontWeight: 500, fontStyle: 'italic', fontSize: 26, lineHeight: 1.15,
+                  letterSpacing: '-0.012em', color: 'var(--color-text-primary)',
+                  marginBottom: 10,
+                } as React.CSSProperties}>
+                  {nextDiscussion.title}
+                </p>
+                <p style={{
+                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                  fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5,
+                }}>
+                  {nextDiscussion.clubName}
+                  {nextDiscussion.location && (
+                    <> <span style={{ opacity: 0.5 }}>—</span> {nextDiscussion.location}</>
+                  )}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setShowNoteModal(true)}
+                  aria-label="Food for thought note"
+                  title="Food for thought"
+                  className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
+                  </svg>
+                </button>
+                <AttendanceControl discussion={nextDiscussion} />
+              </div>
+            </div>
           </div>
 
           {/* Desktop Up Next */}
@@ -536,28 +557,44 @@ export default function ProfilePage() {
                 textTransform: 'uppercase', color: COPPER, marginTop: 10,
               }}>{nextDiscDate}</span>
             </div>
-            <div>
-              <p style={{
-                fontFamily: '"EB Garamond", Georgia, serif',
-                fontWeight: 500, fontStyle: 'italic', fontSize: 44, lineHeight: 1.1,
-                letterSpacing: '-0.015em', color: 'var(--color-text-primary)',
-                maxWidth: 760, marginBottom: 18,
-              } as React.CSSProperties}>
-                {nextDiscussion.title}
-              </p>
-              <p style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 15, color: 'var(--color-text-secondary)',
-                display: 'flex', gap: 10,
-              }}>
-                <span>{nextDiscussion.clubName}</span>
-                {nextDiscussion.location && (
-                  <>
-                    <span style={{ opacity: 0.5 }}>—</span>
-                    <span>{nextDiscussion.location}</span>
-                  </>
-                )}
-              </p>
+            <div className="flex items-start justify-between gap-6">
+              <div className="flex-1 min-w-0">
+                <p style={{
+                  fontFamily: '"EB Garamond", Georgia, serif',
+                  fontWeight: 500, fontStyle: 'italic', fontSize: 44, lineHeight: 1.1,
+                  letterSpacing: '-0.015em', color: 'var(--color-text-primary)',
+                  maxWidth: 760, marginBottom: 18,
+                } as React.CSSProperties}>
+                  {nextDiscussion.title}
+                </p>
+                <p style={{
+                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                  fontSize: 15, color: 'var(--color-text-secondary)',
+                  display: 'flex', gap: 10,
+                }}>
+                  <span>{nextDiscussion.clubName}</span>
+                  {nextDiscussion.location && (
+                    <>
+                      <span style={{ opacity: 0.5 }}>—</span>
+                      <span>{nextDiscussion.location}</span>
+                    </>
+                  )}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setShowNoteModal(true)}
+                  aria-label="Food for thought note"
+                  title="Food for thought"
+                  className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
+                  </svg>
+                </button>
+                <AttendanceControl discussion={nextDiscussion} />
+              </div>
             </div>
           </div>
         </>
@@ -691,6 +728,12 @@ export default function ProfilePage() {
       <ReadingLogModal
         isOpen={showReadingLogModal}
         onClose={() => setShowReadingLogModal(false)}
+      />
+      <DiscussionNoteModal
+        isOpen={showNoteModal}
+        onClose={() => setShowNoteModal(false)}
+        discussion={nextDiscussion}
+        onError={() => {}}
       />
     </div>
   )
