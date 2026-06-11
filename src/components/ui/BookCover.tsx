@@ -4,6 +4,9 @@ interface BookCoverProps {
   imageUrl?: string | null
   title?: string
   size?: 'sm' | 'md' | 'lg'
+  className?: string
+  label?: string
+  shadow?: boolean
 }
 
 const SIZES = {
@@ -16,6 +19,9 @@ export default function BookCover({
   imageUrl,
   title = 'Book cover',
   size = 'md',
+  className,
+  label,
+  shadow,
 }: BookCoverProps) {
   const { width, height } = SIZES[size]
 
@@ -25,6 +31,9 @@ export default function BookCover({
       width={width}
       height={height}
       alt={title}
+      className={className}
+      label={label}
+      shadow={shadow}
     />
   )
 }
