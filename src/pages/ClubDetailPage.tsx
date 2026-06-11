@@ -5,6 +5,7 @@ import type { Club, Discussion, Member } from '../types'
 import EditBookModal from '../components/modals/EditBookModal'
 import NewSessionModal from '../components/modals/NewSessionModal'
 import DiscussionModal from '../components/modals/DiscussionModal'
+import DiscussionNoteModal from '../components/modals/DiscussionNoteModal'
 import MemberModal from '../components/modals/MemberModal'
 import AddMemberModal from '../components/modals/AddMemberModal'
 import DeleteMemberModal from '../components/modals/DeleteMemberModal'
@@ -92,6 +93,8 @@ export default function ClubDetailPage() {
   const [editingDiscussion, setEditingDiscussion] = useState<Discussion | null>(null)
   const [showDeleteDiscussionModal, setShowDeleteDiscussionModal] = useState(false)
   const [discussionToDelete, setDiscussionToDelete] = useState<Discussion | null>(null)
+  const [showDiscussionNoteModal, setShowDiscussionNoteModal] = useState(false)
+  const [discussionForNote, setDiscussionForNote] = useState<Discussion | null>(null)
   const [showEditClubModal, setShowEditClubModal] = useState(false)
   const [showDeleteClubModal, setShowDeleteClubModal] = useState(false)
   const [clubToDelete, setClubToDelete] = useState<{ id: string; name: string } | null>(null)
@@ -134,11 +137,12 @@ export default function ClubDetailPage() {
   }, [slug])
 
   // Set mobile top bar context
+  const clubName = club?.name
   useEffect(() => {
-    if (!club) return
-    setTopBar({ title: club.name, backLabel: 'Clubs', backPath: '/clubs' })
+    if (!clubName) return
+    setTopBar({ title: clubName, backLabel: 'Clubs', backPath: '/clubs' })
     return resetTopBar
-  }, [club?.name, setTopBar, resetTopBar])
+  }, [clubName, setTopBar, resetTopBar])
 
   // Redirect if this club isn't in the member's list
   useEffect(() => {
@@ -211,6 +215,10 @@ export default function ClubDetailPage() {
   const handleDeleteDiscussion = (d: Discussion) => {
     setDiscussionToDelete(d)
     setShowDeleteDiscussionModal(true)
+  }
+  const handleOpenNote = (d: Discussion) => {
+    setDiscussionForNote(d)
+    setShowDiscussionNoteModal(true)
   }
   const handleAddMember = () => {
     setShowAddMemberModal(true)
@@ -629,6 +637,7 @@ export default function ClubDetailPage() {
                       onAddDiscussion={handleAddDiscussion}
                       onEditDiscussion={handleEditDiscussion}
                       onDeleteDiscussion={handleDeleteDiscussion}
+                      onOpenNote={handleOpenNote}
                     />
 
                     {/* Members section (right column of grid) */}
@@ -1140,6 +1149,7 @@ export default function ClubDetailPage() {
               onAddDiscussion={handleAddDiscussion}
               onEditDiscussion={handleEditDiscussion}
               onDeleteDiscussion={handleDeleteDiscussion}
+              onOpenNote={handleOpenNote}
               onStartSession={() => setShowNewSessionModal(true)}
             />
           ) : mobileTab === 'members' ? (
@@ -1322,6 +1332,15 @@ export default function ClubDetailPage() {
         discussionToDelete={discussionToDelete}
         selectedClub={club}
         onDiscussionDeleted={refreshClub}
+        onError={setError}
+      />
+      <DiscussionNoteModal
+        isOpen={showDiscussionNoteModal}
+        onClose={() => {
+          setShowDiscussionNoteModal(false)
+          setDiscussionForNote(null)
+        }}
+        discussion={discussionForNote}
         onError={setError}
       />
       <EditClubModal

@@ -66,29 +66,23 @@ export default function DiscussionModal({
     try {
       setLoading(true)
       onError('')
-      const existingDiscussions = selectedClub.active_session.discussions || []
-      let updatedDiscussions
 
-      if (isEditing && editingDiscussion) {
-        updatedDiscussions = existingDiscussions.map(d =>
-          d.id === editingDiscussion.id
-            ? { id: d.id, title: formData.title.trim(), date: formData.date, time: formData.time.trim() || null, location: formData.location.trim() || null }
-            : d
-        )
-      } else {
-        updatedDiscussions = [...existingDiscussions, {
-          id: crypto.randomUUID(),
-          title: formData.title.trim(),
-          date: formData.date,
-          time: formData.time.trim() || undefined,
-          location: formData.location.trim() || undefined
-        }]
+      const payload = {
+        title: formData.title.trim(),
+        date: formData.date,
+        time: formData.time.trim() || null,
+        location: formData.location.trim() || null
       }
 
-      const { error } = await invokeFunction('session', {
-        method: 'PUT',
-        body: { id: selectedClub.active_session.id, discussions: updatedDiscussions }
-      })
+      const { error } = isEditing && editingDiscussion
+        ? await invokeFunction('discussion', {
+            method: 'PUT',
+            body: { id: editingDiscussion.id, ...payload }
+          })
+        : await invokeFunction('discussion', {
+            method: 'POST',
+            body: { session_id: selectedClub.active_session.id, ...payload }
+          })
       if (error) throw error
 
       setFormData({ title: '', date: '', time: '', location: '' })

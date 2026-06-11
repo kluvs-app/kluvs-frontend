@@ -41,6 +41,15 @@ export interface Discussion {
   location?: string
 }
 
+export interface DiscussionNote {
+  id: string
+  discussion_id: string
+  content: string
+  visibility: 'private' | 'public'
+  created_at: string
+  updated_at: string
+}
+
 export interface Book {
   id?: number
   title: string
@@ -55,6 +64,33 @@ export interface Book {
   publisher?: string
   categories?: string[]
   language?: string
+}
+
+export interface DiscussionAttendance {
+  member_id: number
+  name: string
+  status: 'yes' | 'no' | 'maybe'
+}
+
+export interface AttendanceRoster {
+  responses: DiscussionAttendance[]
+  my_status: 'yes' | 'no' | 'maybe' | null
+  total_members: number
+}
+
+export interface LikeStatus {
+  liked: boolean
+}
+
+export type ShelfValue = 'want_to_read' | 'read' | 'not_finished'
+
+export interface ShelfStatus {
+  shelf: ShelfValue | null
+}
+
+export interface ShelfEntry {
+  shelf: ShelfValue
+  book: Book
 }
 
 export type UserRole = 'owner' | 'admin' | 'member'
@@ -77,4 +113,24 @@ export interface Member {
   created_at?: string
   discord_id?: string | null
   avatar_path?: string | null
+}
+
+export interface ReadingLogEntry {
+  id: string
+  book: {
+    id: number
+    title: string
+    author: string
+    image_url: string | null
+  }
+  club: {
+    id: string
+    name: string
+  }
+  due_date: string | null
+}
+
+export interface ReadingLog {
+  active: ReadingLogEntry[]
+  finished: ReadingLogEntry[]
 }

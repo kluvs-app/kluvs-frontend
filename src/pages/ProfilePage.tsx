@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import type { Club } from '../types'
 import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
+import ReadingLogModal from '../components/modals/ReadingLogModal'
 import KebabMenu from '../components/ui/KebabMenu'
 import { isPast, parseLocalDate } from '../utils/dates'
 import DiscordIcon from '../components/icons/DiscordIcon'
@@ -32,7 +33,6 @@ function capitalize(s: string): string {
 
 // Warm-dark hairline and button border — design tokens not in CSS vars
 const HAIRLINE = 'rgba(242,237,229,0.08)'
-const OUTLINE_BORDER = 'rgba(242,237,229,0.14)'
 const LABEL_COLOR = '#C9BDA8'
 const TRACK_COLOR = '#332B24'
 const COPPER = '#D16D30'
@@ -249,6 +249,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
+  const [showReadingLogModal, setShowReadingLogModal] = useState(false)
 
   useEffect(() => {
     if (!member?.clubs.length) { setLoading(false); return }
@@ -344,7 +345,8 @@ export default function ProfilePage() {
           }}>Profile</span>
           <KebabMenu
             items={[
-              { label: 'Edit profile', onClick: () => setShowEditProfileModal(true) },
+              { label: 'Edit Profile', onClick: () => setShowEditProfileModal(true) },
+              { label: 'Reading Log', onClick: () => setShowReadingLogModal(true) },
               { label: 'Sign out', danger: true, onClick: () => setShowSignOutModal(true) },
             ]}
           />
@@ -421,20 +423,12 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <button
-          onClick={() => setShowEditProfileModal(true)}
-          aria-label="Edit profile"
-          className="transition-[background,transform] duration-[120ms] hover:bg-[var(--color-bg-elevated)] active:scale-[0.97]"
-          style={{
-            background: 'transparent',
-            border: `1px solid ${OUTLINE_BORDER}`,
-            color: 'var(--color-text-primary)',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 13, fontWeight: 500,
-            padding: '10px 16px', borderRadius: 8,
-            whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer',
-          }}
-        >Edit profile</button>
+        <KebabMenu
+          items={[
+            { label: 'Edit Profile', onClick: () => setShowEditProfileModal(true) },
+            { label: 'Reading Log', onClick: () => setShowReadingLogModal(true) },
+          ]}
+        />
       </div>
 
       {/* ─── Stats strip ───────────────────────────────────────────────────── */}
@@ -693,6 +687,10 @@ export default function ProfilePage() {
       <SignOutModal
         isOpen={showSignOutModal}
         onClose={() => setShowSignOutModal(false)}
+      />
+      <ReadingLogModal
+        isOpen={showReadingLogModal}
+        onClose={() => setShowReadingLogModal(false)}
       />
     </div>
   )
