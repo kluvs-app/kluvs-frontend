@@ -142,7 +142,7 @@ describe('ClubsPage', () => {
       renderPage({ openNewModal: true })
       await waitFor(() => screen.getByTestId('add-club-modal'))
       await user.click(screen.getByRole('button', { name: /close/i }))
-      expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument()
+      await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument())
     })
   })
 
