@@ -1,6 +1,5 @@
-import { useState, useRef, useCallback, useEffect, Fragment } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { invokeFunction } from '../supabase'
-import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import {
   getVolume,
   getAuthor,
@@ -15,40 +14,13 @@ import {
   type GBVolume,
   type KGPerson,
 } from '../services/googleBooks'
-import type { Book, LikeStatus } from '../types'
+import type { Book, LikeStatus, ShelfValue, ShelfStatus, ShelfEntry } from '../types'
 import KluvsSpinner from '../components/KluvsSpinner'
+import { useMobileTopBar } from '../contexts/MobileTopBarContext'
+import BookCard from '../components/BookCard'
+import CoverSlot from '../components/ui/CoverSlot'
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-
-function Cover({ url, title, className }: { url?: string | null; title: string; className?: string }) {
-  const [failed, setFailed] = useState(false)
-  const showPlaceholder = !url || failed
-  return (
-    <div
-      className={`rounded-sm overflow-hidden shrink-0 relative flex items-end justify-center ${className}`}
-      style={showPlaceholder ? {
-        background: 'repeating-linear-gradient(135deg, var(--color-bg-elevated) 0, var(--color-bg-elevated) 5px, var(--color-divider) 5px, var(--color-divider) 10px)',
-        boxShadow: '0 3px 8px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.02)',
-      } : {
-        boxShadow: '0 3px 8px rgba(0,0,0,0.35)',
-      }}
-    >
-      {!showPlaceholder && (
-        <img
-          src={url!}
-          alt={title}
-          onError={() => setFailed(true)}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
-      {showPlaceholder && (
-        <span className="text-[8px] font-mono uppercase tracking-[0.12em] text-[var(--color-text-meta)] pb-1.5 opacity-70 relative z-10">
-          cover
-        </span>
-      )}
-    </div>
-  )
-}
 
 function StackedCoverPlaceholder({ size }: { size: 'sm' | 'lg' }) {
   const sm = size === 'sm'
@@ -80,18 +52,177 @@ function StackedCoverPlaceholder({ size }: { size: 'sm' | 'lg' }) {
   )
 }
 
-
-function MetaDot() {
-  return <span className="w-[3px] h-[3px] rounded-full bg-[var(--color-text-meta)] shrink-0 inline-block" />
-}
-
 function Shimmer({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return <div style={style} className={`bg-[var(--color-bg-elevated)] rounded animate-pulse ${className}`} />
+}
+
+// ── Pills ─────────────────────────────────────────────────────────────────────
+
+const SHELF_OPTIONS: Array<{ value: ShelfValue | null; label: string }> = [
+  { value: null,            label: 'None' },
+  { value: 'want_to_read',  label: 'Want to Read' },
+  { value: 'read',          label: 'Read' },
+  { value: 'not_finished',  label: 'Not Finished' },
+]
+
+const SHELF_LABELS: Record<ShelfValue, string> = {
+  want_to_read: 'Want to Read',
+  read:         'Read',
+  not_finished: 'Not Finished',
+}
+
+const SHELF_SECTIONS: Array<{ value: ShelfValue; label: string }> = [
+  { value: 'want_to_read', label: 'Want to Read' },
+  { value: 'read',         label: 'Read' },
+  { value: 'not_finished', label: 'Not Finished' },
+]
+
+function LikePill({ liked, onClick, disabled }: {
+  liked: boolean
+  onClick?: () => void
+  disabled?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={liked ? 'Unlike this book' : 'Like this book'}
+      aria-pressed={liked}
+      className={`flex items-center justify-center w-9 h-9 rounded-full border shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+        liked
+          ? 'border-primary text-primary'
+          : 'border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+      }`}
+    >
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 21s-7-4.35-9.5-8.5C.93 9.36 2.5 6 5.6 6 7.6 6 9 7.1 12 10c3-2.9 4.4-4 6.4-4 3.1 0 4.67 3.36 3.1 6.5C19 16.65 12 21 12 21z" />
+      </svg>
+    </button>
+  )
+}
+
+function ShelfPill({ shelf, onShelfChange, disabled }: {
+  shelf: ShelfValue | null
+  onShelfChange: (v: ShelfValue | null) => void
+  disabled?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        disabled={disabled}
+        aria-label={shelf ? `Shelf: ${SHELF_LABELS[shelf]}` : 'Add to shelf'}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        className={`flex items-center gap-2 text-sm px-4 py-2 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+          shelf
+            ? 'border-primary text-primary'
+            : 'border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+        }`}
+      >
+        {/* Bookmark icon */}
+        <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill={shelf ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+        </svg>
+        <span>{shelf ? SHELF_LABELS[shelf] : 'Add to Shelf'}</span>
+        {/* Chevron */}
+        <svg
+          className="w-3.5 h-3.5 shrink-0 transition-transform duration-150"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          viewBox="0 0 20 20" fill="currentColor"
+        >
+          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          role="listbox"
+          aria-label="Select shelf"
+          className="absolute top-full left-0 mt-1.5 z-20 min-w-[180px] py-1 rounded-xl border border-[var(--color-divider)] bg-[var(--color-bg-elevated)] shadow-xl overflow-hidden"
+        >
+          {SHELF_OPTIONS.map(({ value, label }) => {
+            const isActive = shelf === value
+            return (
+              <button
+                key={label}
+                role="option"
+                aria-selected={isActive}
+                onClick={() => { onShelfChange(value); setOpen(false) }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors text-left ${
+                  isActive
+                    ? 'text-primary bg-primary/[0.06]'
+                    : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg)]'
+                }`}
+              >
+                <span>{label}</span>
+                {isActive && (
+                  <svg className="w-4 h-4 text-primary shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+
+function BookGrid({ books, search, onSelect }: {
+  books: Book[]
+  search?: boolean
+  onSelect: (book: Book) => void
+}) {
+  return (
+    <div className={`grid grid-cols-3 ${search ? 'lg:grid-cols-5' : 'lg:grid-cols-7'} gap-x-3 gap-y-6 lg:gap-x-[22px] lg:gap-y-9`}>
+      {books.map((book, i) => (
+        <BookCard
+          key={book.id ?? book.external_google_id ?? i}
+          title={book.title}
+          year={book.year}
+          author={search ? book.author : undefined}
+          imageUrl={book.image_url}
+          onClick={() => onSelect(book)}
+        />
+      ))}
+    </div>
+  )
+}
+
+function GridShimmer({ search, count }: { search?: boolean; count: number }) {
+  return (
+    <div className={`grid grid-cols-3 ${search ? 'lg:grid-cols-5' : 'lg:grid-cols-7'} gap-x-3 gap-y-6 lg:gap-x-[22px] lg:gap-y-9`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-2">
+          <Shimmer className="w-full aspect-[2/3] rounded-sm" />
+          <Shimmer className="h-2.5 w-4/5" />
+          <Shimmer className="h-2.5 w-1/2" />
+        </div>
+      ))}
+    </div>
+  )
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function BooksPage() {
+  const [view, setView]                 = useState<'shelf' | 'search'>('shelf')
   const [query, setQuery]               = useState('')
   const [results, setResults]           = useState<Book[]>([])
   const [searching, setSearching]       = useState(false)
@@ -107,19 +238,39 @@ export default function BooksPage() {
   const [authorBooks, setAuthorBooks]       = useState<GBVolume[]>([])
   const [loadingAuthorBooks, setLoadingAuthorBooks] = useState(false)
   const [liked, setLiked]           = useState(false)
+  const [shelf, setShelf]           = useState<ShelfValue | null>(null)
+  const [shelvedBooks, setShelvedBooks]     = useState<ShelfEntry[]>([])
+  const [loadingShelves, setLoadingShelves] = useState(true)
+  const [shelvesError, setShelvesError]     = useState('')
 
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const activeId    = useRef<string | null>(null)
+  const debounceRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const activeId       = useRef<string | null>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const { setTopBar, resetTopBar } = useMobileTopBar()
+
+  // Focus the search input once it slides into view
   useEffect(() => {
-    if (selectedBook) {
-      setTopBar({ title: selectedBook.title, backLabel: 'Books', onBack: () => setSelectedBook(null) })
-    } else {
-      resetTopBar()
-    }
-    return resetTopBar
-  }, [selectedBook?.title, setTopBar, resetTopBar])
+    if (view === 'search') searchInputRef.current?.focus()
+  }, [view])
+
+  // Fetch shelved books on mount — "My Shelf" is the default view
+  useEffect(() => {
+    setLoadingShelves(true)
+    setShelvesError('')
+    invokeFunction<ShelfEntry[] | { shelves?: ShelfEntry[] }>('shelf', { method: 'GET' })
+      .then(({ data, error }) => {
+        if (error) throw error
+        const raw: Array<ShelfEntry | ({ shelf: ShelfValue } & Book)> = Array.isArray(data) ? data : (data as { shelves?: ShelfEntry[] })?.shelves ?? []
+        // Normalize both { shelf, book } and flat { shelf, ...bookFields } shapes
+        const entries: ShelfEntry[] = raw.map(e =>
+          'book' in e ? e : { shelf: e.shelf, book: e }
+        )
+        setShelvedBooks(entries)
+      })
+      .catch(() => setShelvesError('Could not load shelves.'))
+      .finally(() => setLoadingShelves(false))
+  }, [])
 
   const search = useCallback(async (q: string) => {
     if (!q.trim()) { setResults([]); return }
@@ -149,6 +300,14 @@ export default function BooksPage() {
     debounceRef.current = setTimeout(() => search(val), 400)
   }
 
+  const goToSearch = () => setView('search')
+  const backFromSearch = () => {
+    setView('shelf')
+    setQuery('')
+    setResults([])
+    setSearchError('')
+  }
+
   const handleSelect = (book: Book) => {
     if (book.external_google_id && book.external_google_id === selectedBook?.external_google_id) return
 
@@ -161,6 +320,7 @@ export default function BooksPage() {
     setAuthorBooks([])
     setLoadingAuthorBooks(false)
     setLiked(false)
+    setShelf(null)
 
     const id = book.external_google_id
     if (id) activeId.current = id
@@ -221,6 +381,12 @@ export default function BooksPage() {
                   setLiked(likeData.liked)
                 }
               }).catch(() => {})
+            invokeFunction<{ success: boolean } & ShelfStatus>('shelf?book_id=' + saved.id, { method: 'GET' })
+              .then(({ data: shelfData, error: shelfError }) => {
+                if (!shelfError && shelfData) {
+                  setShelf(shelfData.shelf)
+                }
+              }).catch(() => {})
           }
         }
       }
@@ -245,6 +411,65 @@ export default function BooksPage() {
       setLiked(prevLiked)
     })
   }
+
+  const handleShelfChange = (value: ShelfValue | null) => {
+    if (!selectedBook?.id) return
+    const bookId = selectedBook.id
+    const prevShelf = shelf
+    const prevShelvedBooks = shelvedBooks
+
+    setShelf(value)
+
+    // Optimistically sync the shelves panel
+    if (value === null) {
+      setShelvedBooks(prev => prev.filter(e => e.book.id !== bookId))
+    } else {
+      setShelvedBooks(prev => {
+        const idx = prev.findIndex(e => e.book.id === bookId)
+        const entry: ShelfEntry = { shelf: value, book: selectedBook }
+        if (idx >= 0) return prev.map((e, i) => i === idx ? entry : e)
+        return [...prev, entry]
+      })
+    }
+
+    if (value === null) {
+      invokeFunction<{ success: boolean } & ShelfStatus>('shelf?book_id=' + bookId, { method: 'DELETE' })
+        .then(({ error }) => {
+          if (error) { setShelf(prevShelf); setShelvedBooks(prevShelvedBooks) }
+        }).catch(() => {
+          setShelf(prevShelf)
+          setShelvedBooks(prevShelvedBooks)
+        })
+    } else {
+      invokeFunction<{ success: boolean } & ShelfStatus>('shelf', {
+        method: 'POST',
+        body: { book_id: bookId, shelf: value },
+      }).then(({ data, error }) => {
+        if (!error && data) {
+          setShelf(data.shelf)
+        } else {
+          setShelf(prevShelf)
+          setShelvedBooks(prevShelvedBooks)
+        }
+      }).catch(() => {
+        setShelf(prevShelf)
+        setShelvedBooks(prevShelvedBooks)
+      })
+    }
+  }
+
+  const closeDetail = () => setSelectedBook(null)
+
+  // Drive the global mobile top bar while the detail overlay is open
+  useEffect(() => {
+    if (selectedBook) {
+      setTopBar({ title: 'Book', backLabel: view === 'search' ? 'Search' : 'My Shelf', onBack: closeDetail })
+    } else {
+      resetTopBar()
+    }
+    return resetTopBar
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBook, view])
 
   // ── Derived display values ─────────────────────────────────────────────────
   const vi          = volumeInfo
@@ -272,21 +497,53 @@ export default function BooksPage() {
     { label: 'Edition',   value: edition },
   ].filter(m => m.value)
 
+  const hasShelvedBooks = shelvedBooks.length > 0
+
   return (
-    <div className="flex lg:h-screen lg:overflow-hidden">
+    <div className="relative">
 
-      {/* ── List panel ─────────────────────────────────────────────────────── */}
-      <div className={`flex flex-col w-full lg:w-[22%] lg:min-w-[280px] lg:max-w-[420px] lg:shrink-0 lg:border-r lg:border-[var(--color-divider)] lg:overflow-y-auto ${selectedBook ? 'hidden lg:flex' : 'flex'}`}>
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <div className="relative px-[22px] lg:px-10 pt-7 lg:pt-9 pb-6 min-h-[78px] lg:min-h-[86px]">
 
-        <div className="px-[22px] pt-[28px] pb-[22px] border-b border-[var(--color-divider)]">
-          <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-[10px]">
-            Library
-          </span>
-          <h1 className="font-serif font-medium text-[38px] leading-none tracking-[-0.02em] text-[var(--color-text-primary)] mb-[22px]">
-            Books
-          </h1>
-          <div className="relative group">
+        {/* My Shelf header */}
+        <div className={`flex items-start justify-between gap-4 transition-opacity duration-150 ${view === 'search' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div>
+            <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+              Library
+            </span>
+            <h1 className="font-serif font-medium text-[32px] lg:text-[38px] leading-none tracking-[-0.02em] text-[var(--color-text-primary)]">
+              My Shelf
+            </h1>
+          </div>
+          <button
+            onClick={goToSearch}
+            aria-label="Search for a book"
+            className="flex items-center justify-center w-10 h-10 shrink-0 rounded-btn border border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-text-secondary)] transition-colors"
+          >
+            <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Search header — slides/fades in from the search button's position */}
+        <div
+          className={`absolute inset-x-[22px] lg:inset-x-10 top-7 lg:top-9 flex items-center gap-3 origin-right transition-all duration-200 ease-out ${
+            view === 'search' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 pointer-events-none'
+          }`}
+        >
+          <button
+            onClick={backFromSearch}
+            aria-label="Back to My Shelf"
+            className="flex items-center justify-center w-10 h-10 shrink-0 rounded-btn text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors -ml-2"
+          >
+            <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <div className="relative flex-1 group">
             <input
+              ref={searchInputRef}
               type="text"
               value={query}
               onChange={handleQueryChange}
@@ -304,164 +561,219 @@ export default function BooksPage() {
               )}
             </div>
           </div>
-          {searchError && <p className="text-red-500 text-xs mt-1.5">{searchError}</p>}
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {!query.trim() && (
-            <div className="flex flex-col items-center justify-center py-10 px-8 text-center gap-6">
-              <StackedCoverPlaceholder size="sm" />
-              <div>
-                <p className="font-serif italic font-medium text-[24px] leading-none tracking-[-0.008em] text-[var(--color-text-secondary)] mb-[10px]">
-                  Start typing.
-                </p>
-                <p className="text-[12px] text-[var(--color-text-meta)] leading-[1.5] max-w-[220px] mx-auto">
-                  Find a book by title or author. We'll pull the cover, the blurb, and a note on the author.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {query.trim() && !searching && results.length === 0 && (
-            <p className="px-4 py-6 text-sm text-[var(--color-text-secondary)] italic">
-              No books found for "{query}"
-            </p>
-          )}
-
-          {results.map((book, i) => {
-            const isActive = !!selectedBook?.external_google_id &&
-              selectedBook.external_google_id === book.external_google_id
-            return (
-              <button
-                key={book.external_google_id ?? i}
-                onClick={() => handleSelect(book)}
-                className={`relative w-full flex items-center gap-3.5 px-[22px] py-[14px] border-b border-[var(--color-divider)] last:border-b-0 transition-colors text-left ${
-                  isActive
-                    ? 'bg-primary/[0.06]'
-                    : 'hover:bg-[var(--color-bg-elevated)]'
-                }`}
-              >
-                {isActive && (
-                  <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
-                )}
-                <Cover
-                  url={book.image_url}
-                  title={book.title}
-                  className="w-[42px] h-[60px]"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className={`font-serif italic font-medium text-[18px] leading-[1.15] tracking-[-0.008em] truncate ${isActive ? 'text-primary' : 'text-[var(--color-text-primary)]'}`}>
-                    {book.title}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1 min-w-0">
-                    {book.author && (
-                      <span className="text-[12px] text-[var(--color-text-secondary)] truncate flex-1 min-w-0">
-                        {book.author}
-                      </span>
-                    )}
-                    {book.year && (
-                      <span className={`text-[10px] font-medium uppercase tracking-[0.14em] shrink-0 ${isActive ? 'text-primary' : 'text-[var(--color-text-secondary)]'}`}>
-                        {book.year}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </button>
-            )
-          })}
         </div>
       </div>
 
-      {/* ── Detail panel ────────────────────────────────────────────────────── */}
-      <div className={`flex-1 min-w-0 lg:overflow-y-auto ${selectedBook ? 'block' : 'hidden lg:block'}`}>
-        {selectedBook ? (
-          <div className="px-[22px] pt-6 pb-12 lg:px-[56px] lg:pt-[40px] lg:pb-[64px]">
-            <div className="max-w-[1300px] mx-auto">
-
-              {/* ── Hero: cover + identity ──────────────────────────────────── */}
-              <div className="flex flex-col sm:flex-row gap-[18px] sm:gap-[40px] mb-[44px]">
-
-                <Cover
-                  url={coverUrl}
-                  title={title}
-                  className="w-[108px] h-[158px] sm:w-[148px] sm:h-[214px] lg:w-[188px] lg:h-[272px] self-start"
-                />
-
-                <div className="flex-1 min-w-0">
-                  <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-[14px]">
-                    Book
-                  </span>
-
-                  <h2 className="font-serif italic font-medium text-[30px] sm:text-[38px] lg:text-[44px] xl:text-[56px] leading-none tracking-[-0.018em] text-[var(--color-text-primary)] text-pretty">
-                    {title}
-                  </h2>
-
-                  {subtitle && (
-                    <p className="font-serif font-normal text-[19px] leading-[1.3] text-[var(--color-text-secondary)] mt-2 max-w-[460px]">
-                      {subtitle}
-                    </p>
-                  )}
-
-                  <p className="text-[16px] font-medium text-[var(--color-text-secondary)] tracking-[0.005em] mt-[18px]">
-                    {loadingDetail && !vi?.authors
-                      ? <Shimmer className="h-5 w-48 inline-block" />
-                      : authors
-                    }
-                  </p>
-
-                  {/* Meta row — dot-separated eyebrows */}
-                  {metaItems.length > 0 && (
-                    <div className="flex items-center gap-3 flex-wrap mt-[18px]">
-                      {metaItems.map((item, i) => (
-                        <Fragment key={i}>
-                          {i > 0 && <MetaDot />}
-                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-                            {item}
-                          </span>
-                        </Fragment>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Categories */}
-                  {loadingDetail && categories.length === 0 ? (
-                    <div className="flex gap-2 mt-[22px]">
-                      <Shimmer className="h-6 w-20 rounded-full" />
-                      <Shimmer className="h-6 w-16 rounded-full" />
-                      <Shimmer className="h-6 w-24 rounded-full" />
-                    </div>
-                  ) : categories.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-[22px]">
-                      {categories.map(c => (
-                        <span key={c} className="px-[11px] py-[5px] rounded-full border border-[var(--color-divider)] text-[11px] font-medium tracking-[0.04em] text-[var(--color-text-secondary)] whitespace-nowrap">
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Like button */}
-                  <div className="mt-[22px]">
-                    <button
-                      onClick={selectedBook?.id ? handleToggleLike : undefined}
-                      disabled={!selectedBook?.id}
-                      aria-label={liked ? 'Unlike this book' : 'Like this book'}
-                      className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <span>{liked ? '♥' : '♡'}</span>
-                    </button>
+      {/* ── Body ──────────────────────────────────────────────────────────── */}
+      <div className="px-[22px] lg:px-10 pb-12 lg:pb-16">
+        {view === 'shelf' && (
+          <>
+            {loadingShelves && (
+              <div className="space-y-9">
+                {[1, 2].map(i => (
+                  <div key={i}>
+                    <Shimmer className="h-3 w-24 mb-4" />
+                    <GridShimmer count={i === 1 ? 4 : 7} />
                   </div>
+                ))}
+              </div>
+            )}
+
+            {!loadingShelves && shelvesError && (
+              <p className="text-sm text-[var(--color-text-secondary)] italic">{shelvesError}</p>
+            )}
+
+            {!loadingShelves && !shelvesError && !hasShelvedBooks && (
+              <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
+                <StackedCoverPlaceholder size="lg" />
+                <div>
+                  <p className="font-serif italic font-medium text-[28px] lg:text-[34px] leading-none tracking-[-0.012em] text-[var(--color-text-secondary)] mb-[10px]">
+                    Nothing shelved yet.
+                  </p>
+                  <p className="text-[13px] text-[var(--color-text-meta)] leading-[1.6] max-w-[340px] mx-auto">
+                    Search for a book and add it to Want to Read, Read, or Not Finished — it'll show up here.
+                  </p>
+                </div>
+                <button
+                  onClick={goToSearch}
+                  className="text-sm font-medium px-5 py-2.5 rounded-btn bg-primary hover:bg-primary-hover text-white transition-colors"
+                >
+                  Search for a book
+                </button>
+              </div>
+            )}
+
+            {!loadingShelves && !shelvesError && hasShelvedBooks && (
+              <div className="space-y-9 lg:space-y-12">
+                {SHELF_SECTIONS.map(({ value, label }) => {
+                  const books = shelvedBooks.filter(e => e.shelf === value).map(e => e.book)
+                  if (!books.length) return null
+                  return (
+                    <div key={value}>
+                      <div className="flex items-baseline gap-2 mb-4">
+                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                          {label}
+                        </span>
+                        <span className="text-[10px] text-[var(--color-text-meta)] tabular-nums">{books.length}</span>
+                      </div>
+                      <BookGrid books={books} onSelect={handleSelect} />
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {view === 'search' && (
+          <>
+            {searchError && <p className="text-red-500 text-sm mb-4">{searchError}</p>}
+
+            {!query.trim() && (
+              <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
+                <StackedCoverPlaceholder size="lg" />
+                <div>
+                  <p className="font-serif italic font-medium text-[28px] lg:text-[34px] leading-none tracking-[-0.012em] text-[var(--color-text-secondary)] mb-[10px]">
+                    Start typing.
+                  </p>
+                  <p className="text-[13px] text-[var(--color-text-meta)] leading-[1.6] max-w-[340px] mx-auto">
+                    Find a book by title or author. We'll pull the cover, the blurb, and a note on the author.
+                  </p>
                 </div>
               </div>
+            )}
 
-              <hr className="border-[var(--color-divider)] mb-9" />
+            {query.trim() && searching && results.length === 0 && (
+              <GridShimmer search count={10} />
+            )}
 
-              {/* ── Details | About ──────────────────────────────────────────── */}
-              <div className="lg:grid lg:grid-cols-2 lg:gap-16 mb-10">
+            {query.trim() && !searching && results.length === 0 && !searchError && (
+              <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
+                <StackedCoverPlaceholder size="lg" />
+                <div>
+                  <p className="font-serif italic font-medium text-[28px] lg:text-[34px] leading-none tracking-[-0.012em] text-[var(--color-text-secondary)] mb-[10px]">
+                    No matches.
+                  </p>
+                  <p className="text-[13px] text-[var(--color-text-meta)] leading-[1.6] max-w-[340px] mx-auto">
+                    No books found for "{query}" — try a different title or author.
+                  </p>
+                </div>
+              </div>
+            )}
 
-                {/* Details — left column */}
-                {(metaRows.length > 0 || loadingDetail) && (
-                  <section>
+            {results.length > 0 && (
+              <BookGrid books={results} search onSelect={handleSelect} />
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ── Detail overlay ────────────────────────────────────────────────── */}
+      {selectedBook && (
+        <div className="fixed inset-x-0 top-14 bottom-0 lg:inset-0 z-50 lg:flex lg:justify-end">
+          {/* Scrim — desktop only, grid stays visible behind it */}
+          <div
+            className="hidden lg:block absolute inset-0 bg-black/50"
+            onClick={closeDetail}
+            aria-hidden="true"
+          />
+
+          <div className="relative w-full h-full lg:w-[600px] lg:h-full bg-[var(--color-bg)] lg:border-l lg:border-[var(--color-divider)] overflow-y-auto">
+
+            {/* Panel header — desktop only; mobile uses the global top bar */}
+            <div className="hidden lg:flex items-center justify-between px-5 lg:px-12 pt-5 lg:pt-6 pb-2">
+              <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                Book
+              </span>
+
+              <button
+                onClick={closeDetail}
+                aria-label="Close"
+                className="flex w-8 h-8 items-center justify-center rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+              >
+                <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Panel body */}
+            <div className="px-5 lg:px-12 pb-12 pt-5 lg:pt-2">
+
+              <CoverSlot
+                imageUrl={coverUrl}
+                alt={title}
+                label="cover"
+                shadow
+                className="w-[120px] sm:w-[148px] aspect-[2/3] mb-[18px]"
+              />
+
+              <h2 className="font-serif italic font-medium text-[26px] sm:text-[30px] leading-[1.1] tracking-[-0.014em] text-[var(--color-text-primary)] text-pretty mb-1.5">
+                {title}
+              </h2>
+
+              {subtitle && (
+                <p className="font-serif font-normal text-[15px] leading-[1.3] text-[var(--color-text-secondary)] mb-1.5">
+                  {subtitle}
+                </p>
+              )}
+
+              <p className="text-[14px] text-[var(--color-text-secondary)] tracking-[0.005em] mb-4">
+                {loadingDetail && !vi?.authors
+                  ? <Shimmer className="h-4 w-40 inline-block" />
+                  : [authors, ...metaItems].filter(Boolean).join(' · ')
+                }
+              </p>
+
+              {/* Categories */}
+              {loadingDetail && categories.length === 0 ? (
+                <div className="flex gap-2 mb-4">
+                  <Shimmer className="h-6 w-20 rounded-full" />
+                  <Shimmer className="h-6 w-16 rounded-full" />
+                </div>
+              ) : categories.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {categories.map(c => (
+                    <span key={c} className="px-[11px] py-[5px] rounded-full border border-[var(--color-divider)] text-[11px] font-medium tracking-[0.04em] text-[var(--color-text-secondary)] whitespace-nowrap">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Pill row */}
+              <div className="flex items-center gap-2.5 mb-7">
+                <LikePill liked={liked} onClick={selectedBook?.id ? handleToggleLike : undefined} disabled={!selectedBook?.id} />
+                <ShelfPill shelf={shelf} onShelfChange={handleShelfChange} disabled={!selectedBook?.id} />
+              </div>
+
+              <hr className="border-[var(--color-divider)] mb-6" />
+
+              {/* About */}
+              <section className="mb-6">
+                <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-3">
+                  About
+                </span>
+                {loadingDetail && !description ? (
+                  <div className="space-y-2">
+                    {[100, 90, 95, 85, 70].map(w => (
+                      <Shimmer key={w} className="h-4" style={{ width: `${w}%` }} />
+                    ))}
+                  </div>
+                ) : description ? (
+                  <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line break-words">
+                    {description}
+                  </p>
+                ) : (
+                  <p className="text-[13px] text-[var(--color-text-secondary)] italic">No description available.</p>
+                )}
+              </section>
+
+              {/* Details */}
+              {(metaRows.length > 0 || loadingDetail) && (
+                <>
+                  <hr className="border-[var(--color-divider)] mb-6" />
+                  <section className="mb-6">
                     <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
                       Details
                     </span>
@@ -469,8 +781,8 @@ export default function BooksPage() {
                       <div className="divide-y divide-[var(--color-divider)]">
                         {[160, 112, 192, 256].map(w => (
                           <div key={w} className="flex gap-6 py-[12px]">
-                            <Shimmer className="h-4 shrink-0" style={{ width: 110 }} />
-                            <Shimmer className="h-4" style={{ width: w }} />
+                            <Shimmer className="h-4 shrink-0" style={{ width: 90 }} />
+                            <Shimmer className="h-4" style={{ width: Math.min(w, 140) }} />
                           </div>
                         ))}
                       </div>
@@ -478,10 +790,10 @@ export default function BooksPage() {
                       <dl className="divide-y divide-[var(--color-divider)]">
                         {metaRows.map(({ label, value, mono }) => (
                           <div key={label} className="flex gap-6 py-[12px]">
-                            <dt className="text-[13px] text-[var(--color-text-secondary)] shrink-0" style={{ width: 110 }}>
+                            <dt className="text-[13px] text-[var(--color-text-secondary)] shrink-0" style={{ width: 90 }}>
                               {label}
                             </dt>
-                            <dd className={`text-[13px] text-[var(--color-text-primary)] font-medium tracking-[0.005em] ${mono ? 'font-mono tracking-[0.01em]' : ''}`}>
+                            <dd className={`text-[13px] text-[var(--color-text-primary)] font-medium tracking-[0.005em] break-words ${mono ? 'font-mono tracking-[0.01em]' : ''}`}>
                               {value}
                             </dd>
                           </div>
@@ -489,94 +801,75 @@ export default function BooksPage() {
                       </dl>
                     )}
                   </section>
-                )}
+                </>
+              )}
 
-                {/* About — right column */}
-                <section className="mt-8 lg:mt-0">
-                  <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
-                    About
-                  </span>
-                  {loadingDetail && !description ? (
-                    <div className="space-y-2">
-                      {[100, 90, 95, 85, 70].map(w => (
-                        <Shimmer key={w} className="h-4" style={{ width: `${w}%` }} />
-                      ))}
-                    </div>
-                  ) : description ? (
-                    <p className="text-[14px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line break-words">
-                      {description}
-                    </p>
-                  ) : (
-                    <p className="text-[14px] text-[var(--color-text-secondary)] italic">No description available.</p>
-                  )}
-                </section>
-
-              </div>
-
-              {/* ── About the Author ─────────────────────────────────────────── */}
+              {/* About the Author */}
               {(loadingAuthor || authorInfo) && (
                 <>
-                  <hr className="border-[var(--color-divider)] mb-9" />
-                  <section>
-                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-[18px]">
+                  <hr className="border-[var(--color-divider)] mb-6" />
+                  <section className="mb-6">
+                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-[14px]">
                       About the Author
                     </span>
                     {loadingAuthor && !authorInfo ? (
-                      <div className="flex gap-5">
-                        <Shimmer className="h-[72px] w-[72px] rounded-full shrink-0" />
-                        <div className="flex-1 space-y-2 pt-1">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <Shimmer className="h-12 w-12 rounded-full shrink-0" />
                           <Shimmer className="h-3.5 w-32" />
-                          <Shimmer className="h-3.5 w-full" />
-                          <Shimmer className="h-3.5 w-5/6" />
-                          <Shimmer className="h-3.5 w-4/6" />
                         </div>
+                        <Shimmer className="h-3.5 w-full" />
+                        <Shimmer className="h-3.5 w-5/6" />
+                        <Shimmer className="h-3.5 w-4/6" />
                       </div>
                     ) : authorInfo && (
-                      <div className="flex gap-5">
-                        {(wikipediaImage || authorInfo.image?.contentUrl) && !authorPhotoFailed && (
-                          <img
-                            src={wikipediaImage ?? authorInfo.image!.contentUrl!}
-                            alt={authorInfo.name ?? ''}
-                            className="h-[72px] w-[72px] rounded-full object-cover shrink-0"
-                            onError={() => setAuthorPhotoFailed(true)}
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          {authorInfo.name && (
-                            <p className="font-serif font-medium text-[22px] leading-[1.1] tracking-[-0.008em] text-[var(--color-text-primary)]">
-                              {authorInfo.name}
-                            </p>
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          {(wikipediaImage || authorInfo.image?.contentUrl) && !authorPhotoFailed && (
+                            <img
+                              src={wikipediaImage ?? authorInfo.image!.contentUrl!}
+                              alt={authorInfo.name ?? ''}
+                              className="h-12 w-12 rounded-full object-cover shrink-0"
+                              onError={() => setAuthorPhotoFailed(true)}
+                            />
                           )}
-                          {authorInfo.description && (
-                            <span className="block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mt-2 mb-[10px]">
-                              {authorInfo.description}
-                            </span>
-                          )}
-                          {(wikipediaExtract || authorInfo.detailedDescription?.articleBody) && (
-                            <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em] max-w-[65ch]">
-                              {wikipediaExtract ?? authorInfo.detailedDescription!.articleBody}
-                            </p>
-                          )}
+                          <div className="min-w-0">
+                            {authorInfo.name && (
+                              <p className="font-serif font-medium text-[18px] leading-[1.1] tracking-[-0.008em] text-[var(--color-text-primary)]">
+                                {authorInfo.name}
+                              </p>
+                            )}
+                            {authorInfo.description && (
+                              <span className="block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mt-1">
+                                {authorInfo.description}
+                              </span>
+                            )}
+                          </div>
                         </div>
+                        {(wikipediaExtract || authorInfo.detailedDescription?.articleBody) && (
+                          <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em]">
+                            {wikipediaExtract ?? authorInfo.detailedDescription!.articleBody}
+                          </p>
+                        )}
                       </div>
                     )}
                   </section>
                 </>
               )}
 
-              {/* ── More by this author ───────────────────────────────────────── */}
+              {/* More by this author */}
               {(loadingAuthorBooks || authorBooks.length > 0) && (
                 <>
-                  <hr className="border-[var(--color-divider)] my-9" />
+                  <hr className="border-[var(--color-divider)] mb-6" />
                   <section>
                     <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
                       More by {selectedBook?.author?.split(/\s*(?:,|&| and )\s*/i)[0]}
                     </span>
-                    <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1">
+                    <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                       {loadingAuthorBooks && authorBooks.length === 0
-                        ? Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className="flex flex-col gap-2 shrink-0 w-[96px]">
-                              <Shimmer className="w-[96px] h-[138px] rounded-sm" />
+                        ? Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="flex flex-col gap-2 shrink-0 w-[80px]">
+                              <Shimmer className="w-[80px] h-[116px] rounded-sm" />
                               <Shimmer className="h-3 w-4/5" />
                               <Shimmer className="h-3 w-1/2" />
                             </div>
@@ -595,23 +888,14 @@ export default function BooksPage() {
                               page_count: vi.pageCount,
                             }
                             return (
-                              <button
+                              <BookCard
                                 key={vol.id}
+                                title={vi.title}
+                                year={year}
+                                imageUrl={coverUrl}
                                 onClick={() => handleSelect(book)}
-                                className="flex flex-col gap-2 shrink-0 w-[96px] text-left group"
-                              >
-                                <Cover
-                                  url={coverUrl}
-                                  title={vi.title}
-                                  className="w-[96px] h-[138px] group-hover:opacity-80 transition-opacity"
-                                />
-                                <p className="text-[12px] text-[var(--color-text-primary)] leading-[1.3] line-clamp-2 font-medium">
-                                  {vi.title}
-                                </p>
-                                {year && (
-                                  <p className="text-[11px] text-[var(--color-text-secondary)]">{year}</p>
-                                )}
-                              </button>
+                                compact
+                              />
                             )
                           })
                       }
@@ -622,18 +906,8 @@ export default function BooksPage() {
 
             </div>
           </div>
-        ) : (
-          <div className="hidden lg:flex flex-col items-center justify-center h-full text-center px-8">
-            <StackedCoverPlaceholder size="lg" />
-            <p className="font-serif italic font-medium text-[38px] leading-none tracking-[-0.012em] text-[var(--color-text-primary)] mt-7 mb-[14px]">
-              Pick a title.
-            </p>
-            <p className="text-[14px] text-[var(--color-text-secondary)] leading-[1.6] max-w-[320px]">
-              Search any title or author from the panel on the left. Pick a result to see the blurb, the details, and a note on the author.
-            </p>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
     </div>
   )

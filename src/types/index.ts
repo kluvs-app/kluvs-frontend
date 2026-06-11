@@ -82,6 +82,17 @@ export interface LikeStatus {
   liked: boolean
 }
 
+export type ShelfValue = 'want_to_read' | 'read' | 'not_finished'
+
+export interface ShelfStatus {
+  shelf: ShelfValue | null
+}
+
+export interface ShelfEntry {
+  shelf: ShelfValue
+  book: Book
+}
+
 export type UserRole = 'owner' | 'admin' | 'member'
 
 export interface MemberClub {
