@@ -16,6 +16,7 @@ import EditClubModal from '../components/modals/EditClubModal'
 import AddClubModal from '../components/modals/AddClubModal'
 import ShareClubModal from '../components/modals/ShareClubModal'
 import EndSessionModal from '../components/modals/EndSessionModal'
+import EditSessionModal from '../components/modals/EditSessionModal'
 import { useAuth } from '../contexts/AuthContext'
 import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import { parseLocalDate, isPast } from '../utils/dates'
@@ -107,6 +108,7 @@ export default function ClubDetailPage() {
   const [showShareModal, setShowShareModal] = useState(false)
 
   const [showEndSessionModal, setShowEndSessionModal] = useState(false)
+  const [showEditSessionModal, setShowEditSessionModal] = useState(false)
   const [togglingMemberId, setTogglingMemberId] = useState<number | null>(null)
 
   // Track which club IDs have been fetched for the sidebar to avoid duplicate requests
@@ -500,7 +502,10 @@ export default function ClubDetailPage() {
                           </p>
                           {isAdmin && club.active_session.status === 'active' && (
                             <KebabMenu
-                              items={[{ label: 'End Session', onClick: () => setShowEndSessionModal(true) }]}
+                              items={[
+                                { label: 'Edit Session', onClick: () => setShowEditSessionModal(true) },
+                                { label: 'End Session', onClick: () => setShowEndSessionModal(true) },
+                              ]}
                             />
                           )}
                         </div>
@@ -929,7 +934,10 @@ export default function ClubDetailPage() {
                         </p>
                         {isAdmin && club.active_session.status === 'active' && (
                           <KebabMenu
-                            items={[{ label: 'End Session', onClick: () => setShowEndSessionModal(true) }]}
+                            items={[
+                              { label: 'Edit Session', onClick: () => setShowEditSessionModal(true) },
+                              { label: 'End Session', onClick: () => setShowEndSessionModal(true) },
+                            ]}
                           />
                         )}
                       </div>
@@ -1390,6 +1398,13 @@ export default function ClubDetailPage() {
         onClose={() => setShowEndSessionModal(false)}
         club={club}
         onSessionEnded={refreshClub}
+      />
+      <EditSessionModal
+        isOpen={showEditSessionModal}
+        onClose={() => setShowEditSessionModal(false)}
+        selectedClub={club}
+        onSessionUpdated={refreshClub}
+        onError={setError}
       />
     </>
   )
