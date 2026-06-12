@@ -372,7 +372,7 @@ describe('ClubDetailPage', () => {
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-future', title: 'Future discussion', date: futureDate.toISOString().split('T')[0], location: 'Room A' },
+            { id: 'disc-future', title: 'Future discussion', scheduled_at: futureDate.toISOString(), location: 'Room A' },
           ],
         },
       }
@@ -1361,8 +1361,8 @@ describe('ClubDetailPage', () => {
               ...mockClub,
               active_session: {
                 discussions: [
-                  { id: '1', title: 'Discussion 1', date: '2020-01-01', time: '19:00' },
-                  { id: '2', title: 'Discussion 2', date: '2026-06-15', time: '19:00' },
+                  { id: '1', title: 'Discussion 1', scheduled_at: '2020-01-01T19:00:00Z' },
+                  { id: '2', title: 'Discussion 2', scheduled_at: '2026-06-15T19:00:00Z' },
                 ],
               },
             },
@@ -1387,9 +1387,9 @@ describe('ClubDetailPage', () => {
               ...mockClub,
               active_session: {
                 discussions: [
-                  { id: '1', title: 'Past', date: '2020-01-01', time: '19:00' },
-                  { id: '2', title: 'Next', date: '2026-06-15', time: '19:00' },
-                  { id: '3', title: 'Upcoming', date: '2026-07-15', time: '19:00' },
+                  { id: '1', title: 'Past', scheduled_at: '2020-01-01T19:00:00Z' },
+                  { id: '2', title: 'Next', scheduled_at: '2026-06-15T19:00:00Z' },
+                  { id: '3', title: 'Upcoming', scheduled_at: '2026-07-15T19:00:00Z' },
                 ],
               },
             },

@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import DiscussionModal from '../../../components/modals/DiscussionModal'
 import { mockClub, mockClub2, mockDiscussion } from '../../utils/mocks'
+import { localPartsToScheduledAt } from '../../../utils/dates'
 
 // Mock supabase
 const mockInvoke = vi.fn()
@@ -68,6 +69,7 @@ describe('DiscussionModal', () => {
       expect(screen.getByDisplayValue('Chapter 1-3 Discussion')).toBeInTheDocument()
       expect(screen.getByDisplayValue('19:30')).toBeInTheDocument()
       expect(screen.getByDisplayValue('Discord Voice Channel')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('2024-06-15')).toBeInTheDocument()
     })
   })
 
@@ -104,10 +106,24 @@ describe('DiscussionModal', () => {
       const submitButton = screen.getByText('Add Discussion', { selector: 'span' }).closest('button')
       expect(submitButton).toBeDisabled()
     })
+
+    it('should have submit button disabled when time is empty', async () => {
+      const user = userEvent.setup()
+      render(<DiscussionModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., Chapters 1–5'), 'Test')
+      const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+
+      const submitButton = screen.getByText('Add Discussion', { selector: 'span' }).closest('button')
+      expect(submitButton).toBeDisabled()
+    })
   })
 
   describe('Form Submission - Add', () => {
-    async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, title = 'New Discussion', addTime = false, addLocation = false) {
+    async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, title = 'New Discussion', time = '10:00', addLocation = false) {
       await user.type(screen.getByPlaceholderText('e.g., Chapters 1–5'), title)
 
       // Fill date via the date input (type="date")
@@ -117,11 +133,9 @@ describe('DiscussionModal', () => {
       tomorrow.setDate(tomorrow.getDate() + 2)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
 
-      if (addTime) {
-        const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement
-        const { fireEvent } = await import('@testing-library/react')
-        fireEvent.change(timeInput, { target: { value: '14:00' } })
-      }
+      const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(timeInput, { target: { value: time } })
 
       if (addLocation) {
         await user.type(screen.getByPlaceholderText('e.g., Community Center, Discord'), 'Library')
@@ -149,11 +163,11 @@ describe('DiscussionModal', () => {
       })
     })
 
-    it('should include optional time and location in POST payload', async () => {
+    it('should include time and location in POST payload', async () => {
       const user = userEvent.setup()
       render(<DiscussionModal {...defaultProps} />)
 
-      await fillAndSubmit(user, 'Test Discussion', true, true)
+      await fillAndSubmit(user, 'Test Discussion', '14:00', true)
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
       await waitFor(() => {
@@ -164,7 +178,7 @@ describe('DiscussionModal', () => {
             body: expect.objectContaining({
               session_id: defaultProps.selectedClub.active_session!.id,
               title: 'Test Discussion',
-              time: '14:00',
+              scheduled_at: expect.stringMatching(/T14:00:00[+-]\d{2}:\d{2}$/),
               location: 'Library',
             }),
           })
@@ -172,11 +186,11 @@ describe('DiscussionModal', () => {
       })
     })
 
-    it('should send null for empty time and location', async () => {
+    it('should send null for empty location', async () => {
       const user = userEvent.setup()
       render(<DiscussionModal {...defaultProps} />)
 
-      await fillAndSubmit(user, 'Minimal Discussion', false, false)
+      await fillAndSubmit(user, 'Minimal Discussion', '10:00', false)
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
       await waitFor(() => {
@@ -185,7 +199,7 @@ describe('DiscussionModal', () => {
           expect.objectContaining({
             method: 'POST',
             body: expect.objectContaining({
-              time: null,
+              scheduled_at: expect.stringMatching(/T10:00:00[+-]\d{2}:\d{2}$/),
               location: null,
             }),
           })
@@ -247,6 +261,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 2)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
@@ -264,6 +280,7 @@ describe('DiscussionModal', () => {
       // Use fireEvent to set a past date directly since type may not bypass min attribute
       const { fireEvent } = await import('@testing-library/react')
       fireEvent.change(dateInput, { target: { value: '2020-01-01' } })
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
@@ -276,7 +293,7 @@ describe('DiscussionModal', () => {
   describe('Form Submission - Edit', () => {
     it('should call discussion PUT endpoint with updated discussion data', async () => {
       const user = userEvent.setup()
-      const futureDiscussion = { ...mockDiscussion, date: '2027-06-15' }
+      const futureDiscussion = { ...mockDiscussion, scheduled_at: localPartsToScheduledAt('2027-06-15', '19:30') }
       render(<DiscussionModal {...defaultProps} editingDiscussion={futureDiscussion} />)
 
       // Change title
@@ -303,7 +320,7 @@ describe('DiscussionModal', () => {
 
     it('should include all fields in PUT payload', async () => {
       const user = userEvent.setup()
-      const futureDiscussion = { ...mockDiscussion, date: '2027-06-15' }
+      const futureDiscussion = { ...mockDiscussion, scheduled_at: localPartsToScheduledAt('2027-06-15', '19:30') }
       render(<DiscussionModal {...defaultProps} editingDiscussion={futureDiscussion} />)
 
       const locationInput = screen.getByDisplayValue('Discord Voice Channel')
@@ -323,6 +340,7 @@ describe('DiscussionModal', () => {
               id: futureDiscussion.id,
               title: 'Chapter 1-3 Discussion',
               location: 'Updated Location',
+              scheduled_at: expect.stringMatching(/^2027-06-15T19:30:00[+-]\d{2}:\d{2}$/),
             }),
           })
         )
@@ -331,7 +349,7 @@ describe('DiscussionModal', () => {
 
     it('should call onDiscussionSaved and onClose in edit mode on success', async () => {
       const user = userEvent.setup()
-      const futureDiscussion = { ...mockDiscussion, date: '2027-06-15' }
+      const futureDiscussion = { ...mockDiscussion, scheduled_at: localPartsToScheduledAt('2027-06-15', '19:30') }
       render(<DiscussionModal {...defaultProps} editingDiscussion={futureDiscussion} />)
 
       const updateButton = screen.getAllByRole('button').find(btn => btn.textContent?.includes('Update'))!
@@ -345,7 +363,7 @@ describe('DiscussionModal', () => {
 
     it('should maintain discussion ID when editing', async () => {
       const user = userEvent.setup()
-      const futureDiscussion = { ...mockDiscussion, date: '2027-06-15' }
+      const futureDiscussion = { ...mockDiscussion, scheduled_at: localPartsToScheduledAt('2027-06-15', '19:30') }
       render(<DiscussionModal {...defaultProps} editingDiscussion={futureDiscussion} />)
 
       const titleInput = screen.getByDisplayValue('Chapter 1-3 Discussion')
@@ -407,6 +425,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
     }
 
     it('should trim whitespace from title', async () => {
@@ -419,6 +439,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
@@ -455,7 +477,7 @@ describe('DiscussionModal', () => {
       })
     })
 
-    it('should trim whitespace from time by sending as-is', async () => {
+    it('should compose the selected time into scheduled_at', async () => {
       const user = userEvent.setup()
       const { fireEvent } = await import('@testing-library/react')
       render(<DiscussionModal {...defaultProps} />)
@@ -471,7 +493,7 @@ describe('DiscussionModal', () => {
           'discussion',
           expect.objectContaining({
             body: expect.objectContaining({
-              time: '14:00',
+              scheduled_at: expect.stringMatching(/T14:00:00[+-]\d{2}:\d{2}$/),
             }),
           })
         )
@@ -482,7 +504,7 @@ describe('DiscussionModal', () => {
   describe('Payload Validation - Edit', () => {
     it('should trim whitespace in edit mode', async () => {
       const user = userEvent.setup()
-      const futureDiscussion = { ...mockDiscussion, date: '2027-06-15' }
+      const futureDiscussion = { ...mockDiscussion, scheduled_at: localPartsToScheduledAt('2027-06-15', '19:30') }
       render(<DiscussionModal {...defaultProps} editingDiscussion={futureDiscussion} />)
 
       const titleInput = screen.getByDisplayValue('Chapter 1-3 Discussion')
@@ -516,6 +538,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
@@ -529,7 +553,7 @@ describe('DiscussionModal', () => {
 
     it('should not include session_id in PUT payload for edit', async () => {
       const user = userEvent.setup()
-      const futureDiscussion = { ...mockDiscussion, date: '2027-06-15' }
+      const futureDiscussion = { ...mockDiscussion, scheduled_at: localPartsToScheduledAt('2027-06-15', '19:30') }
       render(<DiscussionModal {...defaultProps} editingDiscussion={futureDiscussion} />)
 
       const updateButton = screen.getAllByRole('button').find(btn => btn.textContent?.includes('Update'))!
@@ -558,6 +582,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       const submitButton = screen.getAllByRole('button').find(btn => btn.textContent?.includes('Add'))!
       await user.click(submitButton)

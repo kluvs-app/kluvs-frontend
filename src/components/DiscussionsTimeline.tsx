@@ -1,4 +1,4 @@
-import { parseLocalDate, isPast } from '../utils/dates'
+import { parseScheduledAt, isPast } from '../utils/dates'
 import type { Club, Discussion } from '../types'
 import KebabMenu from './ui/KebabMenu'
 import AttendanceControl from './AttendanceControl'
@@ -25,20 +25,20 @@ export default function DiscussionsTimeline({
 }: DiscussionsTimelineProps) {
   const sortedDiscussions = selectedClub.active_session
     ? [...selectedClub.active_session.discussions].sort(
-        (a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime()
+        (a, b) => parseScheduledAt(a.scheduled_at).getTime() - parseScheduledAt(b.scheduled_at).getTime()
       )
     : []
 
-  const formatTime = (t: string) => {
-    const [h, m] = t.split(':').map(Number)
-    const ampm = h >= 12 ? 'PM' : 'AM'
-    const h12 = h % 12 || 12
-    return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`
+  const formatTime = (scheduledAt: string) => {
+    return parseScheduledAt(scheduledAt).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    })
   }
 
   const getStatus = (discussion: Discussion): 'past' | 'next' | 'upcoming' => {
-    if (isPast(discussion.date, discussion.time)) return 'past'
-    const nextIdx = sortedDiscussions.findIndex(d => !isPast(d.date, d.time))
+    if (isPast(discussion.scheduled_at)) return 'past'
+    const nextIdx = sortedDiscussions.findIndex(d => !isPast(d.scheduled_at))
     const isNext = nextIdx >= 0 && sortedDiscussions[nextIdx]?.id === discussion.id
     return isNext ? 'next' : 'upcoming'
   }
@@ -115,13 +115,13 @@ export default function DiscussionsTimeline({
                     'font-medium font-mono tracking-[0.02em] text-[13px] lg:text-[12px]',
                     status === 'next' ? 'text-primary' : 'text-[var(--color-text-secondary)]',
                   ].join(' ')}>
-                    {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
+                    {parseScheduledAt(discussion.scheduled_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                     })}
                   </p>
                   <p className="text-[10px] lg:text-[11px] text-[var(--color-text-secondary)] mt-0.5 lg:mt-1 opacity-70 lg:opacity-80">
-                    {parseLocalDate(discussion.date).toLocaleDateString('en-US', {
+                    {parseScheduledAt(discussion.scheduled_at).toLocaleDateString('en-US', {
                       weekday: 'short',
                     })}
                   </p>
@@ -172,14 +172,12 @@ export default function DiscussionsTimeline({
                         {discussion.location}
                       </p>
                     )}
-                    {discussion.time && (
-                      <p className="flex items-center gap-1.5 text-[13px] text-[var(--color-text-secondary)] mt-1">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                        </svg>
-                        {formatTime(discussion.time)}
-                      </p>
-                    )}
+                    <p className="flex items-center gap-1.5 text-[13px] text-[var(--color-text-secondary)] mt-1">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                      {formatTime(discussion.scheduled_at)}
+                    </p>
                   </div>
 
                   <div className="flex flex-col items-end gap-2 flex-shrink-0">
