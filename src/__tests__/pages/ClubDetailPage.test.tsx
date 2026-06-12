@@ -354,6 +354,43 @@ describe('ClubDetailPage', () => {
       })
     })
 
+    it('does not show "Invalid Date" in the rail when all discussions are past', async () => {
+      renderDetail()
+      await waitFor(() => {
+        const clubElements = screen.queryAllByText(/club/i)
+        expect(clubElements.length).toBeGreaterThan(0)
+      })
+      expect(screen.queryByText(/invalid date/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/NEXT ·/)).not.toBeInTheDocument()
+    })
+
+    it('shows a formatted NEXT date in the rail when an upcoming discussion exists', async () => {
+      const futureDate = new Date()
+      futureDate.setMonth(futureDate.getMonth() + 1)
+      const clubWithFutureDiscussion = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [
+            { id: 'disc-future', title: 'Future discussion', date: futureDate.toISOString().split('T')[0], location: 'Room A' },
+          ],
+        },
+      }
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: clubWithFutureDiscussion, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+
+      renderDetail()
+
+      await waitFor(() => {
+        expect(screen.queryAllByText(/NEXT ·/).length).toBeGreaterThan(0)
+      })
+      expect(screen.queryByText(/invalid date/i)).not.toBeInTheDocument()
+    })
+
     it('switches club when rail item is clicked', async () => {
       const user = userEvent.setup()
       renderDetail()

@@ -187,9 +187,10 @@ export default function DiscussionsTimeline({
                       {onOpenNote && (
                         <button
                           onClick={() => onOpenNote(discussion)}
+                          disabled={status === 'past'}
                           aria-label="Food for thought note"
                           title="Food for thought"
-                          className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+                          className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-[var(--color-text-secondary)]"
                         >
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -213,7 +214,7 @@ export default function DiscussionsTimeline({
                         />
                       )}
                     </div>
-                    <AttendanceControl discussion={discussion} />
+                    <AttendanceControl discussion={discussion} disabled={status === 'past'} />
                   </div>
                 </div>
               </div>

@@ -370,14 +370,17 @@ export default function ClubDetailPage() {
                   {sidebarClubs[c.id]?.members ? (
                     <div className="flex items-center justify-between text-[11px] text-[var(--color-text-secondary)] uppercase tracking-[0.04em]">
                       <div>{sidebarClubs[c.id].members.length} MEMBERS</div>
-                      {sidebarClubs[c.id].active_session?.discussions && sidebarClubs[c.id].active_session!.discussions!.length > 0 && (
-                        <div>
-                          NEXT · {parseLocalDate(
-                            sidebarClubs[c.id].active_session!.discussions!.find((d) => !isPast(d.date, d.time))
-                              ?.date || ''
-                          ).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        </div>
-                      )}
+                      {(() => {
+                        const next = sidebarClubs[c.id].active_session?.discussions?.find((d) => !isPast(d.date, d.time))
+                        if (!next?.date) return null
+                        const parsedDate = parseLocalDate(next.date)
+                        if (isNaN(parsedDate.getTime())) return null
+                        return (
+                          <div>
+                            NEXT · {parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </div>
+                        )
+                      })()}
                     </div>
                   ) : (
                     <div className="text-[11px] text-[var(--color-text-secondary)]">—</div>

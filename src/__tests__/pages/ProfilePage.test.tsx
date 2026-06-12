@@ -45,6 +45,20 @@ vi.mock('../../components/modals/ReadingLogModal', () => ({
     ) : null,
 }))
 
+vi.mock('../../components/AttendanceControl', () => ({
+  default: ({ discussion }: any) => <div data-testid="attendance-control">{discussion.id}</div>,
+}))
+
+vi.mock('../../components/modals/DiscussionNoteModal', () => ({
+  default: ({ isOpen, onClose, discussion }: any) =>
+    isOpen ? (
+      <div role="dialog" data-testid="note-modal">
+        <span data-testid="note-modal-discussion">{discussion?.id}</span>
+        <button onClick={onClose}>Close</button>
+      </div>
+    ) : null,
+}))
+
 let mockSupabase: any
 
 beforeEach(async () => {
@@ -178,6 +192,71 @@ describe('ProfilePage', () => {
       await waitFor(() =>
         expect(screen.queryByText(/up next/i)).not.toBeInTheDocument(), TWO_HOP
       )
+    })
+
+    it('shows attendance controls for the next discussion', async () => {
+      const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({
+          data: {
+            ...mockClub,
+            active_session: {
+              ...mockClub.active_session,
+              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', date: futureDate }],
+            },
+          },
+          error: null,
+        })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+      await waitFor(() =>
+        expect(screen.getAllByTestId('attendance-control').length).toBeGreaterThan(0), TWO_HOP
+      )
+      screen.getAllByTestId('attendance-control').forEach(el => {
+        expect(el).toHaveTextContent('d-future')
+      })
+    })
+
+    it('opens the note modal for the next discussion when the note button is clicked', async () => {
+      const user = userEvent.setup()
+      const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({
+          data: {
+            ...mockClub,
+            active_session: {
+              ...mockClub.active_session,
+              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', date: futureDate }],
+            },
+          },
+          error: null,
+        })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderPage()
+
+      const noteButtons = await waitFor(() => {
+        const buttons = screen.getAllByRole('button', { name: /food for thought/i })
+        expect(buttons.length).toBeGreaterThan(1)
+        return buttons
+      }, TWO_HOP)
+
+      // Mobile note button
+      await user.click(noteButtons[0])
+      expect(screen.getByTestId('note-modal')).toBeInTheDocument()
+      expect(screen.getByTestId('note-modal-discussion')).toHaveTextContent('d-future')
+
+      // Closing the modal
+      await user.click(screen.getByRole('button', { name: /close/i }))
+      expect(screen.queryByTestId('note-modal')).not.toBeInTheDocument()
+
+      // Desktop note button
+      await user.click(noteButtons[1])
+      expect(screen.getByTestId('note-modal')).toBeInTheDocument()
+      expect(screen.getByTestId('note-modal-discussion')).toHaveTextContent('d-future')
     })
   })
 
