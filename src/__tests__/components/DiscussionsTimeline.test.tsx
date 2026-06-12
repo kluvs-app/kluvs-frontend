@@ -4,8 +4,10 @@ import userEvent from '@testing-library/user-event'
 import DiscussionsTimeline from '../../components/DiscussionsTimeline'
 import { mockClub, mockClub2 } from '../utils/mocks'
 
+const mockAttendanceControl = vi.fn(() => null)
+
 vi.mock('../../components/AttendanceControl', () => ({
-  default: () => null,
+  default: (props: unknown) => mockAttendanceControl(props),
 }))
 
 describe('DiscussionsTimeline', () => {
@@ -137,6 +139,41 @@ describe('DiscussionsTimeline', () => {
     })
   })
 
+  describe('Disabled controls for past discussions', () => {
+    const futureDate = new Date()
+    futureDate.setMonth(futureDate.getMonth() + 1)
+
+    const clubWithPastAndFuture = {
+      ...mockClub,
+      active_session: {
+        ...mockClub.active_session!,
+        discussions: [
+          { id: 'disc-past', title: 'Past discussion', date: '2020-01-01', location: 'Room A' },
+          { id: 'disc-future', title: 'Future discussion', date: futureDate.toISOString().split('T')[0], location: 'Room B' },
+        ],
+      },
+    }
+
+    it('disables the note button for past discussions but not upcoming ones', () => {
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithPastAndFuture} onOpenNote={vi.fn()} />)
+
+      const noteButtons = screen.getAllByRole('button', { name: /food for thought/i })
+      expect(noteButtons[0]).toBeDisabled()
+      expect(noteButtons[1]).not.toBeDisabled()
+    })
+
+    it('passes disabled=true to AttendanceControl for past discussions and false for upcoming ones', () => {
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithPastAndFuture} />)
+
+      const calls = mockAttendanceControl.mock.calls as Array<[{ discussion: { id: string }; disabled?: boolean }]>
+      const pastCall = calls.find(([props]) => props.discussion.id === 'disc-past')
+      const futureCall = calls.find(([props]) => props.discussion.id === 'disc-future')
+
+      expect(pastCall?.[0].disabled).toBe(true)
+      expect(futureCall?.[0].disabled).toBe(false)
+    })
+  })
+
   describe('Admin Controls', () => {
     it('should show Add button for admin', () => {
       render(<DiscussionsTimeline {...defaultProps} isAdmin={true} />)
@@ -213,7 +250,21 @@ describe('DiscussionsTimeline', () => {
     it('should call onOpenNote with the correct discussion when clicked', async () => {
       const user = userEvent.setup()
       const onOpenNote = vi.fn()
-      render(<DiscussionsTimeline {...defaultProps} onOpenNote={onOpenNote} />)
+
+      const futureDate = new Date()
+      futureDate.setMonth(futureDate.getMonth() + 1)
+
+      const clubWithFutureDiscussion = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [
+            { ...mockClub.active_session!.discussions[0], date: futureDate.toISOString().split('T')[0] },
+          ],
+        },
+      }
+
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithFutureDiscussion} onOpenNote={onOpenNote} />)
 
       const noteButtons = screen.getAllByRole('button', { name: /food for thought/i })
       await user.click(noteButtons[0])
