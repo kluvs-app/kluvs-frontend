@@ -171,7 +171,7 @@ describe('ProfilePage', () => {
             ...mockClub,
             active_session: {
               ...mockClub.active_session,
-              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', date: futureDate }],
+              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', scheduled_at: futureDate }],
             },
           },
           error: null,
@@ -203,7 +203,7 @@ describe('ProfilePage', () => {
             ...mockClub,
             active_session: {
               ...mockClub.active_session,
-              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', date: futureDate }],
+              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', scheduled_at: futureDate }],
             },
           },
           error: null,
@@ -229,7 +229,7 @@ describe('ProfilePage', () => {
             ...mockClub,
             active_session: {
               ...mockClub.active_session,
-              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', date: futureDate }],
+              discussions: [{ id: 'd-future', title: 'Chapters 7–9 discussion', scheduled_at: futureDate }],
             },
           },
           error: null,

@@ -19,7 +19,7 @@ import EndSessionModal from '../components/modals/EndSessionModal'
 import EditSessionModal from '../components/modals/EditSessionModal'
 import { useAuth } from '../contexts/AuthContext'
 import { useMobileTopBar } from '../contexts/MobileTopBarContext'
-import { parseLocalDate, isPast } from '../utils/dates'
+import { parseLocalDate, parseScheduledAt, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
 import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
@@ -238,7 +238,7 @@ export default function ClubDetailPage() {
     if (!club?.active_session?.discussions) return { completed: 0, total: 0 }
     const total = club.active_session.discussions.length
     const completed = club.active_session.discussions.filter((d) =>
-      isPast(d.date, d.time)
+      isPast(d.scheduled_at)
     ).length
     return { completed, total }
   }
@@ -246,7 +246,7 @@ export default function ClubDetailPage() {
   const getSessionStartDate = () => {
     if (!club?.active_session?.discussions) return null
     const firstDiscussion = club.active_session.discussions[0]
-    if (firstDiscussion) return parseLocalDate(firstDiscussion.date)
+    if (firstDiscussion) return parseScheduledAt(firstDiscussion.scheduled_at)
     return null
   }
 
@@ -373,9 +373,9 @@ export default function ClubDetailPage() {
                     <div className="flex items-center justify-between text-[11px] text-[var(--color-text-secondary)] uppercase tracking-[0.04em]">
                       <div>{sidebarClubs[c.id].members.length} MEMBERS</div>
                       {(() => {
-                        const next = sidebarClubs[c.id].active_session?.discussions?.find((d) => !isPast(d.date, d.time))
-                        if (!next?.date) return null
-                        const parsedDate = parseLocalDate(next.date)
+                        const next = sidebarClubs[c.id].active_session?.discussions?.find((d) => !isPast(d.scheduled_at))
+                        if (!next?.scheduled_at) return null
+                        const parsedDate = parseScheduledAt(next.scheduled_at)
                         if (isNaN(parsedDate.getTime())) return null
                         return (
                           <div>
@@ -1052,11 +1052,11 @@ export default function ClubDetailPage() {
                     </p>
                     {(() => {
                       const nextDiscussion = club.active_session.discussions.find(
-                        (d) => !isPast(d.date, d.time)
+                        (d) => !isPast(d.scheduled_at)
                       )
                       return nextDiscussion ? (
                         <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
-                          {parseLocalDate(nextDiscussion.date).toLocaleDateString('en-US', {
+                          {parseScheduledAt(nextDiscussion.scheduled_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
                             weekday: 'short',
@@ -1067,7 +1067,7 @@ export default function ClubDetailPage() {
                   </div>
                   {(() => {
                     const nextDiscussion = club.active_session.discussions.find(
-                      (d) => !isPast(d.date, d.time)
+                      (d) => !isPast(d.scheduled_at)
                     )
                     return nextDiscussion ? (
                       <div>

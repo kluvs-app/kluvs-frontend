@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { invokeFunction } from '../supabase'
-import { isPast, parseLocalDate } from '../utils/dates'
+import { isPast, parseScheduledAt } from '../utils/dates'
 import type { Club } from '../types'
 import AddClubModal from '../components/modals/AddClubModal'
 import BookCover from '../components/ui/BookCover'
@@ -154,9 +154,9 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                       </div>
                     )}
                     {fullClub?.active_session?.discussions && fullClub.active_session.discussions.length > 0 && (() => {
-                      const next = fullClub.active_session.discussions.find((d) => !isPast(d.date, d.time))
-                      if (!next || !next.date) return null
-                      const parsedDate = parseLocalDate(next.date)
+                      const next = fullClub.active_session.discussions.find((d) => !isPast(d.scheduled_at))
+                      if (!next || !next.scheduled_at) return null
+                      const parsedDate = parseScheduledAt(next.scheduled_at)
                       if (isNaN(parsedDate.getTime())) return null
                       return (
                         <span className="text-[12px] text-[var(--color-text-secondary)] font-medium uppercase tracking-[0.02em]">

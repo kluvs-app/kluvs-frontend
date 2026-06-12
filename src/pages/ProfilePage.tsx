@@ -10,21 +10,21 @@ import ReadingLogModal from '../components/modals/ReadingLogModal'
 import DiscussionNoteModal from '../components/modals/DiscussionNoteModal'
 import AttendanceControl from '../components/AttendanceControl'
 import KebabMenu from '../components/ui/KebabMenu'
-import { isPast, parseLocalDate } from '../utils/dates'
+import { isPast, parseScheduledAt } from '../utils/dates'
 import DiscordIcon from '../components/icons/DiscordIcon'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 
-function formatUpNextDate(dateStr: string): string {
-  return parseLocalDate(dateStr)
+function formatUpNextDate(scheduledAt: string): string {
+  return parseScheduledAt(scheduledAt)
     .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     .replace(', ', ' · ')
     .toUpperCase()
 }
 
-function formatNextDate(dateStr: string): string {
-  return parseLocalDate(dateStr).toLocaleDateString('en-US', {
+function formatNextDate(scheduledAt: string): string {
+  return parseScheduledAt(scheduledAt).toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric',
   })
 }
@@ -281,8 +281,8 @@ export default function ProfilePage() {
         book: c.active_session!.book,
       }))
     )
-    .filter(d => !isPast(d.date, d.time))
-    .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0] ?? null
+    .filter(d => !isPast(d.scheduled_at))
+    .sort((a, b) => parseScheduledAt(a.scheduled_at).getTime() - parseScheduledAt(b.scheduled_at).getTime())[0] ?? null
 
   // Active readings with progress + next date per book
   const shelfItems = clubs
@@ -290,15 +290,15 @@ export default function ProfilePage() {
     .map(c => {
       const session = c.active_session!
       const total = session.discussions.length
-      const done = session.discussions.filter(d => isPast(d.date, d.time)).length
+      const done = session.discussions.filter(d => isPast(d.scheduled_at)).length
       const nextDisc = session.discussions
-        .filter(d => !isPast(d.date, d.time))
-        .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0]
+        .filter(d => !isPast(d.scheduled_at))
+        .sort((a, b) => parseScheduledAt(a.scheduled_at).getTime() - parseScheduledAt(b.scheduled_at).getTime())[0]
       return {
         book: session.book,
         clubName: c.name,
         done, total,
-        nextDate: nextDisc ? formatNextDate(nextDisc.date) : null,
+        nextDate: nextDisc ? formatNextDate(nextDisc.scheduled_at) : null,
       }
     })
 
@@ -319,7 +319,7 @@ export default function ProfilePage() {
     ? (member.handle.startsWith('@') ? member.handle : `@${member.handle}`)
     : null
 
-  const nextDiscDate = nextDiscussion ? formatUpNextDate(nextDiscussion.date) : null
+  const nextDiscDate = nextDiscussion ? formatUpNextDate(nextDiscussion.scheduled_at) : null
 
   const desktopStats = [
     { num: member?.clubs.length ?? 0, label: 'Active clubs' },

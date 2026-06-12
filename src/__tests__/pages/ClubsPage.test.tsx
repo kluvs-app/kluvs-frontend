@@ -600,8 +600,7 @@ describe('ClubsPage', () => {
                 discussions: [
                   {
                     id: '1',
-                    date: '2026-06-15',
-                    time: '19:00',
+                    scheduled_at: '2026-06-15T19:00:00Z',
                     title: 'Chapter 1-5 Discussion',
                   },
                 ],
@@ -632,8 +631,7 @@ describe('ClubsPage', () => {
                 discussions: [
                   {
                     id: '1',
-                    date: '2020-06-15',
-                    time: '19:00',
+                    scheduled_at: '2020-06-15T19:00:00Z',
                     title: 'Past Discussion',
                   },
                 ],

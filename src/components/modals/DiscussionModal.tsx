@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
 import type { Club, Discussion } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
-import { parseLocalDate } from '../../utils/dates'
+import { parseLocalDate, scheduledAtToLocalParts, localPartsToScheduledAt } from '../../utils/dates'
 import BaseModal from './BaseModal'
 
 interface DiscussionModalProps {
@@ -37,10 +37,11 @@ export default function DiscussionModal({
   useEffect(() => {
     if (isOpen) {
       if (editingDiscussion) {
+        const { date, time } = scheduledAtToLocalParts(editingDiscussion.scheduled_at)
         setFormData({
           title: editingDiscussion.title,
-          date: editingDiscussion.date,
-          time: editingDiscussion.time ?? '',
+          date,
+          time,
           location: editingDiscussion.location || ''
         })
       } else {
@@ -69,8 +70,7 @@ export default function DiscussionModal({
 
       const payload = {
         title: formData.title.trim(),
-        date: formData.date,
-        time: formData.time.trim() || null,
+        scheduled_at: localPartsToScheduledAt(formData.date, formData.time.trim() || null),
         location: formData.location.trim() || null
       }
 

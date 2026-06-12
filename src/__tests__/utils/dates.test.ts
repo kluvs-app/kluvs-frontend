@@ -1,5 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { parseLocalDate, isPast } from '../../utils/dates'
+import {
+  parseLocalDate,
+  parseScheduledAt,
+  scheduledAtToLocalParts,
+  localPartsToScheduledAt,
+  isPast,
+} from '../../utils/dates'
 
 describe('parseLocalDate', () => {
   it('returns a Date object', () => {
@@ -54,6 +60,60 @@ describe('parseLocalDate', () => {
   })
 })
 
+describe('parseScheduledAt', () => {
+  it('returns a Date object', () => {
+    expect(parseScheduledAt('2026-07-15T18:00:00-07:00')).toBeInstanceOf(Date)
+  })
+
+  it('parses an ISO 8601 string with a timezone offset', () => {
+    const d = parseScheduledAt('2026-07-15T18:00:00-07:00')
+    expect(d.getTime()).toBe(new Date('2026-07-15T18:00:00-07:00').getTime())
+  })
+
+  it('returns an invalid Date for an empty string', () => {
+    expect(isNaN(parseScheduledAt('').getTime())).toBe(true)
+  })
+})
+
+describe('scheduledAtToLocalParts', () => {
+  it('extracts local date and time parts from an ISO string', () => {
+    // Construct from local parts so the round trip is timezone-independent
+    const iso = localPartsToScheduledAt('2026-07-15', '18:00')
+    expect(scheduledAtToLocalParts(iso)).toEqual({ date: '2026-07-15', time: '18:00' })
+  })
+
+  it('pads single-digit hours and minutes', () => {
+    const iso = localPartsToScheduledAt('2026-01-05', '09:05')
+    expect(scheduledAtToLocalParts(iso)).toEqual({ date: '2026-01-05', time: '09:05' })
+  })
+
+  it('returns empty strings for an empty input', () => {
+    expect(scheduledAtToLocalParts('')).toEqual({ date: '', time: '' })
+  })
+})
+
+describe('localPartsToScheduledAt', () => {
+  it('produces an ISO 8601 string with a timezone offset', () => {
+    const iso = localPartsToScheduledAt('2026-07-15', '18:00')
+    expect(iso).toMatch(/^2026-07-15T18:00:00[+-]\d{2}:\d{2}$/)
+  })
+
+  it('round-trips through scheduledAtToLocalParts', () => {
+    const iso = localPartsToScheduledAt('2026-12-31', '23:45')
+    expect(scheduledAtToLocalParts(iso)).toEqual({ date: '2026-12-31', time: '23:45' })
+  })
+
+  it('defaults to midnight when time is omitted', () => {
+    const iso = localPartsToScheduledAt('2026-03-10')
+    expect(scheduledAtToLocalParts(iso)).toEqual({ date: '2026-03-10', time: '00:00' })
+  })
+
+  it('defaults to midnight when time is null', () => {
+    const iso = localPartsToScheduledAt('2026-03-10', null)
+    expect(scheduledAtToLocalParts(iso)).toEqual({ date: '2026-03-10', time: '00:00' })
+  })
+})
+
 describe('isPast', () => {
   beforeEach(() => {
     // Fix "now" to 2026-05-23T12:00:00 local time so tests are deterministic
@@ -65,65 +125,27 @@ describe('isPast', () => {
     vi.useRealTimers()
   })
 
-  describe('date-only (no time argument)', () => {
-    it('returns true for a date in the past', () => {
-      expect(isPast('2026-05-22')).toBe(true)
-    })
-
-    it('returns false for today', () => {
-      expect(isPast('2026-05-23')).toBe(false)
-    })
-
-    it('returns false for a date in the future', () => {
-      expect(isPast('2026-05-24')).toBe(false)
-    })
-
-    it('returns false for a date far in the future', () => {
-      expect(isPast('2030-01-01')).toBe(false)
-    })
-
-    it('returns true for a date far in the past', () => {
-      expect(isPast('2020-01-01')).toBe(true)
-    })
-
-    it('returns true for yesterday', () => {
-      expect(isPast('2026-05-22')).toBe(true)
-    })
+  it('returns true when the scheduled datetime is in the past', () => {
+    expect(isPast(localPartsToScheduledAt('2026-05-23', '09:00'))).toBe(true)
   })
 
-  describe('with time argument', () => {
-    it('returns true when the exact datetime is in the past', () => {
-      // Now is 12:00; 09:00 on today is past
-      expect(isPast('2026-05-23', '09:00:00')).toBe(true)
-    })
+  it('returns false when the scheduled datetime is in the future', () => {
+    expect(isPast(localPartsToScheduledAt('2026-05-23', '18:00'))).toBe(false)
+  })
 
-    it('returns false when the exact datetime is in the future', () => {
-      // Now is 12:00; 18:00 on today is future
-      expect(isPast('2026-05-23', '18:00:00')).toBe(false)
-    })
+  it('returns true for any time yesterday', () => {
+    expect(isPast(localPartsToScheduledAt('2026-05-22', '23:59'))).toBe(true)
+  })
 
-    it('returns true for any time yesterday', () => {
-      expect(isPast('2026-05-22', '23:59:59')).toBe(true)
-    })
+  it('returns false for any time tomorrow', () => {
+    expect(isPast(localPartsToScheduledAt('2026-05-24', '00:01'))).toBe(false)
+  })
 
-    it('returns false for any time tomorrow', () => {
-      expect(isPast('2026-05-24', '00:00:01')).toBe(false)
-    })
+  it('returns true for a datetime far in the past', () => {
+    expect(isPast('2020-01-01T00:00:00Z')).toBe(true)
+  })
 
-    it('returns true when time is exactly now (strictly less-than)', () => {
-      // Fake time is 12:00:00.000; passing 12:00:00 parses to the same ms — not strictly less
-      expect(isPast('2026-05-23', '12:00:00')).toBe(false)
-    })
-
-    it('handles null time the same as omitting it', () => {
-      expect(isPast('2026-05-22', null)).toBe(true)  // yesterday
-      expect(isPast('2026-05-23', null)).toBe(false) // today
-      expect(isPast('2026-05-24', null)).toBe(false) // tomorrow
-    })
-
-    it('handles undefined time the same as omitting it', () => {
-      expect(isPast('2026-05-22', undefined)).toBe(true)
-      expect(isPast('2026-05-23', undefined)).toBe(false)
-    })
+  it('returns false for a datetime far in the future', () => {
+    expect(isPast('2030-01-01T00:00:00Z')).toBe(false)
   })
 })

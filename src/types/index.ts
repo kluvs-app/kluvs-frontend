@@ -36,8 +36,7 @@ export interface Session {
 export interface Discussion {
   id: string
   title: string
-  date: string
-  time?: string | null
+  scheduled_at: string
   location?: string
 }
 
