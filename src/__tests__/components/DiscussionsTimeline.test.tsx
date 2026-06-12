@@ -4,10 +4,10 @@ import userEvent from '@testing-library/user-event'
 import DiscussionsTimeline from '../../components/DiscussionsTimeline'
 import { mockClub, mockClub2 } from '../utils/mocks'
 
-const mockAttendanceControl = vi.fn(() => null)
+const mockAttendanceControl = vi.fn((_props: { discussion: { id: string }; disabled?: boolean }) => null)
 
 vi.mock('../../components/AttendanceControl', () => ({
-  default: (props: unknown) => mockAttendanceControl(props),
+  default: (props: { discussion: { id: string }; disabled?: boolean }) => mockAttendanceControl(props),
 }))
 
 describe('DiscussionsTimeline', () => {
@@ -165,7 +165,7 @@ describe('DiscussionsTimeline', () => {
     it('passes disabled=true to AttendanceControl for past discussions and false for upcoming ones', () => {
       render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithPastAndFuture} />)
 
-      const calls = mockAttendanceControl.mock.calls as Array<[{ discussion: { id: string }; disabled?: boolean }]>
+      const calls = mockAttendanceControl.mock.calls
       const pastCall = calls.find(([props]) => props.discussion.id === 'disc-past')
       const futureCall = calls.find(([props]) => props.discussion.id === 'disc-future')
 
