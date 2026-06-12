@@ -106,10 +106,24 @@ describe('DiscussionModal', () => {
       const submitButton = screen.getByText('Add Discussion', { selector: 'span' }).closest('button')
       expect(submitButton).toBeDisabled()
     })
+
+    it('should have submit button disabled when time is empty', async () => {
+      const user = userEvent.setup()
+      render(<DiscussionModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., Chapters 1–5'), 'Test')
+      const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+
+      const submitButton = screen.getByText('Add Discussion', { selector: 'span' }).closest('button')
+      expect(submitButton).toBeDisabled()
+    })
   })
 
   describe('Form Submission - Add', () => {
-    async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, title = 'New Discussion', addTime = false, addLocation = false) {
+    async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, title = 'New Discussion', time = '10:00', addLocation = false) {
       await user.type(screen.getByPlaceholderText('e.g., Chapters 1–5'), title)
 
       // Fill date via the date input (type="date")
@@ -119,11 +133,9 @@ describe('DiscussionModal', () => {
       tomorrow.setDate(tomorrow.getDate() + 2)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
 
-      if (addTime) {
-        const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement
-        const { fireEvent } = await import('@testing-library/react')
-        fireEvent.change(timeInput, { target: { value: '14:00' } })
-      }
+      const timeInput = document.querySelector('input[type="time"]') as HTMLInputElement
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(timeInput, { target: { value: time } })
 
       if (addLocation) {
         await user.type(screen.getByPlaceholderText('e.g., Community Center, Discord'), 'Library')
@@ -151,11 +163,11 @@ describe('DiscussionModal', () => {
       })
     })
 
-    it('should include optional time and location in POST payload', async () => {
+    it('should include time and location in POST payload', async () => {
       const user = userEvent.setup()
       render(<DiscussionModal {...defaultProps} />)
 
-      await fillAndSubmit(user, 'Test Discussion', true, true)
+      await fillAndSubmit(user, 'Test Discussion', '14:00', true)
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
       await waitFor(() => {
@@ -174,11 +186,11 @@ describe('DiscussionModal', () => {
       })
     })
 
-    it('should send null for empty location and a scheduled_at defaulting to midnight', async () => {
+    it('should send null for empty location', async () => {
       const user = userEvent.setup()
       render(<DiscussionModal {...defaultProps} />)
 
-      await fillAndSubmit(user, 'Minimal Discussion', false, false)
+      await fillAndSubmit(user, 'Minimal Discussion', '10:00', false)
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
       await waitFor(() => {
@@ -187,7 +199,7 @@ describe('DiscussionModal', () => {
           expect.objectContaining({
             method: 'POST',
             body: expect.objectContaining({
-              scheduled_at: expect.stringMatching(/T00:00:00[+-]\d{2}:\d{2}$/),
+              scheduled_at: expect.stringMatching(/T10:00:00[+-]\d{2}:\d{2}$/),
               location: null,
             }),
           })
@@ -249,6 +261,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 2)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
@@ -266,6 +280,7 @@ describe('DiscussionModal', () => {
       // Use fireEvent to set a past date directly since type may not bypass min attribute
       const { fireEvent } = await import('@testing-library/react')
       fireEvent.change(dateInput, { target: { value: '2020-01-01' } })
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
@@ -410,6 +425,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
     }
 
     it('should trim whitespace from title', async () => {
@@ -422,6 +439,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
@@ -519,6 +538,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
 
@@ -561,6 +582,8 @@ describe('DiscussionModal', () => {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
 
       const submitButton = screen.getAllByRole('button').find(btn => btn.textContent?.includes('Add'))!
       await user.click(submitButton)

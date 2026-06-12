@@ -61,6 +61,7 @@ export default function DiscussionModal({
   const handleSubmit = async () => {
     if (!formData.title.trim()) { onError('Discussion title is required'); return }
     if (!formData.date) { onError('Discussion date is required'); return }
+    if (!formData.time) { onError('Discussion time is required'); return }
     if (!validateDate(formData.date)) { onError('Discussion date must be today or in the future'); return }
     if (!selectedClub.active_session) { onError('No active session found'); return }
 
@@ -70,7 +71,7 @@ export default function DiscussionModal({
 
       const payload = {
         title: formData.title.trim(),
-        scheduled_at: localPartsToScheduledAt(formData.date, formData.time.trim() || null),
+        scheduled_at: localPartsToScheduledAt(formData.date, formData.time),
         location: formData.location.trim() || null
       }
 
@@ -125,7 +126,7 @@ export default function DiscussionModal({
           >Cancel</button>
           <button
             onClick={handleSubmit}
-            disabled={loading || !formData.title.trim() || !formData.date}
+            disabled={loading || !formData.title.trim() || !formData.date || !formData.time}
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="#ffffff" />}
@@ -182,7 +183,7 @@ export default function DiscussionModal({
             fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
             textTransform: 'uppercase', color: 'var(--color-text-secondary)',
             marginBottom: 8,
-          }}>Time <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+          }}>Time</label>
           <input
             type="time"
             value={formData.time}
