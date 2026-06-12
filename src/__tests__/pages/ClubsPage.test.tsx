@@ -657,7 +657,7 @@ describe('ClubsPage', () => {
 
       const closeBtn = screen.getByRole('button', { name: /close/i })
       await user.click(closeBtn)
-      expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument()
+      await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument())
     })
 
     it('new modal prop opens modal on mount', async () => {
