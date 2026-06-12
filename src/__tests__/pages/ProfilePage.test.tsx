@@ -240,12 +240,21 @@ describe('ProfilePage', () => {
 
       const noteButtons = await waitFor(() => {
         const buttons = screen.getAllByRole('button', { name: /food for thought/i })
-        expect(buttons.length).toBeGreaterThan(0)
+        expect(buttons.length).toBeGreaterThan(1)
         return buttons
       }, TWO_HOP)
 
+      // Mobile note button
       await user.click(noteButtons[0])
+      expect(screen.getByTestId('note-modal')).toBeInTheDocument()
+      expect(screen.getByTestId('note-modal-discussion')).toHaveTextContent('d-future')
 
+      // Closing the modal
+      await user.click(screen.getByRole('button', { name: /close/i }))
+      expect(screen.queryByTestId('note-modal')).not.toBeInTheDocument()
+
+      // Desktop note button
+      await user.click(noteButtons[1])
       expect(screen.getByTestId('note-modal')).toBeInTheDocument()
       expect(screen.getByTestId('note-modal-discussion')).toHaveTextContent('d-future')
     })
