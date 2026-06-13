@@ -81,7 +81,7 @@ export interface LikeStatus {
   liked: boolean
 }
 
-export type ShelfValue = 'want_to_read' | 'read' | 'not_finished'
+export type ShelfValue = 'want_to_read' | 'read' | 'not_finished' | 'currently_reading'
 
 export interface ShelfStatus {
   shelf: ShelfValue | null
@@ -89,6 +89,8 @@ export interface ShelfStatus {
 
 export interface ShelfEntry {
   shelf: ShelfValue
+  updated_at: string
+  source: 'manual' | 'session'
   book: Book
 }
 

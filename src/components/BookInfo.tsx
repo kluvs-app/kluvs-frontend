@@ -1,18 +1,6 @@
 import type { Book, ShelfValue } from '../types'
 import { parseLocalDate } from '../utils/dates'
-
-const SHELF_LABELS: Record<ShelfValue, string> = {
-  want_to_read: 'Want to Read',
-  read: 'Read',
-  not_finished: 'Not Finished',
-}
-
-const SHELF_OPTIONS: Array<{ value: ShelfValue | null; label: string }> = [
-  { value: null, label: 'None' },
-  { value: 'want_to_read', label: 'Want to Read' },
-  { value: 'read', label: 'Read' },
-  { value: 'not_finished', label: 'Not Finished' },
-]
+import { SHELF_OPTIONS } from '../constants/shelves'
 
 interface BookInfoProps {
   book: Book
@@ -100,5 +88,3 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
     </div>
   )
 }
-
-export { SHELF_LABELS }
