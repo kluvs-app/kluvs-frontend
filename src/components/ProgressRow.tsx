@@ -8,10 +8,18 @@ interface ProgressRowProps {
   progress: ReadingProgress | null
   sessionId?: string
   leftLabel?: string
+  leftLabelVariant?: 'italic' | 'eyebrow'
   onUpdated: (progress: ReadingProgress) => void
 }
 
-export default function ProgressRow({ book, progress, sessionId, leftLabel, onUpdated }: ProgressRowProps) {
+export default function ProgressRow({ 
+  book, 
+  progress, 
+  sessionId, 
+  leftLabel, 
+  leftLabelVariant = 'italic',
+  onUpdated 
+}: ProgressRowProps) {
   const [showModal, setShowModal] = useState(false)
 
   const pageCount = book.page_count
@@ -30,7 +38,7 @@ export default function ProgressRow({ book, progress, sessionId, leftLabel, onUp
         : progress.progress_type === 'page' && pageCount
           ? `${progress.current_page ?? 0} of ${pageCount} pages`
           : `${progress.percent_complete ?? 0}% complete`)
-    : 'No progress yet'
+    : ''
 
   return (
     <div className="space-y-3">
@@ -51,12 +59,21 @@ export default function ProgressRow({ book, progress, sessionId, leftLabel, onUp
 
       <div className="flex items-center justify-between mt-1">
         {leftLabel ? (
-          <span 
-            className="text-[17px] text-[var(--color-text-secondary)] font-serif italic leading-none"
-            style={{ fontFamily: '"EB Garamond", serif' }}
-          >
-            {leftLabel}
-          </span>
+          leftLabelVariant === 'eyebrow' ? (
+            <span 
+              className="text-[10px] text-primary font-medium uppercase tracking-[0.14em] leading-none"
+              style={{ fontFamily: '"IBM Plex Sans", sans-serif' }}
+            >
+              {leftLabel}
+            </span>
+          ) : (
+            <span 
+              className="text-[17px] text-[var(--color-text-secondary)] font-serif italic leading-none"
+              style={{ fontFamily: '"EB Garamond", serif' }}
+            >
+              {leftLabel}
+            </span>
+          )
         ) : <div />}
         <span 
           className="text-[12px] text-primary font-medium tracking-[0.04em] leading-none"

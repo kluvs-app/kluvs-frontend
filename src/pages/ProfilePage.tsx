@@ -135,11 +135,13 @@ function RoleEyebrow({ role }: { role: string }) {
 
 // ─── ShelfRow ─────────────────────────────────────────────────────────────────
 
-function ShelfRow({ title, author, coverUrl, clubName, done, total, nextDate }: {
+function ShelfRow({ title, author, coverUrl, clubName, done, total, nextDate, progress, book, onUpdated }: {
   title: string; author: string; coverUrl?: string | null;
   clubName: string; done: number; total: number; nextDate: string | null;
+  progress: ReadingProgress | null;
+  book: any;
+  onUpdated: (p: ReadingProgress) => void;
 }) {
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0
   return (
     <div className="flex gap-[22px]">
       {/* Mobile cover (44×60) */}
@@ -152,46 +154,39 @@ function ShelfRow({ title, author, coverUrl, clubName, done, total, nextDate }: 
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-baseline gap-4 mb-1">
-          <p style={{
-            fontFamily: '"EB Garamond", Georgia, serif',
-            fontStyle: 'italic', fontWeight: 500,
-            lineHeight: 1.1, letterSpacing: '-0.008em',
-            color: 'var(--color-text-primary)',
-          }} className="text-[22px] md:text-[28px]">{title}</p>
-          <span style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-            flexShrink: 0,
-          }}>{clubName}</span>
-        </div>
+        <div className="flex justify-between items-start gap-4 mb-5">
+          {/* Left: Book Title & Author */}
+          <div className="flex-1 min-w-0">
+            <p style={{
+              fontFamily: '"EB Garamond", Georgia, serif',
+              fontStyle: 'italic', fontWeight: 500,
+              lineHeight: 1.1, letterSpacing: '-0.008em',
+              color: 'var(--color-text-primary)',
+              marginBottom: 4,
+            }} className="text-[22px] md:text-[28px]">{title}</p>
+            <p style={{
+              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+              fontSize: 14, color: LABEL_COLOR,
+            }}>{author}</p>
+          </div>
 
-        <p style={{
-          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontSize: 14, color: LABEL_COLOR, marginBottom: 18,
-        }}>{author}</p>
-
-        {total > 0 && (
-          <div className="flex items-center gap-4 mb-3.5">
-            <div style={{ flex: 1, height: 3, background: TRACK_COLOR, borderRadius: 2, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${pct}%`, background: COPPER, borderRadius: 2 }} />
-            </div>
+          {/* Right: Metadata (Club) */}
+          <div className="flex flex-col items-end flex-shrink-0 pt-1">
             <span style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 13, color: LABEL_COLOR, flexShrink: 0,
-              fontVariantNumeric: 'tabular-nums',
-            }}>{done} of {total}</span>
+              fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
+              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            }}>{clubName}</span>
           </div>
-        )}
+        </div>
 
-        {nextDate && (
-          <span style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: COPPER,
-          }}>Next · {nextDate}</span>
-        )}
+        <ProgressRow
+          book={book}
+          progress={progress}
+          leftLabel={nextDate ? `Next · ${nextDate}` : ""}
+          leftLabelVariant="eyebrow"
+          onUpdated={onUpdated}
+        />
       </div>
     </div>
   )
@@ -251,6 +246,7 @@ export default function ProfilePage() {
   const [clubs, setClubs] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
   const [shelfProgress, setShelfProgress] = useState<ReadingProgress[]>([])
+  const [sessionProgressMap, setSessionProgressMap] = useState<Record<string, ReadingProgress>>({})
   const [shelfProgressLoading, setShelfProgressLoading] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
@@ -266,7 +262,23 @@ export default function ProfilePage() {
         return invokeFunction<Club>(`club?${params}`, { method: 'GET' })
       })
     )
-      .then(results => setClubs(results.flatMap(r => r.data ? [r.data] : [])))
+      .then(results => {
+        const clubData = results.flatMap(r => r.data ? [r.data] : [])
+        setClubs(clubData)
+        
+        // Fetch progress for all active sessions
+        clubData.forEach(c => {
+          if (c.active_session?.id) {
+            invokeFunction<ReadingProgress[]>(`progress?session_id=${encodeURIComponent(c.active_session.id)}`, { method: 'GET' })
+              .then(({ data }) => {
+                if (data?.[0]) {
+                  setSessionProgressMap(prev => ({ ...prev, [c.active_session!.id]: data[0] }))
+                }
+              })
+              .catch(() => {})
+          }
+        })
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [member])
@@ -308,6 +320,7 @@ export default function ProfilePage() {
         .sort((a, b) => parseScheduledAt(a.scheduled_at).getTime() - parseScheduledAt(b.scheduled_at).getTime())[0]
       return {
         book: session.book,
+        sessionId: session.id,
         clubName: c.name,
         done, total,
         nextDate: nextDisc ? formatNextDate(nextDisc.scheduled_at) : null,
@@ -675,7 +688,7 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="space-y-8">
-              {shelfItems.map(({ book, clubName, done, total, nextDate }, i) => (
+              {shelfItems.map(({ book, sessionId, clubName, done, total, nextDate }, i) => (
                 <ShelfRow
                   key={`${clubName}-${i}`}
                   title={book.title}
@@ -685,6 +698,9 @@ export default function ProfilePage() {
                   done={done}
                   total={total}
                   nextDate={nextDate}
+                  book={book}
+                  progress={sessionProgressMap[sessionId] || null}
+                  onUpdated={(updated) => setSessionProgressMap(prev => ({ ...prev, [sessionId]: updated }))}
                 />
               ))}
             </div>
