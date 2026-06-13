@@ -35,6 +35,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   }
 }
 
+.kluvs-read-ribbon {
+  background: var(--color-primary);
+  clip-path: polygon(18% 0, 82% 0, 82% 50%, 100% 75%, 82% 100%, 18% 100%, 0% 75%, 18% 50%);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
 @layer base {
   :root {
     --color-bg: #fafafc;

@@ -19,7 +19,7 @@ import KluvsSpinner from '../components/KluvsSpinner'
 import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import BookCard from '../components/BookCard'
 import CoverSlot from '../components/ui/CoverSlot'
-import HexagonIcon from '../components/icons/HexagonIcon'
+import KluvsReadBadge from '../components/KluvsReadBadge'
 import { SHELF_OPTIONS, SHELF_LABELS, SHELF_SECTIONS } from '../constants/shelves'
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -59,19 +59,6 @@ function Shimmer({ className, style }: { className?: string; style?: React.CSSPr
 }
 
 // ── Pills ─────────────────────────────────────────────────────────────────────
-
-function KluvsBadge({ label }: { label: string }) {
-  return (
-    <span
-      title={label}
-      aria-label={label}
-      className="flex items-center gap-1.5 h-9 px-3 rounded-full border border-primary text-primary text-[12px] font-medium shrink-0"
-    >
-      <HexagonIcon className="w-3.5 h-3.5" />
-      {label}
-    </span>
-  )
-}
 
 function LikePill({ liked, onClick, disabled }: {
   liked: boolean
@@ -758,7 +745,7 @@ export default function BooksPage() {
               <div className="flex items-center gap-2.5 mb-7">
                 <LikePill liked={liked} onClick={selectedBook?.id ? handleToggleLike : undefined} disabled={!selectedBook?.id} />
                 <ShelfPill shelf={shelf} onShelfChange={handleShelfChange} disabled={!selectedBook?.id} />
-                {kluvsBadgeLabel && <KluvsBadge label={kluvsBadgeLabel} />}
+                {kluvsBadgeLabel && <KluvsReadBadge label={kluvsBadgeLabel} />}
               </div>
 
               <hr className="border-[var(--color-divider)] mb-6" />

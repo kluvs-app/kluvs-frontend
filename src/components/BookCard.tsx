@@ -1,5 +1,5 @@
 import CoverSlot from './ui/CoverSlot'
-import HexagonIcon from './icons/HexagonIcon'
+import KluvsReadRibbon from './KluvsReadRibbon'
 
 export default function BookCard({ title, year, author, imageUrl, onClick, compact, badge }: {
   title: string
@@ -19,15 +19,7 @@ export default function BookCard({ title, year, author, imageUrl, onClick, compa
         shadow
         className={`${compact ? 'w-[80px] h-[116px]' : 'w-full aspect-[2/3]'} group-hover:opacity-80 transition-opacity`}
       >
-        {badge && (
-          <span
-            title={badge.label}
-            aria-label={badge.label}
-            className="absolute top-1.5 right-1.5 z-10 text-primary drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
-          >
-            <HexagonIcon className="w-5 h-5" />
-          </span>
-        )}
+        {badge && <KluvsReadRibbon label={badge.label} compact={compact} />}
       </CoverSlot>
       <div>
         <p className={`font-serif italic font-medium leading-[1.25] line-clamp-2 text-[var(--color-text-primary)] ${compact ? 'text-[11px]' : 'text-[14px] lg:text-[15px]'}`}>
