@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
 import Avatar from '../components/ui/Avatar'
 import { useAuth } from '../contexts/AuthContext'
-import type { Club } from '../types'
+import type { Club, ReadingProgress } from '../types'
+import ProgressRow from '../components/ProgressRow'
 import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
 import ReadingLogModal from '../components/modals/ReadingLogModal'
@@ -249,6 +250,8 @@ export default function ProfilePage() {
   const { member, refreshMemberData } = useAuth()
   const [clubs, setClubs] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
+  const [shelfProgress, setShelfProgress] = useState<ReadingProgress[]>([])
+  const [shelfProgressLoading, setShelfProgressLoading] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showReadingLogModal, setShowReadingLogModal] = useState(false)
@@ -266,6 +269,15 @@ export default function ProfilePage() {
       .then(results => setClubs(results.flatMap(r => r.data ? [r.data] : [])))
       .catch(() => {})
       .finally(() => setLoading(false))
+  }, [member])
+
+  // Personal (non-session) reading-shelf progress
+  useEffect(() => {
+    if (!member) { setShelfProgressLoading(false); return }
+    invokeFunction<ReadingProgress[]>('progress', { method: 'GET' })
+      .then(({ data }) => setShelfProgress((data ?? []).filter(p => !p.session_id)))
+      .catch(() => {})
+      .finally(() => setShelfProgressLoading(false))
   }, [member])
 
   const memberSince = member?.created_at
@@ -675,6 +687,45 @@ export default function ProfilePage() {
                   nextDate={nextDate}
                 />
               ))}
+            </div>
+          )}
+
+          {/* Personal Reading Progress */}
+          {(shelfProgressLoading || shelfProgress.length > 0) && (
+            <div className="mt-10">
+              <span style={{
+                display: 'block',
+                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
+                textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                marginBottom: 20,
+              }}>Personal Progress</span>
+
+              {shelfProgressLoading ? (
+                <div className="space-y-5">
+                  {[1, 2].map(i => (
+                    <div key={i} className="h-[3px] bg-[var(--color-bg-elevated)] rounded animate-pulse" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {shelfProgress.filter(p => p.book).map((p, i) => (
+                    <div key={p.id}>
+                      <p style={{
+                        fontFamily: '"EB Garamond", Georgia, serif',
+                        fontStyle: 'italic', fontWeight: 500,
+                        fontSize: 16, color: 'var(--color-text-primary)',
+                        marginBottom: 10,
+                      }}>{p.book!.title}</p>
+                      <ProgressRow
+                        book={{ ...p.book!, id: p.book_id }}
+                        progress={p}
+                        onUpdated={(updated) => setShelfProgress(prev => prev.map((sp, j) => j === i ? updated : sp))}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
