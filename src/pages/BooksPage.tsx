@@ -19,6 +19,8 @@ import KluvsSpinner from '../components/KluvsSpinner'
 import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import BookCard from '../components/BookCard'
 import CoverSlot from '../components/ui/CoverSlot'
+import HexagonIcon from '../components/icons/HexagonIcon'
+import { SHELF_OPTIONS, SHELF_LABELS, SHELF_SECTIONS } from '../constants/shelves'
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -58,24 +60,18 @@ function Shimmer({ className, style }: { className?: string; style?: React.CSSPr
 
 // ── Pills ─────────────────────────────────────────────────────────────────────
 
-const SHELF_OPTIONS: Array<{ value: ShelfValue | null; label: string }> = [
-  { value: null,            label: 'None' },
-  { value: 'want_to_read',  label: 'Want to Read' },
-  { value: 'read',          label: 'Read' },
-  { value: 'not_finished',  label: 'Not Finished' },
-]
-
-const SHELF_LABELS: Record<ShelfValue, string> = {
-  want_to_read: 'Want to Read',
-  read:         'Read',
-  not_finished: 'Not Finished',
+function KluvsBadge({ label }: { label: string }) {
+  return (
+    <span
+      title={label}
+      aria-label={label}
+      className="flex items-center gap-1.5 h-9 px-3 rounded-full border border-primary text-primary text-[12px] font-medium shrink-0"
+    >
+      <HexagonIcon className="w-3.5 h-3.5" />
+      {label}
+    </span>
+  )
 }
-
-const SHELF_SECTIONS: Array<{ value: ShelfValue; label: string }> = [
-  { value: 'want_to_read', label: 'Want to Read' },
-  { value: 'read',         label: 'Read' },
-  { value: 'not_finished', label: 'Not Finished' },
-]
 
 function LikePill({ liked, onClick, disabled }: {
   liked: boolean
@@ -184,10 +180,11 @@ function ShelfPill({ shelf, onShelfChange, disabled }: {
 
 // ── Grid ──────────────────────────────────────────────────────────────────────
 
-function BookGrid({ books, search, onSelect }: {
+function BookGrid({ books, search, onSelect, badgeFor }: {
   books: Book[]
   search?: boolean
   onSelect: (book: Book) => void
+  badgeFor?: (book: Book) => { label: string } | undefined
 }) {
   return (
     <div className={`grid grid-cols-3 ${search ? 'lg:grid-cols-5' : 'lg:grid-cols-7'} gap-x-3 gap-y-6 lg:gap-x-[22px] lg:gap-y-9`}>
@@ -199,6 +196,7 @@ function BookGrid({ books, search, onSelect }: {
           author={search ? book.author : undefined}
           imageUrl={book.image_url}
           onClick={() => onSelect(book)}
+          badge={badgeFor?.(book)}
         />
       ))}
     </div>
@@ -264,7 +262,7 @@ export default function BooksPage() {
         const raw: Array<ShelfEntry | ({ shelf: ShelfValue } & Book)> = Array.isArray(data) ? data : (data as { shelves?: ShelfEntry[] })?.shelves ?? []
         // Normalize both { shelf, book } and flat { shelf, ...bookFields } shapes
         const entries: ShelfEntry[] = raw.map(e =>
-          'book' in e ? e : { shelf: e.shelf, book: e }
+          'book' in e ? e : { shelf: e.shelf, updated_at: '', source: 'manual', book: e }
         )
         setShelvedBooks(entries)
       })
@@ -426,7 +424,7 @@ export default function BooksPage() {
     } else {
       setShelvedBooks(prev => {
         const idx = prev.findIndex(e => e.book.id === bookId)
-        const entry: ShelfEntry = { shelf: value, book: selectedBook }
+        const entry: ShelfEntry = { shelf: value, updated_at: new Date().toISOString(), source: 'manual', book: selectedBook }
         if (idx >= 0) return prev.map((e, i) => i === idx ? entry : e)
         return [...prev, entry]
       })
@@ -487,6 +485,14 @@ export default function BooksPage() {
   const categories  = (vi?.categories ?? selectedBook?.categories ?? []).slice(0, 5)
 
   const metaItems = [year, pages && `${pages} pages`, publisher].filter((v): v is string => !!v)
+
+  const selectedEntry = shelvedBooks.find(e =>
+    (selectedBook?.id != null && e.book.id === selectedBook.id) ||
+    (!!selectedBook?.external_google_id && e.book.external_google_id === selectedBook.external_google_id)
+  )
+  const kluvsBadgeLabel = selectedEntry?.source === 'session'
+    ? (shelf === 'currently_reading' ? 'Reading with Kluvs' : shelf === 'read' ? 'Read with Kluvs' : null)
+    : null
 
   const metaRows = [
     { label: 'Published', value: year },
@@ -606,17 +612,24 @@ export default function BooksPage() {
             {!loadingShelves && !shelvesError && hasShelvedBooks && (
               <div className="space-y-9 lg:space-y-12">
                 {SHELF_SECTIONS.map(({ value, label }) => {
-                  const books = shelvedBooks.filter(e => e.shelf === value).map(e => e.book)
-                  if (!books.length) return null
+                  const entries = shelvedBooks.filter(e => e.shelf === value)
+                  if (!entries.length) return null
+                  const sessionBookKeys = new Set(
+                    entries.filter(e => e.source === 'session').map(e => e.book.id ?? e.book.external_google_id)
+                  )
+                  const badgeFor = (book: Book) =>
+                    sessionBookKeys.has(book.id ?? book.external_google_id)
+                      ? { label: value === 'currently_reading' ? 'Reading with Kluvs' : 'Read with Kluvs' }
+                      : undefined
                   return (
                     <div key={value}>
                       <div className="flex items-baseline gap-2 mb-4">
                         <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
                           {label}
                         </span>
-                        <span className="text-[10px] text-[var(--color-text-meta)] tabular-nums">{books.length}</span>
+                        <span className="text-[10px] text-[var(--color-text-meta)] tabular-nums">{entries.length}</span>
                       </div>
-                      <BookGrid books={books} onSelect={handleSelect} />
+                      <BookGrid books={entries.map(e => e.book)} onSelect={handleSelect} badgeFor={badgeFor} />
                     </div>
                   )
                 })}
@@ -745,6 +758,7 @@ export default function BooksPage() {
               <div className="flex items-center gap-2.5 mb-7">
                 <LikePill liked={liked} onClick={selectedBook?.id ? handleToggleLike : undefined} disabled={!selectedBook?.id} />
                 <ShelfPill shelf={shelf} onShelfChange={handleShelfChange} disabled={!selectedBook?.id} />
+                {kluvsBadgeLabel && <KluvsBadge label={kluvsBadgeLabel} />}
               </div>
 
               <hr className="border-[var(--color-divider)] mb-6" />

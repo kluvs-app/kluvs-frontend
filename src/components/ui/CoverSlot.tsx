@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 interface CoverSlotProps {
   imageUrl?: string | null
@@ -8,6 +8,7 @@ interface CoverSlotProps {
   alt?: string
   label?: string
   shadow?: boolean
+  children?: ReactNode
 }
 
 export default function CoverSlot({
@@ -18,6 +19,7 @@ export default function CoverSlot({
   alt = 'Book cover',
   label,
   shadow,
+  children,
 }: CoverSlotProps) {
   const [imgError, setImgError] = useState(false)
   const showPlaceholder = !imageUrl || imgError
@@ -61,6 +63,7 @@ export default function CoverSlot({
           {label}
         </span>
       )}
+      {children}
     </div>
   )
 }
