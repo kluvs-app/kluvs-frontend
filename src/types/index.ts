@@ -135,3 +135,21 @@ export interface ReadingLog {
   active: ReadingLogEntry[]
   finished: ReadingLogEntry[]
 }
+
+export type ProgressType = 'page' | 'percent'
+export type ProgressStatus = 'in_progress' | 'completed'
+
+export interface ReadingProgress {
+  id: string
+  member_id: number
+  book_id: number
+  session_id: string | null
+  progress_type: ProgressType
+  current_page: number | null
+  percent_complete: number | null
+  status: ProgressStatus
+  started_at: string
+  updated_at: string
+  completed_at: string | null
+  book?: Book
+}

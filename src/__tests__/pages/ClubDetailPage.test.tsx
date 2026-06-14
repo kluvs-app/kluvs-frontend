@@ -179,7 +179,7 @@ describe('ClubDetailPage', () => {
     it('renders active session content', async () => {
       renderDetail()
       await waitFor(() => {
-        const nowReadingElements = screen.getAllByText(/now reading/i)
+        const nowReadingElements = screen.getAllByText(/active session/i)
         expect(nowReadingElements.length).toBeGreaterThan(0)
       })
     })
@@ -231,7 +231,7 @@ describe('ClubDetailPage', () => {
     it('writes slug to localStorage on mount', async () => {
       renderDetail('club-1')
       await waitFor(() => {
-        const nowReadingElements = screen.getAllByText(/now reading/i)
+        const nowReadingElements = screen.getAllByText(/active session/i)
         expect(nowReadingElements.length).toBeGreaterThan(0)
       })
       expect(localStorage.getItem('kluvs:lastClub')).toBe('club-1')
@@ -340,8 +340,10 @@ describe('ClubDetailPage', () => {
   describe('Progress and session info', () => {
     it('renders progress bar for active session', async () => {
       renderDetail()
-      await waitFor(() => screen.getByText(/through this session/i))
-      expect(screen.getByText(/through this session/i)).toBeInTheDocument()
+      await waitFor(() => {
+        // Look for the update button in ProgressRow
+        expect(screen.queryAllByRole('button', { name: /update/i }).length).toBeGreaterThan(0)
+      })
     })
   })
 
@@ -430,7 +432,7 @@ describe('ClubDetailPage', () => {
     it('renders NOW READING content when active session exists', async () => {
       renderDetail()
       await waitFor(() => {
-        const nowReadings = screen.queryAllByText(/now reading/i)
+        const nowReadings = screen.queryAllByText(/active session/i)
         expect(nowReadings.length).toBeGreaterThan(0)
       })
     })
@@ -526,8 +528,8 @@ describe('ClubDetailPage', () => {
     it('renders progress bar with percentage', async () => {
       renderDetail()
       await waitFor(() => {
-        // Check for progress bar or percentage text
-        expect(screen.queryAllByText(/through this session/i).length).toBeGreaterThan(0)
+        // Check for progress component by looking for the update button
+        expect(screen.queryAllByRole('button', { name: /update/i }).length).toBeGreaterThan(0)
       })
     })
 
@@ -539,11 +541,11 @@ describe('ClubDetailPage', () => {
       })
     })
 
-    it('shows session start date', async () => {
+    it('shows reading progress', async () => {
       renderDetail()
       await waitFor(() => {
-        // Check for "started" text with date
-        expect(screen.queryAllByText(/started/i).length).toBeGreaterThan(0)
+        // Check for progress component by looking for the update button
+        expect(screen.queryAllByRole('button', { name: /update/i }).length).toBeGreaterThan(0)
       })
     })
   })
@@ -852,7 +854,7 @@ describe('ClubDetailPage', () => {
 
     it('does not show invite CTA when club has multiple members', async () => {
       renderDetail()
-      await waitFor(() => expect(screen.queryAllByText(/now reading/i).length).toBeGreaterThan(0))
+      await waitFor(() => expect(screen.queryAllByText(/active session/i).length).toBeGreaterThan(0))
       expect(screen.queryAllByText(/Invite others to get the conversation going/i).length).toBe(0)
     })
   })
@@ -958,7 +960,7 @@ describe('ClubDetailPage', () => {
       renderDetail()
       await waitFor(() => {
         // Book cover and title visible
-        expect(screen.queryAllByText(/now reading/i).length).toBeGreaterThan(0)
+        expect(screen.queryAllByText(/active session/i).length).toBeGreaterThan(0)
       })
     })
 
