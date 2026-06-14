@@ -41,6 +41,7 @@ export default function ReadingProgressModal({
   const [currentPage, setCurrentPage] = useState('')
   const [percentComplete, setPercentComplete] = useState('')
   const [markFinished, setMarkFinished] = useState(false)
+  const [lastAutoTriggerValue, setLastAutoTriggerValue] = useState<string | null>(null)
 
   const pageCount = book.page_count
   const previewPercent = progressType === 'page' && pageCount
@@ -54,17 +55,33 @@ export default function ReadingProgressModal({
     setCurrentPage(existing?.current_page != null ? String(existing.current_page) : '')
     setPercentComplete(existing?.percent_complete != null ? String(existing.percent_complete) : '')
     setMarkFinished(existing?.status === 'completed')
+    setLastAutoTriggerValue(null)
   }, [isOpen, existing])
 
   useEffect(() => {
+    const currentValue = progressType === 'page' ? currentPage : percentComplete
+    if (currentValue === lastAutoTriggerValue) return
+
     if (progressType === 'page' && pageCount) {
-      if (Number(currentPage) >= pageCount) setMarkFinished(true)
-      else if (Number(currentPage) < pageCount && markFinished) setMarkFinished(false)
+      const pageNum = Number(currentPage)
+      if (pageNum >= pageCount && !markFinished) {
+        setMarkFinished(true)
+        setLastAutoTriggerValue(currentPage)
+      } else if (pageNum < pageCount && markFinished) {
+        setMarkFinished(false)
+        setLastAutoTriggerValue(currentPage)
+      }
     } else if (progressType === 'percent') {
-      if (Number(percentComplete) >= 100) setMarkFinished(true)
-      else if (Number(percentComplete) < 100 && markFinished) setMarkFinished(false)
+      const pct = Number(percentComplete)
+      if (pct >= 100 && !markFinished) {
+        setMarkFinished(true)
+        setLastAutoTriggerValue(percentComplete)
+      } else if (pct < 100 && markFinished) {
+        setMarkFinished(false)
+        setLastAutoTriggerValue(percentComplete)
+      }
     }
-  }, [currentPage, percentComplete, progressType, pageCount, markFinished])
+  }, [currentPage, percentComplete, progressType, pageCount, markFinished, lastAutoTriggerValue])
 
   if (!isOpen) return null
 
@@ -181,12 +198,13 @@ export default function ReadingProgressModal({
 
         {progressType === 'page' ? (
           <div>
-            <label style={labelStyle}>Current Page{pageCount ? ` (of ${pageCount})` : ''}</label>
+            <label htmlFor="current-page-input" style={labelStyle}>Current Page{pageCount ? ` (of ${pageCount})` : ''}</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-secondary)] font-medium pointer-events-none">
                 #
               </span>
               <input
+                id="current-page-input"
                 type="number"
                 min={0}
                 max={pageCount}
@@ -206,9 +224,10 @@ export default function ReadingProgressModal({
           </div>
         ) : (
           <div>
-            <label style={labelStyle}>Percent Complete</label>
+            <label htmlFor="percent-complete-input" style={labelStyle}>Percent Complete</label>
             <div className="relative">
               <input
+                id="percent-complete-input"
                 type="number"
                 min={0}
                 max={100}

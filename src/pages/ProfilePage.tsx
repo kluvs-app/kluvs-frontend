@@ -135,11 +135,12 @@ function RoleEyebrow({ role }: { role: string }) {
 
 // ─── ShelfRow ─────────────────────────────────────────────────────────────────
 
-function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book, onUpdated }: {
+function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book, sessionId, onUpdated }: {
   title: string; author: string; coverUrl?: string | null;
   clubName: string; nextDate: string | null;
   progress: ReadingProgress | null;
   book: Book;
+  sessionId?: string;
   onUpdated: (p: ReadingProgress) => void;
 }) {
   return (
@@ -183,6 +184,7 @@ function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book,
         <ProgressRow
           book={book}
           progress={progress}
+          sessionId={sessionId}
           leftLabel={nextDate ? `Next · ${nextDate}` : ""}
           leftLabelVariant="eyebrow"
           onUpdated={onUpdated}
@@ -245,9 +247,7 @@ export default function ProfilePage() {
   const { member, refreshMemberData } = useAuth()
   const [clubs, setClubs] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
-  const [shelfProgress, setShelfProgress] = useState<ReadingProgress[]>([])
   const [sessionProgressMap, setSessionProgressMap] = useState<Record<string, ReadingProgress>>({})
-  const [shelfProgressLoading, setShelfProgressLoading] = useState(true)
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showReadingLogModal, setShowReadingLogModal] = useState(false)
@@ -281,15 +281,6 @@ export default function ProfilePage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [member])
-
-  // Personal (non-session) reading-shelf progress
-  useEffect(() => {
-    if (!member) { setShelfProgressLoading(false); return }
-    invokeFunction<ReadingProgress[]>('progress', { method: 'GET' })
-      .then(({ data }) => setShelfProgress((data ?? []).filter(p => !p.session_id)))
-      .catch(() => {})
-      .finally(() => setShelfProgressLoading(false))
   }, [member])
 
   const memberSince = member?.created_at
@@ -688,60 +679,20 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="space-y-8">
-              {shelfItems.map(({ book, sessionId, clubName, done, total, nextDate }, i) => (
+              {shelfItems.map(({ book, sessionId, clubName, nextDate }, i) => (
                 <ShelfRow
                   key={`${clubName}-${i}`}
                   title={book.title}
                   author={book.author}
                   coverUrl={book.image_url}
                   clubName={clubName}
-                  done={done}
-                  total={total}
                   nextDate={nextDate}
                   book={book}
+                  sessionId={sessionId}
                   progress={sessionProgressMap[sessionId] || null}
                   onUpdated={(updated) => setSessionProgressMap(prev => ({ ...prev, [sessionId]: updated }))}
                 />
               ))}
-            </div>
-          )}
-
-          {/* Personal Reading Progress */}
-          {(shelfProgressLoading || shelfProgress.length > 0) && (
-            <div className="mt-10">
-              <span style={{
-                display: 'block',
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-                marginBottom: 20,
-              }}>Personal Progress</span>
-
-              {shelfProgressLoading ? (
-                <div className="space-y-5">
-                  {[1, 2].map(i => (
-                    <div key={i} className="h-[3px] bg-[var(--color-bg-elevated)] rounded animate-pulse" />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {shelfProgress.filter(p => p.book).map((p, i) => (
-                    <div key={p.id}>
-                      <p style={{
-                        fontFamily: '"EB Garamond", Georgia, serif',
-                        fontStyle: 'italic', fontWeight: 500,
-                        fontSize: 16, color: 'var(--color-text-primary)',
-                        marginBottom: 10,
-                      }}>{p.book!.title}</p>
-                      <ProgressRow
-                        book={{ ...p.book!, id: p.book_id }}
-                        progress={p}
-                        onUpdated={(updated) => setShelfProgress(prev => prev.map((sp, j) => j === i ? updated : sp))}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           )}
         </div>
