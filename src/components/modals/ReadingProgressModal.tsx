@@ -42,6 +42,11 @@ export default function ReadingProgressModal({
   const [percentComplete, setPercentComplete] = useState('')
   const [markFinished, setMarkFinished] = useState(false)
 
+  const pageCount = book.page_count
+  const previewPercent = progressType === 'page' && pageCount
+    ? Math.min(100, Math.round((Number(currentPage || 0) / pageCount) * 100))
+    : null
+
   useEffect(() => {
     if (!isOpen) return
     setError('')
@@ -51,6 +56,16 @@ export default function ReadingProgressModal({
     setMarkFinished(existing?.status === 'completed')
   }, [isOpen, existing])
 
+  useEffect(() => {
+    if (progressType === 'page' && pageCount) {
+      if (Number(currentPage) >= pageCount) setMarkFinished(true)
+      else if (Number(currentPage) < pageCount && markFinished) setMarkFinished(false)
+    } else if (progressType === 'percent') {
+      if (Number(percentComplete) >= 100) setMarkFinished(true)
+      else if (Number(percentComplete) < 100 && markFinished) setMarkFinished(false)
+    }
+  }, [currentPage, percentComplete, progressType, pageCount, markFinished])
+
   if (!isOpen) return null
 
   const handleClose = () => {
@@ -58,11 +73,6 @@ export default function ReadingProgressModal({
     setError('')
     onClose()
   }
-
-  const pageCount = book.page_count
-  const previewPercent = progressType === 'page' && pageCount
-    ? Math.min(100, Math.round((Number(currentPage || 0) / pageCount) * 100))
-    : null
 
   const handleSave = async () => {
     if (progressType === 'page' && !currentPage) { setError('Enter the current page'); return }
@@ -141,16 +151,17 @@ export default function ReadingProgressModal({
 
         <div>
           <label style={labelStyle}>Track By</label>
-          <div className="flex gap-2">
+          <div className="flex w-full items-stretch border border-[var(--color-divider)] rounded-full overflow-hidden">
             <button
               type="button"
               onClick={() => setProgressType('page')}
               disabled={loading}
               className={[
-                'flex-1 px-4 py-2.5 text-sm font-medium rounded-input border transition-colors',
+                'flex-1 py-2 text-xs font-medium transition-colors duration-150',
                 progressType === 'page'
-                  ? 'bg-primary border-primary text-white'
-                  : 'bg-transparent border-[var(--color-divider)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
+                  ? 'bg-primary text-white'
+                  : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
+                loading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
               ].join(' ')}
             >Page</button>
             <button
@@ -158,10 +169,11 @@ export default function ReadingProgressModal({
               onClick={() => setProgressType('percent')}
               disabled={loading}
               className={[
-                'flex-1 px-4 py-2.5 text-sm font-medium rounded-input border transition-colors',
+                'flex-1 py-2 text-xs font-medium transition-colors duration-150 border-l border-[var(--color-divider)]',
                 progressType === 'percent'
-                  ? 'bg-primary border-primary text-white'
-                  : 'bg-transparent border-[var(--color-divider)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
+                  ? 'bg-primary text-white'
+                  : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
+                loading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
               ].join(' ')}
             >Percent</button>
           </div>
@@ -170,17 +182,22 @@ export default function ReadingProgressModal({
         {progressType === 'page' ? (
           <div>
             <label style={labelStyle}>Current Page{pageCount ? ` (of ${pageCount})` : ''}</label>
-            <input
-              type="number"
-              min={0}
-              max={pageCount}
-              value={currentPage}
-              onChange={(e) => setCurrentPage(e.target.value)}
-              placeholder="e.g. 120"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              autoFocus
-            />
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-secondary)] font-medium pointer-events-none">
+                #
+              </span>
+              <input
+                type="number"
+                min={0}
+                max={pageCount}
+                value={currentPage}
+                onChange={(e) => setCurrentPage(e.target.value)}
+                placeholder="0"
+                className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-10 pr-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                disabled={loading}
+                autoFocus
+              />
+            </div>
             {previewPercent != null && (
               <p className="text-xs text-[var(--color-text-secondary)] mt-2">
                 That's about {previewPercent}% complete.
@@ -190,17 +207,22 @@ export default function ReadingProgressModal({
         ) : (
           <div>
             <label style={labelStyle}>Percent Complete</label>
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={percentComplete}
-              onChange={(e) => setPercentComplete(e.target.value)}
-              placeholder="e.g. 45"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              disabled={loading}
-              autoFocus
-            />
+            <div className="relative">
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={percentComplete}
+                onChange={(e) => setPercentComplete(e.target.value)}
+                placeholder="0"
+                className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                disabled={loading}
+                autoFocus
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-secondary)] font-medium pointer-events-none">
+                %
+              </span>
+            </div>
           </div>
         )}
 
