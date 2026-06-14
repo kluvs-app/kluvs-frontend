@@ -254,18 +254,6 @@ export default function ClubDetailPage() {
     return { completed, total }
   }
 
-  const getSessionStartDate = () => {
-    if (!club?.active_session?.discussions) return null
-    const firstDiscussion = club.active_session.discussions[0]
-    if (firstDiscussion) return parseScheduledAt(firstDiscussion.scheduled_at)
-    return null
-  }
-
-  const getProgressPercent = () => {
-    const { completed, total } = getSessionProgress()
-    return total === 0 ? 0 : Math.round((completed / total) * 100)
-  }
-
   const getMemberSessionStatus = (memberId: number): 'reading' | 'skipping' | null => {
     if (!club?.active_session?.members) return null
     const sm = club.active_session.members.find(m => m.member_id === memberId)

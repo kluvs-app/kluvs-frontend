@@ -141,13 +141,6 @@ describe('ProfilePage', () => {
       await waitFor(() => expect(screen.getAllByText('F. Scott Fitzgerald').length).toBeGreaterThan(0), TWO_HOP)
     })
 
-    it('shows discussion progress as fraction', async () => {
-      renderPage()
-      // Both discussions are in the past so done=2, total=2 → "2 of 2"
-      // Two clubs both resolve to mockClub, so multiple matching spans are expected
-      await waitFor(() => expect(screen.getAllByText(/\d+ of \d+/).length).toBeGreaterThan(0), TWO_HOP)
-    })
-
     it('shows shelf header when no active sessions', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })

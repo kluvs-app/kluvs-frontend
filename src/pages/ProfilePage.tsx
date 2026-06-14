@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
 import Avatar from '../components/ui/Avatar'
 import { useAuth } from '../contexts/AuthContext'
-import type { Club, ReadingProgress } from '../types'
+import type { Club, ReadingProgress, Book } from '../types'
 import ProgressRow from '../components/ProgressRow'
 import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
@@ -135,11 +135,11 @@ function RoleEyebrow({ role }: { role: string }) {
 
 // ─── ShelfRow ─────────────────────────────────────────────────────────────────
 
-function ShelfRow({ title, author, coverUrl, clubName, done, total, nextDate, progress, book, onUpdated }: {
+function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book, onUpdated }: {
   title: string; author: string; coverUrl?: string | null;
-  clubName: string; done: number; total: number; nextDate: string | null;
+  clubName: string; nextDate: string | null;
   progress: ReadingProgress | null;
-  book: any;
+  book: Book;
   onUpdated: (p: ReadingProgress) => void;
 }) {
   return (
