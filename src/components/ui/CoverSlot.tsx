@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 
 interface CoverSlotProps {
   imageUrl?: string | null
@@ -23,6 +23,7 @@ export default function CoverSlot({
 }: CoverSlotProps) {
   const [imgError, setImgError] = useState(false)
   const showPlaceholder = !imageUrl || imgError
+  const patternId = `kluvs-hex-${useId().replace(/[^a-zA-Z0-9]/g, '')}`
 
   return (
     <div
@@ -38,18 +39,21 @@ export default function CoverSlot({
       className={`relative shrink-0 rounded-sm overflow-hidden flex items-end justify-center bg-[var(--color-bg-raised)] ${className ?? ''}`}
     >
       {showPlaceholder ? (
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `repeating-linear-gradient(
-              45deg,
-              var(--color-divider),
-              var(--color-divider) 3px,
-              var(--color-bg-elevated) 3px,
-              var(--color-bg-elevated) 6px
-            )`,
-          }}
-        />
+        <svg
+          className="absolute inset-0 w-full h-full"
+          style={{ color: 'var(--color-divider)' }}
+          aria-hidden="true"
+        >
+          <defs>
+            <pattern id={patternId} width="17.32" height="30" patternUnits="userSpaceOnUse">
+              <path d="M8.66 10 L17.32 15 L17.32 25 L8.66 30 L0 25 L0 15 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+              <path d="M0 0 L8.66 5 L8.66 15 L0 20 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+              <path d="M17.32 0 L17.32 20 L8.66 15 L8.66 5 Z" fill="none" stroke="currentColor" strokeWidth="1" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="var(--color-bg-raised)" />
+          <rect width="100%" height="100%" fill={`url(#${patternId})`} />
+        </svg>
       ) : (
         <img
           src={imageUrl}

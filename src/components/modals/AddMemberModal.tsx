@@ -274,7 +274,7 @@ export default function AddMemberModal({
                   onClick={handleCopy}
                   className={[
                     'shrink-0 text-sm font-medium transition-colors duration-120',
-                    copied ? 'text-[#48A480]' : 'text-primary hover:text-primary-hover',
+                    copied ? 'text-success' : 'text-primary hover:text-primary-hover',
                   ].join(' ')}
                 >
                   {copied ? 'Copied!' : 'Copy'}

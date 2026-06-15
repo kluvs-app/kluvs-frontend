@@ -26,6 +26,7 @@ import RoleEyebrow from '../components/ui/RoleEyebrow'
 import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
 import Avatar from '../components/ui/Avatar'
+import MemberBadge from '../components/MemberBadge'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import ProgressRow from '../components/ProgressRow'
 
@@ -675,77 +676,18 @@ export default function ClubDetailPage() {
                       <div className="space-y-2.5">
                         {getSortedMembers(club.members).map((clubMember) => {
                           const memberWithRole = clubMember as Member & { role?: string }
-                          const memberRole = memberWithRole.role || 'member'
                           const isOwn = member?.id != null && member.id === clubMember.id
 
                           return (
-                            <div
+                            <MemberBadge
                               key={clubMember.id}
-                              className="flex items-start gap-3.5 py-3 border-b border-[var(--color-divider)]"
-                            >
-                              <Avatar
-                                name={clubMember.name}
-                                userId={String(clubMember.id)}
-                                imageUrl={clubMember.avatar_path ? getAvatarUrl(clubMember.avatar_path) : null}
-                                size="lg"
-                                isOwn={isOwn}
-                              />
-
-                              {/* Name + handle */}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="text-[14px] font-medium text-[var(--color-text-primary)] truncate">
-                                    {clubMember.name}
-                                  </p>
-                                  {isOwn && (
-                                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary flex-shrink-0">
-                                      YOU
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
-                                  @{clubMember.handle || clubMember.discord_id || 'unknown'}
-                                </p>
-                              </div>
-
-                              {/* Right column: role + kebab on top, reading icon below */}
-                              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                                <div className="flex items-center gap-2">
-                                  <RoleEyebrow role={memberRole as 'owner' | 'admin' | 'member'} />
-                                  {isAdmin && !isOwn && memberRole !== 'owner' && (
-                                    <KebabMenu
-                                      items={[
-                                        { label: 'Edit Member', onClick: () => handleEditMember(clubMember) },
-                                        { label: 'Remove', danger: true, onClick: () => handleDeleteMember(clubMember) },
-                                      ]}
-                                    />
-                                  )}
-                                </div>
-                                {(() => {
-                                  const status = getMemberSessionStatus(clubMember.id)
-                                  if (!status) return null
-                                  const isReadingStatus = status === 'reading'
-                                  return (
-                                    <span
-                                      className="w-[14px] h-[14px] block"
-                                      title={isReadingStatus ? 'Reading' : 'Skipping'}
-                                      style={{
-                                        backgroundColor: isReadingStatus ? '#D16D30' : 'var(--color-text-secondary)',
-                                        opacity: isReadingStatus ? 1 : 0.4,
-                                        maskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
-                                        maskSize: 'contain',
-                                        maskRepeat: 'no-repeat',
-                                        maskPosition: 'center',
-                                        WebkitMaskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
-                                        WebkitMaskSize: 'contain',
-                                        WebkitMaskRepeat: 'no-repeat',
-                                        WebkitMaskPosition: 'center',
-                                      } as React.CSSProperties}
-                                    />
-                                  )
-                                })()}
-                              </div>
-                            </div>
+                              member={memberWithRole}
+                              isOwn={isOwn}
+                              isAdmin={isAdmin}
+                              readingStatus={getMemberSessionStatus(clubMember.id)}
+                              onEdit={handleEditMember}
+                              onDelete={handleDeleteMember}
+                            />
                           )
                         })}
                       </div>
@@ -1182,76 +1124,18 @@ export default function ClubDetailPage() {
               <div className="space-y-3">
                 {getSortedMembers(club.members).map((clubMember) => {
                   const memberWithRole = clubMember as Member & { role?: string }
-                  const memberRole = memberWithRole.role || 'member'
                   const isOwn = member?.id != null && member.id === clubMember.id
 
                   return (
-                    <div
+                    <MemberBadge
                       key={clubMember.id}
-                      className="flex items-start gap-3 py-3 border-b border-[var(--color-divider)]"
-                    >
-                      <Avatar
-                        name={clubMember.name}
-                        userId={String(clubMember.id)}
-                        size="lg"
-                        isOwn={isOwn}
-                      />
-
-                      {/* Name + handle */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-[14px] font-medium text-[var(--color-text-primary)] truncate">
-                            {clubMember.name}
-                          </p>
-                          {isOwn && (
-                            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary flex-shrink-0">
-                              YOU
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
-                          @{clubMember.handle || clubMember.discord_id || 'unknown'}
-                        </p>
-                      </div>
-
-                      {/* Right column: role + kebab on top, reading icon below */}
-                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        <div className="flex items-center gap-2">
-                          <RoleEyebrow role={memberRole as 'owner' | 'admin' | 'member'} />
-                          {isAdmin && !isOwn && memberRole !== 'owner' && (
-                            <KebabMenu
-                              items={[
-                                { label: 'Edit Member', onClick: () => handleEditMember(clubMember) },
-                                { label: 'Remove', danger: true, onClick: () => handleDeleteMember(clubMember) },
-                              ]}
-                            />
-                          )}
-                        </div>
-                        {(() => {
-                          const status = getMemberSessionStatus(clubMember.id)
-                          if (!status) return null
-                          const isReadingStatus = status === 'reading'
-                          return (
-                            <span
-                              className="w-[14px] h-[14px] block"
-                              title={isReadingStatus ? 'Reading' : 'Skipping'}
-                              style={{
-                                backgroundColor: isReadingStatus ? '#D16D30' : 'var(--color-text-secondary)',
-                                opacity: isReadingStatus ? 1 : 0.4,
-                                maskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
-                                maskSize: 'contain',
-                                maskRepeat: 'no-repeat',
-                                maskPosition: 'center',
-                                WebkitMaskImage: `url(${isReadingStatus ? '/ic-reading.svg' : '/ic-reading-not.svg'})`,
-                                WebkitMaskSize: 'contain',
-                                WebkitMaskRepeat: 'no-repeat',
-                                WebkitMaskPosition: 'center',
-                              } as React.CSSProperties}
-                            />
-                          )
-                        })()}
-                      </div>
-                    </div>
+                      member={memberWithRole}
+                      isOwn={isOwn}
+                      isAdmin={isAdmin}
+                      readingStatus={getMemberSessionStatus(clubMember.id)}
+                      onEdit={handleEditMember}
+                      onDelete={handleDeleteMember}
+                    />
                   )
                 })}
               </div>

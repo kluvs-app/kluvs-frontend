@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
 import Avatar from '../components/ui/Avatar'
 import { useAuth } from '../contexts/AuthContext'
-import type { Club, ReadingProgress, Book } from '../types'
+import type { Club, ReadingProgress, Book, UserRole } from '../types'
 import ProgressRow from '../components/ProgressRow'
 import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
@@ -11,6 +11,7 @@ import ReadingLogModal from '../components/modals/ReadingLogModal'
 import DiscussionNoteModal from '../components/modals/DiscussionNoteModal'
 import AttendanceControl from '../components/AttendanceControl'
 import KebabMenu from '../components/ui/KebabMenu'
+import RoleEyebrow from '../components/ui/RoleEyebrow'
 import { isPast, parseScheduledAt } from '../utils/dates'
 import DiscordIcon from '../components/icons/DiscordIcon'
 
@@ -30,13 +31,8 @@ function formatNextDate(scheduledAt: string): string {
   })
 }
 
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
-
 // Warm-dark hairline and button border — design tokens not in CSS vars
 const HAIRLINE = 'rgba(242,237,229,0.08)'
-const LABEL_COLOR = '#C9BDA8'
 const TRACK_COLOR = '#332B24'
 const COPPER = '#D16D30'
 const MUTED = '#8C8073'
@@ -106,30 +102,10 @@ function AvatarStack({ members, totalCount, currentMemberId }: {
       {extra > 0 && (
         <div
           className="relative shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ring-2 ring-[var(--color-bg-elevated)]"
-          style={{ marginLeft: -8, background: TRACK_COLOR, color: LABEL_COLOR }}
+          style={{ marginLeft: -8, background: TRACK_COLOR, color: '#C9BDA8' }}
         >+{extra}</div>
       )}
     </div>
-  )
-}
-
-// ─── RoleEyebrow ─────────────────────────────────────────────────────────────
-
-function RoleEyebrow({ role }: { role: string }) {
-  const r = role.toLowerCase()
-  const dotColor = r === 'owner' ? '#C9900A' : r === 'admin' ? '#006781' : null
-  const textColor = r === 'owner' ? '#C9900A' : r === 'admin' ? '#7BA8B8' : 'rgba(201,189,168,0.7)'
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
-      {dotColor && (
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
-      )}
-      <span style={{
-        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-        fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-        textTransform: 'uppercase', color: textColor,
-      }}>{capitalize(role)}</span>
-    </span>
   )
 }
 
@@ -167,7 +143,7 @@ function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book,
             }} className="text-[22px] md:text-[28px]">{title}</p>
             <p style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 14, color: LABEL_COLOR,
+              fontSize: 14, color: 'var(--color-label-variant)',
             }}>{author}</p>
           </div>
 
@@ -226,7 +202,7 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
             minWidth: 0, overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{name}</p>
-          <RoleEyebrow role={role} />
+          <RoleEyebrow role={role as UserRole} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <AvatarStack members={members} totalCount={memberCount} currentMemberId={currentMemberId} />
@@ -468,7 +444,7 @@ export default function ProfilePage() {
             <span style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
               fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: LABEL_COLOR,
+              textTransform: 'uppercase', color: 'var(--color-label-variant)',
             }}>{s.label}</span>
           </div>
         ))}
@@ -490,7 +466,7 @@ export default function ProfilePage() {
             <span style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
               fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: LABEL_COLOR,
+              textTransform: 'uppercase', color: 'var(--color-label-variant)',
             }}>{s.label}</span>
           </div>
         ))}

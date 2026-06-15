@@ -1,15 +1,4 @@
-const AVATAR_HUES = [
-  '#5865F2',
-  '#5BAA5C',
-  '#9B59B6',
-  '#0097A7',
-  '#3498DB',
-  '#E74C3C',
-  '#16A085',
-  '#5C6BC0',
-  '#8E44AD',
-  '#2ECC71',
-]
+const AVATAR_HUE_COUNT = 12
 
 const OWN_COLOR = 'var(--color-primary)'
 
@@ -48,15 +37,17 @@ export default function Avatar({
 
   const backgroundColor = isOwn
     ? OWN_COLOR
-    : AVATAR_HUES[Math.abs(Number(userId)) % AVATAR_HUES.length]
+    : `var(--kluvs-avatar-hue-${Math.abs(Number(userId)) % AVATAR_HUE_COUNT})`
+
+  const color = isOwn ? '#FFFFFF' : 'var(--kluvs-avatar-initials)'
 
   const initials = nameInitials(name)
   const isLarge = size === 'xl' || size === '2xl'
 
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full flex-shrink-0 flex items-center justify-center text-white font-medium ${className}`}
-      style={{ backgroundColor }}
+      className={`${sizeClasses[size]} rounded-full flex-shrink-0 flex items-center justify-center font-medium ${className}`}
+      style={{ backgroundColor, color }}
       title={title || name}
     >
       {imageUrl ? (

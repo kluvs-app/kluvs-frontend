@@ -19,7 +19,7 @@ export default function BookCard({ title, year, author, imageUrl, onClick, compa
         shadow
         className={`${compact ? 'w-[80px] h-[116px]' : 'w-full aspect-[2/3]'} group-hover:opacity-80 transition-opacity`}
       >
-        {badge && <KluvsReadRibbon label={badge.label} compact={compact} />}
+        {badge && <KluvsReadRibbon label={badge.label} size={compact ? 'md' : 'lg'} />}
       </CoverSlot>
       <div>
         <p className={`font-serif italic font-medium leading-[1.25] line-clamp-2 text-[var(--color-text-primary)] ${compact ? 'text-[11px]' : 'text-[14px] lg:text-[15px]'}`}>
