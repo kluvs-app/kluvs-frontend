@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
 import Avatar from '../components/ui/Avatar'
 import { useAuth } from '../contexts/AuthContext'
-import type { Club, ReadingProgress, Book } from '../types'
+import type { Club, ReadingProgress, Book, UserRole } from '../types'
 import ProgressRow from '../components/ProgressRow'
 import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
@@ -11,6 +11,7 @@ import ReadingLogModal from '../components/modals/ReadingLogModal'
 import DiscussionNoteModal from '../components/modals/DiscussionNoteModal'
 import AttendanceControl from '../components/AttendanceControl'
 import KebabMenu from '../components/ui/KebabMenu'
+import RoleEyebrow from '../components/ui/RoleEyebrow'
 import { isPast, parseScheduledAt } from '../utils/dates'
 import DiscordIcon from '../components/icons/DiscordIcon'
 
@@ -28,10 +29,6 @@ function formatNextDate(scheduledAt: string): string {
   return parseScheduledAt(scheduledAt).toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric',
   })
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 // Warm-dark hairline and button border — design tokens not in CSS vars
@@ -110,29 +107,6 @@ function AvatarStack({ members, totalCount, currentMemberId }: {
         >+{extra}</div>
       )}
     </div>
-  )
-}
-
-// ─── RoleEyebrow ─────────────────────────────────────────────────────────────
-
-function RoleEyebrow({ role }: { role: string }) {
-  const r = role.toLowerCase()
-  const dotClass = r === 'owner' ? 'bg-role-owner' : r === 'admin' ? 'bg-role-admin' : null
-  const textClass = r === 'owner' ? 'text-role-owner' : r === 'admin' ? 'text-role-admin-on-dark' : 'text-role-member-label'
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
-      {dotClass && (
-        <span className={dotClass} style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0 }} />
-      )}
-      <span
-        className={textClass}
-        style={{
-          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-        }}
-      >{capitalize(role)}</span>
-    </span>
   )
 }
 
@@ -229,7 +203,7 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
             minWidth: 0, overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{name}</p>
-          <RoleEyebrow role={role} />
+          <RoleEyebrow role={role as UserRole} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <AvatarStack members={members} totalCount={memberCount} currentMemberId={currentMemberId} />

@@ -39,7 +39,8 @@ export default {
             owner: '#C9900A',
             admin: '#006781',
             'admin-on-dark': '#7BA8B8',
-            'member-label': '#48A480',
+            'member-label': '#F2EDE5',
+            'member-label-light': '#140F0D',
           },
           surface: {
             dark: '#140F0D',

@@ -16,8 +16,8 @@ export default function RoleEyebrow({ role, className = '' }: RoleEyebrowProps) 
         isOwner
           ? 'text-role-owner'
           : isAdmin
-            ? 'text-role-admin-on-dark'
-            : 'text-role-member-label',
+            ? 'text-role-admin dark:text-role-admin-on-dark'
+            : 'text-role-member-label-light dark:text-role-member-label',
         className,
       ].join(' ')}
     >
