@@ -33,7 +33,6 @@ function formatNextDate(scheduledAt: string): string {
 
 // Warm-dark hairline and button border — design tokens not in CSS vars
 const HAIRLINE = 'rgba(242,237,229,0.08)'
-const LABEL_COLOR = '#C9BDA8'
 const TRACK_COLOR = '#332B24'
 const COPPER = '#D16D30'
 const MUTED = '#8C8073'
@@ -103,7 +102,7 @@ function AvatarStack({ members, totalCount, currentMemberId }: {
       {extra > 0 && (
         <div
           className="relative shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ring-2 ring-[var(--color-bg-elevated)]"
-          style={{ marginLeft: -8, background: TRACK_COLOR, color: LABEL_COLOR }}
+          style={{ marginLeft: -8, background: TRACK_COLOR, color: '#C9BDA8' }}
         >+{extra}</div>
       )}
     </div>
@@ -144,7 +143,7 @@ function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book,
             }} className="text-[22px] md:text-[28px]">{title}</p>
             <p style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 14, color: LABEL_COLOR,
+              fontSize: 14, color: 'var(--color-label-variant)',
             }}>{author}</p>
           </div>
 
@@ -445,7 +444,7 @@ export default function ProfilePage() {
             <span style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
               fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: LABEL_COLOR,
+              textTransform: 'uppercase', color: 'var(--color-label-variant)',
             }}>{s.label}</span>
           </div>
         ))}
@@ -467,7 +466,7 @@ export default function ProfilePage() {
             <span style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
               fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: LABEL_COLOR,
+              textTransform: 'uppercase', color: 'var(--color-label-variant)',
             }}>{s.label}</span>
           </div>
         ))}

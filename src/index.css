@@ -59,6 +59,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     --color-divider: #E5DCCB;
     --color-input-bg: #FAF6EF;
     --color-input-border: #E5DCCB;
+    --color-label-variant: #140F0D;
     --color-overlay: rgba(0, 0, 0, 0.5);
     --color-primary: #D16D30;
     --color-primary-hover: #B85A22;
@@ -92,6 +93,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     --color-divider: #332B24;
     --color-input-bg: #241C17;
     --color-input-border: #332B24;
+    --color-label-variant: #F2EDE5;
     --color-overlay: rgba(0, 0, 0, 0.7);
 
     /* Avatar hue palette — chocolate theme */
