@@ -14,17 +14,17 @@ export default function RoleEyebrow({ role, className = '' }: RoleEyebrowProps) 
       className={[
         'inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.14em]',
         isOwner
-          ? 'text-[#C9900A]'
+          ? 'text-role-owner'
           : isAdmin
-            ? 'text-[#7BA8B8]'
-            : 'text-[#48A480]',
+            ? 'text-role-admin-on-dark'
+            : 'text-role-member-label',
         className,
       ].join(' ')}
     >
       {(isOwner || isAdmin) && (
         <span
           className={`inline-block w-[8px] h-[8px] rounded-full ${
-            isOwner ? 'bg-[#C9900A]' : 'bg-[#006781]'
+            isOwner ? 'bg-role-owner' : 'bg-role-admin'
           }`}
           aria-hidden
         />

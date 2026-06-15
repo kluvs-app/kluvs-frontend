@@ -18,7 +18,7 @@ const SEGMENTS: Array<{ value: Status; icon: React.ReactNode; pressedClass: stri
         <polyline points="20 6 9 17 4 12" />
       </svg>
     ),
-    pressedClass: 'bg-green-500/20 text-green-500 dark:bg-green-500/15 dark:text-green-400',
+    pressedClass: 'bg-success-subtle text-success',
   },
   {
     value: 'maybe',
@@ -36,7 +36,7 @@ const SEGMENTS: Array<{ value: Status; icon: React.ReactNode; pressedClass: stri
         <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
       </svg>
     ),
-    pressedClass: 'bg-red-500/20 text-red-500 dark:bg-red-500/15 dark:text-red-400',
+    pressedClass: 'bg-danger-subtle text-danger',
   },
 ]
 

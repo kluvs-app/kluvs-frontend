@@ -117,18 +117,21 @@ function AvatarStack({ members, totalCount, currentMemberId }: {
 
 function RoleEyebrow({ role }: { role: string }) {
   const r = role.toLowerCase()
-  const dotColor = r === 'owner' ? '#C9900A' : r === 'admin' ? '#006781' : null
-  const textColor = r === 'owner' ? '#C9900A' : r === 'admin' ? '#7BA8B8' : 'rgba(201,189,168,0.7)'
+  const dotClass = r === 'owner' ? 'bg-role-owner' : r === 'admin' ? 'bg-role-admin' : null
+  const textClass = r === 'owner' ? 'text-role-owner' : r === 'admin' ? 'text-role-admin-on-dark' : 'text-role-member-label'
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
-      {dotColor && (
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+      {dotClass && (
+        <span className={dotClass} style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0 }} />
       )}
-      <span style={{
-        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-        fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-        textTransform: 'uppercase', color: textColor,
-      }}>{capitalize(role)}</span>
+      <span
+        className={textClass}
+        style={{
+          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+          fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+        }}
+      >{capitalize(role)}</span>
     </span>
   )
 }
