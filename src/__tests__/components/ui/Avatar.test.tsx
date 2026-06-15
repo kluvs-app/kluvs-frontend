@@ -101,12 +101,12 @@ describe('Avatar', () => {
       expect(color1).toBe(color2)
     })
 
-    it('uses palette colors from AVATAR_HUES', () => {
+    it('uses palette colors from the avatar hue token scale', () => {
       const { container } = render(<Avatar name="User" userId="0" />)
       const div = container.firstChild as HTMLElement
       const backgroundColor = div.style.backgroundColor
       expect(backgroundColor).toBeTruthy()
-      expect(backgroundColor).toMatch(/^(#|rgb)/)
+      expect(backgroundColor).toMatch(/^var\(--kluvs-avatar-hue-\d+\)$/)
     })
 
     it('uses primary color token when isOwn is true', () => {

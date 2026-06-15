@@ -35,33 +35,81 @@ input[type="time"]::-webkit-calendar-picker-indicator {
   }
 }
 
+.kluvs-read-ribbon {
+  background: var(--color-primary);
+  clip-path: polygon(18% 0, 82% 0, 82% 50%, 100% 75%, 82% 100%, 18% 100%, 0% 75%, 18% 50%);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+/* Scaled to ~15-20% of the matching book-cover width, acting as a proportional bookmark */
+.kluvs-read-ribbon--sm { width: 12px; height: 21px; right: 6px; }  /* For 56x84 cover */
+.kluvs-read-ribbon--md { width: 16px; height: 28px; right: 8px; }  /* For 80x120 cover */
+.kluvs-read-ribbon--lg { width: 24px; height: 42px; right: 12px; } /* For 128x192 cover */
+
 @layer base {
   :root {
-    --color-bg: #fafafc;
-    --color-bg-raised: #f5f5f5;
-    --color-bg-elevated: #eeeeee;
-    --color-text-primary: #1a1a1a;
+    --color-bg: #F2EDE5;
+    --color-bg-bar: #F6F0E7;
+    --color-bg-raised: #FAF6EF;
+    --color-bg-elevated: #E8DECC;
+    --color-text-primary: #1A1A1A;
     --color-text-secondary: #666666;
-    --color-text-meta: #999999;
-    --color-divider: #e0e0e0;
-    --color-input-bg: #f5f5f5;
-    --color-input-border: #e0e0e0;
+    --color-text-meta: #7A6C5E;
+    --color-text-placeholder: #9A8C7E;
+    --color-text-disabled: #C2B6A8;
+    --color-divider: #E5DCCB;
+    --color-input-bg: #FAF6EF;
+    --color-input-border: #E5DCCB;
+    --color-label-variant: #140F0D;
     --color-overlay: rgba(0, 0, 0, 0.5);
     --color-primary: #D16D30;
     --color-primary-hover: #B85A22;
+
+    /* Avatar hue palette — cream theme */
+    --kluvs-avatar-hue-0: #F9EDE6;
+    --kluvs-avatar-hue-1: #F4EBD9;
+    --kluvs-avatar-hue-2: #EBE6E0;
+    --kluvs-avatar-hue-3: #F8E3D8;
+    --kluvs-avatar-hue-4: #F1EBE6;
+    --kluvs-avatar-hue-5: #F5E8DF;
+    --kluvs-avatar-hue-6: #F9E6D5;
+    --kluvs-avatar-hue-7: #EBE8D8;
+    --kluvs-avatar-hue-8: #F6E2DD;
+    --kluvs-avatar-hue-9: #EFE4D6;
+    --kluvs-avatar-hue-10: #EFE1D2;
+    --kluvs-avatar-hue-11: #F2E1DC;
+    --kluvs-avatar-initials: #140F0D;
   }
 
   .dark {
     --color-bg: #140F0D;
+    --color-bg-bar: #1A140F;
     --color-bg-raised: #1A140F;
     --color-bg-elevated: #241C17;
     --color-text-primary: #ffffff;
     --color-text-secondary: #b0b0b0;
-    --color-text-meta: #737373;
+    --color-text-meta: #8C8073;
+    --color-text-placeholder: #6B5F52;
+    --color-text-disabled: #4D4033;
     --color-divider: #332B24;
     --color-input-bg: #241C17;
     --color-input-border: #332B24;
+    --color-label-variant: #F2EDE5;
     --color-overlay: rgba(0, 0, 0, 0.7);
+
+    /* Avatar hue palette — chocolate theme */
+    --kluvs-avatar-hue-0: #331F17;
+    --kluvs-avatar-hue-1: #38271A;
+    --kluvs-avatar-hue-2: #2B231D;
+    --kluvs-avatar-hue-3: #42251A;
+    --kluvs-avatar-hue-4: #261A14;
+    --kluvs-avatar-hue-5: #3D2E24;
+    --kluvs-avatar-hue-6: #4A2E1F;
+    --kluvs-avatar-hue-7: #2E2218;
+    --kluvs-avatar-hue-8: #3A1E16;
+    --kluvs-avatar-hue-9: #453325;
+    --kluvs-avatar-hue-10: #302018;
+    --kluvs-avatar-hue-11: #3D2115;
+    --kluvs-avatar-initials: #F2EDE5;
   }
 
   body {

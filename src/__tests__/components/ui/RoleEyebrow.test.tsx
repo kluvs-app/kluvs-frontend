@@ -25,14 +25,14 @@ describe('RoleEyebrow', () => {
       const { container } = render(<RoleEyebrow role="owner" />)
       const dot = container.querySelector('[aria-hidden="true"]')
       expect(dot).toBeInTheDocument()
-      expect(dot?.className).toContain('bg-[#C9900A]')
+      expect(dot?.className).toContain('bg-role-owner')
     })
 
     it('renders colored dot for admin role', () => {
       const { container } = render(<RoleEyebrow role="admin" />)
       const dot = container.querySelector('[aria-hidden="true"]')
       expect(dot).toBeInTheDocument()
-      expect(dot?.className).toContain('bg-[#006781]')
+      expect(dot?.className).toContain('bg-role-admin')
     })
 
     it('does not render dot for member role', () => {
@@ -46,19 +46,21 @@ describe('RoleEyebrow', () => {
     it('applies gold color for owner', () => {
       const { container } = render(<RoleEyebrow role="owner" />)
       const span = container.querySelector('span')
-      expect(span?.className).toContain('text-[#C9900A]')
+      expect(span?.className).toContain('text-role-owner')
     })
 
-    it('applies blue color for admin', () => {
+    it('applies teal color for admin', () => {
       const { container } = render(<RoleEyebrow role="admin" />)
       const span = container.querySelector('span')
-      expect(span?.className).toContain('text-[#7BA8B8]')
+      expect(span?.className).toContain('text-role-admin')
+      expect(span?.className).toContain('dark:text-role-admin-on-dark')
     })
 
-    it('applies muted color for member', () => {
+    it('applies cream/chocolate color for member', () => {
       const { container } = render(<RoleEyebrow role="member" />)
       const span = container.querySelector('span')
-      expect(span?.className).toContain('text-[#48A480]')
+      expect(span?.className).toContain('text-role-member-label-light')
+      expect(span?.className).toContain('dark:text-role-member-label')
     })
   })
 

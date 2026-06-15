@@ -123,11 +123,11 @@ export default function HowItWorksSection() {
                 className="hidden md:flex flex-1 min-w-[136px] rounded-xl p-4 items-center gap-3 cursor-default opacity-30 pointer-events-none"
                 style={{ background: 'rgba(0,103,129,0.22)' }}
               >
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: '#006781' }}>
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-tertiary" style={{ background: 'var(--color-bg-raised)' }}>
                   <MatIcon name="calendar_month" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: '#006781' }}>Session</div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5 text-tertiary">Session</div>
                   <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Meditating Motorcycle</div>
                 </div>
               </div>
@@ -140,11 +140,11 @@ export default function HowItWorksSection() {
                 <div className="absolute -top-[9px] right-3 text-[9px] font-bold uppercase tracking-[0.06em] px-2.5 py-0.5 rounded-full bg-primary text-white">
                   Active
                 </div>
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: '#006781' }}>
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-tertiary" style={{ background: 'var(--color-bg-raised)' }}>
                   <MatIcon name="calendar_month" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: '#006781' }}>Session</div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5 text-tertiary">Session</div>
                   <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Pigs on the Wings</div>
                   <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-meta)' }}>Ends February 30</div>
                 </div>
@@ -155,11 +155,11 @@ export default function HowItWorksSection() {
                 className="hidden md:flex flex-1 min-w-[136px] rounded-xl p-4 items-center gap-3 cursor-default opacity-30 pointer-events-none"
                 style={{ background: 'rgba(0,103,129,0.22)' }}
               >
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: '#006781' }}>
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-tertiary" style={{ background: 'var(--color-bg-raised)' }}>
                   <MatIcon name="calendar_month" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: '#006781' }}>Session</div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5 text-tertiary">Session</div>
                   <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Stoic Virtue</div>
                 </div>
               </div>

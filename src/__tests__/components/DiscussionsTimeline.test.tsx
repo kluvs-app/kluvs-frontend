@@ -3,9 +3,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import DiscussionsTimeline from '../../components/DiscussionsTimeline'
 import { mockClub, mockClub2 } from '../utils/mocks'
+import { localPartsToScheduledAt } from '../../utils/dates'
+
+const mockAttendanceControl = vi.fn((_props: { discussion: { id: string }; disabled?: boolean }) => null)
 
 vi.mock('../../components/AttendanceControl', () => ({
-  default: () => null,
+  default: (props: { discussion: { id: string }; disabled?: boolean }) => mockAttendanceControl(props),
 }))
 
 describe('DiscussionsTimeline', () => {
@@ -112,8 +115,8 @@ describe('DiscussionsTimeline', () => {
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-1', title: 'Next discussion', date: futureDate1.toISOString(), location: 'Room A' },
-            { id: 'disc-2', title: 'Later discussion', date: futureDate2.toISOString(), location: 'Room B' },
+            { id: 'disc-1', title: 'Next discussion', scheduled_at: futureDate1.toISOString(), location: 'Room A' },
+            { id: 'disc-2', title: 'Later discussion', scheduled_at: futureDate2.toISOString(), location: 'Room B' },
           ],
         },
       }
@@ -134,6 +137,41 @@ describe('DiscussionsTimeline', () => {
 
       const rows = document.querySelectorAll('.opacity-50')
       expect(rows.length).toBeGreaterThan(0)
+    })
+  })
+
+  describe('Disabled controls for past discussions', () => {
+    const futureDate = new Date()
+    futureDate.setMonth(futureDate.getMonth() + 1)
+
+    const clubWithPastAndFuture = {
+      ...mockClub,
+      active_session: {
+        ...mockClub.active_session!,
+        discussions: [
+          { id: 'disc-past', title: 'Past discussion', scheduled_at: '2020-01-01T12:00:00Z', location: 'Room A' },
+          { id: 'disc-future', title: 'Future discussion', scheduled_at: futureDate.toISOString(), location: 'Room B' },
+        ],
+      },
+    }
+
+    it('disables the note button for past discussions but not upcoming ones', () => {
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithPastAndFuture} onOpenNote={vi.fn()} />)
+
+      const noteButtons = screen.getAllByRole('button', { name: /food for thought/i })
+      expect(noteButtons[0]).toBeDisabled()
+      expect(noteButtons[1]).not.toBeDisabled()
+    })
+
+    it('passes disabled=true to AttendanceControl for past discussions and false for upcoming ones', () => {
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithPastAndFuture} />)
+
+      const calls = mockAttendanceControl.mock.calls
+      const pastCall = calls.find(([props]) => props.discussion.id === 'disc-past')
+      const futureCall = calls.find(([props]) => props.discussion.id === 'disc-future')
+
+      expect(pastCall?.[0].disabled).toBe(true)
+      expect(futureCall?.[0].disabled).toBe(false)
     })
   })
 
@@ -213,7 +251,21 @@ describe('DiscussionsTimeline', () => {
     it('should call onOpenNote with the correct discussion when clicked', async () => {
       const user = userEvent.setup()
       const onOpenNote = vi.fn()
-      render(<DiscussionsTimeline {...defaultProps} onOpenNote={onOpenNote} />)
+
+      const futureDate = new Date()
+      futureDate.setMonth(futureDate.getMonth() + 1)
+
+      const clubWithFutureDiscussion = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [
+            { ...mockClub.active_session!.discussions[0], scheduled_at: futureDate.toISOString() },
+          ],
+        },
+      }
+
+      render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithFutureDiscussion} onOpenNote={onOpenNote} />)
 
       const noteButtons = screen.getAllByRole('button', { name: /food for thought/i })
       await user.click(noteButtons[0])
@@ -243,16 +295,17 @@ describe('DiscussionsTimeline', () => {
   })
 
   describe('Time display', () => {
-    it('should show formatted time when discussion has a time set', () => {
+    it('should show formatted time for a discussion', () => {
       const futureDate = new Date()
       futureDate.setMonth(futureDate.getMonth() + 1)
+      const dateStr = futureDate.toISOString().split('T')[0]
 
       const clubWithTimedDiscussion = {
         ...mockClub,
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-1', title: 'Timed Discussion', date: futureDate.toISOString().split('T')[0], time: '19:30' },
+            { id: 'disc-1', title: 'Timed Discussion', scheduled_at: localPartsToScheduledAt(dateStr, '19:30') },
           ],
         },
       }
@@ -262,23 +315,24 @@ describe('DiscussionsTimeline', () => {
       expect(screen.getByText('7:30 PM')).toBeInTheDocument()
     })
 
-    it('should not show time when discussion has no time set', () => {
+    it('should show midnight as 12:00 AM when no time was specified', () => {
       const futureDate = new Date()
       futureDate.setMonth(futureDate.getMonth() + 1)
+      const dateStr = futureDate.toISOString().split('T')[0]
 
       const clubWithUntimed = {
         ...mockClub,
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-1', title: 'Untimed Discussion', date: futureDate.toISOString().split('T')[0] },
+            { id: 'disc-1', title: 'Untimed Discussion', scheduled_at: localPartsToScheduledAt(dateStr) },
           ],
         },
       }
 
       render(<DiscussionsTimeline {...defaultProps} selectedClub={clubWithUntimed} />)
 
-      expect(screen.queryByText(/AM|PM/)).not.toBeInTheDocument()
+      expect(screen.getByText('12:00 AM')).toBeInTheDocument()
     })
   })
 })

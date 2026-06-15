@@ -3,37 +3,36 @@ import { Link } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
 import Avatar from '../components/ui/Avatar'
 import { useAuth } from '../contexts/AuthContext'
-import type { Club } from '../types'
+import type { Club, ReadingProgress, Book, UserRole } from '../types'
+import ProgressRow from '../components/ProgressRow'
 import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
 import ReadingLogModal from '../components/modals/ReadingLogModal'
+import DiscussionNoteModal from '../components/modals/DiscussionNoteModal'
+import AttendanceControl from '../components/AttendanceControl'
 import KebabMenu from '../components/ui/KebabMenu'
-import { isPast, parseLocalDate } from '../utils/dates'
+import RoleEyebrow from '../components/ui/RoleEyebrow'
+import { isPast, parseScheduledAt } from '../utils/dates'
 import DiscordIcon from '../components/icons/DiscordIcon'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 
-function formatUpNextDate(dateStr: string): string {
-  return parseLocalDate(dateStr)
+function formatUpNextDate(scheduledAt: string): string {
+  return parseScheduledAt(scheduledAt)
     .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     .replace(', ', ' · ')
     .toUpperCase()
 }
 
-function formatNextDate(dateStr: string): string {
-  return parseLocalDate(dateStr).toLocaleDateString('en-US', {
+function formatNextDate(scheduledAt: string): string {
+  return parseScheduledAt(scheduledAt).toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric',
   })
 }
 
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
-
 // Warm-dark hairline and button border — design tokens not in CSS vars
 const HAIRLINE = 'rgba(242,237,229,0.08)'
-const LABEL_COLOR = '#C9BDA8'
 const TRACK_COLOR = '#332B24'
 const COPPER = '#D16D30'
 const MUTED = '#8C8073'
@@ -103,40 +102,23 @@ function AvatarStack({ members, totalCount, currentMemberId }: {
       {extra > 0 && (
         <div
           className="relative shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ring-2 ring-[var(--color-bg-elevated)]"
-          style={{ marginLeft: -8, background: TRACK_COLOR, color: LABEL_COLOR }}
+          style={{ marginLeft: -8, background: TRACK_COLOR, color: '#C9BDA8' }}
         >+{extra}</div>
       )}
     </div>
   )
 }
 
-// ─── RoleEyebrow ─────────────────────────────────────────────────────────────
-
-function RoleEyebrow({ role }: { role: string }) {
-  const r = role.toLowerCase()
-  const dotColor = r === 'owner' ? '#C9900A' : r === 'admin' ? '#006781' : null
-  const textColor = r === 'owner' ? '#C9900A' : r === 'admin' ? '#7BA8B8' : 'rgba(201,189,168,0.7)'
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0 }}>
-      {dotColor && (
-        <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
-      )}
-      <span style={{
-        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-        fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-        textTransform: 'uppercase', color: textColor,
-      }}>{capitalize(role)}</span>
-    </span>
-  )
-}
-
 // ─── ShelfRow ─────────────────────────────────────────────────────────────────
 
-function ShelfRow({ title, author, coverUrl, clubName, done, total, nextDate }: {
+function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book, sessionId, onUpdated }: {
   title: string; author: string; coverUrl?: string | null;
-  clubName: string; done: number; total: number; nextDate: string | null;
+  clubName: string; nextDate: string | null;
+  progress: ReadingProgress | null;
+  book: Book;
+  sessionId?: string;
+  onUpdated: (p: ReadingProgress) => void;
 }) {
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0
   return (
     <div className="flex gap-[22px]">
       {/* Mobile cover (44×60) */}
@@ -149,46 +131,40 @@ function ShelfRow({ title, author, coverUrl, clubName, done, total, nextDate }: 
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-baseline gap-4 mb-1">
-          <p style={{
-            fontFamily: '"EB Garamond", Georgia, serif',
-            fontStyle: 'italic', fontWeight: 500,
-            lineHeight: 1.1, letterSpacing: '-0.008em',
-            color: 'var(--color-text-primary)',
-          }} className="text-[22px] md:text-[28px]">{title}</p>
-          <span style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-            flexShrink: 0,
-          }}>{clubName}</span>
-        </div>
+        <div className="flex justify-between items-start gap-4 mb-5">
+          {/* Left: Book Title & Author */}
+          <div className="flex-1 min-w-0">
+            <p style={{
+              fontFamily: '"EB Garamond", Georgia, serif',
+              fontStyle: 'italic', fontWeight: 500,
+              lineHeight: 1.1, letterSpacing: '-0.008em',
+              color: 'var(--color-text-primary)',
+              marginBottom: 4,
+            }} className="text-[22px] md:text-[28px]">{title}</p>
+            <p style={{
+              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+              fontSize: 14, color: 'var(--color-label-variant)',
+            }}>{author}</p>
+          </div>
 
-        <p style={{
-          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontSize: 14, color: LABEL_COLOR, marginBottom: 18,
-        }}>{author}</p>
-
-        {total > 0 && (
-          <div className="flex items-center gap-4 mb-3.5">
-            <div style={{ flex: 1, height: 3, background: TRACK_COLOR, borderRadius: 2, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${pct}%`, background: COPPER, borderRadius: 2 }} />
-            </div>
+          {/* Right: Metadata (Club) */}
+          <div className="flex flex-col items-end flex-shrink-0 pt-1">
             <span style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 13, color: LABEL_COLOR, flexShrink: 0,
-              fontVariantNumeric: 'tabular-nums',
-            }}>{done} of {total}</span>
+              fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
+              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            }}>{clubName}</span>
           </div>
-        )}
+        </div>
 
-        {nextDate && (
-          <span style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: COPPER,
-          }}>Next · {nextDate}</span>
-        )}
+        <ProgressRow
+          book={book}
+          progress={progress}
+          sessionId={sessionId}
+          leftLabel={nextDate ? `Next · ${nextDate}` : ""}
+          leftLabelVariant="eyebrow"
+          onUpdated={onUpdated}
+        />
       </div>
     </div>
   )
@@ -226,7 +202,7 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
             minWidth: 0, overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{name}</p>
-          <RoleEyebrow role={role} />
+          <RoleEyebrow role={role as UserRole} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <AvatarStack members={members} totalCount={memberCount} currentMemberId={currentMemberId} />
@@ -247,9 +223,11 @@ export default function ProfilePage() {
   const { member, refreshMemberData } = useAuth()
   const [clubs, setClubs] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
+  const [sessionProgressMap, setSessionProgressMap] = useState<Record<string, ReadingProgress>>({})
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
   const [showReadingLogModal, setShowReadingLogModal] = useState(false)
+  const [showNoteModal, setShowNoteModal] = useState(false)
 
   useEffect(() => {
     if (!member?.clubs.length) { setLoading(false); return }
@@ -260,7 +238,23 @@ export default function ProfilePage() {
         return invokeFunction<Club>(`club?${params}`, { method: 'GET' })
       })
     )
-      .then(results => setClubs(results.flatMap(r => r.data ? [r.data] : [])))
+      .then(results => {
+        const clubData = results.flatMap(r => r.data ? [r.data] : [])
+        setClubs(clubData)
+        
+        // Fetch progress for all active sessions
+        clubData.forEach(c => {
+          if (c.active_session?.id) {
+            invokeFunction<ReadingProgress[]>(`progress?session_id=${encodeURIComponent(c.active_session.id)}`, { method: 'GET' })
+              .then(({ data }) => {
+                if (data?.[0]) {
+                  setSessionProgressMap(prev => ({ ...prev, [c.active_session!.id]: data[0] }))
+                }
+              })
+              .catch(() => {})
+          }
+        })
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [member])
@@ -278,8 +272,8 @@ export default function ProfilePage() {
         book: c.active_session!.book,
       }))
     )
-    .filter(d => !isPast(d.date, d.time))
-    .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0] ?? null
+    .filter(d => !isPast(d.scheduled_at))
+    .sort((a, b) => parseScheduledAt(a.scheduled_at).getTime() - parseScheduledAt(b.scheduled_at).getTime())[0] ?? null
 
   // Active readings with progress + next date per book
   const shelfItems = clubs
@@ -287,15 +281,16 @@ export default function ProfilePage() {
     .map(c => {
       const session = c.active_session!
       const total = session.discussions.length
-      const done = session.discussions.filter(d => isPast(d.date, d.time)).length
+      const done = session.discussions.filter(d => isPast(d.scheduled_at)).length
       const nextDisc = session.discussions
-        .filter(d => !isPast(d.date, d.time))
-        .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())[0]
+        .filter(d => !isPast(d.scheduled_at))
+        .sort((a, b) => parseScheduledAt(a.scheduled_at).getTime() - parseScheduledAt(b.scheduled_at).getTime())[0]
       return {
         book: session.book,
+        sessionId: session.id,
         clubName: c.name,
         done, total,
-        nextDate: nextDisc ? formatNextDate(nextDisc.date) : null,
+        nextDate: nextDisc ? formatNextDate(nextDisc.scheduled_at) : null,
       }
     })
 
@@ -316,7 +311,7 @@ export default function ProfilePage() {
     ? (member.handle.startsWith('@') ? member.handle : `@${member.handle}`)
     : null
 
-  const nextDiscDate = nextDiscussion ? formatUpNextDate(nextDiscussion.date) : null
+  const nextDiscDate = nextDiscussion ? formatUpNextDate(nextDiscussion.scheduled_at) : null
 
   const desktopStats = [
     { num: member?.clubs.length ?? 0, label: 'Active clubs' },
@@ -449,7 +444,7 @@ export default function ProfilePage() {
             <span style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
               fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: LABEL_COLOR,
+              textTransform: 'uppercase', color: 'var(--color-label-variant)',
             }}>{s.label}</span>
           </div>
         ))}
@@ -471,7 +466,7 @@ export default function ProfilePage() {
             <span style={{
               fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
               fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: LABEL_COLOR,
+              textTransform: 'uppercase', color: 'var(--color-label-variant)',
             }}>{s.label}</span>
           </div>
         ))}
@@ -498,23 +493,41 @@ export default function ProfilePage() {
                 textTransform: 'uppercase', color: COPPER,
               }}>{nextDiscDate}</span>
             </div>
-            <p style={{
-              fontFamily: '"EB Garamond", Georgia, serif',
-              fontWeight: 500, fontStyle: 'italic', fontSize: 26, lineHeight: 1.15,
-              letterSpacing: '-0.012em', color: 'var(--color-text-primary)',
-              marginBottom: 10,
-            } as React.CSSProperties}>
-              {nextDiscussion.title}
-            </p>
-            <p style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5,
-            }}>
-              {nextDiscussion.clubName}
-              {nextDiscussion.location && (
-                <> <span style={{ opacity: 0.5 }}>—</span> {nextDiscussion.location}</>
-              )}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <p style={{
+                  fontFamily: '"EB Garamond", Georgia, serif',
+                  fontWeight: 500, fontStyle: 'italic', fontSize: 26, lineHeight: 1.15,
+                  letterSpacing: '-0.012em', color: 'var(--color-text-primary)',
+                  marginBottom: 10,
+                } as React.CSSProperties}>
+                  {nextDiscussion.title}
+                </p>
+                <p style={{
+                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                  fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5,
+                }}>
+                  {nextDiscussion.clubName}
+                  {nextDiscussion.location && (
+                    <> <span style={{ opacity: 0.5 }}>—</span> {nextDiscussion.location}</>
+                  )}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setShowNoteModal(true)}
+                  aria-label="Food for thought note"
+                  title="Food for thought"
+                  className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
+                  </svg>
+                </button>
+                <AttendanceControl discussion={nextDiscussion} />
+              </div>
+            </div>
           </div>
 
           {/* Desktop Up Next */}
@@ -536,28 +549,44 @@ export default function ProfilePage() {
                 textTransform: 'uppercase', color: COPPER, marginTop: 10,
               }}>{nextDiscDate}</span>
             </div>
-            <div>
-              <p style={{
-                fontFamily: '"EB Garamond", Georgia, serif',
-                fontWeight: 500, fontStyle: 'italic', fontSize: 44, lineHeight: 1.1,
-                letterSpacing: '-0.015em', color: 'var(--color-text-primary)',
-                maxWidth: 760, marginBottom: 18,
-              } as React.CSSProperties}>
-                {nextDiscussion.title}
-              </p>
-              <p style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 15, color: 'var(--color-text-secondary)',
-                display: 'flex', gap: 10,
-              }}>
-                <span>{nextDiscussion.clubName}</span>
-                {nextDiscussion.location && (
-                  <>
-                    <span style={{ opacity: 0.5 }}>—</span>
-                    <span>{nextDiscussion.location}</span>
-                  </>
-                )}
-              </p>
+            <div className="flex items-start justify-between gap-6">
+              <div className="flex-1 min-w-0">
+                <p style={{
+                  fontFamily: '"EB Garamond", Georgia, serif',
+                  fontWeight: 500, fontStyle: 'italic', fontSize: 44, lineHeight: 1.1,
+                  letterSpacing: '-0.015em', color: 'var(--color-text-primary)',
+                  maxWidth: 760, marginBottom: 18,
+                } as React.CSSProperties}>
+                  {nextDiscussion.title}
+                </p>
+                <p style={{
+                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+                  fontSize: 15, color: 'var(--color-text-secondary)',
+                  display: 'flex', gap: 10,
+                }}>
+                  <span>{nextDiscussion.clubName}</span>
+                  {nextDiscussion.location && (
+                    <>
+                      <span style={{ opacity: 0.5 }}>—</span>
+                      <span>{nextDiscussion.location}</span>
+                    </>
+                  )}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <button
+                  onClick={() => setShowNoteModal(true)}
+                  aria-label="Food for thought note"
+                  title="Food for thought"
+                  className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
+                  </svg>
+                </button>
+                <AttendanceControl discussion={nextDiscussion} />
+              </div>
             </div>
           </div>
         </>
@@ -626,16 +655,18 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="space-y-8">
-              {shelfItems.map(({ book, clubName, done, total, nextDate }, i) => (
+              {shelfItems.map(({ book, sessionId, clubName, nextDate }, i) => (
                 <ShelfRow
                   key={`${clubName}-${i}`}
                   title={book.title}
                   author={book.author}
                   coverUrl={book.image_url}
                   clubName={clubName}
-                  done={done}
-                  total={total}
                   nextDate={nextDate}
+                  book={book}
+                  sessionId={sessionId}
+                  progress={sessionProgressMap[sessionId] || null}
+                  onUpdated={(updated) => setSessionProgressMap(prev => ({ ...prev, [sessionId]: updated }))}
                 />
               ))}
             </div>
@@ -691,6 +722,12 @@ export default function ProfilePage() {
       <ReadingLogModal
         isOpen={showReadingLogModal}
         onClose={() => setShowReadingLogModal(false)}
+      />
+      <DiscussionNoteModal
+        isOpen={showNoteModal}
+        onClose={() => setShowNoteModal(false)}
+        discussion={nextDiscussion}
+        onError={() => {}}
       />
     </div>
   )

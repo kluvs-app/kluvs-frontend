@@ -232,8 +232,8 @@ describe('BooksPage', () => {
 
     it('shows shelved books grouped by shelf section with counts', async () => {
       const entries: ShelfEntry[] = [
-        { shelf: 'want_to_read', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
-        { shelf: 'read', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+        { shelf: 'want_to_read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
+        { shelf: 'read', updated_at: '2026-01-02T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
       ]
       mockSupabase.functions.invoke.mockResolvedValue({ data: entries, error: null })
       await renderAndWait()
@@ -242,6 +242,30 @@ describe('BooksPage', () => {
       expect(screen.getByText('Book B')).toBeInTheDocument()
       expect(screen.getByText('Want to Read')).toBeInTheDocument()
       expect(screen.getByText('Read')).toBeInTheDocument()
+    })
+
+    it('shows a Currently Reading section ahead of the other shelves', async () => {
+      const entries: ShelfEntry[] = [
+        { shelf: 'want_to_read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
+        { shelf: 'currently_reading', updated_at: '2026-01-02T00:00:00Z', source: 'session', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+      ]
+      mockSupabase.functions.invoke.mockResolvedValue({ data: entries, error: null })
+      await renderAndWait()
+
+      const headings = screen.getAllByText(/currently reading|want to read/i)
+      expect(headings[0]).toHaveTextContent(/currently reading/i)
+    })
+
+    it('shows a "Reading with Kluvs" ribbon on session-sourced shelved covers', async () => {
+      const entries: ShelfEntry[] = [
+        { shelf: 'currently_reading', updated_at: '2026-01-01T00:00:00Z', source: 'session', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
+        { shelf: 'read', updated_at: '2026-01-02T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+      ]
+      mockSupabase.functions.invoke.mockResolvedValue({ data: entries, error: null })
+      await renderAndWait()
+
+      expect(screen.getByLabelText(/reading with kluvs/i)).toBeInTheDocument()
+      expect(screen.queryByLabelText(/^read with kluvs$/i)).not.toBeInTheDocument()
     })
 
     it('clicking a shelved book opens the detail overlay', async () => {
@@ -816,6 +840,42 @@ describe('BooksPage', () => {
       await act(async () => { fireEvent.click(trigger) })
     }
 
+    it('shows a "Read with Kluvs" badge in the detail panel for session-sourced entries', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint === 'shelf') return Promise.resolve({ data: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', source: 'session', book: mockRegisteredBook }], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      await renderAndWait()
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.getAllByLabelText(/read with kluvs/i).length).toBeGreaterThan(0)
+    })
+
+    it('does not show a "with Kluvs" badge for manually-shelved entries', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint === 'shelf') return Promise.resolve({ data: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: mockRegisteredBook }], error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      await renderAndWait()
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('The Great Gatsby'))
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(screen.queryByLabelText(/with kluvs/i)).not.toBeInTheDocument()
+    })
+
     it('renders the shelf button after selecting a registered book', async () => {
       await renderWithRegisteredBook()
       await selectBook()
@@ -856,6 +916,7 @@ describe('BooksPage', () => {
 
       const listbox = screen.getByRole('listbox', { name: /select shelf/i })
       expect(within(listbox).getByRole('option', { name: /none/i })).toBeInTheDocument()
+      expect(within(listbox).getByRole('option', { name: /currently reading/i })).toBeInTheDocument()
       expect(within(listbox).getByRole('option', { name: /want to read/i })).toBeInTheDocument()
       expect(within(listbox).getByRole('option', { name: /^read$/i })).toBeInTheDocument()
       expect(within(listbox).getByRole('option', { name: /not finished/i })).toBeInTheDocument()

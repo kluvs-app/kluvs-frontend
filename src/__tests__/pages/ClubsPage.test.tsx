@@ -142,7 +142,7 @@ describe('ClubsPage', () => {
       renderPage({ openNewModal: true })
       await waitFor(() => screen.getByTestId('add-club-modal'))
       await user.click(screen.getByRole('button', { name: /close/i }))
-      expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument()
+      await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument(), { timeout: 5000 })
     })
   })
 
@@ -600,8 +600,7 @@ describe('ClubsPage', () => {
                 discussions: [
                   {
                     id: '1',
-                    date: '2026-06-15',
-                    time: '19:00',
+                    scheduled_at: '2026-06-15T19:00:00Z',
                     title: 'Chapter 1-5 Discussion',
                   },
                 ],
@@ -632,8 +631,7 @@ describe('ClubsPage', () => {
                 discussions: [
                   {
                     id: '1',
-                    date: '2020-06-15',
-                    time: '19:00',
+                    scheduled_at: '2020-06-15T19:00:00Z',
                     title: 'Past Discussion',
                   },
                 ],
@@ -659,7 +657,7 @@ describe('ClubsPage', () => {
 
       const closeBtn = screen.getByRole('button', { name: /close/i })
       await user.click(closeBtn)
-      expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument()
+      await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument(), { timeout: 5000 })
     })
 
     it('new modal prop opens modal on mount', async () => {

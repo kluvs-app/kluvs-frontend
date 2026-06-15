@@ -179,7 +179,7 @@ describe('ClubDetailPage', () => {
     it('renders active session content', async () => {
       renderDetail()
       await waitFor(() => {
-        const nowReadingElements = screen.getAllByText(/now reading/i)
+        const nowReadingElements = screen.getAllByText(/active session/i)
         expect(nowReadingElements.length).toBeGreaterThan(0)
       })
     })
@@ -231,7 +231,7 @@ describe('ClubDetailPage', () => {
     it('writes slug to localStorage on mount', async () => {
       renderDetail('club-1')
       await waitFor(() => {
-        const nowReadingElements = screen.getAllByText(/now reading/i)
+        const nowReadingElements = screen.getAllByText(/active session/i)
         expect(nowReadingElements.length).toBeGreaterThan(0)
       })
       expect(localStorage.getItem('kluvs:lastClub')).toBe('club-1')
@@ -340,8 +340,10 @@ describe('ClubDetailPage', () => {
   describe('Progress and session info', () => {
     it('renders progress bar for active session', async () => {
       renderDetail()
-      await waitFor(() => screen.getByText(/through this session/i))
-      expect(screen.getByText(/through this session/i)).toBeInTheDocument()
+      await waitFor(() => {
+        // Look for the update button in ProgressRow
+        expect(screen.queryAllByRole('button', { name: /update/i }).length).toBeGreaterThan(0)
+      })
     })
   })
 
@@ -352,6 +354,43 @@ describe('ClubDetailPage', () => {
         const clubElements = screen.queryAllByText(/club/i)
         expect(clubElements.length).toBeGreaterThan(0)
       })
+    })
+
+    it('does not show "Invalid Date" in the rail when all discussions are past', async () => {
+      renderDetail()
+      await waitFor(() => {
+        const clubElements = screen.queryAllByText(/club/i)
+        expect(clubElements.length).toBeGreaterThan(0)
+      })
+      expect(screen.queryByText(/invalid date/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/NEXT ·/)).not.toBeInTheDocument()
+    })
+
+    it('shows a formatted NEXT date in the rail when an upcoming discussion exists', async () => {
+      const futureDate = new Date()
+      futureDate.setMonth(futureDate.getMonth() + 1)
+      const clubWithFutureDiscussion = {
+        ...mockClub,
+        active_session: {
+          ...mockClub.active_session!,
+          discussions: [
+            { id: 'disc-future', title: 'Future discussion', scheduled_at: futureDate.toISOString(), location: 'Room A' },
+          ],
+        },
+      }
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: clubWithFutureDiscussion, error: null })
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+
+      renderDetail()
+
+      await waitFor(() => {
+        expect(screen.queryAllByText(/NEXT ·/).length).toBeGreaterThan(0)
+      })
+      expect(screen.queryByText(/invalid date/i)).not.toBeInTheDocument()
     })
 
     it('switches club when rail item is clicked', async () => {
@@ -393,7 +432,7 @@ describe('ClubDetailPage', () => {
     it('renders NOW READING content when active session exists', async () => {
       renderDetail()
       await waitFor(() => {
-        const nowReadings = screen.queryAllByText(/now reading/i)
+        const nowReadings = screen.queryAllByText(/active session/i)
         expect(nowReadings.length).toBeGreaterThan(0)
       })
     })
@@ -489,8 +528,8 @@ describe('ClubDetailPage', () => {
     it('renders progress bar with percentage', async () => {
       renderDetail()
       await waitFor(() => {
-        // Check for progress bar or percentage text
-        expect(screen.queryAllByText(/through this session/i).length).toBeGreaterThan(0)
+        // Check for progress component by looking for the update button
+        expect(screen.queryAllByRole('button', { name: /update/i }).length).toBeGreaterThan(0)
       })
     })
 
@@ -502,11 +541,11 @@ describe('ClubDetailPage', () => {
       })
     })
 
-    it('shows session start date', async () => {
+    it('shows reading progress', async () => {
       renderDetail()
       await waitFor(() => {
-        // Check for "started" text with date
-        expect(screen.queryAllByText(/started/i).length).toBeGreaterThan(0)
+        // Check for progress component by looking for the update button
+        expect(screen.queryAllByRole('button', { name: /update/i }).length).toBeGreaterThan(0)
       })
     })
   })
@@ -815,7 +854,7 @@ describe('ClubDetailPage', () => {
 
     it('does not show invite CTA when club has multiple members', async () => {
       renderDetail()
-      await waitFor(() => expect(screen.queryAllByText(/now reading/i).length).toBeGreaterThan(0))
+      await waitFor(() => expect(screen.queryAllByText(/active session/i).length).toBeGreaterThan(0))
       expect(screen.queryAllByText(/Invite others to get the conversation going/i).length).toBe(0)
     })
   })
@@ -921,7 +960,7 @@ describe('ClubDetailPage', () => {
       renderDetail()
       await waitFor(() => {
         // Book cover and title visible
-        expect(screen.queryAllByText(/now reading/i).length).toBeGreaterThan(0)
+        expect(screen.queryAllByText(/active session/i).length).toBeGreaterThan(0)
       })
     })
 
@@ -1324,8 +1363,8 @@ describe('ClubDetailPage', () => {
               ...mockClub,
               active_session: {
                 discussions: [
-                  { id: '1', title: 'Discussion 1', date: '2020-01-01', time: '19:00' },
-                  { id: '2', title: 'Discussion 2', date: '2026-06-15', time: '19:00' },
+                  { id: '1', title: 'Discussion 1', scheduled_at: '2020-01-01T19:00:00Z' },
+                  { id: '2', title: 'Discussion 2', scheduled_at: '2026-06-15T19:00:00Z' },
                 ],
               },
             },
@@ -1350,9 +1389,9 @@ describe('ClubDetailPage', () => {
               ...mockClub,
               active_session: {
                 discussions: [
-                  { id: '1', title: 'Past', date: '2020-01-01', time: '19:00' },
-                  { id: '2', title: 'Next', date: '2026-06-15', time: '19:00' },
-                  { id: '3', title: 'Upcoming', date: '2026-07-15', time: '19:00' },
+                  { id: '1', title: 'Past', scheduled_at: '2020-01-01T19:00:00Z' },
+                  { id: '2', title: 'Next', scheduled_at: '2026-06-15T19:00:00Z' },
+                  { id: '3', title: 'Upcoming', scheduled_at: '2026-07-15T19:00:00Z' },
                 ],
               },
             },

@@ -1,4 +1,5 @@
 import type { Server, Club, Member, MemberClub, Session, Discussion, Book } from '../../types'
+import { localPartsToScheduledAt } from '../../utils/dates'
 
 const adminClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }
 const adminClub2: MemberClub = { id: 'club-2', name: 'Sci-Fi Readers', discord_channel: 'sci-fi', server_id: 'server-1', role: 'admin' }
@@ -56,18 +57,20 @@ export const mockBook2: Book = {
 }
 
 // Mock Discussions
+// scheduled_at values are composed from local date/time parts using the
+// test runner's local timezone so display assertions (e.g. "19:30") hold
+// regardless of which timezone tests run in.
 export const mockDiscussion: Discussion = {
   id: 'discussion-1',
   title: 'Chapter 1-3 Discussion',
-  date: '2024-06-15',
-  time: '19:30',
+  scheduled_at: localPartsToScheduledAt('2024-06-15', '19:30'),
   location: 'Discord Voice Channel',
 }
 
 export const mockDiscussion2: Discussion = {
   id: 'discussion-2',
   title: 'Final Discussion',
-  date: '2024-07-01',
+  scheduled_at: localPartsToScheduledAt('2024-07-01', '00:00'),
 }
 
 // Mock Sessions

@@ -5,6 +5,7 @@ import type { Discussion, AttendanceRoster } from '../types'
 
 interface AttendanceControlProps {
   discussion: Discussion
+  disabled?: boolean
 }
 
 type Status = 'yes' | 'no' | 'maybe'
@@ -17,7 +18,7 @@ const SEGMENTS: Array<{ value: Status; icon: React.ReactNode; pressedClass: stri
         <polyline points="20 6 9 17 4 12" />
       </svg>
     ),
-    pressedClass: 'bg-green-500/20 text-green-500 dark:bg-green-500/15 dark:text-green-400',
+    pressedClass: 'bg-success-subtle text-success',
   },
   {
     value: 'maybe',
@@ -35,11 +36,11 @@ const SEGMENTS: Array<{ value: Status; icon: React.ReactNode; pressedClass: stri
         <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
       </svg>
     ),
-    pressedClass: 'bg-red-500/20 text-red-500 dark:bg-red-500/15 dark:text-red-400',
+    pressedClass: 'bg-danger-subtle text-danger',
   },
 ]
 
-export default function AttendanceControl({ discussion }: AttendanceControlProps) {
+export default function AttendanceControl({ discussion, disabled = false }: AttendanceControlProps) {
   const { member } = useAuth()
   const [roster, setRoster] = useState<AttendanceRoster | null>(null)
 
@@ -64,7 +65,7 @@ export default function AttendanceControl({ discussion }: AttendanceControlProps
   }, [discussion.id])
 
   const handleClick = async (status: Status) => {
-    if (!roster || !member) return
+    if (disabled || !roster || !member) return
 
     const isClearing = roster.my_status === status
     const previous = roster
@@ -119,6 +120,7 @@ export default function AttendanceControl({ discussion }: AttendanceControlProps
             <button
               key={value}
               onClick={() => handleClick(value)}
+              disabled={disabled}
               aria-label={`RSVP ${value}`}
               aria-pressed={isSelected}
               title={value.charAt(0).toUpperCase() + value.slice(1)}
@@ -128,6 +130,7 @@ export default function AttendanceControl({ discussion }: AttendanceControlProps
                   ? pressedClass
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
                 i > 0 ? 'border-l border-[var(--color-divider)]' : '',
+                disabled ? 'cursor-not-allowed opacity-70' : '',
               ].join(' ')}
             >
               {icon}

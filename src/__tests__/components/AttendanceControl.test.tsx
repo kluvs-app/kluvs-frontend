@@ -208,6 +208,33 @@ describe('AttendanceControl', () => {
     })
   })
 
+  describe('Disabled state', () => {
+    beforeEach(() => {
+      mockInvokeFunction.mockResolvedValue({ data: rosterWithResponses, error: null })
+    })
+
+    it('renders RSVP buttons as disabled when disabled is true', async () => {
+      render(<AttendanceControl discussion={mockDiscussion} disabled />)
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /rsvp yes/i })).toBeDisabled()
+        expect(screen.getByRole('button', { name: /rsvp maybe/i })).toBeDisabled()
+        expect(screen.getByRole('button', { name: /rsvp no/i })).toBeDisabled()
+      })
+    })
+
+    it('does not call invokeFunction to update RSVP when disabled', async () => {
+      const user = userEvent.setup()
+      render(<AttendanceControl discussion={mockDiscussion} disabled />)
+      await waitFor(() => screen.getByRole('button', { name: /rsvp maybe/i }))
+
+      mockInvokeFunction.mockClear()
+      await user.click(screen.getByRole('button', { name: /rsvp maybe/i }))
+
+      expect(mockInvokeFunction).not.toHaveBeenCalled()
+      expect(screen.getByRole('button', { name: /rsvp maybe/i })).toHaveAttribute('aria-pressed', 'false')
+    })
+  })
+
   describe('Fetch uses the correct discussion id', () => {
     it('calls GET with the discussion id from props', async () => {
       mockInvokeFunction.mockResolvedValue({ data: rosterWithNoResponse, error: null })
