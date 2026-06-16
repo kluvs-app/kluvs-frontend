@@ -230,6 +230,7 @@ export default function BooksPage() {
   const [searchPage, setSearchPage]         = useState(0)
   const [hasMore, setHasMore]               = useState(false)
   const [loadingMore, setLoadingMore]       = useState(false)
+  const [showBackToTop, setShowBackToTop]   = useState(false)
 
   const PAGE_SIZE = 12
 
@@ -293,11 +294,12 @@ export default function BooksPage() {
   // Keep scroll state ref always current so the handler never reads stale closures
   scrollStateRef.current = { hasMore, loadingMore, page: searchPage, query }
 
-  // Infinite scroll via window scroll listener
+  // Scroll listener — infinite load + back-to-top visibility
   useEffect(() => {
-    if (view !== 'search') return
-
     const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400)
+
+      if (view !== 'search') return
       const { hasMore, loadingMore, page, query } = scrollStateRef.current
       if (!hasMore || loadingMore) return
       const distanceFromBottom =
@@ -958,6 +960,20 @@ export default function BooksPage() {
           </div>
         </div>
       )}
+
+      {/* ── Back to top ───────────────────────────────────────────────────── */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        aria-label="Back to top"
+        className={`fixed bottom-20 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] text-[var(--color-text-secondary)] shadow-lg hover:text-[var(--color-text-primary)] hover:border-[var(--color-text-secondary)] transition-all duration-200 ${
+          showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
+      >
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+        </svg>
+        Back to top
+      </button>
 
     </div>
   )
