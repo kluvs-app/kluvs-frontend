@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { invokeFunction, getAvatarUrl } from '../supabase'
+import { invokeFunction } from '../supabase'
 import type { Club, Discussion, Member, ReadingProgress } from '../types'
 import EditBookModal from '../components/modals/EditBookModal'
 import NewSessionModal from '../components/modals/NewSessionModal'
@@ -25,7 +25,7 @@ import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
 import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
-import Avatar from '../components/ui/Avatar'
+import AvatarStack from '../components/ui/AvatarStack'
 import MemberBadge from '../components/MemberBadge'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import ProgressRow from '../components/ProgressRow'
@@ -536,24 +536,7 @@ export default function ClubDetailPage() {
                                 <div className="flex items-center gap-2.5">
                                   {readingMembers.length > 0 ? (
                                     <>
-                                      <div className="flex -space-x-1.5">
-                                        {readingMembers.slice(0, 5).map(m => (
-                                          <div key={m.id} className="border-[1.5px] border-[var(--color-bg)] rounded-full">
-                                            <Avatar
-                                              name={m.name}
-                                              userId={String(m.id)}
-                                              imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
-                                              size="sm"
-                                              isOwn={member?.id === m.id}
-                                            />
-                                          </div>
-                                        ))}
-                                        {readingMembers.length > 5 && (
-                                          <div className="w-5 h-5 rounded-full bg-[#4D4033] border-[1.5px] border-[var(--color-bg)] text-[9px] text-white flex items-center justify-center font-medium flex-shrink-0">
-                                            +{readingMembers.length - 5}
-                                          </div>
-                                        )}
-                                      </div>
+                                      <AvatarStack members={readingMembers} size="sm" currentMemberId={member?.id} />
                                       <span className="text-[12px] text-[var(--color-text-secondary)]">
                                         {readingMembers.length} of {club.members.length} reading
                                       </span>
@@ -910,24 +893,7 @@ export default function ClubDetailPage() {
                           <div className="flex items-center gap-2.5">
                             {readingMembers.length > 0 ? (
                               <>
-                                <div className="flex -space-x-1.5">
-                                  {readingMembers.slice(0, 5).map(m => (
-                                    <div key={m.id} className="border-[1.5px] border-[var(--color-bg)] rounded-full">
-                                      <Avatar
-                                        name={m.name}
-                                        userId={String(m.id)}
-                                        imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
-                                        size="sm"
-                                        isOwn={member?.id === m.id}
-                                      />
-                                    </div>
-                                  ))}
-                                  {readingMembers.length > 5 && (
-                                    <div className="w-5 h-5 rounded-full bg-[#4D4033] border-[1.5px] border-[var(--color-bg)] text-[9px] text-white flex items-center justify-center font-medium flex-shrink-0">
-                                      +{readingMembers.length - 5}
-                                    </div>
-                                  )}
-                                </div>
+                                <AvatarStack members={readingMembers} size="sm" currentMemberId={member?.id} />
                                 <span className="text-[12px] text-[var(--color-text-secondary)]">
                                   {readingMembers.length} of {club.members.length} reading
                                 </span>
@@ -1042,24 +1008,7 @@ export default function ClubDetailPage() {
                 {/* Avatars + names text on same row */}
                 <div className="flex items-center gap-3 mb-2.5">
                   {/* Avatar row */}
-                  <div className="flex -space-x-2 items-center flex-shrink-0">
-                    {club.members.slice(0, 4).map((m) => (
-                      <div key={m.id} className="border-2 border-[var(--color-bg)] rounded-full">
-                        <Avatar
-                          name={m.name}
-                          userId={String(m.id)}
-                          imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
-                          size="md"
-                          isOwn={member?.id != null && m.id === member.id}
-                        />
-                      </div>
-                    ))}
-                    {club.members.length > 4 && (
-                      <div className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[11px] font-medium bg-[#4D4033] border-2 border-[var(--color-bg)]">
-                        +{club.members.length - 4}
-                      </div>
-                    )}
-                  </div>
+                  <AvatarStack members={club.members} max={4} size="md" currentMemberId={member?.id} className="flex-shrink-0" />
 
                   {/* Names text */}
                   <p className="text-[15px] text-[var(--color-text-primary)] font-medium">
