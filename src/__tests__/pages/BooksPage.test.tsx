@@ -1117,4 +1117,59 @@ describe('BooksPage', () => {
       )
     })
   })
+
+  describe('Infinite scroll and back-to-top', () => {
+    function makeBooks(n: number): Book[] {
+      return Array.from({ length: n }, (_, i) => ({
+        title: `Book ${i + 1}`,
+        author: 'Some Author',
+        external_google_id: `book-id-${i}`,
+      }))
+    }
+
+    it('loads next page when scroll fires near the bottom', async () => {
+      await renderAndWait()
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('book?q='))
+          return Promise.resolve({ data: { books: makeBooks(12), total: 24 }, error: null })
+        return Promise.resolve({ data: [], error: null })
+      })
+
+      await typeAndSearch('fantasy')
+
+      // In jsdom scrollHeight=0, innerHeight=768 → distanceFromBottom=-768 < 400, always triggers
+      await act(async () => {
+        fireEvent.scroll(window)
+        await vi.advanceTimersByTimeAsync(0)
+      })
+
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        expect.stringContaining('offset=12'),
+        expect.objectContaining({ method: 'GET' })
+      )
+    })
+
+    it('calls window.scrollTo when back-to-top button is clicked', async () => {
+      const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+      await renderAndWait()
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /back to top/i }))
+      })
+
+      expect(scrollToSpy).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
+      scrollToSpy.mockRestore()
+    })
+
+    it('shows back-to-top button as visible after scrolling past 400px', async () => {
+      await renderAndWait()
+
+      Object.defineProperty(window, 'scrollY', { value: 500, configurable: true })
+      await act(async () => { fireEvent.scroll(window) })
+
+      expect(screen.getByRole('button', { name: /back to top/i })).toHaveClass('opacity-100')
+
+      Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
+    })
+  })
 })
