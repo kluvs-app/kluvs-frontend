@@ -277,8 +277,8 @@ export default function BooksPage() {
         { method: 'GET' }
       )
       if (error) throw error
-      const books = (data as { books?: Book[] })?.books ?? []
-      const total = (data as { total?: number })?.total ?? null
+      const books = Array.isArray(data) ? data : (data as { books?: Book[] })?.books ?? []
+      const total = Array.isArray(data) ? null : (data as { total?: number })?.total ?? null
       setResults(prev => page === 0 ? books : [...prev, ...books])
       setHasMore(total != null ? offset + books.length < total : books.length === PAGE_SIZE)
     } catch {
@@ -288,7 +288,6 @@ export default function BooksPage() {
       setSearching(false)
       setLoadingMore(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Keep scroll state ref always current so the handler never reads stale closures
