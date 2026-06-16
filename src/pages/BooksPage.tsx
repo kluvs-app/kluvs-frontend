@@ -174,7 +174,7 @@ function BookGrid({ books, search, onSelect, badgeFor }: {
   badgeFor?: (book: Book) => { label: string } | undefined
 }) {
   return (
-    <div className={`grid grid-cols-3 ${search ? 'lg:grid-cols-5' : 'lg:grid-cols-7'} gap-x-3 gap-y-6 lg:gap-x-[22px] lg:gap-y-9`}>
+    <div className={`grid grid-cols-4 ${search ? 'lg:grid-cols-6' : 'lg:grid-cols-8'} gap-x-2.5 gap-y-5 lg:gap-x-4 lg:gap-y-7`}>
       {books.map((book, i) => (
         <BookCard
           key={book.id ?? book.external_google_id ?? i}
@@ -192,7 +192,7 @@ function BookGrid({ books, search, onSelect, badgeFor }: {
 
 function GridShimmer({ search, count }: { search?: boolean; count: number }) {
   return (
-    <div className={`grid grid-cols-3 ${search ? 'lg:grid-cols-5' : 'lg:grid-cols-7'} gap-x-3 gap-y-6 lg:gap-x-[22px] lg:gap-y-9`}>
+    <div className={`grid grid-cols-4 ${search ? 'lg:grid-cols-6' : 'lg:grid-cols-8'} gap-x-2.5 gap-y-5 lg:gap-x-4 lg:gap-y-7`}>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="flex flex-col gap-2">
           <Shimmer className="w-full aspect-[2/3] rounded-sm" />
@@ -227,10 +227,17 @@ export default function BooksPage() {
   const [shelvedBooks, setShelvedBooks]     = useState<ShelfEntry[]>([])
   const [loadingShelves, setLoadingShelves] = useState(true)
   const [shelvesError, setShelvesError]     = useState('')
+  const [searchPage, setSearchPage]         = useState(0)
+  const [hasMore, setHasMore]               = useState(false)
+  const [loadingMore, setLoadingMore]       = useState(false)
+
+  const PAGE_SIZE = 12
 
   const debounceRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeId       = useRef<string | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  // Scroll state ref — always current, readable synchronously inside event handlers
+  const scrollStateRef = useRef({ hasMore: false, loadingMore: false, page: 0, query: '' })
 
   const { setTopBar, resetTopBar } = useMobileTopBar()
 
@@ -257,32 +264,69 @@ export default function BooksPage() {
       .finally(() => setLoadingShelves(false))
   }, [])
 
-  const search = useCallback(async (q: string) => {
-    if (!q.trim()) { setResults([]); return }
-    setSearching(true)
+  const search = useCallback(async (q: string, page = 0) => {
+    if (!q.trim()) { setResults([]); setHasMore(false); return }
+    if (page === 0) setSearching(true)
+    else setLoadingMore(true)
     setSearchError('')
     try {
-      const { data, error } = await invokeFunction<Book[] | { books?: Book[] }>(
-        `book?q=${encodeURIComponent(q.trim())}`,
+      const offset = page * PAGE_SIZE
+      const { data, error } = await invokeFunction<{ books?: Book[]; total?: number }>(
+        `book?q=${encodeURIComponent(q.trim())}&limit=${PAGE_SIZE}&offset=${offset}`,
         { method: 'GET' }
       )
       if (error) throw error
-      const books = Array.isArray(data) ? data : (data as { books?: Book[] })?.books ?? []
-      setResults(books)
+      const books = (data as { books?: Book[] })?.books ?? []
+      const total = (data as { total?: number })?.total ?? null
+      setResults(prev => page === 0 ? books : [...prev, ...books])
+      setHasMore(total != null ? offset + books.length < total : books.length === PAGE_SIZE)
     } catch {
-      setSearchError('Search failed. Please try again.')
-      setResults([])
+      if (page === 0) { setSearchError('Search failed. Please try again.'); setResults([]) }
+      setHasMore(false)
     } finally {
       setSearching(false)
+      setLoadingMore(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Keep scroll state ref always current so the handler never reads stale closures
+  scrollStateRef.current = { hasMore, loadingMore, page: searchPage, query }
+
+  // Infinite scroll via window scroll listener
+  useEffect(() => {
+    if (view !== 'search') return
+
+    const handleScroll = () => {
+      const { hasMore, loadingMore, page, query } = scrollStateRef.current
+      if (!hasMore || loadingMore) return
+      const distanceFromBottom =
+        document.documentElement.scrollHeight - window.scrollY - window.innerHeight
+      if (distanceFromBottom < 400) {
+        scrollStateRef.current.loadingMore = true // immediate guard against double-fire
+        const nextPage = page + 1
+        setSearchPage(nextPage)
+        search(query, nextPage)
+      }
+    }
+
+    // Check immediately — content may not fill the screen on first load
+    const t = setTimeout(handleScroll, 100)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [view, search])
 
   const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
     setQuery(val)
     setSearchError('')
+    setSearchPage(0)
+    setHasMore(false)
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => search(val), 400)
+    debounceRef.current = setTimeout(() => search(val, 0), 400)
   }
 
   const goToSearch = () => setView('search')
@@ -291,6 +335,8 @@ export default function BooksPage() {
     setQuery('')
     setResults([])
     setSearchError('')
+    setSearchPage(0)
+    setHasMore(false)
   }
 
   const handleSelect = (book: Book) => {
@@ -644,7 +690,7 @@ export default function BooksPage() {
             )}
 
             {query.trim() && searching && results.length === 0 && (
-              <GridShimmer search count={10} />
+              <GridShimmer search count={PAGE_SIZE} />
             )}
 
             {query.trim() && !searching && results.length === 0 && !searchError && (
@@ -662,7 +708,10 @@ export default function BooksPage() {
             )}
 
             {results.length > 0 && (
-              <BookGrid books={results} search onSelect={handleSelect} />
+              <>
+                <BookGrid books={results} search onSelect={handleSelect} />
+                {loadingMore && <div className="mt-5"><GridShimmer search count={PAGE_SIZE} /></div>}
+              </>
             )}
           </>
         )}
