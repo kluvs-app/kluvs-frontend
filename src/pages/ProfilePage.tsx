@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { invokeFunction, getAvatarUrl } from '../supabase'
 import Avatar from '../components/ui/Avatar'
+import AvatarStack from '../components/ui/AvatarStack'
 import { useAuth } from '../contexts/AuthContext'
 import type { Club, ReadingProgress, Book, UserRole } from '../types'
 import ProgressRow from '../components/ProgressRow'
@@ -33,7 +34,6 @@ function formatNextDate(scheduledAt: string): string {
 
 // Warm-dark hairline and button border — design tokens not in CSS vars
 const HAIRLINE = 'rgba(242,237,229,0.08)'
-const TRACK_COLOR = '#332B24'
 const COPPER = '#D16D30'
 const MUTED = '#8C8073'
 
@@ -67,43 +67,6 @@ function CoverSlot({ url, w, h }: { url?: string | null; w: number; h: number })
           letterSpacing: '0.12em', textTransform: 'uppercase',
           paddingBottom: 6, opacity: 0.7, position: 'relative', zIndex: 1,
         }}>cover</span>
-      )}
-    </div>
-  )
-}
-
-// ─── AvatarStack ──────────────────────────────────────────────────────────────
-
-function AvatarStack({ members, totalCount, currentMemberId }: {
-  members: Array<{ id?: number | string | null; name?: string | null; avatar_path?: string | null }>;
-  totalCount: number;
-  currentMemberId?: number;
-}) {
-  const shown = members.slice(0, 3)
-  const extra = totalCount - shown.length
-  return (
-    <div className="flex shrink-0">
-      {shown.map((m, i) => (
-        <div
-          key={i}
-          className="relative shrink-0"
-          style={{ marginLeft: i === 0 ? 0 : -8, zIndex: shown.length - i }}
-        >
-          <Avatar
-            name={m.name ?? '?'}
-            userId={String(m.id ?? 0)}
-            imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
-            isOwn={m.id === currentMemberId}
-            size="md"
-            className="ring-2 ring-[var(--color-bg-elevated)]"
-          />
-        </div>
-      ))}
-      {extra > 0 && (
-        <div
-          className="relative shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium ring-2 ring-[var(--color-bg-elevated)]"
-          style={{ marginLeft: -8, background: TRACK_COLOR, color: '#C9BDA8' }}
-        >+{extra}</div>
       )}
     </div>
   )
@@ -205,7 +168,7 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
           <RoleEyebrow role={role as UserRole} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <AvatarStack members={members} totalCount={memberCount} currentMemberId={currentMemberId} />
+          <AvatarStack members={members} max={3} size="md" currentMemberId={currentMemberId} />
           <span style={{
             fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
             fontSize: 13, color: 'var(--color-text-secondary)',

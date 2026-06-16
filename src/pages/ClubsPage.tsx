@@ -7,7 +7,7 @@ import type { Club } from '../types'
 import AddClubModal from '../components/modals/AddClubModal'
 import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
-import Avatar from '../components/ui/Avatar'
+import AvatarStack from '../components/ui/AvatarStack'
 
 interface ClubsPageProps {
   openNewModal?: boolean
@@ -140,18 +140,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                   {/* Member avatars + next date */}
                   <div className="flex items-center gap-2">
                     {fullClub?.members && fullClub.members.length > 0 && (
-                      <div className="flex -space-x-2 items-center">
-                        {fullClub.members.slice(0, 5).map((m) => (
-                          <div key={m.id} className="border border-[var(--color-bg)] rounded-full">
-                            <Avatar name={m.name} userId={String(m.id)} size="sm" isOwn={member?.id != null && m.id === member.id} />
-                          </div>
-                        ))}
-                        {fullClub.members.length > 5 && (
-                          <span className="text-[11px] text-[var(--color-text-secondary)] ml-1">
-                            +{fullClub.members.length - 5}
-                          </span>
-                        )}
-                      </div>
+                      <AvatarStack members={fullClub.members} size="sm" currentMemberId={member?.id} />
                     )}
                     {fullClub?.active_session?.discussions && fullClub.active_session.discussions.length > 0 && (() => {
                       const next = fullClub.active_session.discussions.find((d) => !isPast(d.scheduled_at))
