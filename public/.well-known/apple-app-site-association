@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["NYFJAGR62C.com.ivangarzab.kluvs"],
+        "components": [
+          {
+            "/": "/join/*",
+            "comment": "Club invite links — open in the Kluvs app when installed."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { invokeFunction, getAvatarUrl } from '../../supabase'
+import { invokeFunction } from '../../supabase'
 import type { Club, Member } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
-import Avatar from '../ui/Avatar'
+import AvatarStack from '../ui/AvatarStack'
 import BaseModal from './BaseModal'
 
 interface EndSessionModalProps {
@@ -92,23 +92,12 @@ export default function EndSessionModal({
 
         {readingMembers.length > 0 ? (
           <div className="flex items-center gap-3">
-            <div className="flex -space-x-1.5">
-              {readingMembers.slice(0, 8).map(m => (
-                <div key={m.id} className="border-[1.5px] border-[var(--color-bg-raised)] rounded-full">
-                  <Avatar
-                    name={m.name}
-                    userId={String(m.id)}
-                    imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
-                    size="sm"
-                  />
-                </div>
-              ))}
-              {readingMembers.length > 8 && (
-                <div className="w-5 h-5 rounded-full bg-[#4D4033] border-[1.5px] border-[var(--color-bg-raised)] text-[9px] text-white flex items-center justify-center font-medium flex-shrink-0">
-                  +{readingMembers.length - 8}
-                </div>
-              )}
-            </div>
+            <AvatarStack
+              members={readingMembers}
+              max={8}
+              size="sm"
+              borderColor="var(--color-bg-raised)"
+            />
             <p className="text-sm text-[var(--color-text-secondary)]">
               {readingCount} member{readingCount !== 1 ? 's' : ''} will receive credit.
             </p>
