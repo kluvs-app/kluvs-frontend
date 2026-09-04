@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Header from '../../components/Header'
@@ -84,25 +84,11 @@ describe('Header', () => {
       expect(screen.queryByRole('link', { name: /Dashboard/i })).not.toBeInTheDocument()
     })
 
-    it('should link to the OAuth redirect URL on the production marketing host', () => {
-      const hostnameSpy = vi.spyOn(window, 'location', 'get').mockReturnValue({
-        ...window.location,
-        hostname: 'kluvs.com',
-      } as Location)
-
+    it('should link to the OAuth redirect URL', () => {
       renderHeader({ showOpenAppButton: true })
 
       const button = screen.getByRole('link', { name: /Dashboard/i })
       expect(button).toHaveAttribute('href', `${import.meta.env.VITE_OAUTH_REDIRECT_URL}/me`)
-
-      hostnameSpy.mockRestore()
-    })
-
-    it('should link to the same origin on non-production hosts (e.g. previews)', () => {
-      renderHeader({ showOpenAppButton: true })
-
-      const button = screen.getByRole('link', { name: /Dashboard/i })
-      expect(button).toHaveAttribute('href', `${window.location.origin}/me`)
     })
 
     it('should have proper styling', () => {
