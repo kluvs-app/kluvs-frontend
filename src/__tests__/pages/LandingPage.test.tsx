@@ -33,11 +33,13 @@ describe('LandingPage', () => {
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     })
 
-    it('should render the "Dashboard" nav link pointing to the app subdomain', () => {
+    it('should render the "Dashboard" nav link', () => {
       renderLandingPage()
       const link = screen.getByRole('link', { name: /dashboard/i })
       expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', `${import.meta.env.VITE_OAUTH_REDIRECT_URL}/me`)
+      // jsdom's default test host (localhost) has no real app.* subdomain, so this stays
+      // same-origin with the app-domain override — see utils/domainNav.ts.
+      expect(link).toHaveAttribute('href', `${window.location.origin}/me?domain=app`)
     })
   })
 
@@ -74,7 +76,7 @@ describe('LandingPage', () => {
 
   describe('Contact Form', () => {
     beforeEach(() => {
-      vi.stubGlobal('location', { href: '' })
+      vi.stubGlobal('location', { ...window.location, href: '' })
     })
 
     it('should render the Name input field', () => {

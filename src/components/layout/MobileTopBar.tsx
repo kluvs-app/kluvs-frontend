@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useMobileTopBar } from '../../contexts/MobileTopBarContext'
 import { getAvatarUrl } from '../../supabase'
+import { getMarketingHref } from '../../utils/domainNav'
 import SignOutModal from '../modals/SignOutModal'
 import EditProfileModal from '../modals/EditProfileModal'
 import DiscordLinkModal from '../modals/DiscordLinkModal'
@@ -91,7 +92,7 @@ export default function MobileTopBar() {
 
           {/* Center: wordmark — always */}
           <a
-            href={import.meta.env.VITE_OAUTH_REDIRECT_URL?.replace('app.', '') ?? '/'}
+            href={getMarketingHref()}
             className="flex items-center justify-center hover:opacity-80 transition-opacity"
             aria-label="Kluvs home"
           >
