@@ -32,6 +32,7 @@ export default function EditProfileModal({
   const [handle, setHandle] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [inlineError, setInlineError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export default function EditProfileModal({
     try {
       setLoading(true)
       onError('')
+      setInlineError(null)
 
       let newAvatarPath = member.avatar_path ?? null
 
@@ -87,7 +89,9 @@ export default function EditProfileModal({
       onClose()
       onProfileUpdated()
     } catch (err: unknown) {
-      onError(err instanceof Error ? err.message : 'Failed to update profile')
+      const message = err instanceof Error ? err.message : 'Failed to update profile'
+      setInlineError(message)
+      onError(message)
     } finally {
       setLoading(false)
     }
@@ -100,6 +104,7 @@ export default function EditProfileModal({
     setAvatarFile(null)
     setAvatarPreview(null)
     onError('')
+    setInlineError(null)
     onClose()
   }
 
@@ -223,6 +228,9 @@ export default function EditProfileModal({
               className="flex-1 bg-transparent py-3 pr-4 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none"
             />
           </div>
+          {inlineError && (
+            <p className="mt-2 text-sm text-red-400">{inlineError}</p>
+          )}
         </div>
 
         {/* Discord status */}
