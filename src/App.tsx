@@ -1,7 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useSearchParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import KluvsSpinner from './components/KluvsSpinner'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { APP_DOMAIN_STORAGE_KEY, isRealKluvsHost } from './utils/domainNav'
+import PreviewDebugBadge from './components/PreviewDebugBadge'
 import ClubsPage from './pages/ClubsPage'
 import ClubDetailPage from './pages/ClubDetailPage'
 import ProfilePage from './pages/ProfilePage'
@@ -65,14 +68,55 @@ export function ProtectedRoute() {
   return <Outlet />
 }
 
+function computeIsAppDomain(): boolean {
+  if (window.location.hostname.startsWith('app.')) return true
+  if (import.meta.env.VITE_FORCE_APP_DOMAIN === 'true') return true
+
+  const override = new URLSearchParams(window.location.search).get('domain')
+  if (override === 'app') return true
+  if (override === 'marketing') return false
+
+  try {
+    return sessionStorage.getItem(APP_DOMAIN_STORAGE_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+// Captures a one-time `?domain=app|marketing` entry signal (from the Dashboard button /
+// marketing link on hosts with no real app.* subdomain — see utils/domainNav.ts) into
+// sessionStorage, then scrubs it from the visible URL via React Router's own history API
+// (rather than a raw window.history call) so useLocation()/useSearchParams() elsewhere
+// stay consistent with the address bar.
+function DomainOverrideCleanup() {
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const override = searchParams.get('domain')
+    if (!override) return
+
+    try {
+      if (override === 'app') sessionStorage.setItem(APP_DOMAIN_STORAGE_KEY, 'true')
+      else sessionStorage.removeItem(APP_DOMAIN_STORAGE_KEY)
+    } catch { /* ignore */ }
+
+    const next = new URLSearchParams(searchParams)
+    next.delete('domain')
+    setSearchParams(next, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return null
+}
+
 function App() {
-  const isAppDomain =
-    window.location.hostname.startsWith('app.') ||
-    import.meta.env.VITE_FORCE_APP_DOMAIN === 'true'
+  const [isAppDomain] = useState(computeIsAppDomain)
 
   return (
     <ThemeProvider>
+      {!isRealKluvsHost(window.location.hostname) && <PreviewDebugBadge isAppDomain={isAppDomain} />}
       <BrowserRouter>
+        <DomainOverrideCleanup />
         <ScrollToTop />
         {isAppDomain ? (
           <AuthProvider>

@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from '../contexts/ThemeContext'
 import { PublicAuthRoute, ProtectedRoute } from '../App'
 import App from '../App'
+import { APP_DOMAIN_STORAGE_KEY } from '../utils/domainNav'
 
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -117,7 +118,11 @@ describe('ProtectedRoute', () => {
 
 describe('App', () => {
   beforeEach(() => { vi.clearAllMocks() })
-  afterEach(() => { vi.unstubAllEnvs() })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+    sessionStorage.removeItem(APP_DOMAIN_STORAGE_KEY)
+    window.history.pushState({}, '', '/')
+  })
 
   it('renders the marketing tree when not on the app domain', () => {
     vi.stubEnv('VITE_FORCE_APP_DOMAIN', '')
@@ -129,6 +134,34 @@ describe('App', () => {
   it('renders the app tree when VITE_FORCE_APP_DOMAIN is set', () => {
     vi.stubEnv('VITE_FORCE_APP_DOMAIN', 'true')
     mockUseAuth.mockReturnValue({ user: null, loading: false, isPasswordRecovery: false } as never)
+    render(<App />)
+    expect(screen.getByText('Login Page')).toBeInTheDocument()
+  })
+
+  it('renders the app tree when the ?domain=app override is present in the URL', () => {
+    vi.stubEnv('VITE_FORCE_APP_DOMAIN', '')
+    mockUseAuth.mockReturnValue({ user: null, loading: false, isPasswordRecovery: false } as never)
+    window.history.pushState({}, '', '/?domain=app')
+
+    render(<App />)
+    expect(screen.getByText('Login Page')).toBeInTheDocument()
+  })
+
+  it('renders the marketing tree when the ?domain=marketing override is present', () => {
+    vi.stubEnv('VITE_FORCE_APP_DOMAIN', '')
+    mockUseAuth.mockReturnValue({ user: null, loading: false, isPasswordRecovery: false } as never)
+    sessionStorage.setItem(APP_DOMAIN_STORAGE_KEY, 'true')
+    window.history.pushState({}, '', '/?domain=marketing')
+
+    render(<App />)
+    expect(screen.getByText('Landing Page')).toBeInTheDocument()
+  })
+
+  it('renders the app tree from a stored override with no query param present', () => {
+    vi.stubEnv('VITE_FORCE_APP_DOMAIN', '')
+    mockUseAuth.mockReturnValue({ user: null, loading: false, isPasswordRecovery: false } as never)
+    sessionStorage.setItem(APP_DOMAIN_STORAGE_KEY, 'true')
+
     render(<App />)
     expect(screen.getByText('Login Page')).toBeInTheDocument()
   })
