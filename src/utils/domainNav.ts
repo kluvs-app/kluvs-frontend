@@ -5,7 +5,8 @@
 // silently lands on a *different* environment's stable deployment. On those hosts, domain
 // switching instead happens in-place via a `?domain=app|marketing` URL param, which
 // App.tsx captures into sessionStorage and strips from the address bar on load.
-export function isRealKluvsHost(hostname: string): boolean {
+export function isRealKluvsHost(hostname: string | undefined): boolean {
+  if (!hostname) return false
   return (
     hostname === 'kluvs.com' || hostname.endsWith('.kluvs.com') ||
     hostname === 'kluvs.xyz' || hostname.endsWith('.kluvs.xyz')

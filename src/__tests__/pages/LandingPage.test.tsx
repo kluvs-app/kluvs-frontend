@@ -76,7 +76,7 @@ describe('LandingPage', () => {
 
   describe('Contact Form', () => {
     beforeEach(() => {
-      vi.stubGlobal('location', { href: '' })
+      vi.stubGlobal('location', { ...window.location, href: '' })
     })
 
     it('should render the Name input field', () => {
