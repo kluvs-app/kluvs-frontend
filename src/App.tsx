@@ -3,8 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet, useSearchParams } from 
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import KluvsSpinner from './components/KluvsSpinner'
 import { ThemeProvider } from './contexts/ThemeContext'
-import { APP_DOMAIN_STORAGE_KEY, isRealKluvsHost } from './utils/domainNav'
-import PreviewDebugBadge from './components/PreviewDebugBadge'
+import { APP_DOMAIN_STORAGE_KEY } from './utils/domainNav'
 import ClubsPage from './pages/ClubsPage'
 import ClubDetailPage from './pages/ClubDetailPage'
 import ProfilePage from './pages/ProfilePage'
@@ -114,7 +113,6 @@ function App() {
 
   return (
     <ThemeProvider>
-      {!isRealKluvsHost(window.location.hostname) && <PreviewDebugBadge isAppDomain={isAppDomain} />}
       <BrowserRouter>
         <DomainOverrideCleanup />
         <ScrollToTop />
