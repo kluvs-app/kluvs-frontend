@@ -57,14 +57,9 @@ export default function MembersTable({
               <p className="font-medium text-[var(--color-text-primary)] text-sm leading-tight">
                 {member.name}
               </p>
-              {(member.handle || member.discord_id) && (
-                <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
-                  {(() => {
-                    const raw = member.handle || member.discord_id || ''
-                    return raw.startsWith('@') ? raw : `@${raw}`
-                  })()}
-                </p>
-              )}
+              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+                @{member.handle}
+              </p>
             </div>
 
             {/* Right side: pts + admin actions */}

@@ -108,7 +108,7 @@ export interface Member {
   id: number
   user_id?: string
   name: string
-  handle?: string
+  handle: string
   books_read: number
   clubs: MemberClub[]
   created_at?: string

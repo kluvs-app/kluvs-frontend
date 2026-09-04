@@ -37,7 +37,7 @@ export default function EditProfileModal({
   useEffect(() => {
     if (isOpen && currentMember) {
       setName(currentMember.name)
-      setHandle(currentMember.handle ?? '')
+      setHandle(currentMember.handle)
       setAvatarFile(null)
       setAvatarPreview(null)
     }
@@ -56,7 +56,7 @@ export default function EditProfileModal({
   }
 
   const handleSubmit = async () => {
-    if (!name.trim() || !member) return
+    if (!name.trim() || !handle.trim() || !member) return
     try {
       setLoading(true)
       onError('')
@@ -77,7 +77,7 @@ export default function EditProfileModal({
         id: member.id,
         name: name.trim(),
         books_read: member.books_read,
-        handle: handle.trim() || null,
+        handle: handle.trim(),
       }
       if (newAvatarPath !== member.avatar_path) body.avatar_path = newAvatarPath
 
@@ -107,7 +107,7 @@ export default function EditProfileModal({
 
   const initials = member.name ? nameInitials(member.name) : '?'
   const currentAvatarUrl = avatarPreview ?? (currentMember?.avatar_path ? getAvatarUrl(currentMember.avatar_path) : null)
-  const hasChanges = name.trim() !== member.name || (handle.trim() || null) !== (member.handle ?? null) || avatarFile !== null
+  const hasChanges = name.trim() !== member.name || handle.trim() !== member.handle || avatarFile !== null
 
   return (
     <BaseModal
@@ -125,7 +125,7 @@ export default function EditProfileModal({
           >Cancel</button>
           <button
             onClick={handleSubmit}
-            disabled={loading || !name.trim() || !hasChanges}
+            disabled={loading || !name.trim() || !handle.trim() || !hasChanges}
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="#ffffff" />}
@@ -210,7 +210,7 @@ export default function EditProfileModal({
               textTransform: 'uppercase', color: 'var(--color-text-secondary)',
               marginBottom: 8,
             }}
-          >Handle <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+          >Handle</label>
           <div className="flex items-center bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-colors">
             <span className="pl-4 pr-1 text-sm text-[var(--color-text-secondary)] select-none shrink-0">@</span>
             <input
