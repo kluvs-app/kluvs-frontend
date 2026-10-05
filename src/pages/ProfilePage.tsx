@@ -8,6 +8,7 @@ import type { Club, ReadingProgress, Book, UserRole } from '../types'
 import ProgressRow from '../components/ProgressRow'
 import EditProfileModal from '../components/modals/EditProfileModal'
 import SignOutModal from '../components/modals/SignOutModal'
+import DeleteAccountModal from '../components/modals/DeleteAccountModal'
 import ReadingLogModal from '../components/modals/ReadingLogModal'
 import DiscussionNoteModal from '../components/modals/DiscussionNoteModal'
 import AttendanceControl from '../components/AttendanceControl'
@@ -189,6 +190,7 @@ export default function ProfilePage() {
   const [sessionProgressMap, setSessionProgressMap] = useState<Record<string, ReadingProgress>>({})
   const [showEditProfileModal, setShowEditProfileModal] = useState(false)
   const [showSignOutModal, setShowSignOutModal] = useState(false)
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false)
   const [showReadingLogModal, setShowReadingLogModal] = useState(false)
   const [showNoteModal, setShowNoteModal] = useState(false)
 
@@ -306,6 +308,7 @@ export default function ProfilePage() {
               { label: 'Edit Profile', onClick: () => setShowEditProfileModal(true) },
               { label: 'Reading Log', onClick: () => setShowReadingLogModal(true) },
               { label: 'Sign out', danger: true, onClick: () => setShowSignOutModal(true) },
+              { label: 'Delete Account', danger: true, onClick: () => setShowDeleteAccountModal(true) },
             ]}
           />
         </div>
@@ -681,6 +684,10 @@ export default function ProfilePage() {
       <SignOutModal
         isOpen={showSignOutModal}
         onClose={() => setShowSignOutModal(false)}
+      />
+      <DeleteAccountModal
+        isOpen={showDeleteAccountModal}
+        onClose={() => setShowDeleteAccountModal(false)}
       />
       <ReadingLogModal
         isOpen={showReadingLogModal}
