@@ -13,7 +13,7 @@ The fastest way to delete your account is **in-app**, and takes effect immediate
 - **Web**: Go to your **Profile** page, open the menu (⋮), and select **Delete Account**.
 - **Mobile**: Go to **Settings** and select **Delete Account**.
 
-Confirming is permanent — your account, profile, and club memberships are deleted right away. If you're the sole admin of a club, ownership is automatically transferred to another member, or the club is deleted if you're its only member.
+Confirming is permanent — your account, profile, and club memberships are deleted right away. If you own a club, ownership is automatically transferred to another member (an admin, if there is one), or the club is deleted if you're its only member.
 
 ### Can't log in?
 

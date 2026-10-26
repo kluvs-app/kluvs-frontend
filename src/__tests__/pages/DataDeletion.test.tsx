@@ -29,9 +29,14 @@ describe('DataDeletion', () => {
   })
 
   describe('Section Headings', () => {
-    it('should render the "How to Request Deletion" section', () => {
+    it('should render the "How to Delete Your Account" section', () => {
       renderDataDeletion()
-      expect(screen.getByRole('heading', { name: /how to request deletion/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /how to delete your account/i })).toBeInTheDocument()
+    })
+
+    it('should render the "Can\'t log in?" fallback section', () => {
+      renderDataDeletion()
+      expect(screen.getByRole('heading', { name: /can't log in/i })).toBeInTheDocument()
     })
 
     it('should render the "What Gets Deleted" section', () => {
@@ -54,6 +59,11 @@ describe('DataDeletion', () => {
     it('should mention the contact email', () => {
       renderDataDeletion()
       expect(screen.getAllByText(/kluvs\.app@gmail\.com/i).length).toBeGreaterThan(0)
+    })
+
+    it('should describe the in-app deletion path as immediate', () => {
+      renderDataDeletion()
+      expect(screen.getAllByText(/immediately/i).length).toBeGreaterThan(0)
     })
 
     it('should mention the 30-day deletion timeline', () => {

@@ -36,6 +36,15 @@ vi.mock('../../components/modals/SignOutModal', () => ({
     ) : null,
 }))
 
+vi.mock('../../components/modals/DeleteAccountModal', () => ({
+  default: ({ isOpen, onClose }: any) =>
+    isOpen ? (
+      <div role="dialog" data-testid="delete-account-modal">
+        <button onClick={onClose}>Cancel</button>
+      </div>
+    ) : null,
+}))
+
 vi.mock('../../components/modals/ReadingLogModal', () => ({
   default: ({ isOpen, onClose }: any) =>
     isOpen ? (
@@ -345,6 +354,38 @@ describe('ProfilePage', () => {
       await user.click(await screen.findByText('Reading Log'))
       await user.click(screen.getByRole('button', { name: /close/i }))
       expect(screen.queryByTestId('reading-log-modal')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Delete Account', () => {
+    it('offers Delete Account in both the mobile and desktop kebab menus', async () => {
+      const user = userEvent.setup()
+      renderPage()
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThanOrEqual(2))
+      for (const trigger of screen.getAllByRole('button', { name: /open menu/i }).slice(0, 2)) {
+        await user.click(trigger)
+        expect(await screen.findByText('Delete Account')).toBeInTheDocument()
+        await user.click(trigger)
+      }
+    })
+
+    it('opens DeleteAccountModal from the desktop kebab', async () => {
+      const user = userEvent.setup()
+      renderPage()
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThanOrEqual(2))
+      await user.click(screen.getAllByRole('button', { name: /open menu/i })[1])
+      await user.click(await screen.findByText('Delete Account'))
+      expect(screen.getByTestId('delete-account-modal')).toBeInTheDocument()
+    })
+
+    it('closes DeleteAccountModal on dismiss', async () => {
+      const user = userEvent.setup()
+      renderPage()
+      await waitFor(() => expect(screen.queryAllByRole('button', { name: /open menu/i }).length).toBeGreaterThanOrEqual(2))
+      await user.click(screen.getAllByRole('button', { name: /open menu/i })[0])
+      await user.click(await screen.findByText('Delete Account'))
+      await user.click(screen.getByRole('button', { name: /cancel/i }))
+      expect(screen.queryByTestId('delete-account-modal')).not.toBeInTheDocument()
     })
   })
 

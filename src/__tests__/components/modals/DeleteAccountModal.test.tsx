@@ -17,9 +17,10 @@ vi.mock('../../../supabase', () => ({
 
 // Mock useAuth
 const mockSignOut = vi.fn()
+let mockMember: typeof mockAdminMember | null = mockAdminMember
 vi.mock('../../../contexts/AuthContext', () => ({
   useAuth: () => ({
-    member: mockAdminMember,
+    member: mockMember,
     signOut: mockSignOut,
   }),
 }))
@@ -32,6 +33,7 @@ describe('DeleteAccountModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockMember = mockAdminMember
     mockInvoke.mockResolvedValue({ data: { success: true, message: 'Member deleted successfully' }, error: null })
     mockSignOut.mockResolvedValue(undefined)
   })
@@ -58,7 +60,7 @@ describe('DeleteAccountModal', () => {
     it('should mention automatic club ownership transfer', () => {
       render(<DeleteAccountModal {...defaultProps} />)
 
-      expect(screen.getByText(/ownership will be automatically transferred/i)).toBeInTheDocument()
+      expect(screen.getByText(/if you own a club, ownership will be automatically transferred/i)).toBeInTheDocument()
     })
   })
 
@@ -129,6 +131,29 @@ describe('DeleteAccountModal', () => {
 
       resolveInvoke({ data: { success: true }, error: null })
       await waitFor(() => expect(defaultProps.onClose).toHaveBeenCalled())
+    })
+
+    it('should ignore Cancel and Escape while deleting', async () => {
+      let resolveInvoke: (value: unknown) => void = () => {}
+      mockInvoke.mockReturnValue(new Promise(resolve => { resolveInvoke = resolve }))
+      const user = userEvent.setup()
+      render(<DeleteAccountModal {...defaultProps} />)
+
+      await user.click(screen.getByRole('button', { name: 'Delete Account' }))
+      await user.click(screen.getByRole('button', { name: 'Cancel' }))
+      await user.keyboard('{Escape}')
+
+      expect(defaultProps.onClose).not.toHaveBeenCalled()
+
+      resolveInvoke({ data: { success: true }, error: null })
+      await waitFor(() => expect(defaultProps.onClose).toHaveBeenCalledTimes(1))
+    })
+
+    it('should disable the delete button when no member is loaded', () => {
+      mockMember = null
+      render(<DeleteAccountModal {...defaultProps} />)
+
+      expect(screen.getByRole('button', { name: 'Delete Account' })).toBeDisabled()
     })
   })
 

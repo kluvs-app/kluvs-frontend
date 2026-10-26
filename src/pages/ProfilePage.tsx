@@ -388,6 +388,7 @@ export default function ProfilePage() {
           items={[
             { label: 'Edit Profile', onClick: () => setShowEditProfileModal(true) },
             { label: 'Reading Log', onClick: () => setShowReadingLogModal(true) },
+            { label: 'Delete Account', danger: true, onClick: () => setShowDeleteAccountModal(true) },
           ]}
         />
       </div>
