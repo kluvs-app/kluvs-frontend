@@ -1,8 +1,22 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Header from '../../components/Header'
 import { ThemeProvider } from '../../contexts/ThemeContext'
+
+const originalLocation = window.location
+
+function setHostname(hostname: string) {
+  Object.defineProperty(window, 'location', {
+    writable: true,
+    configurable: true,
+    value: { ...originalLocation, hostname, host: hostname },
+  })
+}
+
+afterEach(() => {
+  Object.defineProperty(window, 'location', { writable: true, configurable: true, value: originalLocation })
+})
 
 function renderHeader(props = {}) {
   return render(
@@ -84,11 +98,22 @@ describe('Header', () => {
       expect(screen.queryByRole('link', { name: /Dashboard/i })).not.toBeInTheDocument()
     })
 
-    it('should link to the OAuth redirect URL', () => {
+    it('should link to the OAuth redirect URL on a real Kluvs host', () => {
+      setHostname('kluvs.com')
+
       renderHeader({ showOpenAppButton: true })
 
       const button = screen.getByRole('link', { name: /Dashboard/i })
       expect(button).toHaveAttribute('href', `${import.meta.env.VITE_OAUTH_REDIRECT_URL}/me`)
+    })
+
+    it('should link to the same origin with the app-domain override on non-Kluvs hosts (e.g. previews)', () => {
+      setHostname('kluvs-frontend-abc123.vercel.app')
+
+      renderHeader({ showOpenAppButton: true })
+
+      const button = screen.getByRole('link', { name: /Dashboard/i })
+      expect(button).toHaveAttribute('href', `${window.location.origin}/me?domain=app`)
     })
 
     it('should have proper styling', () => {

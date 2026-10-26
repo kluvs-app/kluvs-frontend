@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { getAppHref } from '../utils/domainNav'
 
 interface HeaderProps {
   showOpenAppButton?: boolean
@@ -14,7 +15,7 @@ export default function Header({ showOpenAppButton = false }: HeaderProps) {
 
       {showOpenAppButton && (
         <a
-          href={`${import.meta.env.VITE_OAUTH_REDIRECT_URL}/me`}
+          href={getAppHref('/me')}
           className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-body font-medium transition-colors"
         >
           Dashboard

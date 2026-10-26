@@ -33,6 +33,7 @@ export const mockMember3: Member = {
   id: 3,
   user_id: 'user-3-id',
   name: 'Jane Smith',
+  handle: 'jane_smith',
   books_read: 7,
   clubs: [memberClub1],
 }

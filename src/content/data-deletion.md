@@ -1,14 +1,23 @@
 # Account & Data Deletion
 
-**Last updated:** February 22, 2026
+**Last updated:** September 4, 2026
 
-This page explains how users of the **Kluvs** app can request deletion of their account and associated data.
+This page explains how users of the **Kluvs** app can delete their account and associated data.
 
 ---
 
-## How to Request Deletion
+## How to Delete Your Account
 
-You can request deletion of your account and data by **sending an email** to:
+The fastest way to delete your account is **in-app**, and takes effect immediately:
+
+- **Web**: Go to your **Profile** page, open the menu (⋮), and select **Delete Account**.
+- **Mobile**: Go to **Settings** and select **Delete Account**.
+
+Confirming is permanent — your account, profile, and club memberships are deleted right away. If you own a club, ownership is automatically transferred to another member (an admin, if there is one), or the club is deleted if you're its only member.
+
+### Can't log in?
+
+If you've lost access to your account (for example, you no longer have access to the Discord or Google account used to sign in) and can't use the in-app option, you can request deletion by **sending an email** to:
 
 **[kluvs.app@gmail.com](mailto:kluvs.app@gmail.com)**
 
@@ -17,7 +26,7 @@ Please use the subject line **"Account Deletion Request"** and include:
 - The name or email address associated with your account (Discord or Google)
 - The OAuth provider you used to sign in (Discord or Google)
 
-We will process your request and confirm deletion within **30 days**.
+We will process email requests and confirm deletion within **30 days**.
 
 ---
 
@@ -43,7 +52,7 @@ The following may be retained after deletion:
 
 ## Timeline
 
-All personal data will be deleted within **30 days** of your confirmed request. You will receive an email confirmation once the deletion is complete.
+Deletion requested in-app (Profile page on web, Settings on mobile) takes effect **immediately**. Deletion requested by email is confirmed within **30 days**; you will receive an email confirmation once complete.
 
 ---
 

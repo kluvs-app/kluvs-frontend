@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { getAvatarUrl } from '../../supabase'
+import { getMarketingHref } from '../../utils/domainNav'
 import { VERSION } from '../../version'
 import SignOutModal from '../modals/SignOutModal'
 import DiscordLinkModal from '../modals/DiscordLinkModal'
@@ -67,7 +68,7 @@ export default function AppSidebar() {
       <aside className={`hidden lg:flex flex-col fixed ${isOnline ? 'top-0' : 'top-9'} left-0 bottom-0 w-[220px] bg-[var(--color-bg-raised)] border-r border-[var(--color-divider)] z-30`}>
         {/* Brand */}
         <a
-          href={import.meta.env.VITE_OAUTH_REDIRECT_URL?.replace('app.', '') ?? '/'}
+          href={getMarketingHref()}
           className="flex items-center px-5 h-16 shrink-0 hover:opacity-80 transition-opacity"
         >
           <img src="/kluvs-lockup-dark.svg" alt="Kluvs" className="h-6 w-auto dark:hidden" />

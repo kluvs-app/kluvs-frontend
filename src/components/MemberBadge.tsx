@@ -50,7 +50,7 @@ export default function MemberBadge({
           )}
         </div>
         <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
-          @{member.handle || member.discord_id || 'unknown'}
+          @{member.handle}
         </p>
       </div>
 
