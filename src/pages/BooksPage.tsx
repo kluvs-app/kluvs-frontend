@@ -631,7 +631,7 @@ export default function BooksPage() {
                     Nothing shelved yet.
                   </p>
                   <p className="text-[13px] text-[var(--color-text-meta)] leading-[1.6] max-w-[340px] mx-auto">
-                    Search for a book and add it to Want to Read, Read, or Not Finished — it'll show up here.
+                    Search for a book and add it to Want to Read, Read, or Not Finished, and it'll show up here.
                   </p>
                 </div>
                 <button
@@ -702,7 +702,7 @@ export default function BooksPage() {
                     No matches.
                   </p>
                   <p className="text-[13px] text-[var(--color-text-meta)] leading-[1.6] max-w-[340px] mx-auto">
-                    No books found for "{query}" — try a different title or author.
+                    No books found for "{query}". Try a different title or author.
                   </p>
                 </div>
               </div>

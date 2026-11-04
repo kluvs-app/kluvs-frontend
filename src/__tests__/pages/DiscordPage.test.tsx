@@ -131,16 +131,16 @@ describe('DiscordPage', () => {
   })
 
   describe('Footer', () => {
-    it('should render the Privacy Policy link', () => {
+    it('should render the Privacy link', () => {
       renderDiscordPage()
-      const link = screen.getByRole('link', { name: /privacy policy/i })
+      const link = screen.getByRole('link', { name: /^privacy$/i })
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute('href', '/privacy')
     })
 
-    it('should render the Terms of Use link', () => {
+    it('should render the Terms link', () => {
       renderDiscordPage()
-      const link = screen.getByRole('link', { name: /terms of use/i })
+      const link = screen.getByRole('link', { name: /^terms$/i })
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute('href', '/terms')
     })

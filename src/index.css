@@ -64,6 +64,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     --color-primary: #D16D30;
     --color-primary-hover: #B85A22;
 
+    /* Marketing diagram accents (HowItWorksSection) — darkened for cream surfaces */
+    --color-diagram-discord: #4752C4;
+    --color-diagram-discussion: #2E7D5E;
+    --color-diagram-book: #A87708;
+
     /* Avatar hue palette — cream theme */
     --kluvs-avatar-hue-0: #F9EDE6;
     --kluvs-avatar-hue-1: #F4EBD9;
@@ -95,6 +100,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     --color-input-border: #332B24;
     --color-label-variant: #F2EDE5;
     --color-overlay: rgba(0, 0, 0, 0.7);
+
+    /* Marketing diagram accents (HowItWorksSection) */
+    --color-diagram-discord: #8B96F7;
+    --color-diagram-discussion: #48A480;
+    --color-diagram-book: #C9900A;
 
     /* Avatar hue palette — chocolate theme */
     --kluvs-avatar-hue-0: #331F17;

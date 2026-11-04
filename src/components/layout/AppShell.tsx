@@ -42,7 +42,7 @@ export default function AppShell() {
             fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
             fontSize: 13, color: '#8C8073', letterSpacing: '0.01em',
           }}>
-            You're offline — content may be out of date
+            You're offline. Content may be out of date.
           </span>
         </div>
       )}

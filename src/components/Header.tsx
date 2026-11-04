@@ -16,9 +16,9 @@ export default function Header({ showOpenAppButton = false }: HeaderProps) {
       {showOpenAppButton && (
         <a
           href={getAppHref('/me')}
-          className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-body font-medium transition-colors"
+          className="border border-[var(--color-divider)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] px-4 py-2 rounded-btn text-body font-medium transition-colors"
         >
-          Dashboard
+          Open Kluvs
         </a>
       )}
     </header>

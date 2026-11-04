@@ -1,6 +1,7 @@
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import DiscordIcon from '../components/icons/DiscordIcon'
+import HowItWorksSection from '../components/HowItWorksSection'
 
 const INVITE_URL = 'https://discord.com/oauth2/authorize?client_id=1327360422294192199'
 const SUPPORT_URL = 'https://discord.gg/rCvpNB5pft'
@@ -176,8 +177,10 @@ export default function DiscordPage() {
         </div>
       </section>
 
+      <HowItWorksSection />
+
       {/* Commands */}
-      <section className="px-6 py-16 bg-[var(--color-bg)]">
+      <section className="px-6 py-16 bg-[var(--color-bg-raised)]">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] text-center mb-4">
             Commands
