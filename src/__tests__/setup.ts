@@ -15,6 +15,43 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
+// Newer Node versions ship an experimental global `localStorage` that shadows
+// jsdom's and is undefined unless --localstorage-file is passed. Fall back to
+// an in-memory Storage so tests behave the same on every Node version.
+function createMemoryStorage(): Storage {
+  let store: Record<string, string> = {}
+  return {
+    get length() {
+      return Object.keys(store).length
+    },
+    clear: () => {
+      store = {}
+    },
+    getItem: (key) => (key in store ? store[key] : null),
+    key: (index) => Object.keys(store)[index] ?? null,
+    removeItem: (key) => {
+      delete store[key]
+    },
+    setItem: (key, value) => {
+      store[key] = String(value)
+    },
+  }
+}
+
+for (const name of ['localStorage', 'sessionStorage'] as const) {
+  let usable = false
+  try {
+    usable = typeof globalThis[name]?.getItem === 'function'
+  } catch {
+    usable = false
+  }
+  if (!usable) {
+    const storage = createMemoryStorage()
+    Object.defineProperty(globalThis, name, { value: storage, configurable: true, writable: true })
+    Object.defineProperty(window, name, { value: storage, configurable: true, writable: true })
+  }
+}
+
 // Mock window.matchMedia (required for some components)
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

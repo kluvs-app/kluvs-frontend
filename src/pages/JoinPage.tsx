@@ -274,7 +274,7 @@ export default function JoinPage() {
         ) : null}
       </main>
 
-      <Footer />
+      <Footer showVersion />
     </div>
   )
 }
