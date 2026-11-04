@@ -18,14 +18,6 @@ function MatIcon({ name, className = '' }: { name: string; className?: string })
   )
 }
 
-function PlayIcon({ className = 'w-5 h-5' }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M3.18 23.76a2 2 0 001.94-.22l11.34-6.55-2.56-2.56-10.72 9.33zM.32 1.34A2 2 0 000 2.42v19.16a2 2 0 00.32 1.08L.4 23.7l10.74-10.74v-.25L.4 1.96l-.08.38zM20.49 10.63l-2.83-1.64-2.87 2.87 2.87 2.87 2.86-1.65a2.03 2.03 0 000-3.45zM5.12.46L16.46 7 13.9 9.56 3.18.22A2 2 0 005.12.46z"/>
-    </svg>
-  )
-}
-
 const features = [
   {
     icon: 'menu_book',
@@ -100,16 +92,11 @@ export default function LandingPage() {
             <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
               Kluvs gives your book club a quiet place to keep the current read, the next discussion, and everything you meant to bring up. On your phone and on the web.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <a
-                href={GOOGLE_PLAY_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Get it on Google Play"
-                className="flex items-center justify-center gap-3 bg-primary hover:bg-primary-hover text-white rounded-btn px-6 py-3 font-medium text-body transition-colors"
-              >
-                <PlayIcon />
-                Get it on Google Play
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              {/* Google's official badge, unmodified per their brand guidelines. The PNG carries its
+                  own transparent padding, so negative margins line it up with the button beside it. */}
+              <a href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer" className="-m-[11px] shrink-0">
+                <img src="/google-play-badge.png" alt="Get it on Google Play" className="block h-[69px] w-auto" />
               </a>
               <a href={getAppHref('/me')} className={outlinedButton}>
                 <MatIcon name="language" className="!text-[20px]" />
@@ -159,7 +146,7 @@ export default function LandingPage() {
             <ul className="space-y-3 max-w-md">
               <li>
                 <a href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer" className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
-                  <PlayIcon className="w-5 h-5 text-[var(--color-text-secondary)] shrink-0" />
+                  <MatIcon name="phone_android" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
                   <span className="flex-1">
                     <span className="block text-body font-medium text-[var(--color-text-primary)]">Android</span>
                     <span className="block text-helper text-[var(--color-text-meta)]">Free on Google Play</span>
