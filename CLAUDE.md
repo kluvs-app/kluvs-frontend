@@ -262,7 +262,8 @@ No `AuthProvider`. No Supabase auth calls.
 - **Shared styles:** marketing pages use the class strings in `src/constants/marketingStyles.ts`, which follow the design-system typography families and card spec.
 - **Google Play:** use Google's official badge (`public/google-play-badge.png`) unmodified. Google's brand guidelines reserve the Play logo for the badge, so don't put the Play icon in custom buttons.
 - **Brand assets:** `public/kluvs-lockup-*.svg` and `public/kluvs-wordmark-*.svg` are copied from `design-system/assets/`; update them there first. Lockup naming is inverted: `-light` has cream text (dark surfaces), `-dark` has dark text (light surfaces).
-- **Static SEO files:** `public/robots.txt`, `public/sitemap.xml` (marketing routes), `public/og-image.png` (1200×630 share image).
+- **Static SEO files:** `public/sitemap.xml` (marketing routes; update when adding a public page) and `public/og-image.png` (1200×630 share image).
+- **robots.txt is host-dependent:** there is deliberately no `public/robots.txt`. `vercel.json` rewrites `/robots.txt` to `robots-allow.txt` on `kluvs.com` and to `robots-disallow.txt` everywhere else (app, integration, previews). A real `robots.txt` file would take precedence over the rewrite, so don't add one.
 
 ## Updating Legal Pages
 - **Privacy Policy**: edit `src/content/privacy-policy.md` — renders at `/privacy`
