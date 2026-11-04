@@ -87,7 +87,7 @@ describe('PrivacyPolicy', () => {
 
     it('should display a contact email', () => {
       renderPrivacyPolicy()
-      expect(screen.getByText(/kluvs-app@gmail\.com/i)).toBeInTheDocument()
+      expect(screen.getByText(/kluvs\.app@gmail\.com/i)).toBeInTheDocument()
     })
   })
 
