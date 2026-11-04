@@ -51,6 +51,11 @@ describe('LandingPage', () => {
       expect(links[0]).toHaveAttribute('href', 'https://play.google.com/store/apps/details?id=com.ivangarzab.kluvs')
     })
 
+    it('should use the official Google Play badge image', () => {
+      renderLandingPage()
+      expect(screen.getByRole('img', { name: 'Get it on Google Play' })).toHaveAttribute('src', '/google-play-badge.png')
+    })
+
     it('should not render an App Store link until iOS ships', () => {
       renderLandingPage()
       expect(screen.queryByRole('link', { name: /app store/i })).not.toBeInTheDocument()

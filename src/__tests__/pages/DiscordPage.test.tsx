@@ -79,6 +79,13 @@ describe('DiscordPage', () => {
     })
   })
 
+  describe('How It Works Section', () => {
+    it('should render the How It Works diagram', () => {
+      renderDiscordPage()
+      expect(screen.getByRole('heading', { name: /one server, many clubs/i })).toBeInTheDocument()
+    })
+  })
+
   describe('Commands Section', () => {
     it('should render the Member Commands heading', () => {
       renderDiscordPage()
