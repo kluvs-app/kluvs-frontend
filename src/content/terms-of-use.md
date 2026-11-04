@@ -1,20 +1,20 @@
 # Terms of Use
 
-**Effective Date:** February 21, 2026.
+**Effective Date:** November 4, 2026.
 
-Welcome to Kluvs! These Terms of Use ("Terms") govern your access to and use of the Kluvs mobile application, website, and Discord companion bot (collectively, the "Service"). The Service is operated by Ivan Garza ("we," "us," or "our").
+Welcome to Kluvs! These Terms of Use ("Terms") govern your access to and use of the Kluvs Android mobile application, website and web app, and Discord companion bot (collectively, the "Service"). The Service is operated by Ivan Garza ("we," "us," or "our").
 
 By accessing or using the Service, you agree to be bound by these Terms. If you do not agree to these Terms, you may not access or use the Service.
 
 ## 1. Description of Service
 
-Kluvs is a cross-platform application and Discord bot designed to help communities manage book clubs, track reading sessions, and monitor member participation. The Service operates in conjunction with third-party platforms, specifically Discord, to facilitate community discussions and club management.
+Kluvs is a mobile, web, and Discord service designed to help communities manage book clubs, track reading sessions, and follow member participation. The Service can operate in conjunction with third-party platforms, such as Discord, to facilitate community discussions and club management.
 
 ## 2. Accounts and Registration
 
 **2.1 Account Creation:** To use certain features of the Service, you must register for an account. We utilize Supabase for authentication. You agree to provide accurate, current, and complete information during the registration process.
 
-**2.2 Discord Integration:** The Service requires linking to or interacting with a Discord account and/or Discord servers. By integrating Kluvs with a Discord server, you represent and warrant that you have the necessary administrative rights and permissions to do so. 
+**2.2 Discord Integration:** Connecting Discord is optional. If you choose to link a Discord account or integrate Kluvs with a Discord server, you must comply with Discord's terms. By integrating Kluvs with a Discord server, you represent and warrant that you have the necessary administrative rights and permissions to do so. 
 
 **2.3 Account Security:** You are responsible for safeguarding your login credentials and for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account.
 
@@ -30,13 +30,13 @@ We reserve the right to remove any user, delete any club, or restrict access to 
 
 ## 4. Community Management Features
 
-Kluvs provides features for tracking user reading progress and participation, including public community tracking (such as the "ShameList"). 
+Kluvs provides features for tracking reading progress and participation within a club, such as reading status, discussion RSVPs, and attendance.
 * **Club Admins/Owners:** If you hold an "owner" or "admin" role within a Kluvs club, you are responsible for how you use these management and tracking tools. 
-* **Members:** By joining a club, you acknowledge that your reading progress and session completion status may be visible to other members of the club or the associated Discord server.
+* **Members:** By joining a club, you acknowledge that your reading status, RSVPs, attendance, and session completion status may be visible to other members of the club or the associated Discord server.
 
 ## 5. Third-Party Services and Content
 
-**5.1 Integrations:** The Service relies on third-party platforms, including Discord (for community integration), Supabase (for data hosting and authentication), Google Books (for book metadata and imagery), and Sentry (for diagnostic reporting). 
+**5.1 Integrations:** The Service relies on third-party platforms, including Discord (for community integration), Supabase (for data hosting and authentication), Google Books (for book metadata and imagery), OpenAI (for AI book summaries), Vercel (for web hosting), and Sentry (for diagnostic reporting). 
 
 **5.2 Disclaimer:** We do not control these third-party services and are not responsible for their availability, uptime, or the accuracy of the data they provide (such as book metadata). Your use of these third-party services is governed by their respective terms and policies.
 
@@ -66,5 +66,5 @@ We reserve the right, at our sole discretion, to modify or replace these Terms a
 
 If you have any questions about these Terms, please contact us at:
 
-**Ivan Garza** Email: [kluvs-app@gmail.com](mailto:kluvs-app@gmail.com)  
+**Ivan Garza** Email: [kluvs.app@gmail.com](mailto:kluvs.app@gmail.com)  
 Website: [ivangarzab.com](https://ivangarzab.com)
