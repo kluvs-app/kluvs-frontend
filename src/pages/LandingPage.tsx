@@ -154,7 +154,7 @@ export default function LandingPage() {
             <p className={`${eyebrow} text-[var(--color-text-meta)] mb-3`}>Wherever you read</p>
             <h2 className={`${headline} mb-3`}>Your club follows you</h2>
             <p className="text-body-lg text-[var(--color-text-secondary)] mb-8 max-w-md">
-              Start on your phone, pick it up on your laptop. Everything stays in step.
+              Start on your phone, pick it up on your laptop. Everything stays in step, and it’s free on Android and the web.
             </p>
             <ul className="space-y-3 max-w-md">
               <li>
@@ -162,7 +162,7 @@ export default function LandingPage() {
                   <PlayIcon className="w-5 h-5 text-[var(--color-text-secondary)] shrink-0" />
                   <span className="flex-1">
                     <span className="block text-body font-medium text-[var(--color-text-primary)]">Android</span>
-                    <span className="block text-helper text-[var(--color-text-meta)]">Available on Google Play</span>
+                    <span className="block text-helper text-[var(--color-text-meta)]">Free on Google Play</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
                 </a>
@@ -172,7 +172,7 @@ export default function LandingPage() {
                   <MatIcon name="language" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
                   <span className="flex-1">
                     <span className="block text-body font-medium text-[var(--color-text-primary)]">Web</span>
-                    <span className="block text-helper text-[var(--color-text-meta)]">Open in any browser</span>
+                    <span className="block text-helper text-[var(--color-text-meta)]">Free in any browser</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
                 </a>

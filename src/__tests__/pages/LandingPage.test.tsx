@@ -90,6 +90,13 @@ describe('LandingPage', () => {
       expect(screen.getAllByRole('img', { name: /in kluvs/i })).toHaveLength(3)
     })
 
+    it('should say the app is free on Android and the web', () => {
+      renderLandingPage()
+      expect(screen.getByText(/free on android and the web/i)).toBeInTheDocument()
+      expect(screen.getByText('Free on Google Play')).toBeInTheDocument()
+      expect(screen.getByText('Free in any browser')).toBeInTheDocument()
+    })
+
     it('should not render the How It Works map (moved to the Discord page)', () => {
       renderLandingPage()
       expect(screen.queryByText(/how it works/i)).not.toBeInTheDocument()
