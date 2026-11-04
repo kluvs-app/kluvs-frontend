@@ -152,7 +152,7 @@ export default function LoginPage() {
 
   let subhead: string | null = 'Sign in to keep reading together.'
   if (isSignUp) subhead = 'Bring your books. Bring your people. Read together.'
-  if (isForgotMode) subhead = "Drop your email — we'll send a link to set a new password."
+  if (isForgotMode) subhead = "Drop your email and we'll send a link to set a new password."
   if (isResetSent || isConfirmSent) subhead = null
 
   const providerLabel = (name: string) => isSignUp ? `Sign up with ${name}` : `Continue with ${name}`

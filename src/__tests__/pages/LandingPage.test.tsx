@@ -33,9 +33,9 @@ describe('LandingPage', () => {
       expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     })
 
-    it('should render the "Dashboard" nav link', () => {
+    it('should render the "Open Kluvs" nav link', () => {
       renderLandingPage()
-      const link = screen.getByRole('link', { name: /dashboard/i })
+      const link = screen.getByRole('link', { name: /open kluvs/i })
       expect(link).toBeInTheDocument()
       // jsdom's default test host (localhost) has no real app.* subdomain, so this stays
       // same-origin with the app-domain override — see utils/domainNav.ts.
@@ -48,29 +48,63 @@ describe('LandingPage', () => {
       renderLandingPage()
       const links = screen.getAllByRole('link', { name: /google play/i })
       expect(links.length).toBeGreaterThan(0)
+      expect(links[0]).toHaveAttribute('href', 'https://play.google.com/store/apps/details?id=com.ivangarzab.kluvs')
     })
 
-    it('should render an App Store download link', () => {
+    it('should use the official Google Play badge image', () => {
       renderLandingPage()
-      const links = screen.getAllByRole('link', { name: /app store/i })
-      expect(links.length).toBeGreaterThan(0)
+      expect(screen.getByRole('img', { name: 'Get it on Google Play' })).toHaveAttribute('src', '/google-play-badge.png')
+    })
+
+    it('should not render an App Store link until iOS ships', () => {
+      renderLandingPage()
+      expect(screen.queryByRole('link', { name: /app store/i })).not.toBeInTheDocument()
+      expect(screen.getByText(/iphone coming soon/i)).toBeInTheDocument()
+    })
+
+    it('should render an "Open in your browser" link to the web app', () => {
+      renderLandingPage()
+      const link = screen.getByRole('link', { name: /open in your browser/i })
+      expect(link).toHaveAttribute('href', `${window.location.origin}/me?domain=app`)
+    })
+
+    it('should link to the Discord page as a secondary option', () => {
+      renderLandingPage()
+      const link = screen.getByRole('link', { name: /run your club on discord/i })
+      expect(link).toHaveAttribute('href', '/discord')
     })
   })
 
   describe('Features', () => {
-    it('should render the Reading Sessions feature card', () => {
+    it.each([
+      'The current read',
+      'The next discussion',
+      'Food for Thought',
+      'Your shelf',
+      'Pull up a chair',
+      'Your reading life',
+    ])('should render the "%s" feature card', (title) => {
       renderLandingPage()
-      expect(screen.getByRole('heading', { name: /reading sessions/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: title })).toBeInTheDocument()
+    })
+  })
+
+  describe('Platforms', () => {
+    it('should render app screenshots', () => {
+      renderLandingPage()
+      expect(screen.getAllByRole('img', { name: /in kluvs/i })).toHaveLength(3)
     })
 
-    it('should render the Discussions feature card', () => {
+    it('should say the app is free on Android and the web', () => {
       renderLandingPage()
-      expect(screen.getByRole('heading', { name: /discussions/i })).toBeInTheDocument()
+      expect(screen.getByText(/free on android and the web/i)).toBeInTheDocument()
+      expect(screen.getByText('Free on Google Play')).toBeInTheDocument()
+      expect(screen.getByText('Free in any browser')).toBeInTheDocument()
     })
 
-    it('should render the Member Management feature card', () => {
+    it('should not render the How It Works map (moved to the Discord page)', () => {
       renderLandingPage()
-      expect(screen.getByRole('heading', { name: /member management/i })).toBeInTheDocument()
+      expect(screen.queryByText(/how it works/i)).not.toBeInTheDocument()
     })
   })
 
@@ -121,8 +155,15 @@ describe('LandingPage', () => {
       await user.type(screen.getByLabelText(/message/i), 'Hello!')
       await user.click(screen.getByRole('button', { name: /send message/i }))
 
-      expect(screen.getByText(/thanks for reaching out/i)).toBeInTheDocument()
+      expect(screen.getByText(/your mail app should open/i)).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'kluvs.app@gmail.com' })).toHaveAttribute('href', 'mailto:kluvs.app@gmail.com')
       expect(screen.queryByRole('button', { name: /send message/i })).not.toBeInTheDocument()
+    })
+
+    it('should show the contact address as a fallback for visitors without a mail app', () => {
+      renderLandingPage()
+      const link = screen.getByRole('link', { name: 'kluvs.app@gmail.com' })
+      expect(link).toHaveAttribute('href', 'mailto:kluvs.app@gmail.com')
     })
 
     it('should set mailto href on submission', async () => {
@@ -139,16 +180,16 @@ describe('LandingPage', () => {
   })
 
   describe('Footer', () => {
-    it('should render the Privacy Policy link', () => {
+    it('should render the Privacy link', () => {
       renderLandingPage()
-      const link = screen.getByRole('link', { name: /privacy policy/i })
+      const link = screen.getByRole('link', { name: /^privacy$/i })
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute('href', '/privacy')
     })
 
-    it('should render the Terms of Use link', () => {
+    it('should render the Terms link', () => {
       renderLandingPage()
-      const link = screen.getByRole('link', { name: /terms of use/i })
+      const link = screen.getByRole('link', { name: /^terms$/i })
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute('href', '/terms')
     })

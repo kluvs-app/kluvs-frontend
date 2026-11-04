@@ -58,24 +58,31 @@ describe('DiscordPage', () => {
   })
 
   describe('Feature Highlights', () => {
-    it('should render the One Club per Channel feature card', () => {
+    it('should render the One club per channel feature card', () => {
       renderDiscordPage()
       expect(screen.getByRole('heading', { name: /one club per channel/i })).toBeInTheDocument()
     })
 
-    it('should render the Session Tracking feature card', () => {
+    it('should render the current read feature card', () => {
       renderDiscordPage()
-      expect(screen.getByRole('heading', { name: /session tracking/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /the current read, on call/i })).toBeInTheDocument()
     })
 
-    it('should render the AI Summaries feature card', () => {
+    it('should render the AI book summaries feature card', () => {
       renderDiscordPage()
-      expect(screen.getByRole('heading', { name: /ai summaries/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /ai book summaries/i })).toBeInTheDocument()
     })
 
-    it('should render the Discussion Scheduling feature card', () => {
+    it('should render the discussions-on-the-calendar feature card', () => {
       renderDiscordPage()
-      expect(screen.getByRole('heading', { name: /discussion scheduling/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /discussions on the calendar/i })).toBeInTheDocument()
+    })
+  })
+
+  describe('How It Works Section', () => {
+    it('should render the How It Works diagram', () => {
+      renderDiscordPage()
+      expect(screen.getByRole('heading', { name: /one server, many clubs/i })).toBeInTheDocument()
     })
   })
 
@@ -131,16 +138,16 @@ describe('DiscordPage', () => {
   })
 
   describe('Footer', () => {
-    it('should render the Privacy Policy link', () => {
+    it('should render the Privacy link', () => {
       renderDiscordPage()
-      const link = screen.getByRole('link', { name: /privacy policy/i })
+      const link = screen.getByRole('link', { name: /^privacy$/i })
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute('href', '/privacy')
     })
 
-    it('should render the Terms of Use link', () => {
+    it('should render the Terms link', () => {
       renderDiscordPage()
-      const link = screen.getByRole('link', { name: /terms of use/i })
+      const link = screen.getByRole('link', { name: /^terms$/i })
       expect(link).toBeInTheDocument()
       expect(link).toHaveAttribute('href', '/terms')
     })

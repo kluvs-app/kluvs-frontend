@@ -76,4 +76,13 @@ describe('DataDeletion', () => {
       expect(screen.getByText(/account deletion request/i)).toBeInTheDocument()
     })
   })
+
+  describe('Footer', () => {
+    it('should render the site footer with legal links', () => {
+      renderDataDeletion()
+      const footer = screen.getByRole('contentinfo')
+      expect(footer).toHaveTextContent(/privacy/i)
+      expect(footer).toHaveTextContent(/terms/i)
+    })
+  })
 })

@@ -98,4 +98,13 @@ describe('PrivacyPolicy', () => {
       expect(logo).toHaveAttribute('href', '/')
     })
   })
+
+  describe('Footer', () => {
+    it('should render the site footer with legal links', () => {
+      renderPrivacyPolicy()
+      const footer = screen.getByRole('contentinfo')
+      expect(footer).toHaveTextContent(/privacy/i)
+      expect(footer).toHaveTextContent(/terms/i)
+    })
+  })
 })

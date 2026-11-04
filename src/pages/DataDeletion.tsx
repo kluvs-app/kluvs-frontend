@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 import content from '../content/data-deletion.md?raw'
 
 export default function DataDeletion() {
@@ -12,6 +13,8 @@ export default function DataDeletion() {
           <ReactMarkdown>{content}</ReactMarkdown>
         </article>
       </main>
+
+      <Footer />
     </div>
   )
 }

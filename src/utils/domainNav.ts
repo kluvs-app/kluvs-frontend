@@ -15,7 +15,7 @@ export function isRealKluvsHost(hostname: string | undefined): boolean {
 
 export const APP_DOMAIN_STORAGE_KEY = 'kluvs-preview-app-domain'
 
-// From a marketing page, link to the app (e.g. the "Dashboard" button).
+// From a marketing page, link to the app (e.g. the "Open Kluvs" button).
 export function getAppHref(path: string): string {
   if (isRealKluvsHost(window.location.hostname)) {
     return `${import.meta.env.VITE_OAUTH_REDIRECT_URL}${path}`

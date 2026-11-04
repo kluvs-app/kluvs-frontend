@@ -82,7 +82,7 @@ function computeIsAppDomain(): boolean {
   }
 }
 
-// Captures a one-time `?domain=app|marketing` entry signal (from the Dashboard button /
+// Captures a one-time `?domain=app|marketing` entry signal (from the Open Kluvs button /
 // marketing link on hosts with no real app.* subdomain — see utils/domainNav.ts) into
 // sessionStorage, then scrubs it from the visible URL via React Router's own history API
 // (rather than a raw window.history call) so useLocation()/useSearchParams() elsewhere

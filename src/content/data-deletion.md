@@ -13,7 +13,7 @@ The fastest way to delete your account is **in-app**, and takes effect immediate
 - **Web**: Go to your **Profile** page, open the menu (⋮), and select **Delete Account**.
 - **Mobile**: Go to **Settings** and select **Delete Account**.
 
-Confirming is permanent — your account, profile, and club memberships are deleted right away. If you own a club, ownership is automatically transferred to another member (an admin, if there is one), or the club is deleted if you're its only member.
+Confirming is permanent. Your account, profile, and club memberships are deleted right away. If you own a club, ownership is automatically transferred to another member (an admin, if there is one), or the club is deleted if you're its only member.
 
 ### Can't log in?
 
@@ -45,7 +45,7 @@ When your account is deleted, the following data is permanently removed:
 
 The following may be retained after deletion:
 
-- **Discussion records** you created — these are tied to the club, not your account, and may be kept for continuity of other members' experience. They will be anonymized (your name removed).
+- **Discussion records** you created. These are tied to the club, not your account, and may be kept for continuity of other members' experience. They will be anonymized (your name removed).
 - **Aggregate usage data** used to improve the service, which cannot be linked back to you.
 
 ---
