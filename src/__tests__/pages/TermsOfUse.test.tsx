@@ -77,7 +77,7 @@ describe('TermsOfUse', () => {
 
     it('should display a contact email', () => {
       renderTermsOfUse()
-      expect(screen.getByText(/kluvs-app@gmail\.com/i)).toBeInTheDocument()
+      expect(screen.getByText(/kluvs\.app@gmail\.com/i)).toBeInTheDocument()
     })
   })
 
