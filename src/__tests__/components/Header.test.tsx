@@ -78,24 +78,24 @@ describe('Header', () => {
     })
   })
 
-  describe('Dashboard Button', () => {
-    it('should not display Dashboard button by default', () => {
+  describe('Open Kluvs Button', () => {
+    it('should not display Open Kluvs button by default', () => {
       renderHeader()
 
-      expect(screen.queryByRole('link', { name: /Dashboard/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Open Kluvs/i })).not.toBeInTheDocument()
     })
 
-    it('should display Dashboard button when showOpenAppButton is true', () => {
+    it('should display Open Kluvs button when showOpenAppButton is true', () => {
       renderHeader({ showOpenAppButton: true })
 
-      const button = screen.getByRole('link', { name: /Dashboard/i })
+      const button = screen.getByRole('link', { name: /Open Kluvs/i })
       expect(button).toBeInTheDocument()
     })
 
-    it('should not display Dashboard button when showOpenAppButton is false', () => {
+    it('should not display Open Kluvs button when showOpenAppButton is false', () => {
       renderHeader({ showOpenAppButton: false })
 
-      expect(screen.queryByRole('link', { name: /Dashboard/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Open Kluvs/i })).not.toBeInTheDocument()
     })
 
     it('should link to the OAuth redirect URL on a real Kluvs host', () => {
@@ -103,7 +103,7 @@ describe('Header', () => {
 
       renderHeader({ showOpenAppButton: true })
 
-      const button = screen.getByRole('link', { name: /Dashboard/i })
+      const button = screen.getByRole('link', { name: /Open Kluvs/i })
       expect(button).toHaveAttribute('href', `${import.meta.env.VITE_OAUTH_REDIRECT_URL}/me`)
     })
 
@@ -112,15 +112,15 @@ describe('Header', () => {
 
       renderHeader({ showOpenAppButton: true })
 
-      const button = screen.getByRole('link', { name: /Dashboard/i })
+      const button = screen.getByRole('link', { name: /Open Kluvs/i })
       expect(button).toHaveAttribute('href', `${window.location.origin}/me?domain=app`)
     })
 
     it('should have proper styling', () => {
       renderHeader({ showOpenAppButton: true })
 
-      const button = screen.getByRole('link', { name: /Dashboard/i })
-      expect(button).toHaveClass('bg-primary', 'text-white', 'font-medium', 'transition-colors')
+      const button = screen.getByRole('link', { name: /Open Kluvs/i })
+      expect(button).toHaveClass('border', 'rounded-btn', 'font-medium', 'transition-colors')
     })
   })
 
@@ -137,7 +137,7 @@ describe('Header', () => {
 
       const header = screen.getByRole('banner')
       const logo = screen.getAllByAltText('Kluvs')[0].closest('a')
-      const appButton = screen.getByRole('link', { name: /Dashboard/i })
+      const appButton = screen.getByRole('link', { name: /Open Kluvs/i })
 
       // Logo should come before app button in DOM
       expect(logo).toBeInTheDocument()

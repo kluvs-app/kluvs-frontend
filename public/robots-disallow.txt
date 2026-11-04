@@ -1,0 +1,3 @@
+# Served as /robots.txt on every other host: app, integration, previews (see vercel.json).
+User-agent: *
+Disallow: /

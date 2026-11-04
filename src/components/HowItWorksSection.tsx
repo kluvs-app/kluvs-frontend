@@ -29,9 +29,15 @@ export default function HowItWorksSection() {
     <section className="px-6 py-16" style={{ background: 'var(--color-bg)' }}>
       <div className="max-w-[900px] mx-auto">
         <header className="text-center mb-16">
-          <h2 className="text-section-heading font-serif text-[var(--color-text-primary)] mb-2">
+          <p className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-meta)] mb-3">
             How it works
+          </p>
+          <h2 className="text-3xl font-serif font-bold text-[var(--color-text-primary)] mb-3">
+            One server, many clubs
           </h2>
+          <p className="text-body-lg text-[var(--color-text-secondary)] max-w-md mx-auto">
+            Each channel can hold its own club, with its own book, members, and discussions.
+          </p>
         </header>
 
         <div className="flex flex-col">
@@ -43,13 +49,13 @@ export default function HowItWorksSection() {
                 style={{ background: 'rgba(88,101,242,0.18)' }}
               >
                 <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-[#8b96f7]"
+                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-[var(--color-diagram-discord)]"
                   style={{ background: 'var(--color-bg-raised)' }}
                 >
                   <DiscordIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: '#8b96f7' }}>Discord</div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: 'var(--color-diagram-discord)' }}>Discord</div>
                   <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Server</div>
                   <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-meta)' }}>Your community home</div>
                 </div>
@@ -168,13 +174,13 @@ export default function HowItWorksSection() {
             {/* Aside: Book — flows below on mobile, absolute on md+ */}
             <div className="flex flex-col gap-2 mt-3 md:mt-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-[216px]">
               <div className="flex items-center gap-2">
-                <div className="flex-1 border-t border-dashed opacity-30" style={{ borderColor: '#c9900a' }} />
-                <div className="text-[9px] font-bold uppercase tracking-[0.09em] whitespace-nowrap" style={{ color: '#c9900a' }}>
+                <div className="flex-1 border-t border-dashed opacity-30" style={{ borderColor: 'var(--color-diagram-book)' }} />
+                <div className="text-[9px] font-bold uppercase tracking-[0.09em] whitespace-nowrap" style={{ color: 'var(--color-diagram-book)' }}>
                   1 Book per Session
                 </div>
               </div>
               <div className="rounded-xl p-2.5 flex items-center gap-2.5" style={{ background: 'rgba(201,144,10,0.18)' }}>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: '#c9900a' }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: 'var(--color-diagram-book)' }}>
                   <MatIcon name="auto_stories" size={16} />
                 </div>
                 <div>
@@ -200,11 +206,11 @@ export default function HowItWorksSection() {
                   className={`${i === 2 ? 'hidden md:flex' : 'flex'} flex-1 min-w-[136px] rounded-xl p-4 items-center gap-3 cursor-default transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl`}
                   style={{ background: 'rgba(72,164,128,0.18)' }}
                 >
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: '#48a480' }}>
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: 'var(--color-diagram-discussion)' }}>
                     <MatIcon name="forum" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: '#48a480' }}>Discussion</div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: 'var(--color-diagram-discussion)' }}>Discussion</div>
                     <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{name}</div>
                     <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-meta)' }}>{date}</div>
                   </div>
@@ -215,13 +221,13 @@ export default function HowItWorksSection() {
             {/* Aside: Discord Event — flows below on mobile, absolute on md+ */}
             <div className="flex flex-col gap-2 mt-3 md:mt-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-[216px]">
               <div className="flex items-center gap-2">
-                <div className="flex-1 border-t border-dashed opacity-30" style={{ borderColor: '#5865f2' }} />
-                <div className="text-[9px] font-bold uppercase tracking-[0.09em] whitespace-nowrap" style={{ color: '#8b96f7' }}>
+                <div className="flex-1 border-t border-dashed opacity-30" style={{ borderColor: 'var(--color-diagram-discord)' }} />
+                <div className="text-[9px] font-bold uppercase tracking-[0.09em] whitespace-nowrap" style={{ color: 'var(--color-diagram-discord)' }}>
                   Sync'd with Discord
                 </div>
               </div>
               <div className="rounded-xl p-2.5 flex items-center gap-2.5" style={{ background: 'rgba(88,101,242,0.18)' }}>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[#8b96f7]" style={{ background: 'var(--color-bg-raised)' }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-[var(--color-diagram-discord)]" style={{ background: 'var(--color-bg-raised)' }}>
                   <DiscordIcon className="w-3.5 h-3" />
                 </div>
                 <div>

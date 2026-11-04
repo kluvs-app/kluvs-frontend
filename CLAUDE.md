@@ -61,14 +61,17 @@ src/
 │   ├── Header.tsx           # Shared header (public pages)
 │   ├── Footer.tsx           # Shared footer (with version number)
 │   ├── KluvsSpinner.tsx     # Animated loading spinner
-│   ├── KluvsHexBackground.tsx   # Hex background pattern (landing page)
-│   ├── HowItWorksSection.tsx    # Feature highlight (landing page)
+│   ├── KluvsHexBackground.tsx   # Animated hex background (landing page hero)
+│   ├── HowItWorksSection.tsx    # Server → club → session diagram (Discord page)
 │   ├── BookSearchInput.tsx  # Debounced book search input
 │   ├── BookInfo.tsx         # Book detail display
 │   ├── DiscussionsTimeline.tsx
 │   ├── MembersTable.tsx
 │   ├── ScrollToTop.tsx      # Scroll-to-top on route change
 │   └── ThemeToggle.tsx      # Dark/light/system theme toggle
+├── constants/
+│   ├── marketingStyles.ts   # Shared class strings for marketing pages (eyebrow, headline, card, buttons)
+│   └── shelves.ts           # Shelf options and labels
 ├── content/
 │   ├── privacy-policy.md    # Privacy policy content (edit to update)
 │   ├── terms-of-use.md      # Terms of use content (edit to update)
@@ -77,8 +80,8 @@ src/
 │   ├── AuthContext.tsx      # Authentication state management
 │   └── ThemeContext.tsx     # Theme state (light/dark/system)
 ├── pages/
-│   ├── LandingPage.tsx      # Public / — marketing, features, download links
-│   ├── DiscordPage.tsx      # Public /discord
+│   ├── LandingPage.tsx      # Public / — hero (Google Play badge + web), features, platforms, contact
+│   ├── DiscordPage.tsx      # Public /discord — bot features, How It Works diagram, commands
 │   ├── PrivacyPolicy.tsx    # Public /privacy (shell — content in content/)
 │   ├── TermsOfUse.tsx       # Public /terms (shell — content in content/)
 │   ├── DataDeletion.tsx     # Public /delete-account (Google Play Console requirement)
@@ -253,6 +256,14 @@ No `AuthProvider`. No Supabase auth calls.
 1. Create the component in `src/pages/`
 2. Add a `<Route path="/your-path" element={<YourPage />} />` in the marketing-domain `<Routes>` block
 3. Wrap tests in `<MemoryRouter>` (no AuthProvider needed)
+
+## Marketing Site Notes
+- **Theme:** marketing pages follow the visitor's system theme (light or dark). An inline script in `index.html` resolves the theme before first paint to avoid a dark-to-light flash; it mirrors `resolveTheme()` in `ThemeContext.tsx`.
+- **Shared styles:** marketing pages use the class strings in `src/constants/marketingStyles.ts`, which follow the design-system typography families and card spec.
+- **Google Play:** use Google's official badge (`public/google-play-badge.png`) unmodified. Google's brand guidelines reserve the Play logo for the badge, so don't put the Play icon in custom buttons.
+- **Brand assets:** `public/kluvs-lockup-*.svg` and `public/kluvs-wordmark-*.svg` are copied from `design-system/assets/`; update them there first. Lockup naming is inverted: `-light` has cream text (dark surfaces), `-dark` has dark text (light surfaces).
+- **Static SEO files:** `public/sitemap.xml` (marketing routes; update when adding a public page) and `public/og-image.png` (1200×630 share image).
+- **robots.txt is host-dependent:** there is deliberately no `public/robots.txt`. `vercel.json` rewrites `/robots.txt` to `robots-allow.txt` on `kluvs.com` and to `robots-disallow.txt` everywhere else (app, integration, previews). A real `robots.txt` file would take precedence over the rewrite, so don't add one.
 
 ## Updating Legal Pages
 - **Privacy Policy**: edit `src/content/privacy-policy.md` — renders at `/privacy`

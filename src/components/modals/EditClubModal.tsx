@@ -334,7 +334,7 @@ export default function EditClubModal({
             disabled={loading}
           />
           <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
-            This date was automatically set when your club was created in Kluvs. You can change it to reflect when your book club was actually founded — we know great clubs predate this app.
+            This date was automatically set when your club was created in Kluvs. You can change it to reflect when your book club was actually founded. We know great clubs predate this app.
           </p>
         </div>
       </div>

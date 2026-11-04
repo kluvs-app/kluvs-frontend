@@ -11,6 +11,12 @@
   ],
   "rewrites": [
     {
+      "source": "/robots.txt",
+      "destination": "/robots-allow.txt",
+      "has": [{ "type": "host", "value": { "inc": ["kluvs.com", "www.kluvs.com"] } }]
+    },
+    { "source": "/robots.txt", "destination": "/robots-disallow.txt" },
+    {
       "source": "/(.*)",
       "destination": "/index.html",
       "has": [{ "type": "host", "value": "app\\.kluvs\\.(com|xyz)" }]

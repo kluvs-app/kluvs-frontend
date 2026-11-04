@@ -1,0 +1,5 @@
+# Served as /robots.txt on kluvs.com only (see vercel.json).
+User-agent: *
+Allow: /
+
+Sitemap: https://kluvs.com/sitemap.xml

@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import Header from '../components/Header'
+import Footer from '../components/Footer'
 import content from '../content/terms-of-use.md?raw'
 
 export default function TermsOfUse() {
@@ -12,6 +13,8 @@ export default function TermsOfUse() {
           <ReactMarkdown>{content}</ReactMarkdown>
         </article>
       </main>
+
+      <Footer />
     </div>
   )
 }

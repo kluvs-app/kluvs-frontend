@@ -104,7 +104,7 @@ export default function EndSessionModal({
           </div>
         ) : (
           <p className="text-sm text-[var(--color-text-secondary)]">
-            No members are marked as reading — no credit will be awarded.
+            No members are marked as reading, so no credit will be awarded.
           </p>
         )}
 
