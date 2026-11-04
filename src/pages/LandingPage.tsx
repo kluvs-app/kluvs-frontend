@@ -270,7 +270,7 @@ export default function LandingPage() {
                 Send Message
               </button>
               <p className="text-helper text-[var(--color-text-meta)]">
-                This opens your mail app. You can also write to us directly at{' '}
+                Or write us directly at{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors">{CONTACT_EMAIL}</a>.
               </p>
             </form>
