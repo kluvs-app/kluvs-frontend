@@ -123,7 +123,7 @@ export default function DiscordPage() {
               aria-label="View Kluvs on top.gg"
               className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors"
             >
-              Find us on top.gg
+              Find us on <span style={{ color: '#EC4869' }}>top.gg</span>
             </a>
           </p>
         </div>
@@ -172,7 +172,7 @@ export default function DiscordPage() {
                 <div>
                   {commands.map((cmd) => (
                     <div key={cmd.name} className="flex items-start gap-3 py-2.5 border-b border-[var(--color-divider)] last:border-0">
-                      <code className="text-[13px] font-mono text-[var(--color-text-primary)] shrink-0 mt-px">{cmd.name}</code>
+                      <code className="text-[13px] font-mono text-primary shrink-0 mt-px">{cmd.name}</code>
                       <span className="text-body text-[var(--color-text-secondary)]">{cmd.description}</span>
                     </div>
                   ))}
