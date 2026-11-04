@@ -8,6 +8,7 @@ import { getAppHref } from '../utils/domainNav'
 import { eyebrow, headline, cardTitle, card, outlinedButton } from '../constants/marketingStyles'
 
 const GOOGLE_PLAY_URL = 'https://play.google.com/store/apps/details?id=com.ivangarzab.kluvs'
+const CONTACT_EMAIL = 'kluvs.app@gmail.com'
 
 function MatIcon({ name, className = '' }: { name: string; className?: string }) {
   return (
@@ -80,7 +81,7 @@ export default function LandingPage() {
     e.preventDefault()
     const subject = encodeURIComponent('Kluvs Contact Form')
     const body = encodeURIComponent(`Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`)
-    window.location.href = `mailto:kluvs.app@gmail.com?subject=${subject}&body=${body}`
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`
     setSubmitted(true)
   }
 
@@ -212,8 +213,11 @@ export default function LandingPage() {
 
           {submitted ? (
             <div className={`${card} p-6 text-center`}>
-              <p className={`${cardTitle} mb-1`}>Thank you for writing.</p>
-              <p className="text-body text-[var(--color-text-secondary)]">We’ll get back to you soon.</p>
+              <p className={`${cardTitle} mb-1`}>Your mail app should open.</p>
+              <p className="text-body text-[var(--color-text-secondary)]">
+                Your message will be ready to send from there. If nothing opened, write to us at{' '}
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-[var(--color-text-primary)] underline underline-offset-2">{CONTACT_EMAIL}</a>.
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -265,6 +269,10 @@ export default function LandingPage() {
               >
                 Send Message
               </button>
+              <p className="text-helper text-[var(--color-text-meta)]">
+                This opens your mail app. You can also write to us directly at{' '}
+                <a href={`mailto:${CONTACT_EMAIL}`} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors">{CONTACT_EMAIL}</a>.
+              </p>
             </form>
           )}
         </div>

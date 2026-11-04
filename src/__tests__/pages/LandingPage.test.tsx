@@ -143,8 +143,15 @@ describe('LandingPage', () => {
       await user.type(screen.getByLabelText(/message/i), 'Hello!')
       await user.click(screen.getByRole('button', { name: /send message/i }))
 
-      expect(screen.getByText(/thank you for writing/i)).toBeInTheDocument()
+      expect(screen.getByText(/your mail app should open/i)).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'kluvs.app@gmail.com' })).toHaveAttribute('href', 'mailto:kluvs.app@gmail.com')
       expect(screen.queryByRole('button', { name: /send message/i })).not.toBeInTheDocument()
+    })
+
+    it('should show the contact address as a fallback for visitors without a mail app', () => {
+      renderLandingPage()
+      const link = screen.getByRole('link', { name: 'kluvs.app@gmail.com' })
+      expect(link).toHaveAttribute('href', 'mailto:kluvs.app@gmail.com')
     })
 
     it('should set mailto href on submission', async () => {
