@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kluvs</title>
 
+    <!-- Resolve the theme before first paint so light-mode visitors don't see a dark flash.
+         Mirrors resolveTheme() in src/contexts/ThemeContext.tsx. -->
+    <script>
+      try {
+        var t = localStorage.getItem('kluvs-theme');
+        var dark = t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+      } catch (e) {}
+    </script>
+
     <meta name="description" content="Kluvs gives your book club a quiet place for the current read, the next discussion, and everything you meant to bring up. On Android and the web." />
 
     <!-- Open Graph -->
