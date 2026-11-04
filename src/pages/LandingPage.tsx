@@ -5,15 +5,9 @@ import Footer from '../components/Footer'
 import DiscordIcon from '../components/icons/DiscordIcon'
 import KluvsHexBackground from '../components/KluvsHexBackground'
 import { getAppHref } from '../utils/domainNav'
+import { eyebrow, headline, cardTitle, card, outlinedButton } from '../constants/marketingStyles'
 
 const GOOGLE_PLAY_URL = 'https://play.google.com/store/apps/details?id=com.ivangarzab.kluvs'
-
-// Design-system typography families (see design-system/docs/typography.md)
-const eyebrow = 'font-sans text-[11px] font-medium tracking-[0.14em] uppercase'
-const headline = 'font-serif font-medium text-[30px] leading-[1.15] text-[var(--color-text-primary)]'
-const card = 'bg-[var(--color-bg-raised)] rounded-card border border-[var(--color-divider)] shadow-[0_1px_2px_rgba(20,15,13,0.06)] dark:shadow-none'
-const outlinedButton =
-  'flex items-center justify-center gap-3 border border-[var(--color-divider)] bg-[var(--color-bg-raised)] hover:bg-[var(--color-bg-elevated)] dark:bg-[var(--color-bg-elevated)] dark:hover:bg-[var(--color-divider)] text-[var(--color-text-primary)] rounded-btn px-6 py-3 font-medium text-body transition-colors'
 
 function MatIcon({ name, className = '' }: { name: string; className?: string }) {
   return (
@@ -144,7 +138,7 @@ export default function LandingPage() {
             {features.map((feature) => (
               <div key={feature.title} className={`${card} p-6`}>
                 <MatIcon name={feature.icon} className="text-[var(--color-text-secondary)] mb-4 block" />
-                <h3 className="font-serif font-medium text-[19px] leading-snug text-[var(--color-text-primary)] mb-2">{feature.title}</h3>
+                <h3 className={`${cardTitle} mb-2`}>{feature.title}</h3>
                 <p className="text-body text-[var(--color-text-secondary)]">{feature.description}</p>
               </div>
             ))}
@@ -218,7 +212,7 @@ export default function LandingPage() {
 
           {submitted ? (
             <div className={`${card} p-6 text-center`}>
-              <p className="font-serif font-medium text-[19px] text-[var(--color-text-primary)] mb-1">Thank you for writing.</p>
+              <p className={`${cardTitle} mb-1`}>Thank you for writing.</p>
               <p className="text-body text-[var(--color-text-secondary)]">We’ll get back to you soon.</p>
             </div>
           ) : (

@@ -29,7 +29,7 @@ export default function HowItWorksSection() {
     <section className="px-6 py-16" style={{ background: 'var(--color-bg)' }}>
       <div className="max-w-[900px] mx-auto">
         <header className="text-center mb-16">
-          <p className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-primary mb-3">
+          <p className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-meta)] mb-3">
             How it works
           </p>
           <h2 className="text-3xl font-serif font-bold text-[var(--color-text-primary)] mb-3">

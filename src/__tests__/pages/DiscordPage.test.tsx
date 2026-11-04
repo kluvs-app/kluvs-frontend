@@ -58,24 +58,24 @@ describe('DiscordPage', () => {
   })
 
   describe('Feature Highlights', () => {
-    it('should render the One Club per Channel feature card', () => {
+    it('should render the One club per channel feature card', () => {
       renderDiscordPage()
       expect(screen.getByRole('heading', { name: /one club per channel/i })).toBeInTheDocument()
     })
 
-    it('should render the Session Tracking feature card', () => {
+    it('should render the current read feature card', () => {
       renderDiscordPage()
-      expect(screen.getByRole('heading', { name: /session tracking/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /the current read, on call/i })).toBeInTheDocument()
     })
 
-    it('should render the AI Summaries feature card', () => {
+    it('should render the AI book summaries feature card', () => {
       renderDiscordPage()
-      expect(screen.getByRole('heading', { name: /ai summaries/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /ai book summaries/i })).toBeInTheDocument()
     })
 
-    it('should render the Discussion Scheduling feature card', () => {
+    it('should render the discussions-on-the-calendar feature card', () => {
       renderDiscordPage()
-      expect(screen.getByRole('heading', { name: /discussion scheduling/i })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: /discussions on the calendar/i })).toBeInTheDocument()
     })
   })
 
