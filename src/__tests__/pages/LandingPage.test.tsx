@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '../../contexts/ThemeContext'
@@ -56,22 +56,41 @@ describe('LandingPage', () => {
       expect(screen.getByRole('img', { name: 'Get it on Google Play' })).toHaveAttribute('src', '/google-play-badge.png')
     })
 
-    it('should not render an App Store link until iOS ships', () => {
+    it('should render an App Store download link', () => {
       renderLandingPage()
-      expect(screen.queryByRole('link', { name: /app store/i })).not.toBeInTheDocument()
-      expect(screen.getByText(/iphone coming soon/i)).toBeInTheDocument()
+      const links = screen.getAllByRole('link', { name: /app store/i })
+      expect(links.length).toBeGreaterThan(0)
+      links.forEach((link) => expect(link).toHaveAttribute('href', 'https://apps.apple.com/app/id6757938950'))
     })
 
-    it('should render an "Open in your browser" link to the web app', () => {
+    it('should use the official App Store badge image', () => {
       renderLandingPage()
-      const link = screen.getByRole('link', { name: /open in your browser/i })
-      expect(link).toHaveAttribute('href', `${window.location.origin}/me?domain=app`)
+      expect(screen.getByRole('img', { name: 'Download on the App Store' })).toHaveAttribute('src', '/app-store-badge.svg')
     })
 
-    it('should link to the Discord page as a secondary option', () => {
+    it('should place the App Store badge after the Google Play badge', () => {
       renderLandingPage()
-      const link = screen.getByRole('link', { name: /run your club on discord/i })
-      expect(link).toHaveAttribute('href', '/discord')
+      const play = screen.getByRole('img', { name: 'Get it on Google Play' })
+      const appStore = screen.getByRole('img', { name: 'Download on the App Store' })
+      expect(play.compareDocumentPosition(appStore) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+
+    it('should not show any iPhone "coming soon" copy', () => {
+      renderLandingPage()
+      expect(screen.queryByText(/coming soon/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/on its way/i)).not.toBeInTheDocument()
+    })
+
+    it('should keep the hero focused on the store badges only', () => {
+      renderLandingPage()
+      expect(screen.queryByRole('link', { name: /open in your browser/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /run your club on discord/i })).not.toBeInTheDocument()
+    })
+
+    it('should link to the Discord page from the header', () => {
+      renderLandingPage()
+      const nav = screen.getByRole('navigation', { name: 'Main' })
+      expect(within(nav).getByRole('link', { name: 'Discord' })).toHaveAttribute('href', '/discord')
     })
   })
 
@@ -95,10 +114,11 @@ describe('LandingPage', () => {
       expect(screen.getAllByRole('img', { name: /in kluvs/i })).toHaveLength(3)
     })
 
-    it('should say the app is free on Android and the web', () => {
+    it('should say the app is free on Android, iPhone, and the web', () => {
       renderLandingPage()
-      expect(screen.getByText(/free on android and the web/i)).toBeInTheDocument()
+      expect(screen.getByText(/free on android, iphone, and the web/i)).toBeInTheDocument()
       expect(screen.getByText('Free on Google Play')).toBeInTheDocument()
+      expect(screen.getByText('Free on the App Store')).toBeInTheDocument()
       expect(screen.getByText('Free in any browser')).toBeInTheDocument()
     })
 

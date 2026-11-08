@@ -1,8 +1,8 @@
 # Privacy Policy
 
-**Effective Date:** November 4, 2026.
+**Effective Date:** November 8, 2026.
 
-Welcome to Kluvs! This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and web app, our Android mobile application, and our Discord companion bot (collectively, the "Service"). An iOS app is planned but is not yet available. Discord is optional: you can use Kluvs without connecting a Discord account.
+Welcome to Kluvs! This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and web app, our Android and iOS mobile applications, and our Discord companion bot (collectively, the "Service"). Discord is optional: you can use Kluvs without connecting a Discord account.
 
 Please read this Privacy Policy carefully. If you do not agree with the terms of this privacy policy, please do not access the Service.
 
@@ -12,7 +12,7 @@ We collect information about you directly from you, from third parties, and auto
 
 ### A. Account and Profile Data
 When you register for Kluvs, we collect information used to identify you and set up your profile:
-* **Authentication Data:** We use Supabase Auth to manage user identities. You can sign in with Discord or Google (OAuth), or with an email address and password. Upon signing up, we derive a display name based on your authentication metadata or email prefix.
+* **Authentication Data:** We use Supabase Auth to manage user identities. You can sign in with Discord, Google, or Apple (OAuth), or with an email address and password. If you sign in with Apple, Apple shares your name and email address with us; if you choose "Hide My Email", we receive an Apple private relay address instead of your real one. Upon signing up, we derive a display name based on your authentication metadata or email prefix.
 * **Profile Customization:** We collect your chosen handle (username), which must be unique, and profile avatar images, which are stored securely in our cloud buckets.
 
 ### B. Discord Integration Data
@@ -47,6 +47,7 @@ We use the data we collect for the following purposes:
 We rely on trusted third-party services to power Kluvs. We share necessary data with these providers strictly to facilitate our services:
 * **Supabase:** We use Supabase as our Backend-as-a-Service to manage database hosting, real-time data syncing, user authentication, and avatar image storage.
 * **Discord:** We utilize Discord's API to run our companion bot and sync book clubs to specific servers and channels.
+* **Apple:** We use Sign in with Apple as a login option. Apple authenticates you and shares the name and email address (or private relay address) you choose to share with us.
 * **Google Books:** We fetch and cache book cover URLs and metadata from the Google Books API.
 * **OpenAI:** We use OpenAI to generate AI book summaries (the `/book_summary` command). Only the book information needed to produce the summary is sent.
 * **Vercel:** We use Vercel to host our website and web app. Vercel may process technical request data, such as IP addresses, to deliver the site.

@@ -6,7 +6,7 @@ import content from '../content/privacy-policy.md?raw'
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
-      <Header />
+      <Header showDiscordLink={true} />
 
       <main className="max-w-3xl mx-auto px-6 py-12">
         <article className="prose prose-neutral dark:prose-invert max-w-none prose-a:text-primary hover:prose-a:text-primary-hover prose-h1:font-serif">
