@@ -1,6 +1,6 @@
 # Account & Data Deletion
 
-**Last updated:** September 4, 2026
+**Last updated:** November 8, 2026
 
 This page explains how users of the **Kluvs** app can delete their account and associated data.
 
@@ -17,14 +17,14 @@ Confirming is permanent. Your account, profile, and club memberships are deleted
 
 ### Can't log in?
 
-If you've lost access to your account (for example, you no longer have access to the Discord or Google account used to sign in) and can't use the in-app option, you can request deletion by **sending an email** to:
+If you've lost access to your account (for example, you no longer have access to the Discord, Google, or Apple account used to sign in) and can't use the in-app option, you can request deletion by **sending an email** to:
 
 **[kluvs.app@gmail.com](mailto:kluvs.app@gmail.com)**
 
 Please use the subject line **"Account Deletion Request"** and include:
 
-- The name or email address associated with your account (Discord or Google)
-- The OAuth provider you used to sign in (Discord or Google)
+- The name or email address associated with your account (Discord, Google, or Apple; for Apple, this may be a private relay address)
+- The OAuth provider you used to sign in (Discord, Google, or Apple)
 
 We will process email requests and confirm deletion within **30 days**.
 

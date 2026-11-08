@@ -5,9 +5,10 @@ import Footer from '../components/Footer'
 import DiscordIcon from '../components/icons/DiscordIcon'
 import KluvsHexBackground from '../components/KluvsHexBackground'
 import { getAppHref } from '../utils/domainNav'
-import { eyebrow, headline, cardTitle, card, outlinedButton } from '../constants/marketingStyles'
+import { eyebrow, headline, cardTitle, card } from '../constants/marketingStyles'
 
 const GOOGLE_PLAY_URL = 'https://play.google.com/store/apps/details?id=com.ivangarzab.kluvs'
+const APP_STORE_URL = 'https://apps.apple.com/app/id6757938950'
 const CONTACT_EMAIL = 'kluvs.app@gmail.com'
 
 function MatIcon({ name, className = '' }: { name: string; className?: string }) {
@@ -79,7 +80,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
-      <Header showOpenAppButton={true} />
+      <Header showOpenAppButton={true} showDiscordLink={true} />
 
       {/* Hero */}
       <section className="relative isolate overflow-hidden min-h-[640px] px-6 pb-24 text-center">
@@ -92,25 +93,17 @@ export default function LandingPage() {
             <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
               Kluvs gives your book club a quiet place to keep the current read, the next discussion, and everything you meant to bring up. On your phone and on the web.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              {/* Google's official badge, unmodified per their brand guidelines. The PNG carries its
-                  own transparent padding, so negative margins line it up with the button beside it. */}
+            {/* Official store badges, unmodified per Google's and Apple's brand guidelines. Google's PNG
+                carries its own transparent padding, so negative margins line it up with its neighbor;
+                Apple's SVG has none, and 46px matches the Play badge's visible height. */}
+            <div className="flex justify-center items-center gap-3">
               <a href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer" className="-m-[11px] shrink-0">
                 <img src="/google-play-badge.png" alt="Get it on Google Play" className="block h-[69px] w-auto" />
               </a>
-              <a href={getAppHref('/me')} className={outlinedButton}>
-                <MatIcon name="language" className="!text-[20px]" />
-                Open in your browser
+              <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                <img src="/app-store-badge.svg" alt="Download on the App Store" className="block h-[46px] w-auto" />
               </a>
             </div>
-            <p className="mt-6 text-helper text-[var(--color-text-meta)]">
-              iPhone coming soon
-              <span className="mx-2" aria-hidden="true">·</span>
-              <Link to="/discord" className="inline-flex items-center gap-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors">
-                <DiscordIcon className="w-3.5 h-3.5" />
-                Run your club on Discord
-              </Link>
-            </p>
           </div>
         </div>
       </section>
@@ -141,7 +134,7 @@ export default function LandingPage() {
             <p className={`${eyebrow} text-[var(--color-text-meta)] mb-3`}>Wherever you read</p>
             <h2 className={`${headline} mb-3`}>Your club follows you</h2>
             <p className="text-body-lg text-[var(--color-text-secondary)] mb-8 max-w-md">
-              Start on your phone, pick it up on your laptop. Everything stays in step, and it’s free on Android and the web.
+              Start on your phone, pick it up on your laptop. Everything stays in step, and it’s free on Android, iPhone, and the web.
             </p>
             <ul className="space-y-3 max-w-md">
               <li>
@@ -150,6 +143,16 @@ export default function LandingPage() {
                   <span className="flex-1">
                     <span className="block text-body font-medium text-[var(--color-text-primary)]">Android</span>
                     <span className="block text-helper text-[var(--color-text-meta)]">Free on Google Play</span>
+                  </span>
+                  <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
+                </a>
+              </li>
+              <li>
+                <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
+                  <MatIcon name="phone_iphone" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
+                  <span className="flex-1">
+                    <span className="block text-body font-medium text-[var(--color-text-primary)]">iPhone</span>
+                    <span className="block text-helper text-[var(--color-text-meta)]">Free on the App Store</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
                 </a>
@@ -173,10 +176,6 @@ export default function LandingPage() {
                   </span>
                   <MatIcon name="arrow_forward" className="text-[var(--color-text-meta)] !text-[18px]" />
                 </Link>
-              </li>
-              <li className="flex items-center gap-4 px-4 py-2">
-                <MatIcon name="phone_iphone" className="text-[var(--color-text-disabled)] !text-[20px] shrink-0" />
-                <span className="text-helper text-[var(--color-text-meta)]">iPhone is on its way.</span>
               </li>
             </ul>
           </div>

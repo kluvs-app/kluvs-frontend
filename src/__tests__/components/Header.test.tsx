@@ -141,9 +141,37 @@ describe('Header', () => {
 
       // Logo should come before app button in DOM
       expect(logo).toBeInTheDocument()
-      const logoIndex = Array.from(header.children).indexOf(logo as Element)
-      const buttonIndex = Array.from(header.children).indexOf(appButton)
-      expect(logoIndex).toBeLessThan(buttonIndex)
+      expect(header).toContainElement(appButton)
+      expect(logo!.compareDocumentPosition(appButton) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+  })
+
+  describe('Discord Link', () => {
+    it('should not display the Discord link by default', () => {
+      renderHeader()
+
+      expect(screen.queryByRole('link', { name: 'Discord' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
+    })
+
+    it('should link to the Discord page when showDiscordLink is true', () => {
+      renderHeader({ showDiscordLink: true })
+
+      expect(screen.getByRole('link', { name: 'Discord' })).toHaveAttribute('href', '/discord')
+    })
+
+    it('should collapse the Discord label to icon-only on mobile', () => {
+      renderHeader({ showDiscordLink: true })
+
+      expect(screen.getByText('Discord')).toHaveClass('hidden', 'sm:inline')
+    })
+
+    it('should render the Discord link before the Open Kluvs button', () => {
+      renderHeader({ showDiscordLink: true, showOpenAppButton: true })
+
+      const discord = screen.getByRole('link', { name: 'Discord' })
+      const openApp = screen.getByRole('link', { name: /Open Kluvs/i })
+      expect(discord.compareDocumentPosition(openApp) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     })
   })
 })
