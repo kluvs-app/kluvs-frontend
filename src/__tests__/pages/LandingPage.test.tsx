@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { ThemeProvider } from '../../contexts/ThemeContext'
@@ -81,16 +81,16 @@ describe('LandingPage', () => {
       expect(screen.queryByText(/on its way/i)).not.toBeInTheDocument()
     })
 
-    it('should render an "Open in your browser" link to the web app', () => {
+    it('should keep the hero focused on the store badges only', () => {
       renderLandingPage()
-      const link = screen.getByRole('link', { name: /open in your browser/i })
-      expect(link).toHaveAttribute('href', `${window.location.origin}/me?domain=app`)
+      expect(screen.queryByRole('link', { name: /open in your browser/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /run your club on discord/i })).not.toBeInTheDocument()
     })
 
-    it('should link to the Discord page as a secondary option', () => {
+    it('should link to the Discord page from the header', () => {
       renderLandingPage()
-      const link = screen.getByRole('link', { name: /run your club on discord/i })
-      expect(link).toHaveAttribute('href', '/discord')
+      const header = screen.getByRole('banner')
+      expect(within(header).getByRole('link', { name: 'Discord' })).toHaveAttribute('href', '/discord')
     })
   })
 
