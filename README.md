@@ -191,7 +191,7 @@ kluvs-frontend/
 
 The app uses Supabase Auth with multiple providers:
 
-- **OAuth Providers:** Discord, Google (*iOS coming soon...*)
+- **OAuth Providers:** Discord, Google, Apple
 - **Email/Password:** Sign up, sign in, password recovery via email link
 - **Session:** Stored in localStorage with auto-refresh
 - **Roles:** Per-club roles — `owner`, `admin` (full access), `member` (read-only)

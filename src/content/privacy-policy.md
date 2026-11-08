@@ -2,7 +2,7 @@
 
 **Effective Date:** November 4, 2026.
 
-Welcome to Kluvs! This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and web app, our Android mobile application, and our Discord companion bot (collectively, the "Service"). An iOS app is planned but is not yet available. Discord is optional: you can use Kluvs without connecting a Discord account.
+Welcome to Kluvs! This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and web app, our Android and iOS mobile applications, and our Discord companion bot (collectively, the "Service"). Discord is optional: you can use Kluvs without connecting a Discord account.
 
 Please read this Privacy Policy carefully. If you do not agree with the terms of this privacy policy, please do not access the Service.
 
