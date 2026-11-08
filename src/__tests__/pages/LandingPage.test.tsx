@@ -89,8 +89,8 @@ describe('LandingPage', () => {
 
     it('should link to the Discord page from the header', () => {
       renderLandingPage()
-      const header = screen.getByRole('banner')
-      expect(within(header).getByRole('link', { name: 'Discord' })).toHaveAttribute('href', '/discord')
+      const nav = screen.getByRole('navigation', { name: 'Main' })
+      expect(within(nav).getByRole('link', { name: 'Discord' })).toHaveAttribute('href', '/discord')
     })
   })
 

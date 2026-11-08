@@ -17,7 +17,7 @@ export default function Header({ showOpenAppButton = false, showDiscordLink = fa
       </Link>
 
       {(showDiscordLink || showOpenAppButton) && (
-        <nav className="flex items-center gap-2">
+        <nav aria-label="Main" className="flex items-center gap-2">
           {showDiscordLink && (
             // Icon-only below sm so the bar fits on one line on phones; aria-label keeps the
             // accessible name "Discord" at every width.
