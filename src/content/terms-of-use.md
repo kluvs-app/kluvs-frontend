@@ -1,6 +1,6 @@
 # Terms of Use
 
-**Effective Date:** November 4, 2026.
+**Effective Date:** November 8, 2026.
 
 Welcome to Kluvs! These Terms of Use ("Terms") govern your access to and use of the Kluvs Android and iOS mobile applications, website and web app, and Discord companion bot (collectively, the "Service"). The Service is operated by Ivan Garza ("we," "us," or "our").
 
