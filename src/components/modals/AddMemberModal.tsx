@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club } from '../../types'
+import type { Club, ClubUpdateResponse, MemberUpdateResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 
+// GET /member?search returns { members: SearchResult[] }, which the spec does not
+// document yet (it only declares the single-member lookup shape). Kept local until it does.
 interface SearchResult {
   id: number
   name: string
@@ -89,7 +91,7 @@ export default function AddMemberModal({
     setAddingId(result.id)
     setInlineError(null)
     try {
-      const { error } = await invokeFunction('member', {
+      const { error } = await invokeFunction<MemberUpdateResponse>('member', {
         method: 'PUT',
         body: { id: result.id, add_to_club: selectedClub.id },
       })
@@ -123,7 +125,7 @@ export default function AddMemberModal({
     setToggleError(null)
     setToggleLoading(true)
     try {
-      const { data, error } = await invokeFunction<{ club: Club }>('club', {
+      const { data, error } = await invokeFunction<ClubUpdateResponse>('club', {
         method: 'PUT',
         body: { id: selectedClub.id, join_policy: newPolicy },
       })

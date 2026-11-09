@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club } from '../../types'
+import type { Club, ClubUpdateResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 
@@ -36,7 +36,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
     setError(null)
     try {
       setLoading(true)
-      const { data, error } = await invokeFunction<{ club: Club }>('club', {
+      const { data, error } = await invokeFunction<ClubUpdateResponse>('club', {
         method: 'PUT',
         body: { id: club.id, join_policy: newPolicy },
       })

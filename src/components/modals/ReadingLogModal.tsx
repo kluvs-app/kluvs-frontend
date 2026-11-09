@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { ReadingLog, ReadingLogEntry } from '../../types'
+import type { ReadingLog, ReadingLogEntry, ReadingLogResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import CoverSlot from '../ui/CoverSlot'
 import BaseModal from './BaseModal'
@@ -15,7 +15,7 @@ const LABEL_COLOR = '#C9BDA8'
 function LogEntry({ entry }: { entry: ReadingLogEntry }) {
   return (
     <div className="flex gap-4 items-start">
-      <CoverSlot imageUrl={entry.book.image_url} width={40} height={56} />
+      <CoverSlot imageUrl={entry.book?.image_url} width={40} height={56} />
       <div className="flex-1 min-w-0">
         <p style={{
           fontFamily: '"EB Garamond", Georgia, serif',
@@ -24,17 +24,17 @@ function LogEntry({ entry }: { entry: ReadingLogEntry }) {
           letterSpacing: '-0.008em',
           color: 'var(--color-text-primary)',
           marginBottom: 4,
-        }}>{entry.book.title}</p>
+        }}>{entry.book?.title}</p>
         <p style={{
           fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
           fontSize: 13, color: LABEL_COLOR,
           marginBottom: 4,
-        }}>{entry.book.author}</p>
+        }}>{entry.book?.author}</p>
         <p style={{
           fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
           fontSize: 11, fontWeight: 500, letterSpacing: '0.10em',
           textTransform: 'uppercase', color: 'var(--color-text-secondary)',
-        }}>{entry.club.name}</p>
+        }}>{entry.club?.name}</p>
       </div>
     </div>
   )
@@ -75,7 +75,7 @@ export default function ReadingLogModal({ isOpen, onClose }: ReadingLogModalProp
     setLog(null)
     setError(null)
 
-    invokeFunction<{ success: boolean; reading_log: ReadingLog }>('session?reading_log=true', { method: 'GET' })
+    invokeFunction<ReadingLogResponse>('session?reading_log=true', { method: 'GET' })
       .then(({ data, error: fetchError }) => {
         if (cancelled) return
         if (fetchError) {
@@ -122,7 +122,7 @@ export default function ReadingLogModal({ isOpen, onClose }: ReadingLogModalProp
           {/* Currently Reading */}
           <div>
             <SectionLabel label="Currently Reading" />
-            {log.active.length === 0
+            {!log.active?.length
               ? <EmptyState />
               : (
                 <div className="space-y-5">
@@ -140,7 +140,7 @@ export default function ReadingLogModal({ isOpen, onClose }: ReadingLogModalProp
           {/* Read */}
           <div>
             <SectionLabel label="Read" />
-            {log.finished.length === 0
+            {!log.finished?.length
               ? <EmptyState />
               : (
                 <div className="space-y-5">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club, Member } from '../../types'
+import type { Club, ClubMember, SessionFinishResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import AvatarStack from '../ui/AvatarStack'
 import BaseModal from './BaseModal'
@@ -23,8 +23,8 @@ export default function EndSessionModal({
 
   const readingMembers = (club.active_session?.members ?? [])
     .filter(sm => sm.is_reading)
-    .map(sm => club.members.find(m => m.id === sm.member_id))
-    .filter((m): m is Member => m != null)
+    .map(sm => club.members?.find(m => m.id === sm.member_id))
+    .filter((m): m is ClubMember => m != null)
   const readingCount = readingMembers.length
 
   const handleConfirm = async () => {
@@ -32,7 +32,7 @@ export default function EndSessionModal({
     setLoading(true)
     setError(null)
     try {
-      const { error: err } = await invokeFunction<{ success: boolean; members_credited: number }>(
+      const { error: err } = await invokeFunction<SessionFinishResponse>(
         'session',
         { method: 'PUT', body: { id: club.active_session.id, finish: true } }
       )

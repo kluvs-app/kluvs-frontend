@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club } from '../../types'
+import type { Club, SessionUpdateResponse } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
@@ -27,7 +27,7 @@ export default function EditBookModal({
   useEffect(() => {
     if (isOpen && selectedClub.active_session) {
       const session = selectedClub.active_session
-      setSelectedBookId(session.book.id ?? null)
+      setSelectedBookId(session.book?.id ?? null)
       setDueDate(session.due_date ? session.due_date.split('T')[0] : '')
     }
   }, [isOpen, selectedClub])
@@ -39,7 +39,7 @@ export default function EditBookModal({
     try {
       setLoading(true)
       onError('')
-      const { error } = await invokeFunction('session', {
+      const { error } = await invokeFunction<SessionUpdateResponse>('session', {
         method: 'PUT',
         body: {
           id: selectedClub.active_session.id,

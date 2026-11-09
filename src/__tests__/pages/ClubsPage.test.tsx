@@ -83,7 +83,7 @@ describe('ClubsPage', () => {
           return Promise.resolve({
             data: {
               ...mockAdminMember,
-              clubs: [{ ...mockAdminMember.clubs[0], role: 'owner' }],
+              clubs: [{ ...mockAdminMember.clubs![0], role: 'owner' }],
             },
             error: null,
           })
@@ -142,7 +142,7 @@ describe('ClubsPage', () => {
       renderPage({ openNewModal: true })
       await waitFor(() => screen.getByTestId('add-club-modal'))
       await user.click(screen.getByRole('button', { name: /close/i }))
-      await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument(), { timeout: 5000 })
+      await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument())
     })
   })
 
@@ -466,7 +466,7 @@ describe('ClubsPage', () => {
           return Promise.resolve({
             data: {
               ...mockAdminMember,
-              clubs: [{ ...mockAdminMember.clubs[0], role: 'owner' }],
+              clubs: [{ ...mockAdminMember.clubs![0], role: 'owner' }],
             },
             error: null,
           })
@@ -484,7 +484,7 @@ describe('ClubsPage', () => {
           return Promise.resolve({
             data: {
               ...mockAdminMember,
-              clubs: [{ ...mockAdminMember.clubs[0], role: 'member' }],
+              clubs: [{ ...mockAdminMember.clubs![0], role: 'member' }],
             },
             error: null,
           })
@@ -504,12 +504,12 @@ describe('ClubsPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) {
           return Promise.resolve({
-            data: { ...mockAdminMember, clubs: [mockAdminMember.clubs[0]] },
+            data: { ...mockAdminMember, clubs: [mockAdminMember.clubs![0]] },
             error: null,
           })
         }
         if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
-        if (endpoint.includes('club?id=')) return Promise.resolve({ data: mockAdminMember.clubs[0], error: null })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: mockAdminMember.clubs![0], error: null })
         return Promise.resolve({ data: null, error: null })
       })
       renderPage()
@@ -523,7 +523,7 @@ describe('ClubsPage', () => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
         if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
         if (endpoint.includes('club?id=')) {
-          const club = { ...mockAdminMember.clubs[0], active_session: null }
+          const club = { ...mockAdminMember.clubs![0], active_session: null }
           return Promise.resolve({ data: club, error: null })
         }
         return Promise.resolve({ data: null, error: null })
@@ -541,7 +541,7 @@ describe('ClubsPage', () => {
         if (endpoint.includes('club?id=')) {
           return Promise.resolve({
             data: {
-              ...mockAdminMember.clubs[0],
+              ...mockAdminMember.clubs![0],
               members: [
                 { id: 1, name: 'Alice', handle: 'alice' },
                 { id: 2, name: 'Bob', handle: 'bob' },
@@ -657,7 +657,7 @@ describe('ClubsPage', () => {
 
       const closeBtn = screen.getByRole('button', { name: /close/i })
       await user.click(closeBtn)
-      await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument(), { timeout: 5000 })
+      await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument())
     })
 
     it('new modal prop opens modal on mount', async () => {

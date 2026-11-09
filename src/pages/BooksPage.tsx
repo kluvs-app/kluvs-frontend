@@ -14,7 +14,13 @@ import {
   type GBVolume,
   type KGPerson,
 } from '../services/googleBooks'
-import type { Book, LikeStatus, ShelfValue, ShelfStatus, ShelfEntry } from '../types'
+import type {
+  Book, BookRegistrationResponse, BookSearchResponse, LikeStatusResponse, LikeToggleResponse,
+  ShelfAssignResponse, ShelfEntry, ShelfListResponse, ShelfSingleResponse, ShelfValue,
+} from '../types'
+
+/** A shelf entry with the fields the shelf UI needs. Entries missing either are dropped on load. */
+type ShelvedBook = ShelfEntry & { shelf: ShelfValue; book: Book }
 import KluvsSpinner from '../components/KluvsSpinner'
 import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import BookCard from '../components/BookCard'
@@ -224,7 +230,7 @@ export default function BooksPage() {
   const [loadingAuthorBooks, setLoadingAuthorBooks] = useState(false)
   const [liked, setLiked]           = useState(false)
   const [shelf, setShelf]           = useState<ShelfValue | null>(null)
-  const [shelvedBooks, setShelvedBooks]     = useState<ShelfEntry[]>([])
+  const [shelvedBooks, setShelvedBooks]     = useState<ShelvedBook[]>([])
   const [loadingShelves, setLoadingShelves] = useState(true)
   const [shelvesError, setShelvesError]     = useState('')
   const [searchPage, setSearchPage]         = useState(0)
@@ -251,15 +257,10 @@ export default function BooksPage() {
   useEffect(() => {
     setLoadingShelves(true)
     setShelvesError('')
-    invokeFunction<ShelfEntry[] | { shelves?: ShelfEntry[] }>('shelf', { method: 'GET' })
+    invokeFunction<ShelfListResponse>('shelf', { method: 'GET' })
       .then(({ data, error }) => {
         if (error) throw error
-        const raw: Array<ShelfEntry | ({ shelf: ShelfValue } & Book)> = Array.isArray(data) ? data : (data as { shelves?: ShelfEntry[] })?.shelves ?? []
-        // Normalize both { shelf, book } and flat { shelf, ...bookFields } shapes
-        const entries: ShelfEntry[] = raw.map(e =>
-          'book' in e ? e : { shelf: e.shelf, updated_at: '', source: 'manual', book: e }
-        )
-        setShelvedBooks(entries)
+        setShelvedBooks((data?.shelves ?? []).filter((e): e is ShelvedBook => !!e.shelf && !!e.book))
       })
       .catch(() => setShelvesError('Could not load shelves.'))
       .finally(() => setLoadingShelves(false))
@@ -272,13 +273,13 @@ export default function BooksPage() {
     setSearchError('')
     try {
       const offset = page * PAGE_SIZE
-      const { data, error } = await invokeFunction<{ books?: Book[]; total?: number }>(
+      const { data, error } = await invokeFunction<BookSearchResponse>(
         `book?q=${encodeURIComponent(q.trim())}&limit=${PAGE_SIZE}&offset=${offset}`,
         { method: 'GET' }
       )
       if (error) throw error
-      const books = Array.isArray(data) ? data : (data as { books?: Book[] })?.books ?? []
-      const total = Array.isArray(data) ? null : (data as { total?: number })?.total ?? null
+      const books = data?.books ?? []
+      const total = data?.total ?? null
       setResults(prev => page === 0 ? books : [...prev, ...books])
       setHasMore(total != null ? offset + books.length < total : books.length === PAGE_SIZE)
     } catch {
@@ -389,7 +390,7 @@ export default function BooksPage() {
       })
     }
 
-    invokeFunction<Book | { book?: Book }>('book', {
+    invokeFunction<BookRegistrationResponse>('book', {
       method: 'POST',
       body: {
         title:              book.title,
@@ -403,20 +404,20 @@ export default function BooksPage() {
       },
     }).then(({ data, error }) => {
       if (!error) {
-        const saved = (data && 'title' in data ? data : (data as { book?: Book })?.book) as Book | undefined
+        const saved = data?.book
         if (saved) {
           setSelectedBook(saved)
           if (saved.id) {
-            invokeFunction<{ success: boolean } & LikeStatus>('like?book_id=' + saved.id, { method: 'GET' })
+            invokeFunction<LikeStatusResponse>('like?book_id=' + saved.id, { method: 'GET' })
               .then(({ data: likeData, error: likeError }) => {
                 if (!likeError && likeData) {
-                  setLiked(likeData.liked)
+                  setLiked(likeData.liked ?? false)
                 }
               }).catch(() => {})
-            invokeFunction<{ success: boolean } & ShelfStatus>('shelf?book_id=' + saved.id, { method: 'GET' })
+            invokeFunction<ShelfSingleResponse>('shelf?book_id=' + saved.id, { method: 'GET' })
               .then(({ data: shelfData, error: shelfError }) => {
                 if (!shelfError && shelfData) {
-                  setShelf(shelfData.shelf)
+                  setShelf(shelfData.shelf ?? null)
                 }
               }).catch(() => {})
           }
@@ -430,12 +431,12 @@ export default function BooksPage() {
     const bookId = selectedBook.id
     const prevLiked = liked
     setLiked(!prevLiked)
-    invokeFunction<{ success: boolean } & LikeStatus>('like', {
+    invokeFunction<LikeToggleResponse>('like', {
       method: 'POST',
       body: { book_id: bookId },
     }).then(({ data, error }) => {
       if (!error && data) {
-        setLiked(data.liked)
+        setLiked(data.liked ?? !prevLiked)
       } else {
         setLiked(prevLiked)
       }
@@ -458,14 +459,14 @@ export default function BooksPage() {
     } else {
       setShelvedBooks(prev => {
         const idx = prev.findIndex(e => e.book.id === bookId)
-        const entry: ShelfEntry = { shelf: value, updated_at: new Date().toISOString(), source: 'manual', book: selectedBook }
+        const entry: ShelvedBook = { shelf: value, updated_at: new Date().toISOString(), source: 'manual', book: selectedBook }
         if (idx >= 0) return prev.map((e, i) => i === idx ? entry : e)
         return [...prev, entry]
       })
     }
 
     if (value === null) {
-      invokeFunction<{ success: boolean } & ShelfStatus>('shelf?book_id=' + bookId, { method: 'DELETE' })
+      invokeFunction<ShelfSingleResponse>('shelf?book_id=' + bookId, { method: 'DELETE' })
         .then(({ error }) => {
           if (error) { setShelf(prevShelf); setShelvedBooks(prevShelvedBooks) }
         }).catch(() => {
@@ -473,12 +474,12 @@ export default function BooksPage() {
           setShelvedBooks(prevShelvedBooks)
         })
     } else {
-      invokeFunction<{ success: boolean } & ShelfStatus>('shelf', {
+      invokeFunction<ShelfAssignResponse>('shelf', {
         method: 'POST',
         body: { book_id: bookId, shelf: value },
       }).then(({ data, error }) => {
         if (!error && data) {
-          setShelf(data.shelf)
+          setShelf(data.shelf ?? value)
         } else {
           setShelf(prevShelf)
           setShelvedBooks(prevShelvedBooks)
@@ -511,12 +512,12 @@ export default function BooksPage() {
   const authors     = vi?.authors?.join(', ') ?? selectedBook?.author ?? ''
   const year        = extractYear(vi?.publishedDate, selectedBook?.year)
   const pages       = (vi?.pageCount ?? selectedBook?.page_count)?.toLocaleString()
-  const publisher   = vi?.publisher ?? selectedBook?.publisher
+  const publisher   = vi?.publisher
   const isbn        = preferredIsbn(vi?.industryIdentifiers) ?? selectedBook?.isbn
-  const language    = displayLanguage(vi?.language) ?? selectedBook?.language
+  const language    = displayLanguage(vi?.language)
   const edition     = selectedBook?.edition
-  const description = vi?.description ? stripHtml(vi.description) : selectedBook?.description
-  const categories  = (vi?.categories ?? selectedBook?.categories ?? []).slice(0, 5)
+  const description = vi?.description ? stripHtml(vi.description) : undefined
+  const categories  = (vi?.categories ?? []).slice(0, 5)
 
   const metaItems = [year, pages && `${pages} pages`, publisher].filter((v): v is string => !!v)
 

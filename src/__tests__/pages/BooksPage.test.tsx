@@ -235,7 +235,7 @@ describe('BooksPage', () => {
         { shelf: 'want_to_read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
         { shelf: 'read', updated_at: '2026-01-02T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
       ]
-      mockSupabase.functions.invoke.mockResolvedValue({ data: entries, error: null })
+      mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, shelves: entries }, error: null })
       await renderAndWait()
 
       expect(screen.getByText('Book A')).toBeInTheDocument()
@@ -249,7 +249,7 @@ describe('BooksPage', () => {
         { shelf: 'want_to_read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
         { shelf: 'currently_reading', updated_at: '2026-01-02T00:00:00Z', source: 'session', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
       ]
-      mockSupabase.functions.invoke.mockResolvedValue({ data: entries, error: null })
+      mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, shelves: entries }, error: null })
       await renderAndWait()
 
       const headings = screen.getAllByText(/currently reading|want to read/i)
@@ -261,7 +261,7 @@ describe('BooksPage', () => {
         { shelf: 'currently_reading', updated_at: '2026-01-01T00:00:00Z', source: 'session', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
         { shelf: 'read', updated_at: '2026-01-02T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
       ]
-      mockSupabase.functions.invoke.mockResolvedValue({ data: entries, error: null })
+      mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, shelves: entries }, error: null })
       await renderAndWait()
 
       expect(screen.getByLabelText(/reading with kluvs/i)).toBeInTheDocument()
@@ -271,8 +271,8 @@ describe('BooksPage', () => {
     it('clicking a shelved book opens the detail overlay', async () => {
       const shelvedGatsby: Book = { ...mockRegisteredBook }
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'shelf') return Promise.resolve({ data: [{ shelf: 'read', book: shelvedGatsby }], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', book: shelvedGatsby }] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await renderAndWait()
@@ -305,7 +305,7 @@ describe('BooksPage', () => {
 
     it('calls invokeFunction with the encoded query after debounce', async () => {
       await renderAndWait()
-      mockSupabase.functions.invoke.mockResolvedValue({ data: [mockSearchResult], error: null })
+      mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, books: [mockSearchResult] }, error: null })
       await typeAndSearch('gatsby')
 
       expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
@@ -316,22 +316,11 @@ describe('BooksPage', () => {
 
     it('displays search results', async () => {
       await renderAndWait()
-      mockSupabase.functions.invoke.mockResolvedValue({ data: [mockSearchResult, mockSearchResult2], error: null })
+      mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, books: [mockSearchResult, mockSearchResult2] }, error: null })
       await typeAndSearch('gatsby')
 
       expect(screen.getByText('The Great Gatsby')).toBeInTheDocument()
       expect(screen.getByText('1984')).toBeInTheDocument()
-    })
-
-    it('accepts books wrapped in an object response shape', async () => {
-      await renderAndWait()
-      mockSupabase.functions.invoke.mockResolvedValue({
-        data: { books: [mockSearchResult] },
-        error: null,
-      })
-      await typeAndSearch('gatsby')
-
-      expect(screen.getByText('The Great Gatsby')).toBeInTheDocument()
     })
 
     it('shows no-results message when search returns empty', async () => {
@@ -365,8 +354,8 @@ describe('BooksPage', () => {
     async function renderWithResults() {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -432,8 +421,8 @@ describe('BooksPage', () => {
 
     it('calls setTopBar with backLabel "My Shelf" when a book is selected from My Shelf', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'shelf') return Promise.resolve({ data: [{ shelf: 'read', book: mockRegisteredBook }], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', book: mockRegisteredBook }] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await renderAndWait()
@@ -469,7 +458,7 @@ describe('BooksPage', () => {
     it('keeps the book displayed even when upsert fails', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.reject(new Error('upsert failed'))
         return Promise.resolve({ data: null, error: null })
       })
@@ -488,8 +477,8 @@ describe('BooksPage', () => {
     it('does not POST again when the same book is re-selected', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -518,8 +507,8 @@ describe('BooksPage', () => {
     async function renderAndSelect() {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       mockGetVolume.mockResolvedValue(mockVolumeInfo)
@@ -553,8 +542,8 @@ describe('BooksPage', () => {
     it('still shows the book when getVolume fails', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -570,8 +559,8 @@ describe('BooksPage', () => {
     async function renderAndSelectWithAuthor() {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       mockGetVolume.mockResolvedValue(mockVolumeInfo)
@@ -601,8 +590,8 @@ describe('BooksPage', () => {
     it('does not show the author section when getAuthor returns null', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -616,8 +605,8 @@ describe('BooksPage', () => {
     it('renders author photo when authorInfo has image.contentUrl', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       mockGetVolume.mockResolvedValue(mockVolumeInfo)
@@ -635,8 +624,8 @@ describe('BooksPage', () => {
     it('hides author photo when the image errors', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       mockGetVolume.mockResolvedValue(mockVolumeInfo)
@@ -657,8 +646,8 @@ describe('BooksPage', () => {
     async function renderWithRegisteredBook() {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
@@ -692,8 +681,8 @@ describe('BooksPage', () => {
     it('like button is disabled when the book has no id', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: { ...mockSearchResult, id: undefined }, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: { ...mockSearchResult, id: undefined } }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -705,8 +694,8 @@ describe('BooksPage', () => {
     it('POSTs to /like and optimistically toggles liked state on click', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint === 'like') return Promise.resolve({ data: { success: true, liked: true }, error: null })
         return Promise.resolve({ data: null, error: null })
@@ -729,8 +718,8 @@ describe('BooksPage', () => {
     it('reverts optimistic like state when POST /like fails', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint === 'like') return Promise.resolve({ data: null, error: new Error('toggle failed') })
         return Promise.resolve({ data: null, error: null })
@@ -752,8 +741,8 @@ describe('BooksPage', () => {
     it('shows liked state when GET /like returns liked: true', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: true }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
@@ -767,8 +756,8 @@ describe('BooksPage', () => {
     it('reverts optimistic like state when POST /like throws a network error', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint === 'like') return Promise.reject(new Error('network error'))
         return Promise.resolve({ data: null, error: null })
@@ -788,8 +777,8 @@ describe('BooksPage', () => {
       await renderAndWait()
       let likeGetCallCount = 0
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult, mockSearchResult2], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult, mockSearchResult2] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) {
           likeGetCallCount++
           return Promise.resolve({ data: { success: true, liked: likeGetCallCount === 1 }, error: null })
@@ -819,8 +808,8 @@ describe('BooksPage', () => {
     async function renderWithRegisteredBook(shelfGetResponse: { shelf: string | null } = { shelf: null }) {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, ...shelfGetResponse }, error: null })
         return Promise.resolve({ data: null, error: null })
@@ -842,8 +831,8 @@ describe('BooksPage', () => {
 
     it('shows a "Read with Kluvs" badge in the detail panel for session-sourced entries', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'shelf') return Promise.resolve({ data: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', source: 'session', book: mockRegisteredBook }], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', source: 'session', book: mockRegisteredBook }] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
         return Promise.resolve({ data: null, error: null })
@@ -860,8 +849,8 @@ describe('BooksPage', () => {
 
     it('does not show a "with Kluvs" badge for manually-shelved entries', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'shelf') return Promise.resolve({ data: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: mockRegisteredBook }], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: mockRegisteredBook }] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
         return Promise.resolve({ data: null, error: null })
@@ -885,8 +874,8 @@ describe('BooksPage', () => {
     it('shelf button is disabled when book has no id', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: { ...mockSearchResult, id: undefined }, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: { ...mockSearchResult, id: undefined } }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -949,8 +938,8 @@ describe('BooksPage', () => {
     it('POSTs to /shelf when a non-None option is selected', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
         if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
@@ -974,8 +963,8 @@ describe('BooksPage', () => {
     it('DELETEs /shelf when None option is selected while shelf is set', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
         return Promise.resolve({ data: null, error: null })
@@ -998,8 +987,8 @@ describe('BooksPage', () => {
     it('optimistically updates shelf state and confirms from server response', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
         if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelf: 'not_finished' }, error: null })
@@ -1020,8 +1009,8 @@ describe('BooksPage', () => {
     it('reverts shelf state when POST /shelf fails', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
         if (endpoint === 'shelf') return Promise.resolve({ data: null, error: new Error('shelf failed') })
@@ -1047,8 +1036,8 @@ describe('BooksPage', () => {
       await renderAndWait()
       let shelfGetCount = 0
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult, mockSearchResult2], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult, mockSearchResult2] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) {
           shelfGetCount++
@@ -1078,8 +1067,8 @@ describe('BooksPage', () => {
     async function renderAndSelectWithAuthorBooks() {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint.includes('book?q=')) return Promise.resolve({ data: [mockSearchResult], error: null })
-        if (endpoint === 'book') return Promise.resolve({ data: mockRegisteredBook, error: null })
+        if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
+        if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       mockGetVolume.mockResolvedValue(mockVolumeInfo)

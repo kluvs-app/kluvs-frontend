@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { invokeFunction, getAvatarUrl } from '../../supabase'
-import type { Club } from '../../types'
+import type { Club, ClubMember, DeleteResponse, SessionCreateResponse, SessionUpdateResponse } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
 import Avatar from '../ui/Avatar'
@@ -37,6 +37,11 @@ export default function EditSessionModal({
   onError,
 }: EditSessionModalProps) {
   const session = selectedClub.active_session
+  // Only members with an id can be toggled — the id is the session_members key.
+  const members = useMemo(
+    () => (selectedClub.members ?? []).filter((m): m is ClubMember & { id: number } => m.id != null),
+    [selectedClub.members]
+  )
   const [view, setView] = useState<'edit' | 'changeBook'>('edit')
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState('')
@@ -50,15 +55,15 @@ export default function EditSessionModal({
     setView('edit')
     setDueDate(session.due_date ? session.due_date.split('T')[0] : '')
     const map: Record<number, boolean> = {}
-    for (const m of selectedClub.members) {
-      const sm = session.members.find(s => s.member_id === m.id)
+    for (const m of members) {
+      const sm = session.members?.find(s => s.member_id === m.id)
       map[m.id] = sm?.is_reading ?? false
     }
     setReadingMap(map)
     setNewBookId(null)
     setNewDueDate('')
     setBookKey(k => k + 1)
-  }, [isOpen, session, selectedClub.members])
+  }, [isOpen, session, members])
 
   if (!isOpen || !session) return null
 
@@ -89,8 +94,8 @@ export default function EditSessionModal({
     const body: Record<string, unknown> = { id: session.id }
     if (dueDateChanged) body.due_date = dueDate || null
 
-    const changedMembers = selectedClub.members
-      .filter(m => readingMap[m.id] !== (session.members.find(s => s.member_id === m.id)?.is_reading ?? false))
+    const changedMembers = members
+      .filter(m => readingMap[m.id] !== (session.members?.find(s => s.member_id === m.id)?.is_reading ?? false))
       .map(m => ({ member_id: m.id, is_reading: readingMap[m.id] }))
     if (changedMembers.length > 0) body.session_members = changedMembers
 
@@ -102,7 +107,7 @@ export default function EditSessionModal({
     try {
       setLoading(true)
       onError('')
-      const { error } = await invokeFunction('session', { method: 'PUT', body })
+      const { error } = await invokeFunction<SessionUpdateResponse>('session', { method: 'PUT', body })
       if (error) throw error
       onClose()
       onSessionUpdated()
@@ -121,21 +126,22 @@ export default function EditSessionModal({
       setLoading(true)
       onError('')
 
-      const { error: deleteError } = await invokeFunction(`session?id=${session.id}`, { method: 'DELETE' })
+      const { error: deleteError } = await invokeFunction<DeleteResponse>(`session?id=${session.id}`, { method: 'DELETE' })
       if (deleteError) throw deleteError
 
-      const { data, error: createError } = await invokeFunction<{ session: { id: string } }>('session', {
+      const { data, error: createError } = await invokeFunction<SessionCreateResponse>('session', {
         method: 'POST',
         body: { club_id: selectedClub.id, book_id: newBookId, due_date: newDueDate || undefined, all_reading: false }
       })
       if (createError) throw createError
-      if (!data) throw new Error('Failed to create new session')
+      const newSessionId = data?.session?.id
+      if (!newSessionId) throw new Error('Failed to create new session')
 
-      const readingMembers = session.members
+      const readingMembers = (session.members ?? [])
         .filter(sm => sm.is_reading)
         .map(sm => ({ member_id: sm.member_id, is_reading: true }))
       if (readingMembers.length > 0) {
-        await invokeFunction('session', { method: 'PUT', body: { id: data.session.id, session_members: readingMembers } })
+        await invokeFunction<SessionUpdateResponse>('session', { method: 'PUT', body: { id: newSessionId, session_members: readingMembers } })
       }
 
       onClose()
@@ -252,13 +258,13 @@ export default function EditSessionModal({
         <div>
           <label style={labelStyle}>Reading Members</label>
           <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-            {selectedClub.members.map(m => {
+            {members.map(m => {
               const isReading = readingMap[m.id] ?? false
               return (
                 <div key={m.id} className="flex items-center justify-between py-1">
                   <div className="flex items-center gap-2.5">
                     <Avatar
-                      name={m.name}
+                      name={m.name ?? ''}
                       userId={String(m.id)}
                       imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
                       size="sm"

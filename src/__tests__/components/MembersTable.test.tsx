@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MembersTable from '../../components/MembersTable'
-import { mockClub, mockAdminMember, mockRegularMember } from '../utils/mocks'
+import { mockClub, mockClubMembers, mockAdminClubMember, mockRegularClubMember } from '../utils/mocks'
 
 // Mock supabase to avoid import errors from getAvatarUrl
 vi.mock('../../supabase', () => ({
@@ -31,21 +31,21 @@ describe('MembersTable', () => {
     it('should display member count in header', () => {
       render(<MembersTable {...defaultProps} />)
 
-      expect(screen.getByText(`Members (${mockClub.members.length})`)).toBeInTheDocument()
+      expect(screen.getByText(`Members (${mockClubMembers.length})`)).toBeInTheDocument()
     })
 
     it('should render all members', () => {
       render(<MembersTable {...defaultProps} />)
 
-      mockClub.members.forEach(member => {
-        expect(screen.getByText(member.name)).toBeInTheDocument()
+      mockClubMembers.forEach(member => {
+        expect(screen.getByText(member.name!)).toBeInTheDocument()
       })
     })
 
     it('should display member stats correctly', () => {
       render(<MembersTable {...defaultProps} />)
 
-      const firstMember = mockClub.members[0]
+      const firstMember = mockClubMembers[0]
       expect(screen.getByText(firstMember.books_read.toString())).toBeInTheDocument()
     })
   })
@@ -68,7 +68,7 @@ describe('MembersTable', () => {
 
       // Edit buttons use aria-label="Edit <name>"
       const editButtons = screen.getAllByLabelText(/^Edit /)
-      expect(editButtons.length).toBe(mockClub.members.length)
+      expect(editButtons.length).toBe(mockClubMembers.length)
     })
 
     it('should hide edit buttons for non-admin', () => {
@@ -83,7 +83,7 @@ describe('MembersTable', () => {
 
       // Delete buttons use aria-label="Delete <name>"
       const deleteButtons = screen.getAllByLabelText(/^Delete /)
-      expect(deleteButtons.length).toBe(mockClub.members.length)
+      expect(deleteButtons.length).toBe(mockClubMembers.length)
     })
 
     it('should hide delete buttons for non-admin', () => {
@@ -114,7 +114,7 @@ describe('MembersTable', () => {
 
       // Should be called with the first member
       expect(mockOnEditMember).toHaveBeenCalledTimes(1)
-      expect(mockOnEditMember).toHaveBeenCalledWith(mockClub.members[0])
+      expect(mockOnEditMember).toHaveBeenCalledWith(mockClubMembers[0])
     })
 
     it('should call onDeleteMember with correct member when delete button is clicked', async () => {
@@ -126,7 +126,7 @@ describe('MembersTable', () => {
 
       // Should be called with the first member
       expect(mockOnDeleteMember).toHaveBeenCalledTimes(1)
-      expect(mockOnDeleteMember).toHaveBeenCalledWith(mockClub.members[0])
+      expect(mockOnDeleteMember).toHaveBeenCalledWith(mockClubMembers[0])
     })
 
     it('should handle edit clicks for multiple members independently', async () => {
@@ -137,11 +137,11 @@ describe('MembersTable', () => {
 
       // Click first member's edit button
       await user.click(editButtons[0])
-      expect(mockOnEditMember).toHaveBeenCalledWith(mockClub.members[0])
+      expect(mockOnEditMember).toHaveBeenCalledWith(mockClubMembers[0])
 
       // Click second member's edit button
       await user.click(editButtons[1])
-      expect(mockOnEditMember).toHaveBeenCalledWith(mockClub.members[1])
+      expect(mockOnEditMember).toHaveBeenCalledWith(mockClubMembers[1])
 
       expect(mockOnEditMember).toHaveBeenCalledTimes(2)
     })
@@ -164,23 +164,23 @@ describe('MembersTable', () => {
     it('should show admin member name', () => {
       const clubWithAdmin = {
         ...mockClub,
-        members: [mockAdminMember],
+        members: [mockAdminClubMember],
       }
 
       render(<MembersTable {...defaultProps} selectedClub={clubWithAdmin} />)
 
-      expect(screen.getByText(mockAdminMember.name)).toBeInTheDocument()
+      expect(screen.getByText(mockAdminClubMember.name!)).toBeInTheDocument()
     })
 
     it('should display regular members', () => {
       const clubWithRegular = {
         ...mockClub,
-        members: [mockRegularMember],
+        members: [mockRegularClubMember],
       }
 
       render(<MembersTable {...defaultProps} selectedClub={clubWithRegular} />)
 
-      expect(screen.getByText(mockRegularMember.name)).toBeInTheDocument()
+      expect(screen.getByText(mockRegularClubMember.name!)).toBeInTheDocument()
     })
   })
 
@@ -198,7 +198,7 @@ describe('MembersTable', () => {
     it('should display books read count', () => {
       render(<MembersTable {...defaultProps} />)
 
-      mockClub.members.forEach(member => {
+      mockClubMembers.forEach(member => {
         expect(screen.getByText(member.books_read.toString())).toBeInTheDocument()
       })
     })
