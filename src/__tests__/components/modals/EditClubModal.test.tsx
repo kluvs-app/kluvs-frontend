@@ -231,7 +231,7 @@ describe('EditClubModal', () => {
       await user.selectOptions(screen.getByLabelText(/Channel/i), 'ch-2')
       expect(screen.getByText(/I understand/)).toBeInTheDocument()
 
-      await user.selectOptions(screen.getByLabelText(/Channel/i), mockClub.discord_channel)
+      await user.selectOptions(screen.getByLabelText(/Channel/i), mockClub.discord_channel!)
       expect(screen.queryByText(/I understand/)).not.toBeInTheDocument()
     })
   })

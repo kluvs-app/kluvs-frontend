@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const memberRef = useRef<Member | null>(null)
 
   const getRoleForClub = useCallback((clubId: string): UserRole | null => {
-    return member?.clubs.find(c => c.id === clubId)?.role ?? null
+    return member?.clubs?.find(c => c.id === clubId)?.role ?? null
   }, [member])
 
   // Look up member data by user_id using Edge Function with retry logic

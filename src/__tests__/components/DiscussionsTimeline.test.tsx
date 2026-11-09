@@ -34,7 +34,7 @@ describe('DiscussionsTimeline', () => {
     it('should render all discussion titles', () => {
       render(<DiscussionsTimeline {...defaultProps} />)
 
-      mockClub.active_session!.discussions.forEach(discussion => {
+      mockClub.active_session!.discussions!.forEach(discussion => {
         expect(screen.getByText(discussion.title)).toBeInTheDocument()
       })
     })
@@ -115,8 +115,8 @@ describe('DiscussionsTimeline', () => {
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-1', title: 'Next discussion', scheduled_at: futureDate1.toISOString(), location: 'Room A' },
-            { id: 'disc-2', title: 'Later discussion', scheduled_at: futureDate2.toISOString(), location: 'Room B' },
+            { id: 'disc-1', session_id: 'session-1', title: 'Next discussion', scheduled_at: futureDate1.toISOString(), location: 'Room A' },
+            { id: 'disc-2', session_id: 'session-1', title: 'Later discussion', scheduled_at: futureDate2.toISOString(), location: 'Room B' },
           ],
         },
       }
@@ -149,8 +149,8 @@ describe('DiscussionsTimeline', () => {
       active_session: {
         ...mockClub.active_session!,
         discussions: [
-          { id: 'disc-past', title: 'Past discussion', scheduled_at: '2020-01-01T12:00:00Z', location: 'Room A' },
-          { id: 'disc-future', title: 'Future discussion', scheduled_at: futureDate.toISOString(), location: 'Room B' },
+          { id: 'disc-past', session_id: 'session-1', title: 'Past discussion', scheduled_at: '2020-01-01T12:00:00Z', location: 'Room A' },
+          { id: 'disc-future', session_id: 'session-1', title: 'Future discussion', scheduled_at: futureDate.toISOString(), location: 'Room B' },
         ],
       },
     }
@@ -260,7 +260,7 @@ describe('DiscussionsTimeline', () => {
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { ...mockClub.active_session!.discussions[0], scheduled_at: futureDate.toISOString() },
+            { ...mockClub.active_session!.discussions![0], scheduled_at: futureDate.toISOString() },
           ],
         },
       }
@@ -272,7 +272,7 @@ describe('DiscussionsTimeline', () => {
 
       expect(onOpenNote).toHaveBeenCalledTimes(1)
       expect(onOpenNote).toHaveBeenCalledWith(
-        expect.objectContaining({ id: mockClub.active_session!.discussions[0].id })
+        expect.objectContaining({ id: mockClub.active_session!.discussions![0].id })
       )
     })
 
@@ -289,7 +289,7 @@ describe('DiscussionsTimeline', () => {
     it('should show the number of scheduled discussions', () => {
       render(<DiscussionsTimeline {...defaultProps} />)
 
-      const count = mockClub.active_session!.discussions.length
+      const count = mockClub.active_session!.discussions!.length
       expect(screen.getByText(`${count} scheduled`)).toBeInTheDocument()
     })
   })
@@ -305,7 +305,7 @@ describe('DiscussionsTimeline', () => {
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-1', title: 'Timed Discussion', scheduled_at: localPartsToScheduledAt(dateStr, '19:30') },
+            { id: 'disc-1', session_id: 'session-1', title: 'Timed Discussion', scheduled_at: localPartsToScheduledAt(dateStr, '19:30') },
           ],
         },
       }
@@ -325,7 +325,7 @@ describe('DiscussionsTimeline', () => {
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-1', title: 'Untimed Discussion', scheduled_at: localPartsToScheduledAt(dateStr) },
+            { id: 'disc-1', session_id: 'session-1', title: 'Untimed Discussion', scheduled_at: localPartsToScheduledAt(dateStr) },
           ],
         },
       }

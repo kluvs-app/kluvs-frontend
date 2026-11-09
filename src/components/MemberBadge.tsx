@@ -1,5 +1,5 @@
 import { getAvatarUrl } from '../supabase'
-import type { Member, UserRole } from '../types'
+import type { ClubMember } from '../types'
 import Avatar from './ui/Avatar'
 import RoleEyebrow from './ui/RoleEyebrow'
 import KebabMenu from './ui/KebabMenu'
@@ -7,12 +7,12 @@ import KebabMenu from './ui/KebabMenu'
 type SessionStatus = 'reading' | 'skipping' | null
 
 interface MemberBadgeProps {
-  member: Member & { role?: string }
+  member: ClubMember
   isOwn: boolean
   isAdmin: boolean
   readingStatus?: SessionStatus
-  onEdit?: (member: Member) => void
-  onDelete?: (member: Member) => void
+  onEdit?: (member: ClubMember) => void
+  onDelete?: (member: ClubMember) => void
   className?: string
 }
 
@@ -25,12 +25,12 @@ export default function MemberBadge({
   onDelete,
   className = '',
 }: MemberBadgeProps) {
-  const role = (member.role || 'member') as UserRole
+  const role = member.role ?? 'member'
 
   return (
     <div className={`flex items-start gap-3.5 py-3 border-b border-[var(--color-divider)] ${className}`}>
       <Avatar
-        name={member.name}
+        name={member.name ?? ''}
         userId={String(member.id)}
         imageUrl={member.avatar_path ? getAvatarUrl(member.avatar_path) : null}
         size="lg"

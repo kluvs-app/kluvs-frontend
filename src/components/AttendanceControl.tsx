@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../supabase'
 import { useAuth } from '../contexts/AuthContext'
-import type { Discussion, AttendanceRoster } from '../types'
+import type { Discussion, AttendanceRoster, DiscussionAttendanceRecord } from '../types'
 
 interface AttendanceControlProps {
   discussion: Discussion
@@ -86,13 +86,13 @@ export default function AttendanceControl({ discussion, disabled = false }: Atte
     setRoster({ ...roster, my_status: newStatus, responses: updatedResponses })
 
     if (isClearing) {
-      const { error } = await invokeFunction(
+      const { error } = await invokeFunction<null>(
         `discussion-attendance?discussion_id=${encodeURIComponent(discussion.id)}`,
         { method: 'DELETE' }
       )
       if (error) setRoster(previous)
     } else {
-      const { error } = await invokeFunction('discussion-attendance', {
+      const { error } = await invokeFunction<DiscussionAttendanceRecord>('discussion-attendance', {
         method: 'POST',
         body: { discussion_id: discussion.id, status },
       })

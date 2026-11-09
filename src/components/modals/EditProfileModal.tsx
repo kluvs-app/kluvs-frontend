@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase, invokeFunction, getAvatarUrl } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import type { Member } from '../../types'
+import type { Member, MemberUpdateResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 
@@ -83,7 +83,7 @@ export default function EditProfileModal({
       }
       if (newAvatarPath !== member.avatar_path) body.avatar_path = newAvatarPath
 
-      const { error } = await invokeFunction('member', { method: 'PUT', body })
+      const { error } = await invokeFunction<MemberUpdateResponse>('member', { method: 'PUT', body })
       if (error) throw error
 
       onClose()

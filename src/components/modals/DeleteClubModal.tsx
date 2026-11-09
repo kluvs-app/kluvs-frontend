@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club } from '../../types'
+import type { Club, DeleteResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 
@@ -29,7 +29,7 @@ export default function DeleteClubModal({
     try {
       setLoading(true)
       onError('')
-      const { error } = await invokeFunction(
+      const { error } = await invokeFunction<DeleteResponse>(
         `club?id=${encodeURIComponent(clubToDelete.id)}&server_id=${encodeURIComponent(selectedServer)}`,
         { method: 'DELETE' }
       )

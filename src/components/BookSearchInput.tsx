@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { invokeFunction } from '../supabase'
-import type { Book } from '../types'
+import type { Book, BookRegistrationResponse, BookSearchResponse } from '../types'
 import KluvsSpinner from './KluvsSpinner'
 
 interface BookSearchInputProps {
@@ -40,12 +40,11 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
     setSearching(true)
     setSearchError('')
     try {
-      const { data, error } = await invokeFunction<Book[] | { books?: Book[] }>(`book?q=${encodeURIComponent(q.trim())}`, {
+      const { data, error } = await invokeFunction<BookSearchResponse>(`book?q=${encodeURIComponent(q.trim())}`, {
         method: 'GET',
       })
       if (error) throw error
-      const books = Array.isArray(data) ? data : (data as { books?: Book[] })?.books ?? []
-      setResults(books)
+      setResults(data?.books ?? [])
       setShowDropdown(true)
     } catch {
       setSearchError('Search failed. Please try again.')
@@ -71,7 +70,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
     setSelectedBook(book)
     setRegistering(true)
     try {
-      const { data, error } = await invokeFunction<Book | { book?: Book }>('book', {
+      const { data, error } = await invokeFunction<BookRegistrationResponse>('book', {
         method: 'POST',
         body: {
           title: book.title,
@@ -85,10 +84,10 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
         },
       })
       if (error) throw error
-      const registered = (data && 'title' in data ? data : (data as { book?: Book })?.book) as Book
-      const finalBook = registered ?? book
+      const finalBook = data?.book ?? book
+      if (finalBook.id == null) throw new Error('Registered book has no id')
       setSelectedBook(finalBook)
-      onSelect(finalBook.id!, finalBook)
+      onSelect(finalBook.id, finalBook)
     } catch {
       // If the book already has an id (came pre-registered), still use it
       if (book.id != null) {

@@ -24,7 +24,7 @@ export default function DiscussionsTimeline({
   onStartSession,
 }: DiscussionsTimelineProps) {
   const sortedDiscussions = selectedClub.active_session
-    ? [...selectedClub.active_session.discussions].sort(
+    ? [...(selectedClub.active_session.discussions ?? [])].sort(
         (a, b) => parseScheduledAt(a.scheduled_at).getTime() - parseScheduledAt(b.scheduled_at).getTime()
       )
     : []

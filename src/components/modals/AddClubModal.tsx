@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
+import type { ClubCreateResponse, DiscordGuild } from '../../types'
 import { useAuth } from '../../contexts/AuthContext'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
@@ -17,12 +18,6 @@ interface AddClubFormData {
   discord_channel: string
 }
 
-interface Guild {
-  id: string
-  name: string
-  channels: { id: string; name: string }[]
-}
-
 export default function AddClubModal({
   isOpen,
   onClose,
@@ -32,7 +27,7 @@ export default function AddClubModal({
   const { member } = useAuth()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState<AddClubFormData>({ name: '', discord_channel: '' })
-  const [guilds, setGuilds] = useState<Guild[]>([])
+  const [guilds, setGuilds] = useState<DiscordGuild[]>([])
   const [guildsLoading, setGuildsLoading] = useState(false)
   const [selectedServer, setSelectedServer] = useState('')
 
@@ -45,7 +40,7 @@ export default function AddClubModal({
       setLoading(true)
       onError('')
       const clubId = crypto.randomUUID()
-      const { error } = await invokeFunction('club', {
+      const { error } = await invokeFunction<ClubCreateResponse>('club', {
         method: 'POST',
         body: {
           id: clubId,
@@ -85,14 +80,14 @@ export default function AddClubModal({
     const fetchGuilds = async () => {
       setGuildsLoading(true)
       try {
-        const { data, error } = await invokeFunction<Guild[]>(
+        const { data, error } = await invokeFunction<DiscordGuild[]>(
           `discord-guilds?member_id=${encodeURIComponent(member.id)}`,
           { method: 'GET' }
         )
         if (cancelled) return
         if (!error && Array.isArray(data)) {
           setGuilds(data)
-          if (data.length === 1) setSelectedServer(data[0].id)
+          if (data.length === 1) setSelectedServer(data[0].id ?? '')
         }
       } finally {
         if (!cancelled) setGuildsLoading(false)

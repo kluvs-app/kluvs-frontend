@@ -76,11 +76,11 @@ export default function DiscussionModal({
       }
 
       const { error } = isEditing && editingDiscussion
-        ? await invokeFunction('discussion', {
+        ? await invokeFunction<Discussion>('discussion', {
             method: 'PUT',
             body: { id: editingDiscussion.id, ...payload }
           })
-        : await invokeFunction('discussion', {
+        : await invokeFunction<Discussion>('discussion', {
             method: 'POST',
             body: { session_id: selectedClub.active_session.id, ...payload }
           })
@@ -217,7 +217,7 @@ export default function DiscussionModal({
           style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
         >
           <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Reading Session</p>
-          <p className="text-sm text-[var(--color-text-primary)]">{selectedClub.active_session.book.title}</p>
+          <p className="text-sm text-[var(--color-text-primary)]">{selectedClub.active_session.book?.title}</p>
         </div>
       </div>
     </BaseModal>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { invokeFunction } from '../../supabase'
+import type { DeleteResponse } from '../../types'
 import { useAuth } from '../../contexts/AuthContext'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
@@ -19,7 +20,7 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
     try {
       setLoading(true)
       setInlineError(null)
-      const { error } = await invokeFunction(`member?id=${encodeURIComponent(member.id)}`, { method: 'DELETE' })
+      const { error } = await invokeFunction<DeleteResponse>(`member?id=${encodeURIComponent(member.id)}`, { method: 'DELETE' })
       if (error) throw error
       await signOut()
       onClose()

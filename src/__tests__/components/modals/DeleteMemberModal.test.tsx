@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import DeleteMemberModal from '../../../components/modals/DeleteMemberModal'
-import { mockAdminMember } from '../../utils/mocks'
+import { mockAdminClubMember } from '../../utils/mocks'
 
 // Mock supabase
 const mockInvoke = vi.fn()
@@ -21,7 +21,7 @@ describe('DeleteMemberModal', () => {
   const defaultProps = {
     isOpen: true,
     onClose: vi.fn(),
-    memberToDelete: mockAdminMember,
+    memberToDelete: mockAdminClubMember,
     clubId: TEST_CLUB_ID,
     onMemberDeleted: vi.fn(),
     onError: vi.fn(),
@@ -37,7 +37,7 @@ describe('DeleteMemberModal', () => {
       render(<DeleteMemberModal {...defaultProps} />)
 
       expect(screen.getByRole('heading', { name: 'Remove from Club' })).toBeInTheDocument()
-      expect(screen.getByText(`"${mockAdminMember.name}"`)).toBeInTheDocument()
+      expect(screen.getByText(`"${mockAdminClubMember.name}"`)).toBeInTheDocument()
     })
 
     it('should not render when isOpen is false', () => {
@@ -100,7 +100,7 @@ describe('DeleteMemberModal', () => {
           expect.objectContaining({
             method: 'PUT',
             body: expect.objectContaining({
-              id: mockAdminMember.id,
+              id: mockAdminClubMember.id,
               clubs: expect.not.arrayContaining([TEST_CLUB_ID]),
             }),
           })

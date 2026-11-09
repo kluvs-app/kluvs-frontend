@@ -1,5 +1,5 @@
 import { getAvatarUrl } from '../supabase'
-import type { Club, Member } from '../types'
+import type { Club, ClubMember } from '../types'
 import Avatar from './ui/Avatar'
 
 interface MembersTableProps {
@@ -7,8 +7,8 @@ interface MembersTableProps {
   isAdmin: boolean
   currentMemberId?: number
   onAddMember: () => void
-  onEditMember: (member: Member) => void
-  onDeleteMember: (member: Member) => void
+  onEditMember: (member: ClubMember) => void
+  onDeleteMember: (member: ClubMember) => void
 }
 
 export default function MembersTable({
@@ -24,7 +24,7 @@ export default function MembersTable({
       {/* Section heading */}
       <div className="flex justify-between items-center mb-4">
         <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">
-          Members ({selectedClub.members.length})
+          Members ({selectedClub.members?.length ?? 0})
         </p>
         {isAdmin && (
           <button
@@ -38,14 +38,14 @@ export default function MembersTable({
 
       {/* Flat list */}
       <div>
-        {selectedClub.members.map(member => (
+        {(selectedClub.members ?? []).map(member => (
           <div
             key={member.id}
             className="flex items-center gap-4 py-3.5 border-b border-[var(--color-divider)] last:border-b-0 group"
           >
             {/* Avatar */}
             <Avatar
-              name={member.name}
+              name={member.name ?? ''}
               userId={String(member.id)}
               imageUrl={member.avatar_path ? getAvatarUrl(member.avatar_path) : null}
               size="lg"

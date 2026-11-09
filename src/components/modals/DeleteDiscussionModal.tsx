@@ -28,7 +28,7 @@ export default function DeleteDiscussionModal({
     try {
       setLoading(true)
       onError('')
-      const { error } = await invokeFunction(
+      const { error } = await invokeFunction<null>(
         `discussion?id=${encodeURIComponent(discussionToDelete.id)}`,
         { method: 'DELETE' }
       )

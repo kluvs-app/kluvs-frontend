@@ -127,7 +127,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                     <h3 className="font-serif text-[21px] font-medium text-[var(--color-text-primary)] truncate">
                       {club.name}
                     </h3>
-                    <RoleEyebrow role={club.role} />
+                    <RoleEyebrow role={club.role ?? 'member'} />
                   </div>
 
                   {/* Book title */}

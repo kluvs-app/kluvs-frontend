@@ -1,9 +1,9 @@
-import type { Server, Club, Member, MemberClub, Session, Discussion, Book } from '../../types'
+import type { Server, Club, ClubMember, Member, MemberClub, Session, Discussion, Book } from '../../types'
 import { localPartsToScheduledAt } from '../../utils/dates'
 
-const adminClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'admin' }
-const adminClub2: MemberClub = { id: 'club-2', name: 'Sci-Fi Readers', discord_channel: 'sci-fi', server_id: 'server-1', role: 'admin' }
-const memberClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', role: 'member' }
+const adminClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', join_policy: 'PRIVATE', role: 'admin' }
+const adminClub2: MemberClub = { id: 'club-2', name: 'Sci-Fi Readers', discord_channel: 'sci-fi', server_id: 'server-1', join_policy: 'PRIVATE', role: 'admin' }
+const memberClub1: MemberClub = { id: 'club-1', name: 'Book Lovers Club', discord_channel: 'book-club', server_id: 'server-1', join_policy: 'PRIVATE', role: 'member' }
 
 // Mock Members
 export const mockAdminMember: Member = {
@@ -13,6 +13,7 @@ export const mockAdminMember: Member = {
   handle: 'admin_handle',
   books_read: 10,
   clubs: [adminClub1, adminClub2],
+  platform_metadata: {},
   created_at: '2024-01-01T00:00:00Z',
   discord_id: '111222333444555666',
   avatar_path: 'avatars/admin-user.jpg',
@@ -25,6 +26,7 @@ export const mockRegularMember: Member = {
   handle: 'regular_handle',
   books_read: 5,
   clubs: [memberClub1],
+  platform_metadata: {},
   created_at: '2024-01-15T00:00:00Z',
   discord_id: null,
 }
@@ -36,6 +38,7 @@ export const mockMember3: Member = {
   handle: 'jane_smith',
   books_read: 7,
   clubs: [memberClub1],
+  platform_metadata: {},
 }
 
 // Mock Books
@@ -63,6 +66,7 @@ export const mockBook2: Book = {
 // regardless of which timezone tests run in.
 export const mockDiscussion: Discussion = {
   id: 'discussion-1',
+  session_id: 'session-1',
   title: 'Chapter 1-3 Discussion',
   scheduled_at: localPartsToScheduledAt('2024-06-15', '19:30'),
   location: 'Discord Voice Channel',
@@ -70,6 +74,7 @@ export const mockDiscussion: Discussion = {
 
 export const mockDiscussion2: Discussion = {
   id: 'discussion-2',
+  session_id: 'session-1',
   title: 'Final Discussion',
   scheduled_at: localPartsToScheduledAt('2024-07-01', '00:00'),
 }
@@ -77,6 +82,7 @@ export const mockDiscussion2: Discussion = {
 // Mock Sessions
 export const mockActiveSession: Session = {
   id: 'session-1',
+  club_id: 'club-1',
   book: mockBook,
   due_date: '2024-12-31',
   status: 'active',
@@ -89,12 +95,24 @@ export const mockActiveSession: Session = {
 
 export const mockPastSession: Session = {
   id: 'session-2',
+  club_id: 'club-1',
   book: mockBook2,
   due_date: '2024-01-01',
   status: 'finished',
   members: [],
   discussions: [mockDiscussion],
 }
+
+// Club responses embed members as ClubMember (club IDs instead of club objects).
+const toClubMember = ({ id, name, handle, books_read, avatar_path, created_at, clubs }: Member): ClubMember => ({
+  id, name, handle, books_read: books_read ?? 0, avatar_path, created_at,
+  clubs: (clubs ?? []).map(c => c.id),
+})
+
+export const mockAdminClubMember = toClubMember(mockAdminMember)
+export const mockRegularClubMember = toClubMember(mockRegularMember)
+export const mockClubMember3 = toClubMember(mockMember3)
+export const mockClubMembers: ClubMember[] = [mockAdminClubMember, mockRegularClubMember, mockClubMember3]
 
 // Mock Clubs
 export const mockClub: Club = {
@@ -103,7 +121,7 @@ export const mockClub: Club = {
   discord_channel: 'book-club',
   server_id: 'server-1',
   founded_date: '2024-01-01',
-  members: [mockAdminMember, mockRegularMember, mockMember3],
+  members: mockClubMembers,
   active_session: mockActiveSession,
   past_sessions: [mockPastSession],
   shame_list: [2, 3],
@@ -116,8 +134,8 @@ export const mockClub2: Club = {
   name: 'Sci-Fi Readers',
   discord_channel: 'sci-fi',
   server_id: 'server-1',
-  members: [mockAdminMember],
-  active_session: null,
+  members: [mockAdminClubMember],
+  // The backend sends `active_session: null` here; the spec types it as optional (not nullable) — see KT follow-up.
   past_sessions: [],
   shame_list: [],
   join_policy: 'PRIVATE',
