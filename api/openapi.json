@@ -1,0 +1,4173 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Kluvs API",
+    "version": "0.26.1",
+    "description": "Supabase Edge Functions API for managing book clubs."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:54321/functions/v1",
+      "description": "Local Development"
+    },
+    {
+      "url": "https://ugmntxfkvrnpbmdosdge.supabase.co/functions/v1",
+      "description": "Production"
+    }
+  ],
+  "paths": {
+    "/club": {
+      "get": {
+        "summary": "Retrieve Club Details",
+        "description": "Get a club by ID, or find a club by Discord channel ID + Server ID.",
+        "tags": [
+          "Club"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the club"
+          },
+          {
+            "name": "discord_channel",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Query by Discord Channel ID (requires server_id)"
+          },
+          {
+            "name": "server_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The Discord Server ID (required if querying by channel)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Club"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required parameters"
+          },
+          "404": {
+            "description": "Club not found"
+          }
+        },
+        "operationId": "getClub"
+      },
+      "post": {
+        "summary": "Create a new club",
+        "description": "Creates a club, owned by the calling user's member (bot callers name the owner via owner_member_id), optionally with an active session (book + discussions), and a shame list.",
+        "tags": [
+          "Club"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClubCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Club created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClubCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Club name missing, or owner member id (owner_member_id / legacy members[0].id) is not an integer"
+          },
+          "403": {
+            "description": "User caller has no member record, or named an owner other than themselves"
+          },
+          "404": {
+            "description": "Server not found (if server_id provided), or owner member not found (bot caller)"
+          }
+        },
+        "operationId": "createClub"
+      },
+      "put": {
+        "summary": "Update Club",
+        "description": "Update club details like name, channel, or shame list.",
+        "tags": [
+          "Club"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClubUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Club updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClubUpdateResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Club not found"
+          }
+        },
+        "operationId": "updateClub"
+      },
+      "delete": {
+        "summary": "Delete Club",
+        "description": "Permanently remove a club and all its history.",
+        "tags": [
+          "Club"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "server_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "Optional security check to ensure club belongs to server."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Club not found"
+          }
+        },
+        "operationId": "deleteClub"
+      }
+    },
+    "/member": {
+      "get": {
+        "summary": "Retrieve Member Details",
+        "description": "Get member details by internal integer ID, linked Auth User ID (UUID), or Discord ID. Alternatively, use the `search` parameter to find members by name or handle — useful for invite flows. The `search` and lookup parameters (`id`, `user_id`, `discord_id`) are mutually exclusive; `search` takes priority when present.\n",
+        "tags": [
+          "Member"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "description": "The internal member ID."
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The linked Supabase Auth User ID."
+            }
+          },
+          {
+            "name": "discord_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "The Discord user snowflake ID."
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "Case-insensitive substring search across member name and handle. Returns up to 10 results. Use with `exclude_club_id` to filter out existing members.\n"
+            }
+          },
+          {
+            "name": "exclude_club_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "Only valid alongside `search`. When provided, members already belonging to this club are excluded from search results.\n"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing both id and user_id"
+          },
+          "404": {
+            "description": "Member not found"
+          }
+        },
+        "operationId": "getMember"
+      },
+      "post": {
+        "summary": "Create New Member",
+        "description": "Creates a new member and links them to specific clubs.",
+        "tags": [
+          "Member"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Member created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing name, invalid clubs array, or handle does not match `^[a-z0-9]+(-[a-z0-9]+)*$` (2-30 chars).\n"
+          },
+          "404": {
+            "description": "One or more provided Club IDs do not exist"
+          },
+          "409": {
+            "description": "The provided handle is already taken"
+          }
+        },
+        "operationId": "createMember"
+      },
+      "put": {
+        "summary": "Update Member",
+        "description": "Update member details. Can update basic fields, add/remove club associations, update per-club roles (including transferring ownership — see `MemberAssignableRole`), or add a member to a specific club via the `add_to_club` action. The `add_to_club` action is mutually exclusive with the other update paths — when present, only the club-add logic runs. It requires the caller to be an admin or owner of the target club.\n",
+        "tags": [
+          "Member"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Member updated, or member added to club successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MemberUpdateResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MemberAddToClubResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input — e.g. id is not a positive integer, clubs is not an array, one or more club IDs in `clubs` do not exist, club_roles is malformed or references an invalid role, the member is not part of a club referenced in club_roles, assigning 'owner' to a member who is already that club's owner, add_to_club is empty, or handle does not match `^[a-z0-9]+(-[a-z0-9]+)*$` (2-30 chars).\n"
+          },
+          "401": {
+            "description": "Missing or invalid Authorization header (add_to_club only)"
+          },
+          "403": {
+            "description": "Caller is not an admin or owner of the target club (add_to_club only), or is not the current owner of a club referenced in a club_roles ownership transfer.\n"
+          },
+          "404": {
+            "description": "Member not found (target member for the update, or for add_to_club), or the club referenced by add_to_club does not exist.\n"
+          },
+          "409": {
+            "description": "Target member is already in the club (add_to_club only), or the provided handle is already taken by another member.\n"
+          }
+        },
+        "operationId": "updateMember"
+      },
+      "delete": {
+        "summary": "Delete Member",
+        "description": "Delete a member and all their data. For each club the member owns: if they are the sole member the club is deleted; otherwise ownership is transferred to an admin, or to the earliest-joined member if no admin exists. The linked auth account is also deleted if one exists. Everything happens in a single transaction: the deletion either fully succeeds or changes nothing. This is the canonical deletion path — do not delete auth accounts directly.\n",
+        "tags": [
+          "Member"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Member ID is required"
+          },
+          "401": {
+            "description": "Missing or invalid Authorization header"
+          },
+          "403": {
+            "description": "Caller does not own this member record"
+          },
+          "404": {
+            "description": "Member not found"
+          },
+          "500": {
+            "description": "Deletion failed. Nothing was deleted (auth account included) and the request is safe to retry.\n"
+          }
+        },
+        "operationId": "deleteMember"
+      }
+    },
+    "/server": {
+      "get": {
+        "summary": "Retrieve servers",
+        "description": "Fetches all servers (with their clubs) OR a specific server if 'id' is provided.",
+        "tags": [
+          "Server"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "description": "Optional Server ID. If omitted, returns all servers."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server list or specific server details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ServerGetSingleResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ServerGetListResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Server not found"
+          }
+        },
+        "operationId": "getServers"
+      },
+      "post": {
+        "summary": "Create a new server",
+        "description": "Registers a new Discord server in the database.",
+        "tags": [
+          "Server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServerCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "operationId": "createServer"
+      },
+      "put": {
+        "summary": "Update Server",
+        "description": "Update the name of an existing server.",
+        "tags": [
+          "Server"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServerUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerUpdateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing ID or no fields to update"
+          },
+          "404": {
+            "description": "Server not found"
+          }
+        },
+        "operationId": "updateServer"
+      },
+      "delete": {
+        "summary": "Delete Server",
+        "description": "Deletes a server. Fails if the server still contains clubs.",
+        "tags": [
+          "Server"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot delete server because it has existing clubs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerDeleteConflictResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Server not found"
+          }
+        },
+        "operationId": "deleteServer"
+      }
+    },
+    "/session": {
+      "post": {
+        "summary": "Create Session",
+        "description": "Create a new reading session for a club. Prefer `book_id` (a registered book's local DB ID). The inline `book` object is supported as a deprecated fallback.",
+        "tags": [
+          "Session"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields (club_id, or neither book_id nor book)"
+          },
+          "404": {
+            "description": "Club not found, or book_id not found"
+          }
+        },
+        "operationId": "createSession"
+      },
+      "get": {
+        "summary": "Retrieve the reading log or a single session",
+        "description": "Two modes, selected by query parameter (exactly one must be provided). With `reading_log=true`, returns all sessions the authenticated member is actively reading (`is_reading=true`), grouped by status (`active` / `finished`), across all their clubs — requires a valid user JWT; bot callers receive 403. With `id`, returns that session's full data (club, book, discussions, members).\n",
+        "tags": [
+          "Session"
+        ],
+        "parameters": [
+          {
+            "name": "reading_log",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "enum": [
+                true
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reading log grouped by session status (`reading_log=true`), or a single session's full data (`id`).\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/SessionReadingLogResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Session"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Neither `reading_log=true` nor `id` was provided"
+          },
+          "401": {
+            "description": "Missing or invalid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted (reading-log mode only)"
+          },
+          "404": {
+            "description": "Session not found, or no member record for the authenticated user"
+          }
+        },
+        "operationId": "getSessions"
+      },
+      "put": {
+        "summary": "Update Session",
+        "description": "Update session details, including nested book updates.",
+        "tags": [
+          "Session"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/SessionFinishResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SessionNoChangesResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/SessionGeneralUpdateResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Session is already finished (when `finish` is true and session.status is not 'active')"
+          },
+          "404": {
+            "description": "Session not found, or target club not found (when changing club_id)"
+          }
+        },
+        "operationId": "updateSession"
+      },
+      "delete": {
+        "summary": "Delete Session",
+        "description": "Delete a session and its discussions. The associated book is kept in the library.",
+        "tags": [
+          "Session"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session not found"
+          }
+        },
+        "operationId": "deleteSession"
+      }
+    },
+    "/book": {
+      "get": {
+        "summary": "Search or retrieve books",
+        "description": "Three modes:\n- `?q=...` — Search Google Books API by query string\n- `?isbn=...` — Look up a book by ISBN via Google Books API\n- `?id=...` — Get a locally registered book by its DB ID\n",
+        "tags": [
+          "Book"
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search query (min 2 chars)"
+          },
+          {
+            "name": "isbn",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "ISBN to look up"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Local DB book ID"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "maximum": 40
+            },
+            "description": "Max results per page for search (default 10, max 40)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "0-based index of the first result to return (for pagination)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Book(s) found. For ?q= search results, `total` is Google Books' estimated corpus\ncount (not the number of items returned on this page — use `books.length` for that).\nThe estimate is approximate and Google caps actual delivery at ~1,000 items regardless\nof the reported total.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/BookSearchResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/BookLookupResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid query parameters"
+          },
+          "404": {
+            "description": "Book not found (local ID lookup)"
+          },
+          "500": {
+            "description": "Internal error or missing API key"
+          }
+        },
+        "operationId": "getBooks"
+      },
+      "post": {
+        "summary": "Register a book",
+        "description": "Register a book in the local database (typically after the client selects it from\na Google Books search). If `external_google_id` is provided and already exists,\nreturns the existing record with `created: false` (idempotent).\n",
+        "tags": [
+          "Book"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookRegistrationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Book registered (or already exists)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookRegistrationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields"
+          },
+          "500": {
+            "description": "Database error"
+          }
+        },
+        "operationId": "registerBook"
+      }
+    },
+    "/join": {
+      "post": {
+        "summary": "Join a club via invite link",
+        "description": "Authenticates the caller using the Bearer JWT, validates the invite token, and adds the user to the club as a member. Increments use_count on the invite (best-effort — failure does not roll back the join).\n",
+        "tags": [
+          "Join"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully joined the club",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing token or caller is already a member"
+          },
+          "401": {
+            "description": "Missing or invalid Authorization header"
+          },
+          "403": {
+            "description": "Bot callers not permitted — join requires a user JWT"
+          },
+          "404": {
+            "description": "Invalid or expired invite, or member record not found"
+          }
+        },
+        "operationId": "joinClub"
+      },
+      "get": {
+        "summary": "Preview an invite link",
+        "description": "Validates an invite token and returns basic club info. No authentication required. Does not join the club or increment use_count.\n",
+        "tags": [
+          "Join"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The invite token from the club's invite URL"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Valid token — returns club preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinPreviewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing token parameter"
+          },
+          "404": {
+            "description": "Invalid or expired invite"
+          }
+        },
+        "operationId": "previewInvite"
+      }
+    },
+    "/like": {
+      "get": {
+        "summary": "Get like status for a book",
+        "description": "Returns whether the authenticated user has liked a given book.",
+        "tags": [
+          "Like"
+        ],
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Local DB book ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Like status retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LikeStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid book_id"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "Book not found, or no member record for the authenticated user"
+          },
+          "500": {
+            "description": "Database error while resolving the member record"
+          }
+        },
+        "operationId": "getBookLike"
+      },
+      "post": {
+        "summary": "Toggle like for a book",
+        "description": "Toggles a book like on or off for the authenticated user. Acts as a personal bookmark.",
+        "tags": [
+          "Like"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LikeToggleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Like toggled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LikeToggleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid book_id"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "Book not found, or no member record for the authenticated user"
+          }
+        },
+        "operationId": "toggleBookLike"
+      }
+    },
+    "/discussion": {
+      "post": {
+        "summary": "Create a new discussion",
+        "description": "Creates a discussion event for a session. The server generates the discussion ID.",
+        "tags": [
+          "Discussion"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscussionCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Discussion created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Discussion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure"
+          },
+          "403": {
+            "description": "Caller is not owner/admin of the session's club"
+          },
+          "404": {
+            "description": "Session not found"
+          }
+        },
+        "operationId": "createDiscussion"
+      },
+      "put": {
+        "summary": "Update Discussion",
+        "description": "Partially update a discussion's title, scheduled_at, or location.",
+        "tags": [
+          "Discussion"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscussionUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Discussion updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Discussion"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller is not owner/admin of the session's club"
+          },
+          "404": {
+            "description": "Discussion not found"
+          }
+        },
+        "operationId": "updateDiscussion"
+      },
+      "delete": {
+        "summary": "Delete Discussion",
+        "description": "Permanently remove a discussion.",
+        "tags": [
+          "Discussion"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted successfully"
+          },
+          "403": {
+            "description": "Caller is not owner/admin of the session's club"
+          },
+          "404": {
+            "description": "Discussion not found"
+          }
+        },
+        "operationId": "deleteDiscussion"
+      }
+    },
+    "/discussion-attendance": {
+      "post": {
+        "summary": "Set or change the caller's RSVP for a discussion",
+        "description": "Upserts the calling member's RSVP status for a discussion. Each member has at most one RSVP row per discussion — calling this again overwrites the prior status. RSVPing \"yes\" also opts the member into the discussion's reading session (session_members.is_reading=true) and places that session's book on the member's currently_reading shelf, mirroring PUT /session's opt-in behavior. \"no\"/\"maybe\" have no effect on session participation. This side effect is best-effort.\n",
+        "tags": [
+          "DiscussionAttendance"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscussionAttendanceUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RSVP recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscussionAttendance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted, or caller is not a member of the discussion's club"
+          },
+          "404": {
+            "description": "Discussion not found, or no member record for the authenticated user"
+          }
+        },
+        "operationId": "upsertDiscussionAttendance"
+      },
+      "get": {
+        "summary": "Get the RSVP roster for a discussion",
+        "description": "Returns every club member's RSVP response for the given discussion (members with no row are treated as \"hasn't responded\"), the calling member's own status, and the club's total member count so the client can derive how many members haven't responded yet.\n",
+        "tags": [
+          "DiscussionAttendance"
+        ],
+        "parameters": [
+          {
+            "name": "discussion_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The roster, the caller's own status, and the club's total member count",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscussionAttendanceRosterResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing discussion_id"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted, or caller is not a member of the discussion's club"
+          },
+          "404": {
+            "description": "Discussion not found, or no member record for the authenticated user"
+          }
+        },
+        "operationId": "getDiscussionAttendance"
+      },
+      "delete": {
+        "summary": "Clear the caller's RSVP for a discussion",
+        "description": "Removes the calling member's own RSVP row for the given discussion, reverting them to \"unanswered\". A no-op (still 204) if no row exists.\n",
+        "tags": [
+          "DiscussionAttendance"
+        ],
+        "parameters": [
+          {
+            "name": "discussion_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "RSVP cleared (or none existed)"
+          },
+          "400": {
+            "description": "Missing discussion_id"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "No member record for the authenticated user"
+          }
+        },
+        "operationId": "clearDiscussionAttendance"
+      }
+    },
+    "/discussion-note": {
+      "get": {
+        "summary": "Get the caller's note for a discussion",
+        "description": "Returns the authenticated member's own private note for the given discussion, or null if they have not written one. Never returns other members' notes.\n",
+        "tags": [
+          "DiscussionNote"
+        ],
+        "parameters": [
+          {
+            "name": "discussion_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller's note, or null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "nullable": true,
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DiscussionNote"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing discussion_id"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "No member record for the authenticated user"
+          }
+        },
+        "operationId": "getDiscussionNote"
+      },
+      "post": {
+        "summary": "Create a discussion note",
+        "description": "Creates a private \"food for thought\" note for the calling member, tied to a discussion. Each member may have at most one note per discussion — use PUT to overwrite an existing note.\n",
+        "tags": [
+          "DiscussionNote"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscussionNoteCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Note created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscussionNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "Discussion not found, or no member record for the authenticated user"
+          },
+          "409": {
+            "description": "A note already exists for this member and discussion — use PUT to overwrite"
+          }
+        },
+        "operationId": "createDiscussionNote"
+      },
+      "put": {
+        "summary": "Overwrite a discussion note",
+        "description": "Overwrites the content of the calling member's own note and bumps updated_at. There is no append/multi-note model — this replaces the note's content.\n",
+        "tags": [
+          "DiscussionNote"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscussionNoteUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Note updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscussionNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Note exists but is not owned by the caller"
+          },
+          "404": {
+            "description": "Note not found, or no member record for the authenticated user"
+          }
+        },
+        "operationId": "updateDiscussionNote"
+      },
+      "delete": {
+        "summary": "Delete a discussion note",
+        "description": "Permanently removes the calling member's own note.",
+        "tags": [
+          "DiscussionNote"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted successfully"
+          },
+          "400": {
+            "description": "Missing id"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Note exists but is not owned by the caller"
+          },
+          "404": {
+            "description": "Note not found, or no member record for the authenticated user"
+          }
+        },
+        "operationId": "deleteDiscussionNote"
+      }
+    },
+    "/shelf": {
+      "get": {
+        "summary": "Get shelf assignments for the authenticated user",
+        "description": "Two modes:\n- No `book_id` — returns all shelf assignments for the user, each joined with the full book record\n- `?book_id=...` — returns the shelf assignment for that specific book, or `null` if not shelved\n",
+        "tags": [
+          "Shelf"
+        ],
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Local DB book ID. If provided, returns the shelf for that single book."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shelf data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ShelfListResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ShelfSingleResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "book_id must be an integer"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "No member record found for the authenticated user"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "operationId": "getShelf"
+      },
+      "post": {
+        "summary": "Set (upsert) a shelf assignment",
+        "description": "Assigns or updates the authenticated user's shelf for a book. One row per (member, book) pair — assigning a new shelf replaces the previous one.",
+        "tags": [
+          "Shelf"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShelfAssignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shelf assignment saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShelfAssignResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid book_id/shelf"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "Member or book not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "operationId": "setShelf"
+      },
+      "delete": {
+        "summary": "Remove a shelf assignment",
+        "description": "Removes the authenticated user's shelf assignment for a book. Idempotent — no error if the book wasn't shelved.",
+        "tags": [
+          "Shelf"
+        ],
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Local DB book ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shelf assignment removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShelfSingleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "book_id is required and must be an integer"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "No member record found for the authenticated user"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/progress": {
+      "get": {
+        "summary": "List reading progress entries for the authenticated user",
+        "description": "Returns the authenticated member's reading_progress rows, optionally filtered\nby book, session, or status. Each entry is joined with its book's details.\n",
+        "tags": [
+          "Progress"
+        ],
+        "parameters": [
+          {
+            "name": "book_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter to entries for a specific book"
+          },
+          {
+            "name": "session_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter to entries linked to a specific session"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "in_progress",
+                "completed"
+              ]
+            },
+            "description": "Filter to entries with a specific status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reading progress entries retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReadingProgress"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "book_id must be an integer, or status is invalid"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "No member record found for the authenticated user"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "operationId": "getReadingProgress"
+      },
+      "post": {
+        "summary": "Log a new reading progress entry",
+        "description": "Creates a new in-progress reading attempt for the authenticated member.\nEach call creates a new row — re-reads of the same book are separate entries.\n",
+        "tags": [
+          "Progress"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgressCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reading progress entry created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadingProgress"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid fields, or progress_type/value mismatch"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted"
+          },
+          "404": {
+            "description": "Member or book not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "operationId": "createReadingProgress"
+      },
+      "put": {
+        "summary": "Update a reading progress entry",
+        "description": "Updates progress for an existing entry owned by the authenticated member.\nSets `updated_at` on every update. If `status` is set to `completed`,\nalso sets `completed_at` to the current time.\n\n`progress_type` is required on every update. An entry can switch\nbetween page- and percent-based tracking by passing a different\n`progress_type` than the entry currently has — the field for the\nprevious type is cleared (set to `null`). When switching, the entry\nmust already have (or this request must provide) a value for the new\ntype's field.\n\nWhen `progress_type` is `page`, `percent_complete` is computed\nautomatically from `current_page` and the book's `page_count` (and\ncannot be set directly). When `progress_type` is `percent`,\n`current_page` cannot be set.\n",
+        "tags": [
+          "Progress"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgressUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reading progress entry updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadingProgress"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid fields"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted, or entry not owned by caller"
+          },
+          "404": {
+            "description": "Entry or member not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "operationId": "updateReadingProgress"
+      },
+      "delete": {
+        "summary": "Delete a reading progress entry",
+        "description": "Removes a reading_progress entry owned by the authenticated member.",
+        "tags": [
+          "Progress"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "ID of the reading_progress entry to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reading progress entry deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressDeleteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "id is required"
+          },
+          "401": {
+            "description": "No valid auth token"
+          },
+          "403": {
+            "description": "Bot callers not permitted, or entry not owned by caller"
+          },
+          "404": {
+            "description": "Entry or member not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        },
+        "operationId": "deleteReadingProgress"
+      }
+    },
+    "/discord-guilds": {
+      "get": {
+        "summary": "List Manageable Discord Guilds",
+        "description": "Returns all Discord guilds where the bot is present and the given member holds the MANAGE_GUILD permission, along with each guild's text channels. Used by the frontend to populate the server/channel selector when creating a club.\n",
+        "tags": [
+          "Discord"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "member_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "description": "Internal Kluvs member ID."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of qualifying guilds with text channels, sorted by guild name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DiscordGuildWithChannels"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing member_id parameter."
+          },
+          "401": {
+            "description": "No valid auth token."
+          },
+          "403": {
+            "description": "Bot callers not permitted, or the authenticated user does not own the requested member_id."
+          },
+          "500": {
+            "description": "Missing DISCORD_BOT_TOKEN env var, or Discord API error."
+          }
+        },
+        "operationId": "getDiscordGuilds"
+      }
+    },
+    "/book-enrichment": {
+      "get": {
+        "summary": "Book & Author Enrichment Proxy",
+        "description": "Proxies Google Books volume lookup, Google Knowledge Graph author search, and Wikipedia author summary through a single endpoint. Always returns 200 — each top-level field independently degrades to null/[] on upstream failure, mirroring the silent-degradation UX of the web client this replaces. At least one of external_google_id or author is required.\n",
+        "tags": [
+          "Book"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "external_google_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Google Books volume ID to fetch full volume details for."
+          },
+          {
+            "name": "author",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Author name to look up (Knowledge Graph + Wikipedia) and search other books by."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enrichment data. Individual fields are null/[] when upstream lookups fail or the corresponding param was omitted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookEnrichmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Neither external_google_id nor author was provided."
+          },
+          "401": {
+            "description": "No valid auth token."
+          },
+          "405": {
+            "description": "Method not allowed."
+          }
+        },
+        "operationId": "getBookEnrichment"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "Server": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Discord Server Snowflake ID"
+          },
+          "name": {
+            "type": "string"
+          },
+          "clubs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Club"
+            }
+          }
+        }
+      },
+      "Club": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "join_policy"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "discord_channel": {
+            "type": "string",
+            "description": "Discord channel ID"
+          },
+          "server_id": {
+            "type": "string",
+            "description": "Parent server ID"
+          },
+          "founded_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "join_policy": {
+            "type": "string",
+            "enum": [
+              "PRIVATE",
+              "INVITE_LINK"
+            ],
+            "default": "PRIVATE",
+            "description": "Controls how new members can join. PRIVATE = by admin only; INVITE_LINK = anyone with the link."
+          },
+          "invite_token": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Active invite token UUID (present when join_policy is INVITE_LINK, null otherwise)."
+          },
+          "members": {
+            "type": "array",
+            "description": "Club members with their per-club role.",
+            "items": {
+              "$ref": "#/components/schemas/ClubMember"
+            }
+          },
+          "active_session": {
+            "$ref": "#/components/schemas/Session"
+          },
+          "past_sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PastSession"
+            }
+          },
+          "shame_list": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Array of member IDs on shame list"
+          }
+        }
+      },
+      "Member": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "platform_metadata",
+          "handle"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Internal member ID"
+          },
+          "name": {
+            "type": "string"
+          },
+          "books_read": {
+            "type": "integer",
+            "default": 0
+          },
+          "handle": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "Globally-unique, format-normalized handle. Auto-generated from `name` if not supplied on create."
+          },
+          "avatar_path": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Linked Supabase Auth User ID"
+          },
+          "discord_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Discord user snowflake ID. Stored as TEXT to preserve JSON precision."
+          },
+          "platform_metadata": {
+            "$ref": "#/components/schemas/JsonObject"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "clubs": {
+            "type": "array",
+            "description": "Clubs this member belongs to, each with their per-club role.",
+            "items": {
+              "$ref": "#/components/schemas/ClubSummary"
+            }
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "required": [
+          "id",
+          "club_id",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "club_id": {
+            "type": "string"
+          },
+          "book_id": {
+            "type": "integer"
+          },
+          "book": {
+            "$ref": "#/components/schemas/Book"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "finished"
+            ],
+            "description": "Lifecycle status of the session."
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the session started. Server-set on insert; null for sessions created before this field existed."
+          },
+          "ended_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the session was finished. Null while the session is active."
+          },
+          "discussions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Discussion"
+            }
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionParticipantSummary"
+            },
+            "description": "Participation roster, as embedded within a club response's active_session."
+          }
+        }
+      },
+      "SessionParticipantSummary": {
+        "type": "object",
+        "description": "A member's participation entry on a session, as embedded within a club response's active_session.members. Distinct from SessionMember: this shape carries member_name instead of session_id.",
+        "required": [
+          "member_id",
+          "member_name",
+          "is_reading"
+        ],
+        "properties": {
+          "member_id": {
+            "type": "integer"
+          },
+          "member_name": {
+            "type": "string"
+          },
+          "is_reading": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether the member is actively reading (vs. opted out)"
+          }
+        }
+      },
+      "Book": {
+        "type": "object",
+        "required": [
+          "title",
+          "author"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Local DB id. Absent/null for Google Books search results that have not been registered yet."
+          },
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "edition": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          },
+          "isbn": {
+            "type": "string"
+          },
+          "page_count": {
+            "type": "integer"
+          },
+          "image_url": {
+            "type": "string",
+            "description": "Cover image URL (HTTPS)"
+          },
+          "external_google_id": {
+            "type": "string",
+            "description": "Google Books volume ID for deduplication"
+          }
+        }
+      },
+      "BookIndustryIdentifier": {
+        "type": "object",
+        "required": [
+          "type",
+          "identifier"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ISBN_10",
+              "ISBN_13",
+              "ISSN",
+              "OTHER"
+            ]
+          },
+          "identifier": {
+            "type": "string"
+          }
+        }
+      },
+      "BookVolumeInfo": {
+        "type": "object",
+        "required": [
+          "title",
+          "authors",
+          "industryIdentifiers",
+          "pageCount",
+          "categories",
+          "imageLinks"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "publisher": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "industryIdentifiers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BookIndustryIdentifier"
+            }
+          },
+          "pageCount": {
+            "type": "integer"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageLinks": {
+            "type": "object",
+            "required": [
+              "thumbnail",
+              "small",
+              "medium",
+              "large",
+              "extraLarge"
+            ],
+            "properties": {
+              "thumbnail": {
+                "type": "string",
+                "nullable": true
+              },
+              "small": {
+                "type": "string",
+                "nullable": true
+              },
+              "medium": {
+                "type": "string",
+                "nullable": true
+              },
+              "large": {
+                "type": "string",
+                "nullable": true
+              },
+              "extraLarge": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "AuthorInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "From Google Knowledge Graph"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Knowledge Graph portrait, falling back to Wikipedia thumbnail"
+          },
+          "extract": {
+            "type": "string",
+            "nullable": true,
+            "description": "Wikipedia summary extract"
+          }
+        }
+      },
+      "AuthorBook": {
+        "type": "object",
+        "required": [
+          "externalGoogleId",
+          "title",
+          "authors"
+        ],
+        "properties": {
+          "externalGoogleId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedDate": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BookEnrichmentResponse": {
+        "type": "object",
+        "required": [
+          "authorBooks"
+        ],
+        "properties": {
+          "volumeInfo": {
+            "$ref": "#/components/schemas/BookVolumeInfo",
+            "nullable": true
+          },
+          "authorInfo": {
+            "$ref": "#/components/schemas/AuthorInfo",
+            "nullable": true
+          },
+          "authorBooks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthorBook"
+            }
+          }
+        }
+      },
+      "Discussion": {
+        "type": "object",
+        "required": [
+          "id",
+          "session_id",
+          "title",
+          "scheduled_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp (with timezone offset) for the discussion"
+          },
+          "location": {
+            "type": "string",
+            "description": "Discussion location or platform"
+          }
+        }
+      },
+      "ReadingProgress": {
+        "type": "object",
+        "required": [
+          "id",
+          "member_id",
+          "book_id",
+          "progress_type",
+          "status",
+          "started_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "member_id": {
+            "type": "integer"
+          },
+          "book_id": {
+            "type": "integer"
+          },
+          "session_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "progress_type": {
+            "type": "string",
+            "enum": [
+              "page",
+              "percent"
+            ]
+          },
+          "current_page": {
+            "type": "integer",
+            "nullable": true
+          },
+          "percent_complete": {
+            "type": "number",
+            "format": "float",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "in_progress",
+              "completed"
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "book": {
+            "$ref": "#/components/schemas/BookSummary"
+          }
+        }
+      },
+      "ClubInvite": {
+        "type": "object",
+        "required": [
+          "id",
+          "club_id",
+          "token",
+          "created_at",
+          "use_count",
+          "is_active"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "club_id": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Shareable invite token used in invite URLs"
+          },
+          "created_by": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Member ID who created the invite"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "NULL = never expires"
+          },
+          "max_uses": {
+            "type": "integer",
+            "nullable": true,
+            "description": "NULL = unlimited"
+          },
+          "use_count": {
+            "type": "integer",
+            "default": 0
+          },
+          "is_active": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "SessionMember": {
+        "type": "object",
+        "required": [
+          "session_id",
+          "member_id",
+          "is_reading"
+        ],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "member_id": {
+            "type": "integer"
+          },
+          "is_reading": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether the member is actively reading (vs. opted out)"
+          }
+        }
+      },
+      "DiscussionNote": {
+        "type": "object",
+        "required": [
+          "id",
+          "discussion_id",
+          "member_id",
+          "content",
+          "visibility",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "discussion_id": {
+            "type": "string"
+          },
+          "member_id": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "public"
+            ],
+            "default": "private"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DiscussionAttendance": {
+        "type": "object",
+        "required": [
+          "id",
+          "discussion_id",
+          "member_id",
+          "status",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "discussion_id": {
+            "type": "string"
+          },
+          "member_id": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "description": "RSVP response"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserBookLike": {
+        "type": "object",
+        "required": [
+          "member_id",
+          "book_id",
+          "created_at"
+        ],
+        "properties": {
+          "member_id": {
+            "type": "integer"
+          },
+          "book_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ClubMember": {
+        "type": "object",
+        "description": "A member as embedded within a club response, including their per-club role.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ],
+            "description": "Member's role in this club"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the member joined this club (server-set, read-only)"
+          },
+          "books_read": {
+            "type": "integer",
+            "default": 0
+          },
+          "handle": {
+            "type": "string"
+          },
+          "avatar_path": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "clubs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "IDs of all clubs this member belongs to"
+          }
+        }
+      },
+      "ClubSummary": {
+        "type": "object",
+        "description": "A lightweight club reference as embedded within a member response, including the member's role.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "discord_channel": {
+            "type": "string"
+          },
+          "server_id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "member"
+            ],
+            "description": "Member's role in this club"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the member joined this club (server-set, read-only)"
+          }
+        }
+      },
+      "PastSession": {
+        "type": "object",
+        "description": "A finished session as embedded within a club response.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the session started. Server-set on insert; null for sessions created before this field existed."
+          },
+          "ended_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the session was finished. Null while the session is active."
+          }
+        }
+      },
+      "BookSummary": {
+        "type": "object",
+        "description": "A lightweight book reference as embedded within a reading progress entry.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "page_count": {
+            "type": "integer",
+            "nullable": true
+          },
+          "image_url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UserBookShelf": {
+        "type": "object",
+        "required": [
+          "member_id",
+          "book_id",
+          "shelf",
+          "source",
+          "updated_at"
+        ],
+        "properties": {
+          "member_id": {
+            "type": "integer"
+          },
+          "book_id": {
+            "type": "integer"
+          },
+          "shelf": {
+            "type": "string",
+            "enum": [
+              "want_to_read",
+              "read",
+              "not_finished",
+              "currently_reading"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "session"
+            ],
+            "default": "manual",
+            "description": "How the shelf was set — 'manual' (via /shelf) or 'session' (auto-synced from session/discussion participation)"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "book": {
+            "$ref": "#/components/schemas/Book"
+          }
+        }
+      },
+      "DeleteResponse": {
+        "type": "object",
+        "description": "Standard delete acknowledgement, reused across all DELETE endpoints.",
+        "required": [
+          "success",
+          "message"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "warning": {
+            "type": "string",
+            "nullable": true,
+            "description": "Present if the deletion had a non-fatal side effect."
+          }
+        }
+      },
+      "ClubActiveSessionInput": {
+        "type": "object",
+        "description": "Immediately start a session for this club.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "book": {
+            "$ref": "#/components/schemas/Book"
+          },
+          "discussions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Discussion"
+            }
+          }
+        }
+      },
+      "ClubCreateRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "server_id": {
+            "type": "string",
+            "description": "Optional Discord Server ID."
+          },
+          "discord_channel": {
+            "type": "string"
+          },
+          "founded_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "owner_member_id": {
+            "type": "integer",
+            "description": "Bot (service role) callers only: ID of an existing member to link as the club owner. User callers always own the club they create; sending any other member ID returns 403. The member row is never modified."
+          },
+          "members": {
+            "type": "array",
+            "deprecated": true,
+            "description": "Deprecated: use owner_member_id. Only the first entry's id is used (as owner); other entries and fields are ignored.",
+            "items": {
+              "type": "object",
+              "required": [
+                "id"
+              ],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "active_session": {
+            "$ref": "#/components/schemas/ClubActiveSessionInput"
+          },
+          "shame_list": {
+            "type": "array",
+            "description": "List of Member IDs to immediately add to the shame list.",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "ClubCreateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "club": {
+            "$ref": "#/components/schemas/Club"
+          }
+        }
+      },
+      "ClubUpdateRequest": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "discord_channel": {
+            "type": "string"
+          },
+          "founded_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "server_id": {
+            "type": "string"
+          },
+          "join_policy": {
+            "type": "string",
+            "enum": [
+              "PRIVATE",
+              "INVITE_LINK"
+            ],
+            "description": "Controls how members can join the club. Setting to INVITE_LINK creates (or reuses) an active club invite token; setting to PRIVATE deactivates all active invites for the club.\n"
+          },
+          "shame_list": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "ClubUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "club": {
+            "$ref": "#/components/schemas/Club"
+          },
+          "club_updated": {
+            "type": "boolean",
+            "description": "Whether the clubs table row was updated."
+          },
+          "shame_list_updated": {
+            "type": "boolean",
+            "description": "Whether the shame list membership changed."
+          }
+        }
+      },
+      "MemberCreateRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "clubs": {
+            "type": "array",
+            "description": "Array of Club IDs this member belongs to. Optional, but if present must contain at least one club ID (an empty array is rejected).\n",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "books_read": {
+            "type": "integer",
+            "default": 0
+          },
+          "handle": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "Optional handle. If omitted, one is generated from `name`. Must be lowercase letters, numbers, and hyphens only (2-30 chars)."
+          },
+          "avatar_path": {
+            "type": "string",
+            "description": "Path to the avatar image in storage."
+          },
+          "discord_id": {
+            "type": "string",
+            "description": "Discord user snowflake ID. Stored as text to preserve precision."
+          },
+          "platform_metadata": {
+            "$ref": "#/components/schemas/JsonObject"
+          },
+          "id": {
+            "type": "integer",
+            "description": "Optional explicit ID. Omit to let the DB sequence assign one."
+          }
+        }
+      },
+      "MemberCreateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "member": {
+            "$ref": "#/components/schemas/Member"
+          }
+        }
+      },
+      "MemberAssignableRole": {
+        "type": "string",
+        "enum": [
+          "admin",
+          "member",
+          "owner"
+        ],
+        "description": "Valid roles assignable via club_roles. Assigning \"owner\" transfers ownership: the caller must currently be the club's owner, the target must already be a member of the club, and the caller is demoted to \"admin\" as part of the same request."
+      },
+      "MemberClubRoles": {
+        "type": "object",
+        "description": "Map of club_id → role to update per-club roles.",
+        "additionalProperties": {
+          "$ref": "#/components/schemas/MemberAssignableRole"
+        }
+      },
+      "MemberUpdateRequest": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The ID of the member to update (or the target member for add_to_club)."
+          },
+          "name": {
+            "type": "string"
+          },
+          "books_read": {
+            "type": "integer"
+          },
+          "handle": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "Must be lowercase letters, numbers, and hyphens only (2-30 chars). Must not already be taken by another member."
+          },
+          "avatar_path": {
+            "type": "string",
+            "nullable": true,
+            "description": "Storage path of the member's avatar. Must start with `{id}/` (e.g. `42/avatar.png`). Pass null to clear the avatar.\n"
+          },
+          "discord_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Discord user snowflake ID. Pass null to clear it."
+          },
+          "platform_metadata": {
+            "$ref": "#/components/schemas/JsonObject"
+          },
+          "clubs": {
+            "type": "array",
+            "description": "Full list of Club IDs this member should belong to. Diffed against existing to add/remove.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "club_roles": {
+            "$ref": "#/components/schemas/MemberClubRoles"
+          },
+          "add_to_club": {
+            "type": "string",
+            "description": "Club ID to add the target member (`id`) to. When present, all other update fields are ignored. The calling user's JWT must belong to a member who is an admin or owner of the target club. The target member is added with the `member` role.\n"
+          }
+        }
+      },
+      "MemberUpdateResponse": {
+        "type": "object",
+        "description": "Standard update response",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "member": {
+            "$ref": "#/components/schemas/Member"
+          },
+          "clubs_updated": {
+            "type": "boolean"
+          },
+          "roles_updated": {
+            "type": "boolean"
+          }
+        }
+      },
+      "MemberAddToClubResponse": {
+        "type": "object",
+        "description": "add_to_club response",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "member_id": {
+            "type": "integer"
+          },
+          "club_id": {
+            "type": "string"
+          }
+        }
+      },
+      "ServerCreateRequest": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "The Philosophers"
+          },
+          "id": {
+            "type": "string",
+            "description": "Optional Discord Snowflake ID. If omitted, a random ID is generated.",
+            "example": "123456789012345678"
+          }
+        }
+      },
+      "ServerCreateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "server": {
+            "$ref": "#/components/schemas/Server"
+          }
+        }
+      },
+      "ServerUpdateRequest": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ServerUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "server": {
+            "$ref": "#/components/schemas/Server"
+          }
+        }
+      },
+      "ServerClubLatestSessionBook": {
+        "type": "object",
+        "description": "Joined book info for the session",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          }
+        }
+      },
+      "ServerClubLatestSession": {
+        "type": "object",
+        "nullable": true,
+        "description": "The club's most recent session by due_date, with nested book title/author, or null if none exist",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the session started. Server-set on insert; null for sessions created before this field existed."
+          },
+          "ended_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the session was finished. Null while the session is active."
+          },
+          "books": {
+            "$ref": "#/components/schemas/ServerClubLatestSessionBook",
+            "nullable": true
+          }
+        }
+      },
+      "ServerClubSummary": {
+        "description": "A club embedded within a single-server response, including member_count/latest_session not present on the plain Club schema.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Club"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "member_count": {
+                "type": "integer",
+                "description": "Number of members in this club"
+              },
+              "latest_session": {
+                "$ref": "#/components/schemas/ServerClubLatestSession"
+              }
+            }
+          }
+        ]
+      },
+      "ServerGetSingleResponse": {
+        "type": "object",
+        "description": "Response when ID is provided (Single Server)",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "clubs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServerClubSummary"
+            }
+          }
+        }
+      },
+      "ServerGetListResponse": {
+        "type": "object",
+        "description": "Response when ID is omitted (List of Servers)",
+        "properties": {
+          "servers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Server"
+            }
+          }
+        }
+      },
+      "ServerDeleteConflictResponse": {
+        "type": "object",
+        "description": "Custom error shape (not the standard Error schema)",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "string",
+            "example": "Cannot delete server with existing clubs. Please delete all clubs first."
+          },
+          "clubs_count": {
+            "type": "integer",
+            "description": "Number of clubs still associated with this server"
+          }
+        }
+      },
+      "SessionInlineBookInput": {
+        "type": "object",
+        "description": "Deprecated. Inline book object. Use book_id instead.",
+        "required": [
+          "title",
+          "author"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          },
+          "isbn": {
+            "type": "string"
+          },
+          "page_count": {
+            "type": "integer"
+          }
+        }
+      },
+      "SessionDiscussionInput": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp (with timezone offset) for the discussion"
+          },
+          "location": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionCreateRequest": {
+        "type": "object",
+        "required": [
+          "club_id"
+        ],
+        "properties": {
+          "club_id": {
+            "type": "string",
+            "description": "The ID of the club hosting this session."
+          },
+          "book_id": {
+            "type": "integer",
+            "description": "Preferred. The local DB ID of a pre-registered book (from POST /book)."
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Target date for finishing the book."
+          },
+          "book": {
+            "$ref": "#/components/schemas/SessionInlineBookInput"
+          },
+          "all_reading": {
+            "type": "boolean",
+            "default": true,
+            "description": "Controls the default `is_reading` flag for auto-populated session_members rows (one per existing club member). When true (default), all members are marked as reading and their shelf is set to \"currently_reading\" for this book. Set to false to default new session members to not-reading."
+          },
+          "discussions": {
+            "type": "array",
+            "description": "Optional list of discussions to schedule immediately.",
+            "items": {
+              "$ref": "#/components/schemas/SessionDiscussionInput"
+            }
+          }
+        }
+      },
+      "SessionCreateResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/Session"
+          }
+        }
+      },
+      "SessionBookPatchInput": {
+        "type": "object",
+        "description": "Fields to update on the associated book.",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionMemberFlagInput": {
+        "type": "object",
+        "required": [
+          "member_id",
+          "is_reading"
+        ],
+        "properties": {
+          "member_id": {
+            "type": "integer"
+          },
+          "is_reading": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SessionUpdateRequest": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "club_id": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "book": {
+            "$ref": "#/components/schemas/SessionBookPatchInput"
+          },
+          "session_members": {
+            "type": "array",
+            "description": "Upsert participation flags for session members. Reading members have their book moved to the \"currently_reading\" shelf; opted-out members have their session-derived \"currently_reading\" shelf entry removed. If this is the only field provided (alongside `id`), any club member may make this request; otherwise owner/admin is required.",
+            "items": {
+              "$ref": "#/components/schemas/SessionMemberFlagInput"
+            }
+          },
+          "finish": {
+            "type": "boolean",
+            "description": "If true, marks the session as finished (active -> finished, idempotent guard returns 400 if already finished), increments books_read for all session_members with is_reading=true, and moves their book to the \"read\" shelf. When provided as true, this is handled as a standalone action and short-circuits other updates in the same request."
+          },
+          "discussions": {
+            "type": "array",
+            "description": "Reserved for future use. Currently only checked for presence to determine the required role (owner/admin) for this request; no discussion records are created, updated, or deleted by this endpoint.",
+            "items": {
+              "type": "object"
+            }
+          },
+          "discussion_ids_to_delete": {
+            "type": "array",
+            "description": "Reserved for future use. Currently only checked for presence to determine the required role (owner/admin) for this request; no discussion records are deleted by this endpoint.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "SessionFinishResponse": {
+        "type": "object",
+        "description": "Response when `finish` is true",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Session finished"
+          },
+          "members_credited": {
+            "type": "integer",
+            "description": "Number of is_reading session_members whose books_read count was incremented"
+          }
+        }
+      },
+      "SessionNoChangesResponse": {
+        "type": "object",
+        "description": "Response when no changes were applicable",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "No changes to apply"
+          }
+        }
+      },
+      "SessionUpdateFlags": {
+        "type": "object",
+        "properties": {
+          "book": {
+            "type": "boolean",
+            "description": "Whether the associated book was updated"
+          },
+          "session": {
+            "type": "boolean",
+            "description": "Whether session fields (club_id, due_date) were updated"
+          },
+          "session_members": {
+            "type": "boolean",
+            "description": "Whether session_members rows were upserted"
+          }
+        }
+      },
+      "SessionGeneralUpdateResponse": {
+        "type": "object",
+        "description": "Response for general field updates",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Session updated successfully"
+          },
+          "updates": {
+            "$ref": "#/components/schemas/SessionUpdateFlags"
+          }
+        }
+      },
+      "SessionReadingLogBook": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "SessionReadingLogClub": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionReadingLogEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the session started. Server-set on insert; null for sessions created before this field existed."
+          },
+          "ended_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the session was finished. Null while the session is active."
+          },
+          "book": {
+            "$ref": "#/components/schemas/SessionReadingLogBook"
+          },
+          "club": {
+            "$ref": "#/components/schemas/SessionReadingLogClub"
+          }
+        }
+      },
+      "SessionReadingLogGroups": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionReadingLogEntry"
+            }
+          },
+          "finished": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SessionReadingLogEntry"
+            }
+          }
+        }
+      },
+      "SessionReadingLogResponse": {
+        "type": "object",
+        "description": "Response when no `id` is provided (reading log grouped by session status)",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "reading_log": {
+            "$ref": "#/components/schemas/SessionReadingLogGroups"
+          }
+        }
+      },
+      "BookSearchResponse": {
+        "type": "object",
+        "description": "Response for ?q= search queries.",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "books": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Book"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "Google Books' estimated corpus count (not the number of items returned on this page — use books.length for that). Approximate; Google caps actual delivery at ~1,000 items regardless of the reported total."
+          }
+        }
+      },
+      "BookLookupResponse": {
+        "type": "object",
+        "description": "Response for ?isbn= or ?id= lookups.",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "book": {
+            "$ref": "#/components/schemas/Book"
+          }
+        }
+      },
+      "BookRegistrationRequest": {
+        "type": "object",
+        "required": [
+          "title",
+          "author"
+        ],
+        "properties": {
+          "external_google_id": {
+            "type": "string",
+            "description": "Google Books volume ID (recommended for deduplication)"
+          },
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "edition": {
+            "type": "string"
+          },
+          "year": {
+            "type": "integer"
+          },
+          "isbn": {
+            "type": "string"
+          },
+          "page_count": {
+            "type": "integer"
+          },
+          "image_url": {
+            "type": "string"
+          }
+        }
+      },
+      "BookRegistrationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "book": {
+            "$ref": "#/components/schemas/Book"
+          },
+          "created": {
+            "type": "boolean",
+            "description": "False if an existing book (matched by external_google_id) was returned instead of created."
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "DiscussionCreateRequest": {
+        "type": "object",
+        "required": [
+          "session_id",
+          "title",
+          "scheduled_at"
+        ],
+        "properties": {
+          "session_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DiscussionUpdateRequest": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DiscussionAttendanceUpsertRequest": {
+        "type": "object",
+        "required": [
+          "discussion_id",
+          "status"
+        ],
+        "properties": {
+          "discussion_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "no",
+              "maybe"
+            ]
+          }
+        }
+      },
+      "DiscussionAttendanceRosterEntry": {
+        "type": "object",
+        "required": [
+          "member_id",
+          "name",
+          "status"
+        ],
+        "properties": {
+          "member_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Member name (null if the member row could not be joined)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "description": "RSVP response"
+          }
+        }
+      },
+      "DiscussionAttendanceRosterResponse": {
+        "type": "object",
+        "required": [
+          "responses",
+          "my_status",
+          "total_members"
+        ],
+        "properties": {
+          "responses": {
+            "type": "array",
+            "description": "One entry per club member who has responded; members with no entry have not responded.",
+            "items": {
+              "$ref": "#/components/schemas/DiscussionAttendanceRosterEntry"
+            }
+          },
+          "my_status": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "nullable": true,
+            "description": "The calling member's own RSVP response (null if they have not responded)."
+          },
+          "total_members": {
+            "type": "integer",
+            "description": "Total member count of the discussion's club"
+          }
+        }
+      },
+      "DiscussionNoteCreateRequest": {
+        "type": "object",
+        "required": [
+          "discussion_id",
+          "content"
+        ],
+        "properties": {
+          "discussion_id": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "DiscussionNoteUpdateRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "ClubPreview": {
+        "type": "object",
+        "description": "Lightweight club reference returned by the invite preview endpoint.",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "JoinPreviewResponse": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "example": true
+          },
+          "club": {
+            "$ref": "#/components/schemas/ClubPreview"
+          }
+        }
+      },
+      "JoinRequest": {
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The invite token"
+          }
+        }
+      },
+      "JoinResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "club_id": {
+            "type": "string"
+          }
+        }
+      },
+      "LikeStatusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "liked": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LikeToggleRequest": {
+        "type": "object",
+        "required": [
+          "book_id"
+        ],
+        "properties": {
+          "book_id": {
+            "type": "integer",
+            "description": "Local DB book ID"
+          }
+        }
+      },
+      "LikeToggleResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "liked": {
+            "type": "boolean",
+            "description": "New state after toggle (true = just liked, false = just unliked)"
+          }
+        }
+      },
+      "ShelfStatus": {
+        "type": "string",
+        "enum": [
+          "want_to_read",
+          "read",
+          "not_finished",
+          "currently_reading"
+        ]
+      },
+      "ShelfEntry": {
+        "type": "object",
+        "properties": {
+          "shelf": {
+            "$ref": "#/components/schemas/ShelfStatus"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "session"
+            ]
+          },
+          "book": {
+            "$ref": "#/components/schemas/Book"
+          }
+        }
+      },
+      "ShelfListResponse": {
+        "type": "object",
+        "description": "Response when no book_id is provided (all shelf entries for the caller).",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "shelves": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShelfEntry"
+            }
+          }
+        }
+      },
+      "ShelfSingleResponse": {
+        "type": "object",
+        "description": "Response when book_id is provided (shelf for a single book, or null).",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "shelf": {
+            "$ref": "#/components/schemas/ShelfStatus",
+            "nullable": true
+          }
+        }
+      },
+      "ShelfAssignRequest": {
+        "type": "object",
+        "required": [
+          "book_id",
+          "shelf"
+        ],
+        "properties": {
+          "book_id": {
+            "type": "integer",
+            "description": "Local DB book ID"
+          },
+          "shelf": {
+            "$ref": "#/components/schemas/ShelfStatus"
+          }
+        }
+      },
+      "ShelfAssignResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "shelf": {
+            "$ref": "#/components/schemas/ShelfStatus"
+          }
+        }
+      },
+      "ProgressCreateRequest": {
+        "type": "object",
+        "required": [
+          "book_id",
+          "progress_type"
+        ],
+        "properties": {
+          "book_id": {
+            "type": "integer",
+            "description": "Local DB book ID"
+          },
+          "session_id": {
+            "type": "string",
+            "description": "Optional session this progress entry is linked to"
+          },
+          "progress_type": {
+            "type": "string",
+            "enum": [
+              "page",
+              "percent"
+            ]
+          },
+          "current_page": {
+            "type": "integer",
+            "description": "Required if progress_type is 'page'"
+          },
+          "percent_complete": {
+            "type": "number",
+            "format": "float",
+            "description": "Required if progress_type is 'percent', 0-100"
+          }
+        }
+      },
+      "ProgressUpdateRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "progress_type"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "progress_type": {
+            "type": "string",
+            "enum": [
+              "page",
+              "percent"
+            ]
+          },
+          "current_page": {
+            "type": "integer",
+            "description": "Required when progress_type is page, unless the entry already has one"
+          },
+          "percent_complete": {
+            "type": "number",
+            "format": "float",
+            "description": "Required when progress_type is percent, unless the entry already has one"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "in_progress",
+              "completed"
+            ]
+          }
+        }
+      },
+      "ProgressDeleteResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DiscordChannelSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "DiscordGuildWithChannels": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Discord guild snowflake ID."
+          },
+          "name": {
+            "type": "string"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscordChannelSummary"
+            }
+          }
+        }
+      },
+      "MemberClubEntry": {
+        "description": "A club embedded within a member's `clubs` list, including the member's per-club role.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Club"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "owner",
+                  "admin",
+                  "member"
+                ],
+                "description": "Member's role in this specific club"
+              }
+            }
+          }
+        ]
+      },
+      "MemberGetResponse": {
+        "description": "Full member response with relations populated.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Member"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "clubs": {
+                "type": "array",
+                "description": "Clubs this member belongs to, with their per-club role. Sorted by the soonest upcoming discussion of each club's active session, then alphabetically by club name (case-insensitive) for ties and clubs with nothing upcoming.",
+                "items": {
+                  "$ref": "#/components/schemas/MemberClubEntry"
+                }
+              },
+              "shame_clubs": {
+                "type": "array",
+                "description": "List of clubs where this member is currently on the shame list.",
+                "items": {
+                  "$ref": "#/components/schemas/Club"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "JsonObject": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Arbitrary JSON object. Generated as kotlinx.serialization.json.JsonObject (see schemaMappings in core/api/build.gradle.kts) instead of Map<String, Any>, which kotlinx.serialization cannot serialize."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
