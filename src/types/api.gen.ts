@@ -50,7 +50,7 @@ export interface paths {
         get: operations["getMember"];
         /**
          * Update Member
-         * @description Update member details. Can update basic fields, add/remove club associations, update per-club roles (including transferring ownership — see `MemberAssignableRole`), or add a member to a specific club via the `add_to_club` action. The `add_to_club` action is mutually exclusive with the other update paths — when present, only the club-add logic runs. It requires the caller to be an admin or owner of the target club.
+         * @description Update member details. Can update basic fields, add/remove club associations, update per-club roles (including transferring ownership — see `MemberAssignableRole`), add a member to a specific club via the `add_to_club` action, or remove a member from a specific club via the `remove_from_club` action. The `add_to_club` action is mutually exclusive with the other update paths — when present, only the club-add logic runs. It requires the caller to be an admin or owner of the target club. The `remove_from_club` action cannot be combined with any other field. It requires the caller to be an admin or owner of the target club; removing an admin requires the owner, and the club owner can never be removed. Only the target's membership in that one club is deleted.
          */
         put: operations["updateMember"];
         /**
@@ -902,7 +902,7 @@ export interface components {
             [key: string]: components["schemas"]["MemberAssignableRole"];
         };
         MemberUpdateRequest: {
-            /** @description The ID of the member to update (or the target member for add_to_club). */
+            /** @description The ID of the member to update (or the target member for add_to_club / remove_from_club). */
             id: number;
             name?: string;
             books_read?: number;
@@ -918,6 +918,8 @@ export interface components {
             club_roles?: components["schemas"]["MemberClubRoles"];
             /** @description Club ID to add the target member (`id`) to. When present, all other update fields are ignored. The calling user's JWT must belong to a member who is an admin or owner of the target club. The target member is added with the `member` role. */
             add_to_club?: string;
+            /** @description Club ID to remove the target member (`id`) from. Cannot be combined with any other update field. The calling user's JWT must belong to an admin or owner of the club; removing an admin requires the owner, and the club owner cannot be removed. Only the target's membership in this club is deleted. */
+            remove_from_club?: string;
         };
         /** @description Standard update response */
         MemberUpdateResponse: {
@@ -929,6 +931,12 @@ export interface components {
         };
         /** @description add_to_club response */
         MemberAddToClubResponse: {
+            success?: boolean;
+            member_id?: number;
+            club_id?: string;
+        };
+        /** @description remove_from_club response */
+        MemberRemoveFromClubResponse: {
             success?: boolean;
             member_id?: number;
             club_id?: string;
@@ -1556,31 +1564,31 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberUpdateResponse"] | components["schemas"]["MemberAddToClubResponse"];
+                    "application/json": components["schemas"]["MemberUpdateResponse"] | components["schemas"]["MemberAddToClubResponse"] | components["schemas"]["MemberRemoveFromClubResponse"];
                 };
             };
-            /** @description Invalid input — e.g. id is not a positive integer, clubs is not an array, one or more club IDs in `clubs` do not exist, club_roles is malformed or references an invalid role, the member is not part of a club referenced in club_roles, assigning 'owner' to a member who is already that club's owner, add_to_club is empty, or handle does not match `^[a-z0-9]+(-[a-z0-9]+)*$` (2-30 chars). */
+            /** @description Invalid input — e.g. id is not a positive integer, clubs is not an array, one or more club IDs in `clubs` do not exist, club_roles is malformed or references an invalid role, the member is not part of a club referenced in club_roles, assigning 'owner' to a member who is already that club's owner, add_to_club or remove_from_club is empty, remove_from_club is combined with other update fields, remove_from_club targets the club owner, or handle does not match `^[a-z0-9]+(-[a-z0-9]+)*$` (2-30 chars). */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Missing or invalid Authorization header (add_to_club only) */
+            /** @description Missing or invalid Authorization header (add_to_club and remove_from_club only) */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Caller is not an admin or owner of the target club (add_to_club only), or is not the current owner of a club referenced in a club_roles ownership transfer. */
+            /** @description Caller is not an admin or owner of the target club (add_to_club and remove_from_club), is an admin trying to remove another admin (remove_from_club), or is not the current owner of a club referenced in a club_roles ownership transfer. */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description Member not found (target member for the update, or for add_to_club), or the club referenced by add_to_club does not exist. */
+            /** @description Member not found (target member for the update, or for add_to_club), or the club referenced by add_to_club or remove_from_club does not exist, or the target of remove_from_club is not in that club. */
             404: {
                 headers: {
                     [name: string]: unknown;
