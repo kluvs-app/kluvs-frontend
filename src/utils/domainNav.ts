@@ -23,10 +23,12 @@ export function getAppHref(path: string): string {
   return `${window.location.origin}${path}?domain=app`
 }
 
-// From the app, link back to marketing (e.g. the sidebar/top-bar wordmark).
-export function getMarketingHref(): string {
+// From the app, link to marketing: the home page by default (e.g. the sidebar/top-bar
+// wordmark), or a specific marketing page such as '/faq'.
+export function getMarketingHref(path = ''): string {
   if (isRealKluvsHost(window.location.hostname)) {
-    return import.meta.env.VITE_OAUTH_REDIRECT_URL?.replace('app.', '') ?? '/'
+    const base = import.meta.env.VITE_OAUTH_REDIRECT_URL?.replace('app.', '')
+    return base ? `${base}${path}` : path || '/'
   }
-  return `${window.location.origin}/?domain=marketing`
+  return `${window.location.origin}${path || '/'}?domain=marketing`
 }

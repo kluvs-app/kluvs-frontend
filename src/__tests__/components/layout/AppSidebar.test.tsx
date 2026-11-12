@@ -96,6 +96,14 @@ describe('AppSidebar', () => {
       expect(screen.getByText('User')).toBeInTheDocument()
     })
 
+    it('renders a Help / FAQ link that opens the marketing FAQ in a new tab', () => {
+      renderSidebar()
+      const link = screen.getByRole('link', { name: /help \/ faq/i })
+      expect(link.getAttribute('href')).toContain('/faq')
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'))
+    })
+
     it('renders Sign Out button', () => {
       renderSidebar()
       expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()

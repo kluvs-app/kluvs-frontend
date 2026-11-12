@@ -15,6 +15,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsOfUse from './pages/TermsOfUse'
 import DataDeletion from './pages/DataDeletion'
 import DiscordPage from './pages/DiscordPage'
+import FaqPage from './pages/FaqPage'
 import JoinPage from './pages/JoinPage'
 import ScrollToTop from './components/ScrollToTop'
 import AppShell from './components/layout/AppShell'
@@ -142,6 +143,7 @@ function App() {
             <Route path="/terms" element={<TermsOfUse />} />
             <Route path="/delete-account" element={<DataDeletion />} />
             <Route path="/discord" element={<DiscordPage />} />
+            <Route path="/faq" element={<FaqPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         )}

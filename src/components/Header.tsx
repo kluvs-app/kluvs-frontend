@@ -3,12 +3,13 @@ import DiscordIcon from './icons/DiscordIcon'
 import { getAppHref } from '../utils/domainNav'
 
 interface HeaderProps {
+  /** On by default for the marketing pages; app-domain pages (e.g. /join) opt out. */
   showOpenAppButton?: boolean
   /** Marketing-domain only: /discord doesn't exist on the app domain. */
   showDiscordLink?: boolean
 }
 
-export default function Header({ showOpenAppButton = false, showDiscordLink = false }: HeaderProps) {
+export default function Header({ showOpenAppButton = true, showDiscordLink = false }: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 h-16 border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-6 flex items-center justify-between">
       <Link to="/" className="flex items-center">

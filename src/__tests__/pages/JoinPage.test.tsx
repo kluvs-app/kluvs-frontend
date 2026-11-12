@@ -237,6 +237,14 @@ describe('JoinPage', () => {
   })
 
   describe('Layout', () => {
+    it('should not show the Open Kluvs button (app-domain page)', async () => {
+      renderJoinPage()
+      await waitFor(() => {
+        expect(document.querySelectorAll('img[alt="Kluvs"]').length).toBeGreaterThan(0)
+      })
+      expect(screen.queryByRole('link', { name: /Open Kluvs/i })).not.toBeInTheDocument()
+    })
+
     it('should render Header', async () => {
       renderJoinPage()
       // Header typically contains the Kluvs logo

@@ -1,0 +1,131 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { ThemeProvider } from '../../contexts/ThemeContext'
+import FaqPage from '../../pages/FaqPage'
+import { faqCategories } from '../../content/faq'
+
+function renderFaq(initialEntry = '/faq') {
+  return render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <ThemeProvider>
+        <FaqPage />
+      </ThemeProvider>
+    </MemoryRouter>
+  )
+}
+
+describe('FaqPage', () => {
+  beforeEach(() => {
+    // jsdom doesn't implement scrollIntoView
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  it('renders the page title', () => {
+    renderFaq()
+    expect(screen.getByRole('heading', { name: /Frequently asked questions/i, level: 1 })).toBeInTheDocument()
+  })
+
+  it('capitalizes the first letter of each word in the title', () => {
+    renderFaq()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Frequently Asked Questions')
+  })
+
+  it('offers a way back into the app from the header', () => {
+    renderFaq()
+    expect(screen.getByRole('link', { name: /Open Kluvs/i })).toBeInTheDocument()
+  })
+
+  it('renders every category as a heading', () => {
+    renderFaq()
+    for (const category of faqCategories) {
+      expect(screen.getByRole('heading', { name: category.title, level: 2 })).toBeInTheDocument()
+    }
+  })
+
+  it('renders every question, collapsed by default', () => {
+    renderFaq()
+    for (const category of faqCategories) {
+      for (const item of category.items) {
+        const el = document.getElementById(item.id)
+        expect(el).toBeInstanceOf(HTMLDetailsElement)
+        expect((el as HTMLDetailsElement).open).toBe(false)
+        expect(screen.getByText(item.question)).toBeInTheDocument()
+      }
+    }
+  })
+
+  it('opens and scrolls to the question named in the URL hash', () => {
+    renderFaq('/faq#club-session-discussion')
+    const el = document.getElementById('club-session-discussion') as HTMLDetailsElement
+    expect(el.open).toBe(true)
+    expect(el.scrollIntoView).toHaveBeenCalled()
+  })
+
+  it('leaves other questions closed when a hash is present', () => {
+    renderFaq('/faq#club-session-discussion')
+    expect((document.getElementById('what-is-kluvs') as HTMLDetailsElement).open).toBe(false)
+  })
+
+  it('ignores an unknown hash without throwing', () => {
+    expect(() => renderFaq('/faq#does-not-exist')).not.toThrow()
+  })
+
+  it('renders internal Markdown links through the router', () => {
+    renderFaq()
+    const link = screen.getAllByRole('link', { name: 'Privacy Policy' })[0]
+    expect(link).toHaveAttribute('href', '/privacy')
+  })
+
+  it('gives each question a permalink icon link', () => {
+    renderFaq()
+    const total = faqCategories.reduce((n, c) => n + c.items.length, 0)
+    const permalinks = screen.getAllByRole('link', { name: /^Link to: / })
+    expect(permalinks).toHaveLength(total)
+    expect(screen.getByRole('link', { name: 'Link to: What is Kluvs?' })).toHaveAttribute('href', '#what-is-kluvs')
+  })
+
+  it('does not render a text permalink inside the answers', () => {
+    renderFaq()
+    expect(screen.queryByText('Link to this question')).not.toBeInTheDocument()
+  })
+
+  it('copies the full question URL when the permalink is clicked', () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.assign(navigator, { clipboard: { writeText } })
+    renderFaq()
+    screen.getByRole('link', { name: 'Link to: What is Kluvs?' }).click()
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/faq#what-is-kluvs`)
+  })
+})
+
+describe('faq content contract', () => {
+  const ids = faqCategories.flatMap((c) => c.items.map((i) => i.id))
+
+  it('has unique, URL-safe ids', () => {
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const id of ids) expect(id).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+  })
+
+  it('keeps the ids that other platforms may deep-link to', () => {
+    // Removing or renaming any of these breaks external links; see the contract in content/faq.ts.
+    expect(ids).toContain('club-session-discussion')
+    expect(ids).toContain('connect-discord')
+    expect(ids).toContain('delete-account')
+    expect(ids).toContain('discord-get-started')
+  })
+
+  it('only links to pages on this site (answers are rendered with the router)', () => {
+    for (const c of faqCategories) {
+      for (const item of c.items) {
+        expect(item.answer, item.id).not.toMatch(/\]\((?!\/)/)
+      }
+    }
+  })
+
+  it('does not mention the frozen shame list or server deletion', () => {
+    const all = faqCategories.flatMap((c) => c.items.map((i) => `${i.question} ${i.answer}`)).join(' ').toLowerCase()
+    expect(all).not.toContain('shame')
+    expect(all).not.toContain('server_delete')
+  })
+})

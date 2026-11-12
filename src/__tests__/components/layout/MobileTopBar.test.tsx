@@ -186,6 +186,16 @@ describe('MobileTopBar', () => {
       expect(screen.getByRole('menuitem', { name: 'Sign Out' })).toBeInTheDocument()
     })
 
+    it('shows a Help / FAQ item that opens the marketing FAQ in a new tab', async () => {
+      const user = userEvent.setup()
+      renderBar()
+      await user.click(screen.getByLabelText('Open user menu'))
+      const item = screen.getByRole('menuitem', { name: /help \/ faq/i })
+      expect(item.getAttribute('href')).toContain('/faq')
+      expect(item).toHaveAttribute('target', '_blank')
+      expect(item).toHaveAttribute('rel', expect.stringContaining('noopener'))
+    })
+
     it('shows Connect Discord when member has no discord_id', async () => {
       const user = userEvent.setup()
       renderBar()

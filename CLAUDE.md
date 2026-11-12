@@ -75,7 +75,8 @@ src/
 ├── content/
 │   ├── privacy-policy.md    # Privacy policy content (edit to update)
 │   ├── terms-of-use.md      # Terms of use content (edit to update)
-│   └── data-deletion.md     # Data deletion content (edit to update)
+│   ├── data-deletion.md     # Data deletion content (edit to update)
+│   └── faq.ts               # FAQ categories/questions (Markdown answers; ids are a deep-link contract)
 ├── contexts/
 │   ├── AuthContext.tsx      # Authentication state management
 │   └── ThemeContext.tsx     # Theme state (light/dark/system)
@@ -85,6 +86,7 @@ src/
 │   ├── PrivacyPolicy.tsx    # Public /privacy (shell — content in content/)
 │   ├── TermsOfUse.tsx       # Public /terms (shell — content in content/)
 │   ├── DataDeletion.tsx     # Public /delete-account (Google Play Console requirement)
+│   ├── FaqPage.tsx          # Public /faq (shell — content in content/faq.ts; accordion + #anchor deep links)
 │   ├── LoginPage.tsx        # /login — OAuth + email/password auth
 │   ├── ProfilePage.tsx      # /me — user profile, stats, settings
 │   ├── ClubsPage.tsx        # /clubs — club list (mobile-optimized)
@@ -259,6 +261,7 @@ No `AuthProvider`. No Supabase auth calls.
 | `/terms` | `TermsOfUse` |
 | `/delete-account` | `DataDeletion` |
 | `/discord` | `DiscordPage` |
+| `/faq` | `FaqPage` |
 | `/*` | Redirects → `/` |
 
 ### Adding a New App-Domain Page
@@ -285,6 +288,10 @@ No `AuthProvider`. No Supabase auth calls.
 - **Data Deletion**: edit `src/content/data-deletion.md` — renders at `/delete-account`
 
 All are plain Markdown. No code changes needed.
+
+## Updating the FAQ
+- Edit `src/content/faq.ts` — renders at `/faq`. Answers are Markdown strings.
+- Each item's `id` is addressable as `/faq#<id>` and may be deep-linked from mobile/bot. Reword questions freely, but never rename or remove an `id` without a redirect plan (a test guards a few key ids).
 
 ## Git Branches
 - `main` - Production branch
