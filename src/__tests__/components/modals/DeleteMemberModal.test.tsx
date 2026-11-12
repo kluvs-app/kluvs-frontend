@@ -88,24 +88,28 @@ describe('DeleteMemberModal', () => {
       expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
     })
 
-    it('should call PUT /member with remaining clubs on confirm', async () => {
+    it('should call PUT /member with remove_from_club on confirm', async () => {
       const user = userEvent.setup()
       render(<DeleteMemberModal {...defaultProps} />)
 
       await user.click(screen.getByText('Remove from Club', { selector: 'span' }))
 
       await waitFor(() => {
-        expect(mockInvoke).toHaveBeenCalledWith(
-          'member',
-          expect.objectContaining({
-            method: 'PUT',
-            body: expect.objectContaining({
-              id: mockAdminClubMember.id,
-              clubs: expect.not.arrayContaining([TEST_CLUB_ID]),
-            }),
-          })
-        )
+        expect(mockInvoke).toHaveBeenCalledWith('member', {
+          method: 'PUT',
+          body: { id: mockAdminClubMember.id, remove_from_club: TEST_CLUB_ID },
+        })
       })
+    })
+
+    it('should not send the target member\'s clubs list (that path is ownership-gated and 403s for owners)', async () => {
+      const user = userEvent.setup()
+      render(<DeleteMemberModal {...defaultProps} />)
+
+      await user.click(screen.getByText('Remove from Club', { selector: 'span' }))
+
+      await waitFor(() => expect(mockInvoke).toHaveBeenCalledTimes(1))
+      expect(mockInvoke.mock.calls[0][1].body).not.toHaveProperty('clubs')
     })
 
     it('should call onMemberDeleted and onClose after successful removal', async () => {

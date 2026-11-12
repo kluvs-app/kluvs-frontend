@@ -315,6 +315,23 @@ export default function ClubDetailPage() {
 
   return (
     <>
+      {/* Action errors (e.g. a failed member removal). Sits above modals (z-50) so it is
+          visible while the modal that triggered it is still open. */}
+      {error && (
+        <div
+          role="alert"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md flex items-start gap-3 bg-[var(--color-bg-elevated)] border border-danger/40 rounded-card p-4 shadow-lg"
+        >
+          <p className="flex-1 text-sm font-medium text-danger">{error}</p>
+          <button
+            onClick={() => setError(null)}
+            aria-label="Dismiss error"
+            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] leading-none text-lg"
+          >
+            ×
+          </button>
+        </div>
+      )}
       {/* Desktop split-view: lg+ only */}
       <div className="hidden lg:grid lg:grid-cols-[minmax(280px,22%)_1fr] h-screen bg-[var(--color-bg)] overflow-hidden">
         {/* Left rail */}
