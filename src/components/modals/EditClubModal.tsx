@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import type { Club } from '../../types'
+import type { Club, ClubUpdateResponse, DiscordGuild } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import DiscordIcon from '../icons/DiscordIcon'
@@ -13,12 +13,6 @@ interface EditClubModalProps {
   onClubUpdated: () => void
   onDeleteClub: () => void
   onError: (error: string) => void
-}
-
-interface Guild {
-  id: string
-  name: string
-  channels: { id: string; name: string }[]
 }
 
 export default function EditClubModal({
@@ -33,7 +27,7 @@ export default function EditClubModal({
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState('')
   const [foundedDate, setFoundedDate] = useState('')
-  const [guilds, setGuilds] = useState<Guild[]>([])
+  const [guilds, setGuilds] = useState<DiscordGuild[]>([])
   const [guildsLoading, setGuildsLoading] = useState(false)
   const [selectedServer, setSelectedServer] = useState('')
   const [selectedChannel, setSelectedChannel] = useState('')
@@ -56,7 +50,7 @@ export default function EditClubModal({
     const fetchGuilds = async () => {
       setGuildsLoading(true)
       try {
-        const { data, error } = await invokeFunction<Guild[]>(
+        const { data, error } = await invokeFunction<DiscordGuild[]>(
           `discord-guilds?member_id=${encodeURIComponent(member.id)}`,
           { method: 'GET' }
         )
@@ -66,12 +60,12 @@ export default function EditClubModal({
           const currentChannel = club.discord_channel ?? ''
           if (currentChannel) {
             const matchingGuild = data.find(g =>
-              g.channels.some(ch => ch.id === currentChannel)
+              g.channels?.some(ch => ch.id === currentChannel)
             )
-            if (matchingGuild) setSelectedServer(matchingGuild.id)
-            else if (data.length === 1) setSelectedServer(data[0].id)
+            if (matchingGuild) setSelectedServer(matchingGuild.id ?? '')
+            else if (data.length === 1) setSelectedServer(data[0].id ?? '')
           } else if (data.length === 1) {
-            setSelectedServer(data[0].id)
+            setSelectedServer(data[0].id ?? '')
           }
         }
       } finally {
@@ -92,7 +86,7 @@ export default function EditClubModal({
     try {
       setLoading(true)
       onError('')
-      const { error } = await invokeFunction('club', {
+      const { error } = await invokeFunction<ClubUpdateResponse>('club', {
         method: 'PUT',
         body: {
           id: club.id,

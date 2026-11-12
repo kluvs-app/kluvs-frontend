@@ -96,7 +96,7 @@ export default function DiscussionNoteModal({
       setLoading(true)
       onError('')
 
-      const { error } = await invokeFunction(
+      const { error } = await invokeFunction<null>(
         `discussion-note?id=${encodeURIComponent(note.id)}`,
         { method: 'DELETE' }
       )

@@ -66,7 +66,7 @@ describe('BookSearchInput', () => {
 
   describe('Search Behavior', () => {
     it('should call GET /book with query param after debounce', async () => {
-      mockInvoke.mockResolvedValue({ data: mockSearchResults, error: null })
+      mockInvoke.mockResolvedValue({ data: { success: true, books: mockSearchResults }, error: null })
       render(<BookSearchInput {...defaultProps} />)
 
       await triggerSearch('Tolkien')
@@ -86,7 +86,7 @@ describe('BookSearchInput', () => {
     })
 
     it('should show results in dropdown after successful search', async () => {
-      mockInvoke.mockResolvedValue({ data: mockSearchResults, error: null })
+      mockInvoke.mockResolvedValue({ data: { success: true, books: mockSearchResults }, error: null })
       render(<BookSearchInput {...defaultProps} />)
 
       await triggerSearch('Tolkien')
@@ -96,7 +96,7 @@ describe('BookSearchInput', () => {
     })
 
     it('should show "No books found" when search returns empty', async () => {
-      mockInvoke.mockResolvedValue({ data: [], error: null })
+      mockInvoke.mockResolvedValue({ data: { success: true, books: [] }, error: null })
       render(<BookSearchInput {...defaultProps} />)
 
       await triggerSearch('xyznotabook')
@@ -113,21 +113,13 @@ describe('BookSearchInput', () => {
       expect(screen.getByText('Search failed. Please try again.')).toBeInTheDocument()
     })
 
-    it('should handle wrapped { books: [] } response format', async () => {
-      mockInvoke.mockResolvedValue({ data: { books: mockSearchResults }, error: null })
-      render(<BookSearchInput {...defaultProps} />)
-
-      await triggerSearch('Tolkien')
-
-      expect(screen.getByText('The Hobbit')).toBeInTheDocument()
-    })
   })
 
   describe('Book Selection', () => {
     const setupWithResults = async () => {
       mockInvoke
-        .mockResolvedValueOnce({ data: mockSearchResults, error: null })
-        .mockResolvedValueOnce({ data: mockRegisteredBook, error: null })
+        .mockResolvedValueOnce({ data: { success: true, books: mockSearchResults }, error: null })
+        .mockResolvedValueOnce({ data: { success: true, book: mockRegisteredBook }, error: null })
       render(<BookSearchInput {...defaultProps} />)
       await triggerSearch('Tolkien')
     }
@@ -167,7 +159,7 @@ describe('BookSearchInput', () => {
 
     it('should show error and revert when POST /book fails with no id', async () => {
       mockInvoke
-        .mockResolvedValueOnce({ data: mockSearchResults, error: null })
+        .mockResolvedValueOnce({ data: { success: true, books: mockSearchResults }, error: null })
         .mockResolvedValueOnce({ data: null, error: new Error('Registration failed') })
       render(<BookSearchInput {...defaultProps} />)
       await triggerSearch('Tolkien')

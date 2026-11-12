@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club } from '../../types'
+import type { Club, SessionCreateResponse } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
 import { parseLocalDate } from '../../utils/dates'
@@ -43,7 +43,7 @@ export default function NewSessionModal({
     try {
       setLoading(true)
       onError('')
-      const { error } = await invokeFunction('session', {
+      const { error } = await invokeFunction<SessionCreateResponse>('session', {
         method: 'POST',
         body: { club_id: selectedClub.id, book_id: selectedBookId, due_date: dueDate, all_reading: allReading }
       })

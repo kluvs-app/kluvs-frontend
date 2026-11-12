@@ -1,0 +1,132 @@
+#
+# Regenerates src/types/api.gen.ts from the canonical spec in kluvs-api whenever
+# it changes, and opens a PR against develop with the diff.
+#
+# Triggered by:
+#   - repository_dispatch[api-spec-updated] — sent by kluvs-api's
+#     notify-consumers.yml whenever openapi.json changes on its main branch.
+#   - workflow_dispatch — for manual testing without waiting on a real spec change.
+#
+# No spec blob arrives in the dispatch payload (source_sha + source_repo only) —
+# this workflow fetches openapi.json directly from kluvs-api at that SHA.
+#
+# The PR is opened with GITHUB_TOKEN, which does NOT trigger pull_request CI.
+# So type-check runs here and its result is reported in the PR body — a spec
+# change that breaks the app shows up before merge, not after.
+#
+# Human review/merge of the opened PR is the only manual step in the pipeline.
+# chore/regenerate-api-types is a CI force-push target — never commit manual work there.
+#
+# Secrets required:
+#   API_SPEC_FETCH_PAT — fine-grained PAT with Contents: Read on kluvs-api only.
+#     Pushing the branch and opening the PR here uses the workflow's own
+#     GITHUB_TOKEN (see permissions: below).
+#
+
+name: Regenerate API Types
+
+on:
+  repository_dispatch:
+    types: [api-spec-updated]
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: "kluvs-api ref to fetch openapi.json from (commit SHA or branch name, e.g. main)"
+        required: false
+        default: "main"
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  regenerate:
+    name: Regenerate api.gen.ts
+    runs-on: ubuntu-latest
+
+    steps:
+      # repository_dispatch always runs from the default branch — pin to develop
+      # so the generator config/scripts match what the PR targets.
+      - name: Checkout kluvs-frontend
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Resolve source ref
+        id: source
+        env:
+          DISPATCH_SHA: ${{ github.event.client_payload.source_sha }}
+          MANUAL_REF: ${{ inputs.source_sha }}
+        run: |
+          echo "ref=${DISPATCH_SHA:-$MANUAL_REF}" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch openapi.json from kluvs-api
+        env:
+          SOURCE_REF: ${{ steps.source.outputs.ref }}
+          API_SPEC_FETCH_PAT: ${{ secrets.API_SPEC_FETCH_PAT }}
+        run: |
+          curl -fSs \
+            -H "Authorization: token ${API_SPEC_FETCH_PAT}" \
+            -H "Accept: application/vnd.github.raw+json" \
+            "https://api.github.com/repos/kluvs-app/kluvs-api/contents/openapi.json?ref=${SOURCE_REF}" \
+            -o api/openapi.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate types
+        run: npm run api:generate
+
+      - name: Type-check against regenerated types
+        id: typecheck
+        run: |
+          set +e
+          npm run type-check > typecheck.log 2>&1
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "result=✅ \`npm run type-check\` passed" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=❌ \`npm run type-check\` failed — the app needs code changes before this can merge" >> "$GITHUB_OUTPUT"
+          fi
+          {
+            echo 'log<<TYPECHECK_EOF'
+            tail -n 60 typecheck.log
+            echo 'TYPECHECK_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open PR with regenerated types
+        uses: peter-evans/create-pull-request@v7
+        with:
+          base: develop
+          branch: chore/regenerate-api-types
+          delete-branch: true
+          commit-message: "chore: regenerate api types from spec ${{ steps.source.outputs.ref }}"
+          title: "chore: regenerate api types from spec ${{ steps.source.outputs.ref }}"
+          body: |
+            Regenerated `src/types/api.gen.ts` from [`kluvs-api@${{ steps.source.outputs.ref }}`](https://github.com/kluvs-app/kluvs-api/commit/${{ steps.source.outputs.ref }}).
+
+            ### Type-check
+            ${{ steps.typecheck.outputs.result }}
+
+            <details><summary>Output (last 60 lines)</summary>
+
+            ```
+            ${{ steps.typecheck.outputs.log }}
+            ```
+
+            </details>
+
+            > This PR was opened with `GITHUB_TOKEN`, so regular CI does not run on it. The type-check above is the pre-merge signal.
+
+            Opened automatically by `regenerate-api-types.yml` — review the diff and merge.
+          add-paths: |
+            api/openapi.json
+            src/types/api.gen.ts

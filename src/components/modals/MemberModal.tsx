@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club, Member, UserRole } from '../../types'
+import type { Club, ClubMember, MemberCreateResponse, MemberUpdateResponse, SessionUpdateResponse, UserRole } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 
@@ -10,7 +10,7 @@ interface MemberModalProps {
   selectedClub: Club
   onMemberSaved: () => void
   onError: (error: string) => void
-  editingMember?: Member | null
+  editingMember?: ClubMember | null
   editorRole?: UserRole | null
 }
 
@@ -55,11 +55,10 @@ export default function MemberModal({
   useEffect(() => {
     if (isOpen) {
       if (editingMember) {
-        const memberWithRole = editingMember as Member & { role?: string }
-        const currentRole = (memberWithRole.role === 'admin' ? 'admin' : 'member') as 'admin' | 'member'
+        const currentRole: MemberFormData['role'] = editingMember.role === 'admin' ? 'admin' : 'member'
         const sessionMember = selectedClub.active_session?.members?.find(sm => sm.member_id === editingMember.id)
         setFormData({
-          name: editingMember.name,
+          name: editingMember.name ?? '',
           role: currentRole,
           is_reading: sessionMember?.is_reading ?? false,
         })
@@ -77,7 +76,7 @@ export default function MemberModal({
     try {
       if (!isEditing) {
         if (!formData.name.trim()) { setError('Member name is required'); return }
-        const { error: err } = await invokeFunction('member', {
+        const { error: err } = await invokeFunction<MemberCreateResponse>('member', {
           method: 'POST',
           body: { name: formData.name.trim(), clubs: [selectedClub.id] }
         })
@@ -89,8 +88,7 @@ export default function MemberModal({
 
       if (!editingMember) return
 
-      const memberWithRole = editingMember as Member & { role?: string }
-      const originalRole = (memberWithRole.role === 'admin' ? 'admin' : 'member') as 'admin' | 'member'
+      const originalRole: MemberFormData['role'] = editingMember.role === 'admin' ? 'admin' : 'member'
       const sessionMember = selectedClub.active_session?.members?.find(sm => sm.member_id === editingMember.id)
       const originalIsReading = sessionMember?.is_reading ?? false
 
@@ -107,7 +105,7 @@ export default function MemberModal({
       let anySucceeded = false
 
       if (roleChanged) {
-        const { error: err } = await invokeFunction('member', {
+        const { error: err } = await invokeFunction<MemberUpdateResponse>('member', {
           method: 'PUT',
           body: {
             id: editingMember.id,
@@ -127,7 +125,7 @@ export default function MemberModal({
       }
 
       if (readingChanged) {
-        const { error: err } = await invokeFunction('session', {
+        const { error: err } = await invokeFunction<SessionUpdateResponse>('session', {
           method: 'PUT',
           body: {
             id: selectedClub.active_session!.id,

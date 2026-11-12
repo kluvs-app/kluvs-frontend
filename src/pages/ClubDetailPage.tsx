@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { invokeFunction } from '../supabase'
-import type { Club, Discussion, Member, ReadingProgress } from '../types'
+import type { Club, ClubMember, Discussion, ReadingProgress, SessionUpdateResponse, UserRole } from '../types'
 import EditBookModal from '../components/modals/EditBookModal'
 import NewSessionModal from '../components/modals/NewSessionModal'
 import DiscussionModal from '../components/modals/DiscussionModal'
@@ -74,7 +74,7 @@ export default function ClubDetailPage() {
   const { member, getRoleForClub, refreshMemberData } = useAuth()
   const { setTopBar, resetTopBar } = useMobileTopBar()
 
-  const memberClub = member?.clubs.find((c) => c.id === slug)
+  const memberClub = member?.clubs?.find((c) => c.id === slug)
   const serverId = memberClub?.server_id ?? ''
 
   const [club, setClub] = useState<Club | null>(null)
@@ -103,9 +103,9 @@ export default function ClubDetailPage() {
   const [clubToDelete, setClubToDelete] = useState<{ id: string; name: string } | null>(null)
   const [showAddMemberModal, setShowAddMemberModal] = useState(false)
   const [showMemberModal, setShowMemberModal] = useState(false)
-  const [editingMember, setEditingMember] = useState<Member | null>(null)
+  const [editingMember, setEditingMember] = useState<ClubMember | null>(null)
   const [showDeleteMemberModal, setShowDeleteMemberModal] = useState(false)
-  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null)
+  const [memberToDelete, setMemberToDelete] = useState<ClubMember | null>(null)
   const [showAddClubModal, setShowAddClubModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
 
@@ -156,8 +156,9 @@ export default function ClubDetailPage() {
 
   // Warm up edge functions
   useEffect(() => {
-    invokeFunction('session', { method: 'GET' }).catch(() => {})
-    invokeFunction('book', { method: 'GET' }).catch(() => {})
+    // Fire-and-forget cold-start pings: the response (a 400 for missing params) is never read.
+    invokeFunction<unknown>('session', { method: 'GET' }).catch(() => {})
+    invokeFunction<unknown>('book', { method: 'GET' }).catch(() => {})
   }, [])
 
   // Fetch club details whenever slug changes
@@ -237,11 +238,11 @@ export default function ClubDetailPage() {
   const handleAddMember = () => {
     setShowAddMemberModal(true)
   }
-  const handleEditMember = (m: Member) => {
+  const handleEditMember = (m: ClubMember) => {
     setEditingMember(m)
     setShowMemberModal(true)
   }
-  const handleDeleteMember = (m: Member) => {
+  const handleDeleteMember = (m: ClubMember) => {
     setMemberToDelete(m)
     setShowDeleteMemberModal(true)
   }
@@ -266,7 +267,7 @@ export default function ClubDetailPage() {
     if (!club?.active_session) return
     setTogglingMemberId(memberId)
     try {
-      const { error: err } = await invokeFunction(
+      const { error: err } = await invokeFunction<SessionUpdateResponse>(
         'session',
         { method: 'PUT', body: { id: club.active_session.id, session_members: [{ member_id: memberId, is_reading: newValue }] } }
       )
@@ -280,13 +281,9 @@ export default function ClubDetailPage() {
     }
   }
 
-  const getSortedMembers = (members: Member[]) => {
-    const roleOrder = { 'owner': 0, 'admin': 1, 'member': 2 }
-    return [...members].sort((a, b) => {
-      const aRole = (a as typeof a & { role?: string }).role || 'member'
-      const bRole = (b as typeof b & { role?: string }).role || 'member'
-      return (roleOrder[aRole as keyof typeof roleOrder] ?? 2) - (roleOrder[bRole as keyof typeof roleOrder] ?? 2)
-    })
+  const getSortedMembers = (members: ClubMember[]) => {
+    const roleOrder: Record<UserRole, number> = { owner: 0, admin: 1, member: 2 }
+    return [...members].sort((a, b) => roleOrder[a.role ?? 'member'] - roleOrder[b.role ?? 'member'])
   }
 
   if (loading) {
@@ -312,10 +309,29 @@ export default function ClubDetailPage() {
     ) : null
   }
 
+  const clubMembers = club.members ?? []
+
   const clubs = member?.clubs ?? []
 
   return (
     <>
+      {/* Action errors (e.g. a failed member removal). Sits above modals (z-50) so it is
+          visible while the modal that triggered it is still open. */}
+      {error && (
+        <div
+          role="alert"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md flex items-start gap-3 bg-[var(--color-bg-elevated)] border border-danger/40 rounded-card p-4 shadow-lg"
+        >
+          <p className="flex-1 text-sm font-medium text-danger">{error}</p>
+          <button
+            onClick={() => setError(null)}
+            aria-label="Dismiss error"
+            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] leading-none text-lg"
+          >
+            ×
+          </button>
+        </div>
+      )}
       {/* Desktop split-view: lg+ only */}
       <div className="hidden lg:grid lg:grid-cols-[minmax(280px,22%)_1fr] h-screen bg-[var(--color-bg)] overflow-hidden">
         {/* Left rail */}
@@ -358,7 +374,7 @@ export default function ClubDetailPage() {
                     <p className="font-serif text-[19px] font-medium text-[var(--color-text-primary)] truncate">
                       {c.name}
                     </p>
-                    <RoleEyebrow role={c.role} />
+                    <RoleEyebrow role={c.role ?? 'member'} />
                   </div>
 
                   {/* Book reading */}
@@ -371,7 +387,7 @@ export default function ClubDetailPage() {
                   {/* Members + next date */}
                   {sidebarClubs[c.id]?.members ? (
                     <div className="flex items-center justify-between text-[11px] text-[var(--color-text-secondary)] uppercase tracking-[0.04em]">
-                      <div>{sidebarClubs[c.id].members.length} MEMBERS</div>
+                      <div>{sidebarClubs[c.id].members?.length ?? 0} MEMBERS</div>
                       {(() => {
                         const next = sidebarClubs[c.id].active_session?.discussions?.find((d) => !isPast(d.scheduled_at))
                         if (!next?.scheduled_at) return null
@@ -446,7 +462,7 @@ export default function ClubDetailPage() {
                       </>
                     )}
                     <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-                      {club.members.length} MEMBERS
+                      {clubMembers.length} MEMBERS
                     </span>
                   </div>
 
@@ -523,8 +539,8 @@ export default function ClubDetailPage() {
                           {(() => {
                             const readingMembers = (club.active_session.members ?? [])
                               .filter(sm => sm.is_reading)
-                              .map(sm => club.members.find(m => m.id === sm.member_id))
-                              .filter((m): m is Member => m != null)
+                              .map(sm => clubMembers.find(m => m.id === sm.member_id))
+                              .filter((m): m is ClubMember => m != null)
                             const sessionMember = member && club.active_session.members
                               ? club.active_session.members.find(s => s.member_id === member.id)
                               : undefined
@@ -538,7 +554,7 @@ export default function ClubDetailPage() {
                                     <>
                                       <AvatarStack members={readingMembers} size="sm" currentMemberId={member?.id} />
                                       <span className="text-[12px] text-[var(--color-text-secondary)]">
-                                        {readingMembers.length} of {club.members.length} reading
+                                        {readingMembers.length} of {clubMembers.length} reading
                                       </span>
                                     </>
                                   ) : (
@@ -641,7 +657,7 @@ export default function ClubDetailPage() {
                             MEMBERS
                           </span>
                           <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                            {club.members.length}
+                            {clubMembers.length}
                           </span>
                         </div>
                         {isAdmin && (
@@ -657,17 +673,16 @@ export default function ClubDetailPage() {
 
                       {/* Members list */}
                       <div className="space-y-2.5">
-                        {getSortedMembers(club.members).map((clubMember) => {
-                          const memberWithRole = clubMember as Member & { role?: string }
+                        {getSortedMembers(clubMembers).map((clubMember) => {
                           const isOwn = member?.id != null && member.id === clubMember.id
 
                           return (
                             <MemberBadge
                               key={clubMember.id}
-                              member={memberWithRole}
+                              member={clubMember}
                               isOwn={isOwn}
                               isAdmin={isAdmin}
-                              readingStatus={getMemberSessionStatus(clubMember.id)}
+                              readingStatus={clubMember.id != null ? getMemberSessionStatus(clubMember.id) : null}
                               onEdit={handleEditMember}
                               onDelete={handleDeleteMember}
                             />
@@ -676,7 +691,7 @@ export default function ClubDetailPage() {
                       </div>
 
                       {/* Invite CTA when flying solo */}
-                      {club.members.length <= 1 && isAdmin && (
+                      {clubMembers.length <= 1 && isAdmin && (
                         <div className="mt-5 flex flex-col items-center text-center py-4">
                           <p className="font-serif italic text-[20px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
                             Invite others to get the conversation going.
@@ -721,7 +736,7 @@ export default function ClubDetailPage() {
             )}
             <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
             <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
-              {club.members.length} MEMBERS
+              {clubMembers.length} MEMBERS
             </span>
           </div>
 
@@ -783,8 +798,8 @@ export default function ClubDetailPage() {
             const isActive = mobileTab === tab
             const tabCounts = {
               overview: 0,
-              discussions: club.active_session?.discussions.length || 0,
-              members: club.members.length,
+              discussions: club.active_session?.discussions?.length || 0,
+              members: clubMembers.length,
             }
             return (
               <button
@@ -880,8 +895,8 @@ export default function ClubDetailPage() {
                   {(() => {
                     const readingMembers = (club.active_session.members ?? [])
                       .filter(sm => sm.is_reading)
-                      .map(sm => club.members.find(m => m.id === sm.member_id))
-                      .filter((m): m is Member => m != null)
+                      .map(sm => clubMembers.find(m => m.id === sm.member_id))
+                      .filter((m): m is ClubMember => m != null)
                     const sessionMember = member && club.active_session.members
                       ? club.active_session.members.find(s => s.member_id === member.id)
                       : undefined
@@ -895,7 +910,7 @@ export default function ClubDetailPage() {
                               <>
                                 <AvatarStack members={readingMembers} size="sm" currentMemberId={member?.id} />
                                 <span className="text-[12px] text-[var(--color-text-secondary)]">
-                                  {readingMembers.length} of {club.members.length} reading
+                                  {readingMembers.length} of {clubMembers.length} reading
                                 </span>
                               </>
                             ) : (
@@ -1001,22 +1016,22 @@ export default function ClubDetailPage() {
                     onClick={() => setMobileTab('members')}
                     className="text-[12px] text-primary font-medium"
                   >
-                    See all {club.members.length}
+                    See all {clubMembers.length}
                   </button>
                 </div>
 
                 {/* Avatars + names text on same row */}
                 <div className="flex items-center gap-3 mb-2.5">
                   {/* Avatar row */}
-                  <AvatarStack members={club.members} max={4} size="md" currentMemberId={member?.id} className="flex-shrink-0" />
+                  <AvatarStack members={clubMembers} max={4} size="md" currentMemberId={member?.id} className="flex-shrink-0" />
 
                   {/* Names text */}
                   <p className="text-[15px] text-[var(--color-text-primary)] font-medium">
                     {(() => {
-                      const displayCount = Math.min(3, club.members.length)
-                      const displayed = club.members.slice(0, displayCount)
-                      const remaining = club.members.length - displayCount
-                      const displayedNames = displayed.map((m) => m.name.split(' ')[0]).join(', ')
+                      const displayCount = Math.min(3, clubMembers.length)
+                      const displayed = clubMembers.slice(0, displayCount)
+                      const remaining = clubMembers.length - displayCount
+                      const displayedNames = displayed.map((m) => (m.name ?? '').split(' ')[0]).join(', ')
                       return remaining > 0 ? `${displayedNames} & ${remaining} more` : displayedNames
                     })()}
                   </p>
@@ -1025,18 +1040,12 @@ export default function ClubDetailPage() {
                 {/* Role breakdown */}
                 <p className="text-[12px] text-[var(--color-text-secondary)]">
                   {(() => {
-                    const owners = club.members.filter((m) => {
-                      const memberWithRole = m as typeof m & { role?: string }
-                      return memberWithRole.role === 'owner'
-                    }).length
-                    const admins = club.members.filter((m) => {
-                      const memberWithRole = m as typeof m & { role?: string }
-                      return memberWithRole.role === 'admin'
-                    }).length
+                    const owners = clubMembers.filter((m) => m.role === 'owner').length
+                    const admins = clubMembers.filter((m) => m.role === 'admin').length
                     const parts = []
                     if (owners > 0) parts.push(`${owners} owner${owners > 1 ? 's' : ''}`)
                     if (admins > 0) parts.push(`${admins} admin${admins > 1 ? 's' : ''}`)
-                    parts.push(`${club.members.length} member${club.members.length > 1 ? 's' : ''}`)
+                    parts.push(`${clubMembers.length} member${clubMembers.length > 1 ? 's' : ''}`)
                     return parts.join(' · ')
                   })()}
                 </p>
@@ -1057,7 +1066,7 @@ export default function ClubDetailPage() {
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
                 <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
-                  {club.members.length} members
+                  {clubMembers.length} members
                 </p>
                 {isAdmin && (
                   <button
@@ -1071,17 +1080,16 @@ export default function ClubDetailPage() {
 
               {/* Members list */}
               <div className="space-y-3">
-                {getSortedMembers(club.members).map((clubMember) => {
-                  const memberWithRole = clubMember as Member & { role?: string }
+                {getSortedMembers(clubMembers).map((clubMember) => {
                   const isOwn = member?.id != null && member.id === clubMember.id
 
                   return (
                     <MemberBadge
                       key={clubMember.id}
-                      member={memberWithRole}
+                      member={clubMember}
                       isOwn={isOwn}
                       isAdmin={isAdmin}
-                      readingStatus={getMemberSessionStatus(clubMember.id)}
+                      readingStatus={clubMember.id != null ? getMemberSessionStatus(clubMember.id) : null}
                       onEdit={handleEditMember}
                       onDelete={handleDeleteMember}
                     />
@@ -1090,7 +1098,7 @@ export default function ClubDetailPage() {
               </div>
 
               {/* Invite CTA when flying solo */}
-              {club.members.length <= 1 && isAdmin && (
+              {clubMembers.length <= 1 && isAdmin && (
                 <div className="mt-5 flex flex-col items-center text-center py-4">
                   <p className="font-serif italic text-[20px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
                     Invite others to get the conversation going.

@@ -196,7 +196,7 @@ export default function JoinPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] flex flex-col">
-      <Header />
+      <Header showOpenAppButton={false} />
 
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         {loading || joining ? (

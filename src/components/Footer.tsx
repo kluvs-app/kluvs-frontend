@@ -56,7 +56,7 @@ export default function Footer({ showVersion = false }: Props) {
             <Dot />
             <Link to="/terms" className={eyebrowLink}>Terms</Link>
             <Dot />
-            <Link to="/discord" className={eyebrowLink}>Discord</Link>
+            <Link to="/faq" className={eyebrowLink}>FAQ</Link>
           </nav>
         </div>
       </div>

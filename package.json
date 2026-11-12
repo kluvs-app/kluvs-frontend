@@ -1,7 +1,7 @@
 {
   "name": "kluvs-frontend",
   "private": true,
-  "version": "0.15.4",
+  "version": "0.16.0",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
@@ -16,8 +16,9 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "type-check": "tsc --noEmit",
-    "validate": "npm run lint && npm run type-check && npm run test:run"
+    "type-check": "tsc -b",
+    "validate": "npm run lint && npm run type-check && npm run test:run",
+    "api:generate": "openapi-typescript api/openapi.json -o src/types/api.gen.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",
@@ -44,6 +45,7 @@
     "globals": "^16.0.0",
     "happy-dom": "^20.0.11",
     "jsdom": "^27.2.0",
+    "openapi-typescript": "7.13.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.8.3",

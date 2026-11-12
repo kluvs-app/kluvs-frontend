@@ -118,7 +118,7 @@ describe('EditBookModal', () => {
             method: 'PUT',
             body: expect.objectContaining({
               id: mockClub.active_session!.id,
-              book_id: mockClub.active_session!.book.id,
+              book_id: mockClub.active_session!.book!.id,
             }),
           })
         )

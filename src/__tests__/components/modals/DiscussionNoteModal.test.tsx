@@ -13,6 +13,7 @@ vi.mock('../../../supabase', () => ({
 const mockNote: DiscussionNote = {
   id: 'note-1',
   discussion_id: mockDiscussion.id,
+  member_id: 1,
   content: 'This is an existing note',
   visibility: 'private',
   created_at: '2026-01-01T00:00:00Z',

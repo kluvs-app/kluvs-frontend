@@ -80,7 +80,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)]">
-      <Header showOpenAppButton={true} showDiscordLink={true} />
+      <Header showDiscordLink={true} />
 
       {/* Hero */}
       <section className="relative isolate overflow-hidden min-h-[640px] px-6 pb-24 text-center">
