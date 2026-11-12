@@ -50,6 +50,7 @@ export type ClubUpdateResponse = Schemas['ClubUpdateResponse']
 export type DeleteResponse = Schemas['DeleteResponse']
 export type MemberCreateResponse = Schemas['MemberCreateResponse']
 export type MemberUpdateResponse = Schemas['MemberUpdateResponse'] | Schemas['MemberAddToClubResponse']
+export type MemberRemoveFromClubResponse = Schemas['MemberRemoveFromClubResponse']
 export type SessionCreateResponse = Schemas['SessionCreateResponse']
 export type SessionUpdateResponse =
   | Schemas['SessionFinishResponse']

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { ClubMember, MemberUpdateResponse } from '../../types'
+import type { ClubMember, MemberRemoveFromClubResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 
@@ -28,11 +28,12 @@ export default function DeleteMemberModal({
     try {
       setLoading(true)
       onError('')
-      // Remove from this club only by sending the remaining clubs list (club IDs).
-      const remainingClubs = (memberToDelete.clubs ?? []).filter(id => id !== clubId)
-      const { error } = await invokeFunction<MemberUpdateResponse>('member', {
+      // Removes only this club's membership. Authorized by the caller's role in the
+      // club (owner/admin), unlike rewriting the target's `clubs` list, which requires
+      // owning the target's record.
+      const { error } = await invokeFunction<MemberRemoveFromClubResponse>('member', {
         method: 'PUT',
-        body: { id: memberToDelete.id, clubs: remainingClubs }
+        body: { id: memberToDelete.id, remove_from_club: clubId }
       })
       if (error) throw error
       onClose()

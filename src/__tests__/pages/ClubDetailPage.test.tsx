@@ -53,13 +53,19 @@ vi.mock('../../components/modals/MemberModal', () => ({
   ) : null,
 }))
 vi.mock('../../components/modals/DeleteMemberModal', () => ({
-  default: ({ isOpen, memberToDelete, onMemberDeleted, onClose }: any) => isOpen ? (
-    <div role="dialog" data-testid="delete-member-modal">
-      <button onClick={onMemberDeleted} data-testid="modal-member-delete">Confirm</button>
-      <button onClick={onClose}>Close</button>
-      {memberToDelete && <span data-testid="member-to-delete">{memberToDelete.id}</span>}
-    </div>
-  ) : null,
+  default: ({ isOpen, memberToDelete, onMemberDeleted, onClose, onError }: any) => (
+    <>
+      {/* Always rendered so page tests can exercise the onError wiring without opening the modal */}
+      <button data-testid="delete-member-fire-error" onClick={() => onError('Forbidden')} />
+      {isOpen ? (
+        <div role="dialog" data-testid="delete-member-modal">
+          <button onClick={onMemberDeleted} data-testid="modal-member-delete">Confirm</button>
+          <button onClick={onClose}>Close</button>
+          {memberToDelete && <span data-testid="member-to-delete">{memberToDelete.id}</span>}
+        </div>
+      ) : null}
+    </>
+  ),
 }))
 vi.mock('../../components/modals/DeleteDiscussionModal', () => ({
   default: ({ isOpen, discussionToDelete, onDiscussionDeleted, onClose }: any) => isOpen ? (
@@ -294,6 +300,21 @@ describe('ClubDetailPage', () => {
       })
       renderDetail()
       await waitFor(() => expect(screen.getByText('Failed to fetch')).toBeInTheDocument())
+    })
+
+    it('shows an action error from a modal while the club is loaded, and lets the user dismiss it', async () => {
+      const user = userEvent.setup()
+      renderDetail()
+      const fireError = await screen.findByTestId('delete-member-fire-error')
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+
+      await user.click(fireError)
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Forbidden')
+
+      await user.click(screen.getByRole('button', { name: 'Dismiss error' }))
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     })
   })
 
