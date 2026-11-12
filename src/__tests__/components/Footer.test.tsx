@@ -22,6 +22,7 @@ describe('Footer', () => {
     ['Privacy', '/privacy'],
     ['Terms', '/terms'],
     ['Discord', '/discord'],
+    ['FAQ', '/faq'],
   ])('should link "%s" to %s', (name, href) => {
     renderFooter()
     const nav = screen.getByRole('navigation', { name: 'Footer' })
