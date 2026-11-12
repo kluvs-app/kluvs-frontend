@@ -26,6 +26,16 @@ describe('FaqPage', () => {
     expect(screen.getByRole('heading', { name: /Frequently asked questions/i, level: 1 })).toBeInTheDocument()
   })
 
+  it('capitalizes the first letter of each word in the title', () => {
+    renderFaq()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Frequently Asked Questions')
+  })
+
+  it('offers a way back into the app from the header', () => {
+    renderFaq()
+    expect(screen.getByRole('link', { name: /Open Kluvs/i })).toBeInTheDocument()
+  })
+
   it('renders every category as a heading', () => {
     renderFaq()
     for (const category of faqCategories) {

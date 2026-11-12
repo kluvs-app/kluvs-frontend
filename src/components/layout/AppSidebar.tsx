@@ -142,6 +142,19 @@ export default function AppSidebar() {
             </button>
           )}
 
+          {/* Help / FAQ — lives on the marketing site, so open it in a new tab */}
+          <a
+            href={getMarketingHref('/faq')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+          >
+            <span className="material-symbols-outlined shrink-0" style={{ fontSize: 20 }} aria-hidden="true">
+              help
+            </span>
+            Help / FAQ
+          </a>
+
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}

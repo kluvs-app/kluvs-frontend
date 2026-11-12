@@ -56,4 +56,14 @@ describe('getMarketingHref', () => {
     setHostname('kluvs-frontend-abc123.vercel.app')
     expect(getMarketingHref()).toBe(`${window.location.origin}/?domain=marketing`)
   })
+
+  it('appends a marketing path on a real Kluvs app host', () => {
+    setHostname('app.kluvs.com')
+    expect(getMarketingHref('/faq')).toBe(`${import.meta.env.VITE_OAUTH_REDIRECT_URL?.replace('app.', '')}/faq`)
+  })
+
+  it('keeps the path ahead of the domain override on previews', () => {
+    setHostname('kluvs-frontend-abc123.vercel.app')
+    expect(getMarketingHref('/faq')).toBe(`${window.location.origin}/faq?domain=marketing`)
+  })
 })

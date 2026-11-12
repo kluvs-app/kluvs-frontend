@@ -79,10 +79,10 @@ describe('Header', () => {
   })
 
   describe('Open Kluvs Button', () => {
-    it('should not display Open Kluvs button by default', () => {
+    it('should display Open Kluvs button by default', () => {
       renderHeader()
 
-      expect(screen.queryByRole('link', { name: /Open Kluvs/i })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: /Open Kluvs/i })).toBeInTheDocument()
     })
 
     it('should display Open Kluvs button when showOpenAppButton is true', () => {
@@ -151,6 +151,11 @@ describe('Header', () => {
       renderHeader()
 
       expect(screen.queryByRole('link', { name: 'Discord' })).not.toBeInTheDocument()
+    })
+
+    it('should render no navigation when both the Discord link and Open Kluvs are off', () => {
+      renderHeader({ showOpenAppButton: false })
+
       expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
     })
 

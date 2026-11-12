@@ -194,6 +194,21 @@ export default function MobileTopBar() {
                     <span className="text-[12px] text-[var(--color-text-secondary)] ml-auto">{themeLabel}</span>
                   </button>
 
+                  {/* Help / FAQ — lives on the marketing site, so open it in a new tab */}
+                  <a
+                    role="menuitem"
+                    href={getMarketingHref('/faq')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMenuOpen(false)}
+                    className={`${menuItemBase} text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]`}
+                  >
+                    <span className="material-symbols-outlined shrink-0" style={{ fontSize: 18 }} aria-hidden="true">
+                      help
+                    </span>
+                    Help / FAQ
+                  </a>
+
                   <div style={{ borderTop: '1px solid var(--color-divider)' }} />
 
                   {/* Sign Out */}
