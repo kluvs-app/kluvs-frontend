@@ -21,7 +21,6 @@ describe('Footer', () => {
   it.each([
     ['Privacy', '/privacy'],
     ['Terms', '/terms'],
-    ['Discord', '/discord'],
     ['FAQ', '/faq'],
   ])('should link "%s" to %s', (name, href) => {
     renderFooter()

@@ -67,11 +67,25 @@ describe('FaqPage', () => {
     expect(link).toHaveAttribute('href', '/privacy')
   })
 
-  it('gives each question a permalink', () => {
+  it('gives each question a permalink icon link', () => {
     renderFaq()
-    const el = document.getElementById('what-is-kluvs') as HTMLElement
-    const permalink = el.querySelector('a[href="#what-is-kluvs"]')
-    expect(permalink).not.toBeNull()
+    const total = faqCategories.reduce((n, c) => n + c.items.length, 0)
+    const permalinks = screen.getAllByRole('link', { name: /^Link to: / })
+    expect(permalinks).toHaveLength(total)
+    expect(screen.getByRole('link', { name: 'Link to: What is Kluvs?' })).toHaveAttribute('href', '#what-is-kluvs')
+  })
+
+  it('does not render a text permalink inside the answers', () => {
+    renderFaq()
+    expect(screen.queryByText('Link to this question')).not.toBeInTheDocument()
+  })
+
+  it('copies the full question URL when the permalink is clicked', () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.assign(navigator, { clipboard: { writeText } })
+    renderFaq()
+    screen.getByRole('link', { name: 'Link to: What is Kluvs?' }).click()
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/faq#what-is-kluvs`)
   })
 })
 
@@ -88,5 +102,20 @@ describe('faq content contract', () => {
     expect(ids).toContain('club-session-discussion')
     expect(ids).toContain('connect-discord')
     expect(ids).toContain('delete-account')
+    expect(ids).toContain('discord-get-started')
+  })
+
+  it('only links to pages on this site (answers are rendered with the router)', () => {
+    for (const c of faqCategories) {
+      for (const item of c.items) {
+        expect(item.answer, item.id).not.toMatch(/\]\((?!\/)/)
+      }
+    }
+  })
+
+  it('does not mention the frozen shame list or server deletion', () => {
+    const all = faqCategories.flatMap((c) => c.items.map((i) => `${i.question} ${i.answer}`)).join(' ').toLowerCase()
+    expect(all).not.toContain('shame')
+    expect(all).not.toContain('server_delete')
   })
 })
