@@ -1,21 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { invokeFunction } from '../supabase'
 import {
-  getVolume,
-  getAuthor,
-  getWikipediaAuthorInfo,
-  searchVolumes,
   bestCoverUrl,
   extractYear,
   stripHtml,
   preferredIsbn,
   displayLanguage,
-  type GBVolumeInfo,
-  type GBVolume,
-  type KGPerson,
 } from '../services/googleBooks'
 import type {
-  Book, BookRegistrationResponse, BookSearchResponse, LikeStatusResponse, LikeToggleResponse,
+  AuthorBook, AuthorInfo, Book, BookEnrichmentResponse, BookRegistrationResponse, BookSearchResponse,
+  BookVolumeInfo, LikeStatusResponse, LikeToggleResponse,
   ShelfAssignResponse, ShelfEntry, ShelfListResponse, ShelfSingleResponse, ShelfValue,
 } from '../types'
 
@@ -219,15 +213,12 @@ export default function BooksPage() {
   const [searching, setSearching]       = useState(false)
   const [searchError, setSearchError]   = useState('')
   const [selectedBook, setSelectedBook]   = useState<Book | null>(null)
-  const [volumeInfo, setVolumeInfo]       = useState<GBVolumeInfo | null>(null)
+  const [volumeInfo, setVolumeInfo]       = useState<BookVolumeInfo | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
-  const [authorInfo, setAuthorInfo]         = useState<KGPerson | null>(null)
+  const [authorInfo, setAuthorInfo]         = useState<AuthorInfo | null>(null)
   const [loadingAuthor, setLoadingAuthor]   = useState(false)
   const [authorPhotoFailed, setAuthorPhotoFailed] = useState(false)
-  const [wikipediaImage, setWikipediaImage]       = useState<string | null>(null)
-  const [wikipediaExtract, setWikipediaExtract]   = useState<string | null>(null)
-  const [authorBooks, setAuthorBooks]       = useState<GBVolume[]>([])
-  const [loadingAuthorBooks, setLoadingAuthorBooks] = useState(false)
+  const [authorBooks, setAuthorBooks]       = useState<AuthorBook[]>([])
   const [liked, setLiked]           = useState(false)
   const [shelf, setShelf]           = useState<ShelfValue | null>(null)
   const [shelvedBooks, setShelvedBooks]     = useState<ShelvedBook[]>([])
@@ -348,46 +339,37 @@ export default function BooksPage() {
     setVolumeInfo(null)
     setAuthorInfo(null)
     setAuthorPhotoFailed(false)
-    setWikipediaImage(null)
-    setWikipediaExtract(null)
     setAuthorBooks([])
-    setLoadingAuthorBooks(false)
     setLiked(false)
     setShelf(null)
 
     const id = book.external_google_id
     if (id) activeId.current = id
 
-    if (id) {
-      setLoadingDetail(true)
-      getVolume(id).then(vi => {
-        if (activeId.current !== id) return
-        setVolumeInfo(vi)
-        setLoadingDetail(false)
-      })
-    }
+    const primaryAuthor = book.author?.split(/\s*(?:,|&| and )\s*/i)[0].trim()
+    setLoadingDetail(!!id)
+    setLoadingAuthor(!!primaryAuthor)
 
-    if (book.author) {
-      const primaryAuthor = book.author.split(/\s*(?:,|&| and )\s*/i)[0].trim()
+    if (id || primaryAuthor) {
+      const params = new URLSearchParams()
+      if (id) params.set('external_google_id', id)
+      if (primaryAuthor) params.set('author', primaryAuthor)
 
-      setLoadingAuthor(true)
-      Promise.all([
-        getAuthor(primaryAuthor),
-        getWikipediaAuthorInfo(primaryAuthor),
-      ]).then(([person, wiki]) => {
-        if (id && activeId.current !== id) return
-        setAuthorInfo(person)
-        setWikipediaImage(wiki.imageUrl)
-        setWikipediaExtract(wiki.extract)
-        setLoadingAuthor(false)
-      })
-
-      setLoadingAuthorBooks(true)
-      searchVolumes(`inauthor:"${primaryAuthor}"`, 10).then(vols => {
-        if (id && activeId.current !== id) return
-        setAuthorBooks(vols.filter(v => v.id !== id))
-        setLoadingAuthorBooks(false)
-      })
+      invokeFunction<BookEnrichmentResponse>(`book-enrichment?${params}`, { method: 'GET' })
+        .then(({ data, error }) => {
+          if (id && activeId.current !== id) return
+          if (!error && data) {
+            setVolumeInfo(data.volumeInfo ?? null)
+            setAuthorInfo(data.authorInfo ?? null)
+            setAuthorBooks(data.authorBooks ?? [])
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (id && activeId.current !== id) return
+          setLoadingDetail(false)
+          setLoadingAuthor(false)
+        })
     }
 
     invokeFunction<BookRegistrationResponse>('book', {
@@ -877,9 +859,9 @@ export default function BooksPage() {
                     ) : authorInfo && (
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-3">
-                          {(wikipediaImage || authorInfo.image?.contentUrl) && !authorPhotoFailed && (
+                          {authorInfo.imageUrl && !authorPhotoFailed && (
                             <img
-                              src={wikipediaImage ?? authorInfo.image!.contentUrl!}
+                              src={authorInfo.imageUrl}
                               alt={authorInfo.name ?? ''}
                               className="h-12 w-12 rounded-full object-cover shrink-0"
                               onError={() => setAuthorPhotoFailed(true)}
@@ -898,9 +880,9 @@ export default function BooksPage() {
                             )}
                           </div>
                         </div>
-                        {(wikipediaExtract || authorInfo.detailedDescription?.articleBody) && (
+                        {authorInfo.extract && (
                           <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em]">
-                            {wikipediaExtract ?? authorInfo.detailedDescription!.articleBody}
+                            {authorInfo.extract}
                           </p>
                         )}
                       </div>
@@ -910,7 +892,7 @@ export default function BooksPage() {
               )}
 
               {/* More by this author */}
-              {(loadingAuthorBooks || authorBooks.length > 0) && (
+              {(loadingAuthor || authorBooks.length > 0) && (
                 <>
                   <hr className="border-[var(--color-divider)] mb-6" />
                   <section>
@@ -918,7 +900,7 @@ export default function BooksPage() {
                       More by {selectedBook?.author?.split(/\s*(?:,|&| and )\s*/i)[0]}
                     </span>
                     <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      {loadingAuthorBooks && authorBooks.length === 0
+                      {loadingAuthor && authorBooks.length === 0
                         ? Array.from({ length: 4 }).map((_, i) => (
                             <div key={i} className="flex flex-col gap-2 shrink-0 w-[80px]">
                               <Shimmer className="w-[80px] h-[116px] rounded-sm" />
@@ -926,23 +908,22 @@ export default function BooksPage() {
                               <Shimmer className="h-3 w-1/2" />
                             </div>
                           ))
-                        : authorBooks.map(vol => {
-                            const vi = vol.volumeInfo
-                            const coverUrl = bestCoverUrl(vi.imageLinks)
-                            const year = extractYear(vi.publishedDate)
+                        : authorBooks.map(authorBook => {
+                            const coverUrl = authorBook.imageUrl ?? undefined
+                            const year = extractYear(authorBook.publishedDate)
+                            // isbn and page_count aren't in AuthorBook — the detail view
+                            // fetches them via book-enrichment when this book is opened.
                             const book: Book = {
-                              title: vi.title,
-                              author: vi.authors?.join(', ') ?? '',
+                              title: authorBook.title,
+                              author: authorBook.authors.join(', '),
                               year: year ? parseInt(year) : undefined,
-                              isbn: preferredIsbn(vi.industryIdentifiers),
                               image_url: coverUrl,
-                              external_google_id: vol.id,
-                              page_count: vi.pageCount,
+                              external_google_id: authorBook.externalGoogleId,
                             }
                             return (
                               <BookCard
-                                key={vol.id}
-                                title={vi.title}
+                                key={authorBook.externalGoogleId}
+                                title={authorBook.title}
                                 year={year}
                                 imageUrl={coverUrl}
                                 onClick={() => handleSelect(book)}

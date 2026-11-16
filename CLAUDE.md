@@ -91,7 +91,7 @@ src/
 │   ├── ProfilePage.tsx      # /me — user profile, stats, settings
 │   ├── ClubsPage.tsx        # /clubs — club list (mobile-optimized)
 │   ├── ClubDetailPage.tsx   # /clubs/:slug — full club view with sessions/discussions
-│   ├── BooksPage.tsx        # /books — book search via Google Books API
+│   ├── BooksPage.tsx        # /books — book search + details via `book` / `book-enrichment` Edge Functions
 │   ├── JoinPage.tsx         # /join/:token — invite link club-join handler
 │   └── SetNewPasswordPage.tsx # password recovery (shown during PASSWORD_RECOVERY auth state)
 ├── types/

@@ -2,70 +2,57 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, act, fireEvent, within } from '../utils/test-utils'
 import { MemoryRouter } from 'react-router-dom'
 import BooksPage from '../../pages/BooksPage'
-import type { Book, ShelfEntry } from '../../types'
-import type { GBVolumeInfo, GBVolume, KGPerson } from '../../services/googleBooks'
+import type {
+  AuthorBook, AuthorInfo, Book, BookEnrichmentResponse, BookVolumeInfo, ShelfEntry,
+} from '../../types'
 
-// ── googleBooks service mock ───────────────────────────────────────────────────
+// ── book-enrichment fixtures ───────────────────────────────────────────────────
 
-const mockGetVolume = vi.fn<(id: string) => Promise<GBVolumeInfo | null>>()
-const mockGetAuthor = vi.fn<(name: string) => Promise<KGPerson | null>>()
-const mockSearchVolumes = vi.fn()
-
-vi.mock('../../services/googleBooks', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('../../services/googleBooks')>()
-  return {
-    ...mod,
-    getVolume: (id: string) => mockGetVolume(id),
-    getAuthor: (name: string) => mockGetAuthor(name),
-    getWikipediaAuthorInfo: () => Promise.resolve({ imageUrl: null, extract: null }),
-    searchVolumes: (...args: any[]) => mockSearchVolumes(...args),
-  }
-})
-
-// ── fetch mock ─────────────────────────────────────────────────────────────────
-
-const mockFetch = vi.fn()
-vi.stubGlobal('fetch', mockFetch)
-
-function fetchFail() {
-  return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) } as Response)
-}
-
-const mockVolumeInfo: GBVolumeInfo = {
+const mockVolumeInfo: BookVolumeInfo = {
   title: 'The Great Gatsby',
   subtitle: 'A Story of the Jazz Age',
   authors: ['F. Scott Fitzgerald'],
   publisher: 'Scribner',
   publishedDate: '1925-04-10',
   description: '<b>A tale of the American Dream.</b>',
+  industryIdentifiers: [],
   pageCount: 180,
   categories: ['Fiction', 'Classic literature'],
-  averageRating: 3.9,
-  ratingsCount: 54321,
   language: 'en',
+  imageLinks: { thumbnail: null, small: null, medium: null, large: null, extraLarge: null },
 }
 
-const mockKGPerson: KGPerson = {
+const mockAuthorInfo: AuthorInfo = {
   name: 'Francis Scott Fitzgerald',
   description: 'American novelist',
-  detailedDescription: {
-    articleBody: 'Francis Scott Key Fitzgerald was an American novelist.',
-  },
+  imageUrl: null,
+  extract: 'Francis Scott Key Fitzgerald was an American novelist.',
 }
 
-const mockKGPersonWithImage: KGPerson = {
-  ...mockKGPerson,
-  image: { contentUrl: 'https://example.com/fitzgerald.jpg' },
+const mockAuthorInfoWithImage: AuthorInfo = {
+  ...mockAuthorInfo,
+  imageUrl: 'https://example.com/fitzgerald.jpg',
 }
 
-const mockAuthorBook: GBVolume = {
-  id: 'tender-is-the-night',
-  volumeInfo: {
-    title: 'Tender Is the Night',
-    authors: ['F. Scott Fitzgerald'],
-    publishedDate: '1934',
-    pageCount: 320,
-  },
+const mockAuthorBook: AuthorBook = {
+  externalGoogleId: 'tender-is-the-night',
+  title: 'Tender Is the Night',
+  authors: ['F. Scott Fitzgerald'],
+  imageUrl: null,
+  publishedDate: '1934',
+}
+
+/** Response served for GET book-enrichment; null mimics a failed call. */
+let enrichment: BookEnrichmentResponse | null = null
+
+function setEnrichment(partial: Partial<BookEnrichmentResponse>) {
+  enrichment = { volumeInfo: undefined, authorInfo: undefined, authorBooks: [], ...enrichment, ...partial }
+}
+
+function enrichmentCalls(): string[] {
+  return mockSupabase.functions.invoke.mock.calls
+    .map((call: unknown[]) => call[0] as string)
+    .filter((endpoint: string) => endpoint.startsWith('book-enrichment'))
 }
 
 // ── MobileTopBarContext mock ───────────────────────────────────────────────────
@@ -138,10 +125,7 @@ beforeEach(async () => {
   })
   mockSupabase.functions.invoke.mockResolvedValue({ data: [], error: null })
 
-  mockGetVolume.mockResolvedValue(null)
-  mockGetAuthor.mockResolvedValue(null)
-  mockSearchVolumes.mockResolvedValue([])
-  mockFetch.mockResolvedValue(fetchFail())
+  enrichment = null
 })
 
 afterEach(() => {
@@ -273,6 +257,7 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', book: shelvedGatsby }] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await renderAndWait()
@@ -356,6 +341,7 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -423,6 +409,7 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', book: mockRegisteredBook }] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await renderAndWait()
@@ -460,6 +447,7 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.reject(new Error('upsert failed'))
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -479,6 +467,7 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -503,15 +492,16 @@ describe('BooksPage', () => {
     })
   })
 
-  describe('Google Books enrichment (getVolume)', () => {
+  describe('Book enrichment — volume details', () => {
     async function renderAndSelect() {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
-      mockGetVolume.mockResolvedValue(mockVolumeInfo)
+      setEnrichment({ volumeInfo: mockVolumeInfo })
       await typeAndSearch('gatsby')
       await act(async () => {
         fireEvent.click(screen.getByText('The Great Gatsby'))
@@ -519,9 +509,15 @@ describe('BooksPage', () => {
       })
     }
 
-    it('calls getVolume with the book external_google_id on selection', async () => {
+    it('makes exactly one book-enrichment request with the volume id and primary author', async () => {
       await renderAndSelect()
-      expect(mockGetVolume).toHaveBeenCalledWith('gatsby-google-id')
+      expect(enrichmentCalls()).toEqual([
+        'book-enrichment?external_google_id=gatsby-google-id&author=F.+Scott+Fitzgerald',
+      ])
+      expect(mockSupabase.functions.invoke).toHaveBeenCalledWith(
+        expect.stringMatching(/^book-enrichment\?/),
+        { method: 'GET' },
+      )
     })
 
     it('shows the subtitle from volumeInfo', async () => {
@@ -539,11 +535,12 @@ describe('BooksPage', () => {
       expect(screen.getByText('Fiction')).toBeInTheDocument()
     })
 
-    it('still shows the book when getVolume fails', async () => {
+    it('still shows the book when book-enrichment returns nothing', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -555,16 +552,17 @@ describe('BooksPage', () => {
     })
   })
 
-  describe('Author section (getAuthor)', () => {
+  describe('Author section', () => {
     async function renderAndSelectWithAuthor() {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
-      mockGetVolume.mockResolvedValue(mockVolumeInfo)
-      mockGetAuthor.mockResolvedValue(mockKGPerson)
+      setEnrichment({ volumeInfo: mockVolumeInfo })
+      setEnrichment({ authorInfo: mockAuthorInfo })
       await typeAndSearch('gatsby')
       await act(async () => {
         fireEvent.click(screen.getByText('The Great Gatsby'))
@@ -572,12 +570,12 @@ describe('BooksPage', () => {
       })
     }
 
-    it('shows the author name when getAuthor returns data', async () => {
+    it('shows the author name from authorInfo', async () => {
       await renderAndSelectWithAuthor()
       expect(screen.getByText('Francis Scott Fitzgerald')).toBeInTheDocument()
     })
 
-    it('shows the author descriptor eyebrow', async () => {
+    it('shows the author description eyebrow', async () => {
       await renderAndSelectWithAuthor()
       expect(screen.getByText('American novelist')).toBeInTheDocument()
     })
@@ -587,11 +585,12 @@ describe('BooksPage', () => {
       expect(screen.getByText(/Francis Scott Key Fitzgerald/)).toBeInTheDocument()
     })
 
-    it('does not show the author section when getAuthor returns null', async () => {
+    it('does not show the author section when authorInfo is null', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -602,15 +601,16 @@ describe('BooksPage', () => {
       expect(screen.queryByText(/about the author/i)).not.toBeInTheDocument()
     })
 
-    it('renders author photo when authorInfo has image.contentUrl', async () => {
+    it('renders author photo from authorInfo.imageUrl', async () => {
       await renderAndWait()
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
-      mockGetVolume.mockResolvedValue(mockVolumeInfo)
-      mockGetAuthor.mockResolvedValue(mockKGPersonWithImage)
+      setEnrichment({ volumeInfo: mockVolumeInfo })
+      setEnrichment({ authorInfo: mockAuthorInfoWithImage })
       await typeAndSearch('gatsby')
       await act(async () => {
         fireEvent.click(screen.getByText('The Great Gatsby'))
@@ -626,10 +626,11 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
-      mockGetVolume.mockResolvedValue(mockVolumeInfo)
-      mockGetAuthor.mockResolvedValue(mockKGPersonWithImage)
+      setEnrichment({ volumeInfo: mockVolumeInfo })
+      setEnrichment({ authorInfo: mockAuthorInfoWithImage })
       await typeAndSearch('gatsby')
       await act(async () => {
         fireEvent.click(screen.getByText('The Great Gatsby'))
@@ -649,6 +650,7 @@ describe('BooksPage', () => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -683,6 +685,7 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: { ...mockSearchResult, id: undefined } }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -698,6 +701,7 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint === 'like') return Promise.resolve({ data: { success: true, liked: true }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -722,6 +726,7 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint === 'like') return Promise.resolve({ data: null, error: new Error('toggle failed') })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -744,6 +749,7 @@ describe('BooksPage', () => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: true }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -760,6 +766,7 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint === 'like') return Promise.reject(new Error('network error'))
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -783,6 +790,7 @@ describe('BooksPage', () => {
           likeGetCallCount++
           return Promise.resolve({ data: { success: true, liked: likeGetCallCount === 1 }, error: null })
         }
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -812,6 +820,7 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, ...shelfGetResponse }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -835,6 +844,7 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await renderAndWait()
@@ -853,6 +863,7 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await renderAndWait()
@@ -876,6 +887,7 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: { ...mockSearchResult, id: undefined } }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -943,6 +955,7 @@ describe('BooksPage', () => {
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
         if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -967,6 +980,7 @@ describe('BooksPage', () => {
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -992,6 +1006,7 @@ describe('BooksPage', () => {
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
         if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelf: 'not_finished' }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -1014,6 +1029,7 @@ describe('BooksPage', () => {
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: null }, error: null })
         if (endpoint === 'shelf') return Promise.resolve({ data: null, error: new Error('shelf failed') })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -1043,6 +1059,7 @@ describe('BooksPage', () => {
           shelfGetCount++
           return Promise.resolve({ data: { success: true, shelf: shelfGetCount === 1 ? 'read' : null }, error: null })
         }
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       await typeAndSearch('gatsby')
@@ -1069,11 +1086,12 @@ describe('BooksPage', () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('book?q=')) return Promise.resolve({ data: { success: true, books: [mockSearchResult] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
+        if (endpoint.startsWith('book-enrichment')) return Promise.resolve({ data: enrichment, error: null })
         return Promise.resolve({ data: null, error: null })
       })
-      mockGetVolume.mockResolvedValue(mockVolumeInfo)
-      mockGetAuthor.mockResolvedValue(mockKGPerson)
-      mockSearchVolumes.mockResolvedValue([mockAuthorBook])
+      setEnrichment({ volumeInfo: mockVolumeInfo })
+      setEnrichment({ authorInfo: mockAuthorInfo })
+      setEnrichment({ authorBooks: [mockAuthorBook] })
       await typeAndSearch('gatsby')
       await act(async () => {
         fireEvent.click(screen.getByText('The Great Gatsby'))
@@ -1081,7 +1099,7 @@ describe('BooksPage', () => {
       })
     }
 
-    it('renders the "More by" section when searchVolumes returns books', async () => {
+    it('renders the "More by" section when authorBooks is non-empty', async () => {
       await renderAndSelectWithAuthorBooks()
       expect(screen.getByText(/more by/i)).toBeInTheDocument()
     })
