@@ -609,11 +609,13 @@ export interface components {
             };
         };
         AuthorInfo: {
-            /** @description From Google Knowledge Graph */
+            /** @description Knowledge Graph name, falling back to the matched Wikipedia page title (trailing parenthetical removed), then the author query. Always set when authorInfo is non-null */
             name?: string | null;
-            /** @description Knowledge Graph portrait, falling back to Wikipedia thumbnail */
+            /** @description Knowledge Graph short description, e.g. "American novelist" */
+            description?: string | null;
+            /** @description Wikipedia thumbnail, falling back to Knowledge Graph portrait */
             imageUrl?: string | null;
-            /** @description Wikipedia summary extract */
+            /** @description Wikipedia summary extract, falling back to Knowledge Graph detailed description */
             extract?: string | null;
         };
         AuthorBook: {
