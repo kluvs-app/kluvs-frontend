@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Kluvs API",
-    "version": "0.27.0",
+    "version": "0.28.0",
     "description": "Supabase Edge Functions API for managing book clubs."
   },
   "servers": [
@@ -2279,17 +2279,22 @@
           "name": {
             "type": "string",
             "nullable": true,
-            "description": "From Google Knowledge Graph"
+            "description": "Knowledge Graph name, falling back to the matched Wikipedia page title (trailing parenthetical removed), then the author query. Always set when authorInfo is non-null"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Knowledge Graph short description, e.g. \"American novelist\""
           },
           "imageUrl": {
             "type": "string",
             "nullable": true,
-            "description": "Knowledge Graph portrait, falling back to Wikipedia thumbnail"
+            "description": "Wikipedia thumbnail, falling back to Knowledge Graph portrait"
           },
           "extract": {
             "type": "string",
             "nullable": true,
-            "description": "Wikipedia summary extract"
+            "description": "Wikipedia summary extract, falling back to Knowledge Graph detailed description"
           }
         }
       },
