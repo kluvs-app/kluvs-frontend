@@ -366,7 +366,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="mt-9 pt-[22px] border-t border-[var(--color-divider)] text-center">
-          <p className="font-serif italic font-normal text-[15px] leading-none tracking-[0.005em] text-[#C9BDA8] mb-[14px]">
+          <p className="font-serif italic font-normal text-[15px] leading-none tracking-[0.005em] text-[var(--color-text-meta)] mb-[14px]">
             Reading is done best together.
           </p>
           <div className="inline-flex items-center gap-3">
