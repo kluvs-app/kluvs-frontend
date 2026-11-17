@@ -51,7 +51,7 @@ export default function KebabMenu({ items }: KebabMenuProps) {
                 setIsOpen(false)
               }}
               className={[
-                'w-full text-left px-4 py-2 text-[13px] transition-colors duration-120',
+                't-caption w-full text-left px-4 py-2 transition-colors duration-120',
                 item.danger
                   ? 'text-danger hover:bg-danger/10'
                   : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',

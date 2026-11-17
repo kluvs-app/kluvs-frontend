@@ -155,12 +155,12 @@ export default function DiscussionNoteModal({
           <button
             onClick={handleClose}
             disabled={loading || fetching}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleSave}
             disabled={loading || fetching || !content.trim() || !isDirty}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading
@@ -176,7 +176,7 @@ export default function DiscussionNoteModal({
           style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
         >
           <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Discussion</p>
-          <p className="text-sm text-[var(--color-text-primary)]">{discussion.title}</p>
+          <p className="t-body-m text-[var(--color-text-primary)]">{discussion.title}</p>
         </div>
 
         <div>
@@ -195,13 +195,13 @@ export default function DiscussionNoteModal({
               onChange={(e) => setContent(e.target.value)}
               placeholder="Jot down a thought, question, or reflection to revisit before the discussion…"
               rows={6}
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors resize-none"
+              className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors resize-none"
               disabled={loading}
               maxLength={4000}
               autoFocus
             />
           )}
-          <p className="text-xs text-[var(--color-text-secondary)] mt-2">
+          <p className="t-fine-print text-[var(--color-text-secondary)] mt-2">
             Only visible to you.
           </p>
         </div>

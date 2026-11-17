@@ -46,26 +46,28 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .kluvs-read-ribbon--lg { width: 24px; height: 42px; right: 12px; } /* For 128x192 cover */
 
 
-/* ─── Typography families (design-system/docs/typography.md) ───────────────────
-   family + rung; `t-feature` is the italic modifier. Color comes from context
-   (except caption / fine-print, which bake in the muted role). */
+/* ─── Typography families (design-system/docs/typography.md, tokens.json v2.11.0) ──
+   family + rung with exact px line-height and tracking; `t-feature` is the italic
+   modifier. Color comes from context (except caption / fine-print, which bake in
+   the muted role). Do not add leading-* / tracking-* / font-semibold / font-bold
+   on top of these. */
 @layer components {
-  .t-display-s   { @apply font-serif font-bold text-[48px] leading-[1.05]; }
-  .t-display-m   { @apply font-serif font-bold text-[64px] leading-[1.05]; }
-  .t-display-l   { @apply font-serif font-bold text-[96px] leading-[1.05]; }
-  .t-headline-s  { @apply font-serif font-medium text-[30px] leading-[1.15]; }
-  .t-headline-m  { @apply font-serif font-medium text-[34px] leading-[1.15]; }
-  .t-headline-l  { @apply font-serif font-medium text-[40px] leading-[1.15]; }
-  .t-title-s     { @apply font-serif font-medium text-[15px] leading-snug; }
-  .t-title-m     { @apply font-serif font-medium text-[19px] leading-snug; }
-  .t-title-l     { @apply font-serif font-medium text-[24px] leading-snug; }
-  .t-body-l      { @apply font-sans font-normal text-[16px] leading-6; }
-  .t-body-m      { @apply font-sans font-normal text-[14px] leading-5; }
-  .t-caption     { @apply font-sans font-normal text-[13px] leading-[1.125rem] text-[var(--color-text-meta)]; }
-  .t-eyebrow     { @apply font-sans font-medium text-[11px] leading-4 uppercase tracking-[0.14em]; }
-  .t-label       { @apply font-sans font-medium text-[14px] leading-5; }
-  .t-fine-print  { @apply font-sans font-normal text-[12px] leading-4 text-[var(--color-text-meta)]; }
-  .t-mono        { @apply font-normal text-[13px] leading-5; font-family: ui-monospace, 'SF Mono', monospace; }
+  .t-display-s   { @apply font-serif font-bold;   font-size: 48px; line-height: 52px;  letter-spacing: 0; }
+  .t-display-m   { @apply font-serif font-bold;   font-size: 64px; line-height: 68px;  letter-spacing: 0; }
+  .t-display-l   { @apply font-serif font-bold;   font-size: 96px; line-height: 100px; letter-spacing: 0; }
+  .t-headline-s  { @apply font-serif font-medium; font-size: 30px; line-height: 36px;  letter-spacing: 0; }
+  .t-headline-m  { @apply font-serif font-medium; font-size: 34px; line-height: 40px;  letter-spacing: 0; }
+  .t-headline-l  { @apply font-serif font-medium; font-size: 40px; line-height: 46px;  letter-spacing: 0; }
+  .t-title-s     { @apply font-serif font-medium; font-size: 15px; line-height: 20px;  letter-spacing: 0; }
+  .t-title-m     { @apply font-serif font-medium; font-size: 19px; line-height: 24px;  letter-spacing: 0; }
+  .t-title-l     { @apply font-serif font-medium; font-size: 24px; line-height: 30px;  letter-spacing: 0; }
+  .t-body-l      { @apply font-sans font-normal;  font-size: 16px; line-height: 24px;  letter-spacing: 0.5px; }
+  .t-body-m      { @apply font-sans font-normal;  font-size: 14px; line-height: 20px;  letter-spacing: 0.25px; }
+  .t-caption     { @apply font-sans font-normal text-[var(--color-text-meta)]; font-size: 13px; line-height: 18px; letter-spacing: 0.2px; }
+  .t-eyebrow     { @apply font-sans font-medium uppercase; font-size: 11px; line-height: 16px; letter-spacing: 0.14em; }
+  .t-label       { @apply font-sans font-medium;  font-size: 14px; line-height: 18px;  letter-spacing: 0.1px; }
+  .t-fine-print  { @apply font-sans font-normal text-[var(--color-text-meta)]; font-size: 12px; line-height: 16px; letter-spacing: 0.4px; }
+  .t-mono        { @apply font-normal; font-family: ui-monospace, 'SF Mono', monospace; font-size: 13px; line-height: 18px; letter-spacing: 0; }
   .t-feature     { @apply italic; }
 }
 

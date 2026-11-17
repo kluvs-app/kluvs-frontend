@@ -64,12 +64,12 @@ export default function DeleteMemberModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleDelete}
             disabled={loading}
-            className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Removing…' : <span>Remove from Club</span>}
@@ -78,12 +78,12 @@ export default function DeleteMemberModal({
       }
     >
       <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+        <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to remove{' '}
-          <span className="font-semibold">"{memberToDelete.name}"</span>{' '}
+          <span className="font-medium">"{memberToDelete.name}"</span>{' '}
           from this club?
         </p>
-        <p className="text-sm text-[var(--color-text-secondary)]">Their account and membership in other clubs will not be affected.</p>
+        <p className="t-body-m text-[var(--color-text-secondary)]">Their account and membership in other clubs will not be affected.</p>
       </div>
     </BaseModal>
   )

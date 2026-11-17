@@ -22,7 +22,7 @@ function AppleGlyph() {
 }
 
 const inputBase =
-  'w-full h-11 px-4 bg-[var(--color-input-bg)] rounded-input text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
+  't-body-m w-full h-11 px-4 bg-[var(--color-input-bg)] rounded-input text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
 
 function ErrorBanner({ message }: { message: string }) {
   return (
@@ -31,7 +31,7 @@ function ErrorBanner({ message }: { message: string }) {
         <circle cx="12" cy="12" r="10" />
         <path d="M12 8v4M12 16h.01" />
       </svg>
-      <p className="t-caption font-sans leading-[1.45] tracking-[0.005em] text-[var(--color-danger)]">{message}</p>
+      <p className="t-caption text-[var(--color-danger)]">{message}</p>
     </div>
   )
 }
@@ -42,10 +42,10 @@ function ConfirmCard({ eyebrow, email, body }: { eyebrow: string; email: string;
       <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-[10px]">
         {eyebrow}
       </span>
-      <p className="t-body-m font-mono tracking-[0.01em] text-[var(--color-text-primary)] break-all mb-[14px]">
+      <p className="t-mono t-body-m text-[var(--color-text-primary)] break-all mb-[14px]">
         {email}
       </p>
-      <p className="t-caption font-sans leading-[1.6] tracking-[0.005em] text-[var(--color-text-secondary)]">
+      <p className="t-caption text-[var(--color-text-secondary)]">
         {body}
       </p>
     </div>
@@ -166,7 +166,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => { setEmailMode('signin'); setEmailError(null) }}
-            className="t-caption flex items-center gap-1.5 mb-6 text-primary font-sans font-medium tracking-[0.005em] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
+            className="t-caption flex items-center gap-1.5 mb-6 text-primary font-medium bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M15 18l-6-6 6-6" />
@@ -180,11 +180,11 @@ export default function LoginPage() {
           <a href="https://kluvs.com" aria-label="Back to home">
             <img src="/ic-mark.svg" alt="" className="w-16 h-16 mx-auto mb-[22px] hover:opacity-80 transition-opacity" />
           </a>
-          <h1 className="t-headline-l t-feature leading-none tracking-[-0.018em] text-[var(--color-text-primary)] mb-3 [text-wrap:pretty]">
+          <h1 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-3 [text-wrap:pretty]">
             {voicePhrase}
           </h1>
           {subhead && (
-            <p className="t-body-m font-sans leading-[1.55] tracking-[0.005em] text-[var(--color-text-secondary)] max-w-[320px] mx-auto">
+            <p className="t-body-m text-[var(--color-text-secondary)] max-w-[320px] mx-auto">
               {subhead}
             </p>
           )}
@@ -202,7 +202,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setEmailMode('signin'); setResetSent(false); setEmail('') }}
-                className="t-caption font-sans font-medium tracking-[0.005em] text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                className="t-caption font-medium text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
               >
                 Back to sign in
               </button>
@@ -222,7 +222,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setConfirmationSent(false); setEmail(''); setPassword('') }}
-                className="t-caption font-sans font-medium tracking-[0.005em] text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                className="t-caption font-medium text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
               >
                 Try a different email
               </button>
@@ -230,7 +230,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => signUpWithEmail(email, password).catch(() => {})}
-                className="t-caption font-sans font-normal tracking-[0.005em] text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                className="t-caption font-normal text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
               >
                 Resend
               </button>
@@ -255,7 +255,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isBusy}
-                className="w-full h-11 px-4 bg-primary border border-primary rounded-btn font-sans text-sm font-semibold tracking-[0.01em] text-white disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
+                className="t-label w-full h-11 px-4 bg-primary border border-primary rounded-btn text-white disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
               >
                 {signingIn === 'email' ? 'Sending…' : 'Send reset link'}
               </button>
@@ -272,7 +272,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleDiscordSignIn}
                 disabled={isBusy}
-                className="w-full h-11 flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover rounded-btn px-4 font-sans text-sm font-medium text-white disabled:cursor-not-allowed transition-colors"
+                className="t-label w-full h-11 flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover rounded-btn px-4 text-white disabled:cursor-not-allowed transition-colors"
               >
                 <DiscordIcon className="h-[18px] w-[18px]" />
                 <span>{providerLabel('Discord')}</span>
@@ -281,7 +281,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={isBusy}
-                className="w-full h-11 flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover border border-google-stroke rounded-btn px-4 font-sans text-sm font-medium text-google-text disabled:cursor-not-allowed transition-colors"
+                className="t-label w-full h-11 flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover border border-google-stroke rounded-btn px-4 text-google-text disabled:cursor-not-allowed transition-colors"
               >
                 <GoogleGlyph />
                 <span>{providerLabel('Google')}</span>
@@ -290,7 +290,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleAppleSignIn}
                 disabled={isBusy}
-                className="w-full h-11 flex items-center justify-center gap-3 bg-black hover:opacity-90 rounded-btn px-4 font-sans text-sm font-medium text-white disabled:cursor-not-allowed transition-opacity"
+                className="t-label w-full h-11 flex items-center justify-center gap-3 bg-black hover:opacity-90 rounded-btn px-4 text-white disabled:cursor-not-allowed transition-opacity"
               >
                 <AppleGlyph />
                 <span>{providerLabel('Apple')}</span>
@@ -331,7 +331,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isBusy}
-                  className="w-full h-11 px-4 bg-primary border border-primary rounded-btn font-sans text-sm font-semibold tracking-[0.01em] text-white disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
+                  className="t-label w-full h-11 px-4 bg-primary border border-primary rounded-btn text-white disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
                 >
                   {signingIn === 'email'
                     ? (emailMode === 'signin' ? 'Signing in…' : 'Creating account…')
@@ -346,7 +346,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => { setEmailMode(emailMode === 'signin' ? 'signup' : 'signin'); setEmailError(null) }}
                 disabled={isBusy}
-                className="t-caption font-sans font-medium tracking-[0.005em] text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
+                className="t-caption font-medium text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
               >
                 {emailMode === 'signin' ? 'Sign up' : 'Already have an account? Sign in'}
               </button>
@@ -355,7 +355,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => { setEmailMode('reset'); setEmailError(null) }}
                   disabled={isBusy}
-                  className="t-caption font-sans font-normal tracking-[0.005em] text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
+                  className="t-caption font-normal text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
                 >
                   Forgot it?
                 </button>
@@ -366,7 +366,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="mt-9 pt-[22px] border-t border-[var(--color-divider)] text-center">
-          <p className="t-title-s t-feature font-normal leading-none tracking-[0.005em] text-[var(--color-text-meta)] mb-[14px]">
+          <p className="t-title-s t-feature font-normal text-[var(--color-text-meta)] mb-[14px]">
             Reading is done best together.
           </p>
           <div className="inline-flex items-center gap-3">

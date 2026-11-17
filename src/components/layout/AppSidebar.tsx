@@ -90,11 +90,11 @@ export default function AppSidebar() {
             isOwn
           />
           <div className="min-w-0">
-            <p className="text-sm font-medium text-[var(--color-text-primary)] truncate leading-tight">
+            <p className="t-label text-[var(--color-text-primary)] truncate">
               {member?.name ?? 'User'}
             </p>
             {member?.handle && (
-              <p className="text-xs text-[var(--color-text-secondary)] truncate leading-tight">
+              <p className="t-fine-print text-[var(--color-text-secondary)] truncate">
                 {member.handle.startsWith('@') ? member.handle : `@${member.handle}`}
               </p>
             )}
@@ -112,7 +112,7 @@ export default function AppSidebar() {
               <Link
                 key={label}
                 to={to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg t-label transition-colors ${
                   active
                     ? 'text-primary bg-[rgba(209,109,48,0.12)] shadow-[inset_3px_0_0_var(--color-primary)]'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]'
@@ -135,7 +135,7 @@ export default function AppSidebar() {
           {!member?.discord_id && (
             <button
               onClick={() => setShowDiscordLinkModal(true)}
-              className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-discord hover:bg-[var(--color-bg-elevated)] transition-colors"
+              className="t-label flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-discord hover:bg-[var(--color-bg-elevated)] transition-colors"
             >
               <DiscordIcon className="w-5 h-5 shrink-0" />
               Connect Discord
@@ -147,7 +147,7 @@ export default function AppSidebar() {
             href={getMarketingHref('/faq')}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+            className="t-label flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
           >
             <span className="material-symbols-outlined shrink-0" style={{ fontSize: 20 }} aria-hidden="true">
               help
@@ -158,7 +158,7 @@ export default function AppSidebar() {
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+            className="t-label flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
             aria-label={`Theme: ${themeLabel}. Click to change.`}
           >
             {resolvedTheme === 'light' && (
@@ -177,7 +177,7 @@ export default function AppSidebar() {
           {/* Sign out */}
           <button
             onClick={() => setShowSignOutModal(true)}
-            className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[var(--color-text-secondary)] hover:text-danger hover:bg-[var(--color-bg-elevated)] transition-colors"
+            className="t-label flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-[var(--color-text-secondary)] hover:text-danger hover:bg-[var(--color-bg-elevated)] transition-colors"
           >
             <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
@@ -186,7 +186,7 @@ export default function AppSidebar() {
           </button>
 
           {/* Version */}
-          <p className="px-2 pt-1 text-xs text-[var(--color-text-secondary)] opacity-50">v{VERSION}</p>
+          <p className="t-fine-print px-2 pt-1 text-[var(--color-text-secondary)] opacity-50">v{VERSION}</p>
         </div>
       </aside>
 

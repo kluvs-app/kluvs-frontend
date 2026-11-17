@@ -90,12 +90,12 @@ export default function NewSessionModal({
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={loading || !selectedBookId || !dueDate}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Creating...' : 'Start Session'}
@@ -104,7 +104,7 @@ export default function NewSessionModal({
       }
     >
       <div className="space-y-5">
-        <p className="text-sm text-[var(--color-text-secondary)]">Begin reading a new book</p>
+        <p className="t-body-m text-[var(--color-text-secondary)]">Begin reading a new book</p>
         <div>
           <label className="t-eyebrow" style={{
             display: 'block',
@@ -129,10 +129,10 @@ export default function NewSessionModal({
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
             min={tomorrowString}
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
           />
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
+          <p className="t-fine-print mt-2 text-[var(--color-text-secondary)]">
             When should members finish reading this book?
           </p>
         </div>
@@ -144,7 +144,7 @@ export default function NewSessionModal({
             marginBottom: 8,
           }}>Participation</label>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-[var(--color-text-primary)]">
+            <p className="t-body-m text-[var(--color-text-primary)]">
               {allReading ? 'All members reading' : 'No members reading (opt-in later)'}
             </p>
             <button
@@ -173,8 +173,8 @@ export default function NewSessionModal({
           style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
         >
           <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Club</p>
-          <p className="text-sm text-[var(--color-text-primary)]">{selectedClub.name}</p>
-          <p className="text-xs text-[var(--color-text-secondary)] mt-1">Creating new reading session</p>
+          <p className="t-body-m text-[var(--color-text-primary)]">{selectedClub.name}</p>
+          <p className="t-fine-print text-[var(--color-text-secondary)] mt-1">Creating new reading session</p>
         </div>
       </div>
     </BaseModal>

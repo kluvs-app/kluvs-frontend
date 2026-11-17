@@ -67,7 +67,7 @@ export default function DiscussionsTimeline({
       {/* Empty states */}
       {!selectedClub.active_session ? (
         <div className="flex flex-col items-center text-center py-6">
-          <p className="t-title-l t-feature text-[var(--color-text-secondary)] leading-snug mb-4">
+          <p className="t-title-l t-feature text-[var(--color-text-secondary)] mb-4">
             {isAdmin
               ? 'Start a session first to schedule discussions.'
               : 'Discussions will appear here once a session begins.'}
@@ -83,7 +83,7 @@ export default function DiscussionsTimeline({
         </div>
       ) : sortedDiscussions.length === 0 ? (
         <div className="flex flex-col items-center text-center py-6">
-          <p className="t-title-l t-feature text-[var(--color-text-secondary)] leading-snug mb-5">
+          <p className="t-title-l t-feature text-[var(--color-text-secondary)] mb-5">
             No discussions scheduled yet.
           </p>
           {isAdmin && (
@@ -112,7 +112,7 @@ export default function DiscussionsTimeline({
                 {/* Date column */}
                 <div className="text-right pr-1 lg:pr-3.5">
                   <p className={[
-                    'font-medium font-mono tracking-[0.02em] text-[13px] lg:text-[12px]',
+                    't-mono lg:t-fine-print',
                     status === 'next' ? 'text-primary' : 'text-[var(--color-text-secondary)]',
                   ].join(' ')}>
                     {parseScheduledAt(discussion.scheduled_at).toLocaleDateString('en-US', {
@@ -120,7 +120,7 @@ export default function DiscussionsTimeline({
                       day: 'numeric',
                     })}
                   </p>
-                  <p className="text-[10px] lg:text-[11px] text-[var(--color-text-secondary)] mt-0.5 lg:mt-1 opacity-70 lg:opacity-80">
+                  <p className="t-fine-print lg:t-fine-print text-[var(--color-text-secondary)] mt-0.5 lg:mt-1 opacity-70 lg:opacity-80">
                     {parseScheduledAt(discussion.scheduled_at).toLocaleDateString('en-US', {
                       weekday: 'short',
                     })}
@@ -162,8 +162,8 @@ export default function DiscussionsTimeline({
                       </p>
                     )}
                     <p className={[
-                      'font-serif font-medium text-[var(--color-text-primary)]',
-                      status === 'next' ? 'text-[22px] lg:text-[24px]' : 'text-[18px] lg:text-[24px]',
+                      't-feature text-[var(--color-text-primary)]',
+                      status === 'next' ? 't-title-l' : 't-title-m',
                     ].join(' ')}>
                       {discussion.title}
                     </p>

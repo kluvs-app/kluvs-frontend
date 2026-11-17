@@ -62,13 +62,13 @@ export default function DeleteClubModal({
           <button
             onClick={onClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleDelete}
             disabled={loading}
             data-testid="modal-club-delete"
-            className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             <span>{loading ? 'Deleting…' : 'Delete Club'}</span>
@@ -77,9 +77,9 @@ export default function DeleteClubModal({
       }
     >
       <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+        <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to delete{' '}
-          <span className="font-semibold">"{clubToDelete.name}"</span>?
+          <span className="font-medium">"{clubToDelete.name}"</span>?
           This action cannot be undone.
         </p>
         <div
@@ -87,9 +87,9 @@ export default function DeleteClubModal({
           style={{ background: 'rgba(var(--color-danger-rgb, 220 38 38) / 0.06)', border: '1px solid rgba(var(--color-danger-rgb, 220 38 38) / 0.2)' }}
         >
           <p className="t-eyebrow text-danger mb-2">This will permanently delete:</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">All reading sessions and books</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">All discussions and events</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">All member associations</p>
+          <p className="t-body-m text-[var(--color-text-secondary)]">All reading sessions and books</p>
+          <p className="t-body-m text-[var(--color-text-secondary)]">All discussions and events</p>
+          <p className="t-body-m text-[var(--color-text-secondary)]">All member associations</p>
         </div>
       </div>
     </BaseModal>

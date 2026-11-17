@@ -15,12 +15,10 @@ function LogEntry({ entry }: { entry: ReadingLogEntry }) {
     <div className="flex gap-4 items-start">
       <CoverSlot imageUrl={entry.book?.image_url} width={40} height={56} />
       <div className="flex-1 min-w-0">
-        <p className="t-title-m t-feature" style={{          lineHeight: 1.15,
-          letterSpacing: '-0.008em',
-          color: 'var(--color-text-primary)',
+        <p className="t-title-m t-feature" style={{ color: 'var(--color-text-primary)',
           marginBottom: 4,
         }}>{entry.book?.title}</p>
-        <p className="t-caption" style={{          color: 'var(--color-text-meta)',
+        <p className="t-caption" style={{ color: 'var(--color-text-meta)',
           marginBottom: 4,
         }}>{entry.book?.author}</p>
         <p className="t-eyebrow" style={{
@@ -43,8 +41,7 @@ function SectionLabel({ label }: { label: string }) {
 
 function EmptyState() {
   return (
-    <p className="t-caption" style={{      color: 'var(--color-text-secondary)',
-      fontStyle: 'italic',
+    <p className="t-caption" style={{ color: 'var(--color-text-secondary)',
     }}>Nothing here yet.</p>
   )
 }
@@ -97,7 +94,7 @@ export default function ReadingLogModal({ isOpen, onClose }: ReadingLogModalProp
       )}
 
       {!loading && error && (
-        <p className="t-caption" style={{          color: 'var(--color-danger)',
+        <p className="t-caption" style={{ color: 'var(--color-danger)',
           textAlign: 'center', padding: '24px 0',
         }}>{error}</p>
       )}

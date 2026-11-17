@@ -53,21 +53,21 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
         <button
           onClick={handleClose}
           disabled={oauthLoading}
-          className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+          className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
         >Cancel</button>
       }
     >
       <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+        <p className="t-body-m text-[var(--color-text-secondary)]">
           Sign in with Discord to link your account automatically.
         </p>
         {oauthError && (
-          <p className="text-sm text-danger">{oauthError}</p>
+          <p className="t-body-m text-danger">{oauthError}</p>
         )}
         <button
           onClick={handleOAuthLink}
           disabled={oauthLoading}
-          className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn font-medium text-sm transition-colors"
+          className="t-label w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn transition-colors"
         >
           {oauthLoading ? (
             <>

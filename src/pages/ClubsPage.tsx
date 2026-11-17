@@ -61,12 +61,12 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
             <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-4">
               No clubs yet.
             </h2>
-            <p className="text-[15px] text-[var(--color-text-secondary)] mb-8 max-w-[280px] mx-auto leading-relaxed">
+            <p className="t-body-m text-[var(--color-text-secondary)] mb-8 max-w-[280px] mx-auto">
               Start a club to read alongside friends, or accept an invite to join one.
             </p>
             <button
               onClick={() => setShowAddClubModal(true)}
-              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-8 py-3 rounded-lg text-[15px] font-medium transition-all duration-120 cursor-pointer w-full max-w-[280px]"
+              className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-8 py-3 rounded-lg transition-all duration-120 cursor-pointer w-full max-w-[280px]"
             >
               Create your first club
             </button>
@@ -97,7 +97,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
             + New
           </button>
         </div>
-        <h1 className="t-headline-l leading-[1] text-[var(--color-text-primary)] tracking-[-0.022em]">
+        <h1 className="t-headline-l text-[var(--color-text-primary)]">
           Clubs
         </h1>
       </div>
@@ -157,7 +157,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                 </div>
 
                 {/* Chevron */}
-                <div className="text-[var(--color-text-secondary)] text-lg flex-shrink-0">›</div>
+                <div className="t-body-l text-[var(--color-text-secondary)] flex-shrink-0">›</div>
               </Link>
             )
           })}

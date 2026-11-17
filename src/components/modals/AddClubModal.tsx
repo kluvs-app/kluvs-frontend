@@ -111,12 +111,12 @@ export default function AddClubModal({
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={loading || !formData.name.trim()}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Creating…' : 'Create Club'}
@@ -138,7 +138,7 @@ export default function AddClubModal({
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             placeholder="e.g., Fantasy Book Club"
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
             maxLength={100}
             autoFocus
@@ -158,7 +158,7 @@ export default function AddClubModal({
             </div>
 
             {guildsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+              <div className="t-body-m flex items-center gap-2 text-[var(--color-text-secondary)]">
                 <KluvsSpinner size={16} />
                 <span>Loading servers…</span>
               </div>
@@ -167,7 +167,7 @@ export default function AddClubModal({
                 {guilds.length === 1 ? (
                   <div>
                     <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Server</p>
-                    <p className="text-sm text-[var(--color-text-primary)]">{guilds[0].name}</p>
+                    <p className="t-body-m text-[var(--color-text-primary)]">{guilds[0].name}</p>
                   </div>
                 ) : (
                   <div>
@@ -187,7 +187,7 @@ export default function AddClubModal({
                           setSelectedServer(e.target.value)
                           setFormData(prev => ({ ...prev, discord_channel: '' }))
                         }}
-                        className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                         disabled={loading}
                       >
                         <option value="">No server</option>
@@ -211,13 +211,13 @@ export default function AddClubModal({
                         color: 'var(--color-text-secondary)',
                         marginBottom: 8,
                       }}
-                    >Channel <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+                    >Channel <span className="t-fine-print normal-case text-[var(--color-text-secondary)]">(optional)</span></label>
                     <div className="relative">
                       <select
                         id="add-club-channel-select"
                         value={formData.discord_channel}
                         onChange={(e) => setFormData(prev => ({ ...prev, discord_channel: e.target.value }))}
-                        className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                         disabled={loading}
                       >
                         <option value="">Select a channel…</option>

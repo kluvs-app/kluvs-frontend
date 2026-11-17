@@ -202,7 +202,7 @@ export default function JoinPage() {
         {loading || joining ? (
           <div className="text-center">
             <KluvsSpinner size={48} className="mx-auto" />
-            <p className="mt-5 text-[var(--color-text-secondary)] text-sm">
+            <p className="t-body-m mt-5 text-[var(--color-text-secondary)]">
               {joining ? 'Joining club…' : 'Loading invite…'}
             </p>
           </div>
@@ -218,7 +218,7 @@ export default function JoinPage() {
                   <p className="t-headline-s text-[var(--color-text-primary)] mb-3">
                     {title}
                   </p>
-                  <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
+                  <p className="t-body-m text-[var(--color-text-secondary)]">
                     {description}
                   </p>
                 </div>
@@ -237,14 +237,14 @@ export default function JoinPage() {
               >
                 You're invited
               </p>
-              <h1 className="t-headline-l leading-[1.1] text-[var(--color-text-primary)] mb-6 tracking-[-0.015em]">
+              <h1 className="t-headline-l text-[var(--color-text-primary)] mb-6">
                 {clubPreview.name}
               </h1>
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => handleJoinWithProvider('discord')}
                   disabled={signingIn !== null || joining}
-                  className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-btn text-sm font-medium transition-colors"
+                  className="t-label w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-btn transition-colors"
                 >
                   {signingIn === 'discord' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
@@ -256,7 +256,7 @@ export default function JoinPage() {
                 <button
                   onClick={() => handleJoinWithProvider('google')}
                   disabled={signingIn !== null || joining}
-                  className="w-full flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover disabled:opacity-60 disabled:cursor-not-allowed text-google-text py-3 rounded-btn text-sm font-medium transition-colors"
+                  className="t-label w-full flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover disabled:opacity-60 disabled:cursor-not-allowed text-google-text py-3 rounded-btn transition-colors"
                 >
                   {signingIn === 'google' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-google-text border-t-transparent" />

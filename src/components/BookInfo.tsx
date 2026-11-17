@@ -45,13 +45,13 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
         <div className="flex gap-2">
           <button
             onClick={onEditBook}
-            className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
           >
             Edit Book
           </button>
           <button
             onClick={onNewSession}
-            className="text-sm bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
+            className="t-label bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
           >
             New Session
           </button>
@@ -72,7 +72,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
                   disabled={!book.id}
                   aria-pressed={isActive}
                   aria-label={`Shelf: ${label}`}
-                  className={`text-sm px-3 py-1.5 rounded-btn border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  className={`t-label px-3 py-1.5 rounded-btn border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                     isActive
                       ? 'border-primary text-primary bg-primary/10'
                       : 'border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'

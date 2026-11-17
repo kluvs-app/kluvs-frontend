@@ -122,7 +122,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
           )}
           <div className="flex-1 min-w-0">
             <p className="text-[var(--color-text-primary)] font-medium truncate">{selectedBook.title}</p>
-            <p className="text-[var(--color-text-secondary)] text-sm truncate">{selectedBook.author}</p>
+            <p className="t-body-m text-[var(--color-text-secondary)] truncate">{selectedBook.author}</p>
           </div>
           {!isDisabled && (
             <button
@@ -164,7 +164,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
       )}
 
       {searchError && (
-        <p className="text-red-500 text-xs mt-1">{searchError}</p>
+        <p className="t-fine-print text-red-500 mt-1">{searchError}</p>
       )}
 
       {showDropdown && results.length > 0 && (
@@ -197,9 +197,9 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-[var(--color-text-primary)] font-medium truncate">{book.title}</p>
-                  <p className="text-[var(--color-text-secondary)] text-sm truncate">{book.author}</p>
+                  <p className="t-body-m text-[var(--color-text-secondary)] truncate">{book.author}</p>
                   {book.year && (
-                    <p className="text-[var(--color-text-secondary)] text-xs">{book.year}</p>
+                    <p className="t-fine-print text-[var(--color-text-secondary)]">{book.year}</p>
                   )}
                 </div>
               </button>
@@ -210,7 +210,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
 
       {showDropdown && !searching && results.length === 0 && query.trim() && (
         <div className="absolute z-50 w-full mt-1 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-card shadow-lg px-4 py-3">
-          <p className="text-[var(--color-text-secondary)] text-sm">No books found for "{query}"</p>
+          <p className="t-body-m text-[var(--color-text-secondary)]">No books found for "{query}"</p>
         </div>
       )}
     </div>
