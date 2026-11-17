@@ -120,7 +120,7 @@ export default function DiscussionsTimeline({
                       day: 'numeric',
                     })}
                   </p>
-                  <p className="t-fine-print lg:t-fine-print text-[var(--color-text-secondary)] mt-0.5 lg:mt-1 opacity-70 lg:opacity-80">
+                  <p className="t-fine-print text-[var(--color-text-secondary)] mt-0.5 lg:mt-1 opacity-70 lg:opacity-80">
                     {parseScheduledAt(discussion.scheduled_at).toLocaleDateString('en-US', {
                       weekday: 'short',
                     })}
@@ -168,7 +168,7 @@ export default function DiscussionsTimeline({
                       {discussion.title}
                     </p>
                     {discussion.location && (
-                      <p className="t-caption text-[var(--color-text-secondary)] mt-1">
+                      <p className="t-body-m text-[var(--color-text-secondary)] mt-1">
                         {discussion.location}
                       </p>
                     )}

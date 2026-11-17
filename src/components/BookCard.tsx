@@ -26,7 +26,7 @@ export default function BookCard({ title, year, author, imageUrl, onClick, compa
           {title}
         </p>
         {(author || year) && (
-          <p className="t-fine-print text-[var(--color-text-meta)] mt-0.5 truncate">
+          <p className="t-caption text-[var(--color-text-meta)] mt-0.5 truncate">
             {author ? `${author} · ` : ''}{year ?? ''}
           </p>
         )}

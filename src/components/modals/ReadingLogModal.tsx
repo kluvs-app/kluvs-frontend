@@ -41,7 +41,7 @@ function SectionLabel({ label }: { label: string }) {
 
 function EmptyState() {
   return (
-    <p className="t-caption" style={{ color: 'var(--color-text-secondary)',
+    <p className="t-caption t-feature" style={{ color: 'var(--color-text-secondary)',
     }}>Nothing here yet.</p>
   )
 }

@@ -544,7 +544,7 @@ export default function BooksPage() {
             <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-2">
               Library
             </span>
-            <h1 className="t-headline-s lg:t-headline-l text-[var(--color-text-primary)]">
+            <h1 className="t-headline-s lg:t-headline-m text-[var(--color-text-primary)]">
               My Shelf
             </h1>
           </div>
@@ -632,10 +632,10 @@ export default function BooksPage() {
               <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
                 <StackedCoverPlaceholder size="lg" />
                 <div>
-                  <p className="t-headline-s t-feature lg:t-headline-m text-[var(--color-text-secondary)] mb-[10px]">
+                  <p className="t-title-l t-feature text-[var(--color-text-secondary)] mb-[10px]">
                     Nothing shelved yet.
                   </p>
-                  <p className="t-caption text-[var(--color-text-meta)] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     Search for a book and add it to Want to Read, Read, or Not Finished, and it'll show up here.
                   </p>
                 </div>
@@ -685,10 +685,10 @@ export default function BooksPage() {
               <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
                 <StackedCoverPlaceholder size="lg" />
                 <div>
-                  <p className="t-headline-s t-feature lg:t-headline-m text-[var(--color-text-secondary)] mb-[10px]">
+                  <p className="t-title-l t-feature text-[var(--color-text-secondary)] mb-[10px]">
                     Start typing.
                   </p>
-                  <p className="t-caption text-[var(--color-text-meta)] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     Find a book by title or author. We'll pull the cover, the blurb, and a note on the author.
                   </p>
                 </div>
@@ -703,10 +703,10 @@ export default function BooksPage() {
               <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
                 <StackedCoverPlaceholder size="lg" />
                 <div>
-                  <p className="t-headline-s t-feature lg:t-headline-m text-[var(--color-text-secondary)] mb-[10px]">
+                  <p className="t-title-l t-feature text-[var(--color-text-secondary)] mb-[10px]">
                     No matches.
                   </p>
-                  <p className="t-caption text-[var(--color-text-meta)] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     No books found for "{query}". Try a different title or author.
                   </p>
                 </div>
@@ -763,7 +763,7 @@ export default function BooksPage() {
                 className="w-[120px] sm:w-[148px] aspect-[2/3] mb-[18px]"
               />
 
-              <h2 className="t-title-l t-feature sm:t-headline-s text-[var(--color-text-primary)] text-pretty mb-1.5">
+              <h2 className="t-headline-s t-feature text-[var(--color-text-primary)] text-pretty mb-1.5">
                 {title}
               </h2>
 
@@ -817,7 +817,7 @@ export default function BooksPage() {
                     ))}
                   </div>
                 ) : description ? (
-                  <p className="t-caption text-[var(--color-text-primary)] whitespace-pre-line break-words">
+                  <p className="t-body-m text-[var(--color-text-primary)] whitespace-pre-line break-words">
                     {description}
                   </p>
                 ) : (
@@ -849,7 +849,7 @@ export default function BooksPage() {
                             <dt className="t-caption text-[var(--color-text-secondary)] shrink-0" style={{ width: 90 }}>
                               {label}
                             </dt>
-                            <dd className={`${mono ? 't-mono' : 't-label'} text-[var(--color-text-primary)] break-words`}>
+                            <dd className={`${mono ? 't-mono' : 't-caption'} text-[var(--color-text-primary)] break-words`}>
                               {value}
                             </dd>
                           </div>
@@ -903,7 +903,7 @@ export default function BooksPage() {
                           </div>
                         </div>
                         {authorInfo.extract && (
-                          <p className="t-caption text-[var(--color-text-primary)]">
+                          <p className="t-body-m text-[var(--color-text-primary)]">
                             {authorInfo.extract}
                           </p>
                         )}

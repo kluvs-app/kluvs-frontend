@@ -147,7 +147,7 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-          <p className="t-title-l" style={{ color: 'var(--color-text-primary)',
+          <p className="t-title-m" style={{ color: 'var(--color-text-primary)',
             minWidth: 0, overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{name}</p>
@@ -421,7 +421,7 @@ export default function ProfilePage() {
                 } as React.CSSProperties}>
                   {nextDiscussion.title}
                 </p>
-                <p className="t-caption" style={{ color: 'var(--color-text-secondary)', 
+                <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', 
                 }}>
                   {nextDiscussion.clubName}
                   {nextDiscussion.location && (
@@ -502,7 +502,7 @@ export default function ProfilePage() {
 
       {!loading && clubItems.length === 0 && (
         <div className="pt-10 md:pt-16 flex flex-col items-center text-center gap-5 pb-10">
-          <p className="t-headline-s t-feature" style={{ color: 'var(--color-text-primary)',
+          <p className="t-title-l t-feature" style={{ color: 'var(--color-text-primary)',
           }}>No clubs yet.</p>
           <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', maxWidth: 320,
           }}>You haven't joined any book clubs. Find one and start reading with others.</p>

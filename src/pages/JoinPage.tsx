@@ -237,7 +237,7 @@ export default function JoinPage() {
               >
                 You're invited
               </p>
-              <h1 className="t-headline-l text-[var(--color-text-primary)] mb-6">
+              <h1 className="t-headline-s text-[var(--color-text-primary)] mb-6">
                 {clubPreview.name}
               </h1>
               <div className="flex flex-col gap-3">

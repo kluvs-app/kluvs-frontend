@@ -31,7 +31,7 @@ export default function Footer({ showVersion = false }: Props) {
           <p className="t-fine-print text-[var(--color-text-meta)]">
             © 2026 Kluvs. All rights reserved.
             {showVersion && (
-              <span className="ml-2 t-caption text-[var(--color-text-secondary)] opacity-50">v{VERSION}</span>
+              <span className="ml-2 t-fine-print text-[var(--color-text-secondary)] opacity-50">v{VERSION}</span>
             )}
           </p>
         </div>

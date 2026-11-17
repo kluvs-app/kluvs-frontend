@@ -58,7 +58,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
         <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center justify-center px-5 py-8 gap-8">
           <BookCover size="lg" title="Book cover placeholder" />
           <div className="text-center">
-            <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-4">
+            <h2 className="t-title-l t-feature text-[var(--color-text-primary)] mb-4">
               No clubs yet.
             </h2>
             <p className="t-body-m text-[var(--color-text-secondary)] mb-8 max-w-[280px] mx-auto">
@@ -97,7 +97,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
             + New
           </button>
         </div>
-        <h1 className="t-headline-l text-[var(--color-text-primary)]">
+        <h1 className="t-headline-s lg:t-headline-m text-[var(--color-text-primary)]">
           Clubs
         </h1>
       </div>
