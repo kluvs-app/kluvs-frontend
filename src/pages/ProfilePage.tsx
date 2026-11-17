@@ -529,7 +529,7 @@ export default function ProfilePage() {
             <span className="t-eyebrow" style={{
               color: 'var(--color-text-secondary)',
             }}>On Your Shelf</span>
-            <span className="t-caption t-feature" style={{ color: 'var(--color-text-secondary)',
+            <span className="t-title-m t-feature" style={{ color: 'var(--color-text-secondary)',
             }}>{shelfItems.length} books in progress</span>
           </div>
 

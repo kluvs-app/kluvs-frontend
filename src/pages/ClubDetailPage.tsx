@@ -379,7 +379,7 @@ export default function ClubDetailPage() {
 
                   {/* Book reading */}
                   {sidebarClubs[c.id]?.active_session?.book?.title && (
-                    <p className="t-caption t-feature text-[var(--color-text-secondary)] truncate mb-2">
+                    <p className="t-title-s t-feature text-[var(--color-text-secondary)] truncate mb-2">
                       {sidebarClubs[c.id].active_session!.book!.title}
                     </p>
                   )}
