@@ -817,7 +817,7 @@ export default function BooksPage() {
                     ))}
                   </div>
                 ) : description ? (
-                  <p className="t-caption leading-[1.7] text-[var(--color-text-primary)] whitespace-pre-line break-words">
+                  <p className="t-body-m leading-[1.7] text-[var(--color-text-primary)] whitespace-pre-line break-words">
                     {description}
                   </p>
                 ) : (
@@ -903,7 +903,7 @@ export default function BooksPage() {
                           </div>
                         </div>
                         {authorInfo.extract && (
-                          <p className="t-caption leading-[1.7] text-[var(--color-text-primary)]">
+                          <p className="t-body-m leading-[1.7] text-[var(--color-text-primary)]">
                             {authorInfo.extract}
                           </p>
                         )}
