@@ -302,7 +302,7 @@ export default function ProfilePage() {
             className="shrink-0"
           />
           <div className="min-w-0">
-            <p className="t-headline-s" style={{ color: 'var(--color-text-primary)',
+            <p className="t-headline-l" style={{ color: 'var(--color-text-primary)',
             }}>{member?.name ?? 'User'}</p>
             {handle && (
               <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', marginTop: 5,
@@ -371,7 +371,7 @@ export default function ProfilePage() {
         {mobileStats.map((s, i) => (
           <div key={i} className="flex-1 flex flex-col gap-2"
             style={{ borderLeft: i > 0 ? `1px solid ${HAIRLINE}` : 'none', paddingLeft: i > 0 ? 16 : 0 }}>
-            <p className="t-headline-s" style={{ color: 'var(--color-text-primary)',
+            <p className="t-headline-l" style={{ color: 'var(--color-text-primary)',
             }}>{s.num}</p>
             <span className="t-eyebrow" style={{
               color: 'var(--color-label-variant)',
@@ -462,7 +462,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1 min-w-0">
-                <p className="t-headline-l t-feature" style={{ color: 'var(--color-text-primary)',
+                <p className="t-title-l t-feature" style={{ color: 'var(--color-text-primary)',
                   maxWidth: 760, marginBottom: 18,
                 } as React.CSSProperties}>
                   {nextDiscussion.title}
