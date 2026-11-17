@@ -131,7 +131,7 @@ export default function DiscussionsTimeline({
                 <div className="relative flex justify-center pt-2 lg:pt-0">
                   <div className="relative z-10 lg:mt-1">
                     {status === 'past' && (
-                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-[#4D4033]" />
+                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-[var(--color-text-disabled)]" />
                     )}
                     {status === 'next' && (
                       <div

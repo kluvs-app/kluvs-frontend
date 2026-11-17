@@ -188,7 +188,7 @@ export default function MemberModal({
             disabled={isSubmitDisabled}
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading
               ? (isEditing ? 'Updating…' : 'Adding…')
               : (isEditing ? 'Update Member' : 'Add Member')}
@@ -250,7 +250,7 @@ export default function MemberModal({
                   'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   !hasActiveSession || loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
-                  formData.is_reading && hasActiveSession ? 'bg-primary' : 'bg-[#4D4033]',
+                  formData.is_reading && hasActiveSession ? 'bg-primary' : 'bg-[var(--color-text-disabled)]',
                 ].join(' ')}
               >
                 <span

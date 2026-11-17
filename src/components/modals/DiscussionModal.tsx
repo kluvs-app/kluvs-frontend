@@ -129,7 +129,7 @@ export default function DiscussionModal({
             disabled={loading || !formData.title.trim() || !formData.date || !formData.time}
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading
               ? (isEditing ? 'Updating…' : 'Adding…')
               : <span>{isEditing ? 'Update Discussion' : 'Add Discussion'}</span>}

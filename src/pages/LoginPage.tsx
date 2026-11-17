@@ -26,19 +26,19 @@ const inputBase =
 
 function ErrorBanner({ message }: { message: string }) {
   return (
-    <div className="flex items-start gap-2 px-3 py-[10px] bg-[rgba(216,90,82,0.08)] border border-[rgba(216,90,82,0.32)] rounded-[8px]">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D85A52" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-[1px]" aria-hidden="true">
+    <div className="flex items-start gap-2 px-3 py-[10px] bg-danger-subtle border border-danger-border-soft rounded-input">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-[1px] text-[var(--color-danger)]" aria-hidden="true">
         <circle cx="12" cy="12" r="10" />
         <path d="M12 8v4M12 16h.01" />
       </svg>
-      <p className="font-sans text-[13px] leading-[1.45] tracking-[0.005em] text-[#D85A52]">{message}</p>
+      <p className="font-sans text-[13px] leading-[1.45] tracking-[0.005em] text-[var(--color-danger)]">{message}</p>
     </div>
   )
 }
 
 function ConfirmCard({ eyebrow, email, body }: { eyebrow: string; email: string; body: string }) {
   return (
-    <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-[12px] py-5 px-[22px] text-center">
+    <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-card py-5 px-[22px] text-center">
       <span className="block font-sans text-[11px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)] mb-[10px]">
         {eyebrow}
       </span>
@@ -226,7 +226,7 @@ export default function LoginPage() {
               >
                 Try a different email
               </button>
-              <span className="w-[3px] h-[3px] rounded-full bg-[#4D4033] flex-shrink-0 inline-block" aria-hidden="true" />
+              <span className="w-[3px] h-[3px] rounded-full bg-[var(--color-text-disabled)] flex-shrink-0 inline-block" aria-hidden="true" />
               <button
                 type="button"
                 onClick={() => signUpWithEmail(email, password).catch(() => {})}
@@ -248,7 +248,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isBusy}
-              className={`${inputBase} border ${emailError ? 'border-[#D85A52]' : 'border-[var(--color-input-border)]'}`}
+              className={`${inputBase} border ${emailError ? 'border-[var(--color-danger)]' : 'border-[var(--color-input-border)]'}`}
             />
             {emailError && <ErrorBanner message={emailError} />}
             <div className="mt-1">
@@ -315,7 +315,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isBusy}
-                className={`${inputBase} border ${emailError && emailMode === 'signup' ? 'border-[#D85A52]' : 'border-[var(--color-input-border)]'}`}
+                className={`${inputBase} border ${emailError && emailMode === 'signup' ? 'border-[var(--color-danger)]' : 'border-[var(--color-input-border)]'}`}
               />
               <input
                 type="password"
@@ -324,7 +324,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isBusy}
-                className={`${inputBase} border ${emailError && emailMode === 'signin' ? 'border-[#D85A52]' : 'border-[var(--color-input-border)]'}`}
+                className={`${inputBase} border ${emailError && emailMode === 'signin' ? 'border-[var(--color-danger)]' : 'border-[var(--color-input-border)]'}`}
               />
               {emailError && <ErrorBanner message={emailError} />}
               <div className="mt-1">
@@ -376,7 +376,7 @@ export default function LoginPage() {
             >
               Privacy
             </a>
-            <span className="w-[3px] h-[3px] rounded-full bg-[#4D4033] flex-shrink-0 inline-block" aria-hidden="true" />
+            <span className="w-[3px] h-[3px] rounded-full bg-[var(--color-text-disabled)] flex-shrink-0 inline-block" aria-hidden="true" />
             <a
               href="https://kluvs.com/terms"
               className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)] no-underline hover:opacity-80 transition-opacity"

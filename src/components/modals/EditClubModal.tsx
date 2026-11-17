@@ -161,7 +161,7 @@ export default function EditClubModal({
             disabled={!canSave}
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Saving…' : 'Save'}
           </button>
         </>
@@ -197,7 +197,7 @@ export default function EditClubModal({
             style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
           >
             <div className="flex items-center gap-2">
-              <DiscordIcon className="w-4 h-4 shrink-0 text-[#5865F2]" />
+              <DiscordIcon className="w-4 h-4 shrink-0 text-discord" />
               <span style={{
                 fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
                 fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
@@ -287,7 +287,7 @@ export default function EditClubModal({
                     className="rounded-lg px-4 py-3 space-y-3"
                     style={{ background: 'rgba(209,109,48,0.08)', border: '1px solid rgba(209,109,48,0.25)' }}
                   >
-                    <p className="text-sm leading-relaxed" style={{ color: '#D16D30' }}>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--color-primary)' }}>
                       {isDisconnecting
                         ? "You're disconnecting this club from Discord. Bot notifications will stop until a new channel is connected."
                         : "You're moving this club to a different Discord channel. The bot will stop posting to the current channel."}

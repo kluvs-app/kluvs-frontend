@@ -114,7 +114,7 @@ export default function AppSidebar() {
                 to={to}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   active
-                    ? 'text-primary bg-[rgba(209,109,48,0.12)] shadow-[inset_3px_0_0_#D16D30]'
+                    ? 'text-primary bg-[rgba(209,109,48,0.12)] shadow-[inset_3px_0_0_var(--color-primary)]'
                     : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]'
                 }`}
                 aria-current={active ? 'page' : undefined}
@@ -135,7 +135,7 @@ export default function AppSidebar() {
           {!member?.discord_id && (
             <button
               onClick={() => setShowDiscordLinkModal(true)}
-              className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-[#5865F2] hover:bg-[var(--color-bg-elevated)] transition-colors"
+              className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg text-sm font-medium text-discord hover:bg-[var(--color-bg-elevated)] transition-colors"
             >
               <DiscordIcon className="w-5 h-5 shrink-0" />
               Connect Discord

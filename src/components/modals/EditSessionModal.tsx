@@ -178,7 +178,7 @@ export default function EditSessionModal({
               disabled={loading || !newBookId}
               className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
             >
-              {loading && <KluvsSpinner size={14} color="#ffffff" />}
+              {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
               {loading ? 'Restarting…' : 'Restart with New Book'}
             </button>
           </>
@@ -236,7 +236,7 @@ export default function EditSessionModal({
             disabled={loading}
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Saving…' : 'Save Changes'}
           </button>
         </>
@@ -282,7 +282,7 @@ export default function EditSessionModal({
                       'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
                       'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                       loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
-                      isReading ? 'bg-primary' : 'bg-[#4D4033]',
+                      isReading ? 'bg-primary' : 'bg-[var(--color-text-disabled)]',
                     ].join(' ')}
                   >
                     <span className={[

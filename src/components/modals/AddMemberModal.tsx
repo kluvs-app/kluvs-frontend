@@ -192,7 +192,7 @@ export default function AddMemberModal({
                     disabled={addingId !== null}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-input text-left hover:bg-[var(--color-bg-elevated)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#4D4033] flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[var(--color-text-disabled)] flex items-center justify-center flex-shrink-0">
                       <span className="text-[13px] font-medium text-[var(--color-text-primary)]">
                         {r.name.charAt(0).toUpperCase()}
                       </span>

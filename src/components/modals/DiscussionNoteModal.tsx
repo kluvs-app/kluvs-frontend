@@ -164,7 +164,7 @@ export default function DiscussionNoteModal({
             disabled={loading || fetching || !content.trim() || !isDirty}
             className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading
               ? (isEditing ? 'Saving…' : 'Adding…')
               : <span>{isEditing ? 'Save Note' : 'Add Note'}</span>}

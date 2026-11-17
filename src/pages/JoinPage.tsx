@@ -233,7 +233,7 @@ export default function JoinPage() {
             >
               <p
                 className="text-[11px] font-medium uppercase tracking-[0.14em] mb-4"
-                style={{ color: '#D16D30' }}
+                style={{ color: 'var(--color-primary)' }}
               >
                 You're invited
               </p>
