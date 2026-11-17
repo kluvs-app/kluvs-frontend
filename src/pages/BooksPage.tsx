@@ -21,6 +21,7 @@ import BookCard from '../components/BookCard'
 import CoverSlot from '../components/ui/CoverSlot'
 import KluvsReadBadge from '../components/KluvsReadBadge'
 import { SHELF_OPTIONS, SHELF_LABELS, SHELF_SECTIONS } from '../constants/shelves'
+import Button from '../components/ui/Button'
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -639,12 +640,12 @@ export default function BooksPage() {
                     Search for a book and add it to Want to Read, Read, or Not Finished, and it'll show up here.
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="primary" size="lg"
                   onClick={goToSearch}
-                  className="t-label px-5 py-2.5 rounded-btn bg-primary hover:bg-primary-hover text-white transition-colors"
                 >
                   Search for a book
-                </button>
+                </Button>
               </div>
             )}
 

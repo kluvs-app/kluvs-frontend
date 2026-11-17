@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Discussion, DiscussionNote } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface DiscussionNoteModalProps {
   isOpen: boolean
@@ -152,21 +153,21 @@ export default function DiscussionNoteModal({
       ) : undefined}
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading || fetching}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSave}
             disabled={loading || fetching || !content.trim() || !isDirty}
-            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading
               ? (isEditing ? 'Saving…' : 'Adding…')
               : <span>{isEditing ? 'Save Note' : 'Add Note'}</span>}
-          </button>
+          </Button>
         </>
       }
     >

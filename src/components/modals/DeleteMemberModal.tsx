@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { ClubMember, MemberRemoveFromClubResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface DeleteMemberModalProps {
   isOpen: boolean
@@ -61,19 +62,19 @@ export default function DeleteMemberModal({
       labelId="modal-title-delete-member"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={onClose}
             disabled={loading}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="danger"
             onClick={handleDelete}
             disabled={loading}
-            className="t-label flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Removing…' : <span>Remove from Club</span>}
-          </button>
+          </Button>
         </>
       }
     >

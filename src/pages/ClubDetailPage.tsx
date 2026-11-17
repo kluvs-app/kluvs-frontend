@@ -29,6 +29,7 @@ import AvatarStack from '../components/ui/AvatarStack'
 import MemberBadge from '../components/MemberBadge'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import ProgressRow from '../components/ProgressRow'
+import Button from '../components/ui/Button'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
@@ -567,13 +568,13 @@ export default function ClubDetailPage() {
                                       Opt out
                                     </GhostButton>
                                   ) : (
-                                    <button
+                                    <Button
+                                      variant="primary" size="sm" className="disabled:opacity-50"
                                       onClick={() => handleToggleMember(member.id, true)}
                                       disabled={togglingMemberId === member.id}
-                                      className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn transition-all duration-120 cursor-pointer disabled:opacity-50"
                                     >
                                       Join this Read
-                                    </button>
+                                    </Button>
                                   )
                                 )}
                               </div>
@@ -622,12 +623,12 @@ export default function ClubDetailPage() {
                         Pick a book and kick off your club's first session.
                       </p>
                       {isAdmin && (
-                        <button
+                        <Button
+                          variant="primary" size="lg"
                           onClick={() => setShowNewSessionModal(true)}
-                          className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn transition-all duration-120 cursor-pointer"
                         >
                           Start Session
-                        </button>
+                        </Button>
                       )}
                     </div>
                   )}
@@ -691,12 +692,12 @@ export default function ClubDetailPage() {
                           <p className="t-title-m t-feature text-[var(--color-text-secondary)] mb-4">
                             Invite others to get the conversation going.
                           </p>
-                          <button
+                          <Button
+                            variant="primary"
                             onClick={handleAddMember}
-                            className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
                           >
                             Invite Members
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -841,12 +842,12 @@ export default function ClubDetailPage() {
                     Start reading together.
                   </p>
                   {isAdmin && (
-                    <button
+                    <Button
+                      variant="primary" size="lg"
                       onClick={() => setShowNewSessionModal(true)}
-                      className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn transition-all duration-120 cursor-pointer"
                     >
                       Start Session
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -917,13 +918,13 @@ export default function ClubDetailPage() {
                                 Opt out
                               </GhostButton>
                             ) : (
-                              <button
+                              <Button
+                                variant="primary" className="disabled:opacity-50"
                                 onClick={() => handleToggleMember(member.id, true)}
                                 disabled={togglingMemberId === member.id}
-                                className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-btn transition-all duration-120 cursor-pointer disabled:opacity-50"
                               >
                                 Join this Read
-                              </button>
+                              </Button>
                             )
                           )}
                         </div>
@@ -1093,12 +1094,12 @@ export default function ClubDetailPage() {
                   <p className="t-title-m t-feature text-[var(--color-text-secondary)] mb-4">
                     Invite others to get the conversation going.
                   </p>
-                  <button
+                  <Button
+                    variant="primary"
                     onClick={handleAddMember}
-                    className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
                   >
                     Invite Members
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

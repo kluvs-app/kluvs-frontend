@@ -6,6 +6,7 @@ import DiscordIcon from '../components/icons/DiscordIcon'
 import KluvsHexBackground from '../components/KluvsHexBackground'
 import { getAppHref } from '../utils/domainNav'
 import { eyebrow, headline, cardTitle, card } from '../constants/marketingStyles'
+import Button from '../components/ui/Button'
 
 const GOOGLE_PLAY_URL = 'https://play.google.com/store/apps/details?id=com.ivangarzab.kluvs'
 const APP_STORE_URL = 'https://apps.apple.com/app/id6757938950'
@@ -249,13 +250,13 @@ export default function LandingPage() {
                   placeholder="What’s on your mind?"
                 />
               </div>
-              <button
+              <Button
+                variant="primary" size="lg" className="text-body-lg"
                 type="submit"
-                className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-btn t-label transition-colors"
               >
                 Send Message
-              </button>
-              <p className="t-caption text-[var(--color-text-meta)]">
+              </Button>
+              <p className="text-helper text-[var(--color-text-meta)]">
                 Or write us directly at{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors">{CONTACT_EMAIL}</a>.
               </p>

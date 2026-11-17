@@ -1,6 +1,7 @@
 import type { Book, ShelfValue } from '../types'
 import { parseLocalDate } from '../utils/dates'
 import { SHELF_OPTIONS } from '../constants/shelves'
+import Button from './ui/Button'
 
 interface BookInfoProps {
   book: Book
@@ -49,12 +50,12 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
           >
             Edit Book
           </button>
-          <button
+          <Button
+            variant="primary" size="sm"
             onClick={onNewSession}
-            className="t-body-m bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
           >
             New Session
-          </button>
+          </Button>
         </div>
       )}
       {onShelfChange !== undefined && (

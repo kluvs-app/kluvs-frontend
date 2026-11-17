@@ -6,6 +6,7 @@ import KluvsSpinner from '../KluvsSpinner'
 import Avatar from '../ui/Avatar'
 import { parseLocalDate } from '../../utils/dates'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface EditSessionModalProps {
   isOpen: boolean
@@ -166,19 +167,19 @@ export default function EditSessionModal({
         labelId="modal-title-edit-session"
         footer={
           <>
-            <button
+            <Button
+              variant="text"
               onClick={() => setView('edit')}
               disabled={loading}
-              className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            >Back</button>
-            <button
+            >Back</Button>
+            <Button
+              variant="danger"
               onClick={handleChangeBook}
               disabled={loading || !newBookId}
-              className="t-label flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
             >
               {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
               {loading ? 'Restarting…' : 'Restart with New Book'}
-            </button>
+            </Button>
           </>
         }
       >
@@ -224,19 +225,19 @@ export default function EditSessionModal({
       labelId="modal-title-edit-session"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSave}
             disabled={loading}
-            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Saving…' : 'Save Changes'}
-          </button>
+          </Button>
         </>
       }
     >

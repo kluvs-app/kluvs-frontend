@@ -3,6 +3,7 @@ import { supabase } from '../../supabase'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import DiscordIcon from '../icons/DiscordIcon'
+import Button from '../ui/Button'
 
 interface DiscordLinkModalProps {
   isOpen: boolean
@@ -50,11 +51,11 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
       loading={oauthLoading}
       labelId="modal-title-discord-link"
       footer={
-        <button
+        <Button
+          variant="text"
           onClick={handleClose}
           disabled={oauthLoading}
-          className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-        >Cancel</button>
+        >Cancel</Button>
       }
     >
       <div className="space-y-4">

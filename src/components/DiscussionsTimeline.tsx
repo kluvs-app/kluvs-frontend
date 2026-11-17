@@ -3,6 +3,7 @@ import type { Club, Discussion } from '../types'
 import KebabMenu from './ui/KebabMenu'
 import AttendanceControl from './AttendanceControl'
 import GhostButton from './ui/GhostButton'
+import Button from './ui/Button'
 
 interface DiscussionsTimelineProps {
   selectedClub: Club
@@ -73,12 +74,12 @@ export default function DiscussionsTimeline({
               : 'Discussions will appear here once a session begins.'}
           </p>
           {isAdmin && onStartSession && (
-            <button
+            <Button
+              variant="primary"
               onClick={onStartSession}
-              className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
             >
               Start Session
-            </button>
+            </Button>
           )}
         </div>
       ) : sortedDiscussions.length === 0 ? (
@@ -87,12 +88,12 @@ export default function DiscussionsTimeline({
             No discussions scheduled yet.
           </p>
           {isAdmin && (
-            <button
+            <Button
+              variant="primary"
               onClick={onAddDiscussion}
-              className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
             >
               Schedule Discussion
-            </button>
+            </Button>
           )}
         </div>
       ) : (

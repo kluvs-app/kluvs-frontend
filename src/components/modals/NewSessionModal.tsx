@@ -5,6 +5,7 @@ import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
 import { parseLocalDate } from '../../utils/dates'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface NewSessionModalProps {
   isOpen: boolean
@@ -87,19 +88,19 @@ export default function NewSessionModal({
       labelId="modal-title-new-session"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
             disabled={loading || !selectedBookId || !dueDate}
-            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Creating...' : 'Start Session'}
-          </button>
+          </Button>
         </>
       }
     >

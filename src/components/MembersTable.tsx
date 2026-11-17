@@ -1,6 +1,7 @@
 import { getAvatarUrl } from '../supabase'
 import type { Club, ClubMember } from '../types'
 import Avatar from './ui/Avatar'
+import Button from './ui/Button'
 
 interface MembersTableProps {
   selectedClub: Club
@@ -27,12 +28,12 @@ export default function MembersTable({
           Members ({selectedClub.members?.length ?? 0})
         </p>
         {isAdmin && (
-          <button
+          <Button
+            variant="primary"
             onClick={onAddMember}
-            className="t-label bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn transition-colors"
           >
             Add Member
-          </button>
+          </Button>
         )}
       </div>
 
