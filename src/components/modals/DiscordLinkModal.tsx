@@ -71,7 +71,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
         >
           {oauthLoading ? (
             <>
-              <KluvsSpinner size={16} color="#ffffff" />
+              <KluvsSpinner size={16} color="var(--color-on-primary)" />
               <span>Connecting…</span>
             </>
           ) : (

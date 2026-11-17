@@ -42,7 +42,7 @@ export default function SignOutModal({ isOpen, onClose }: SignOutModalProps) {
             disabled={loading}
             className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Signing out…' : 'Sign Out'}
           </button>
         </>

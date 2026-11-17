@@ -16,7 +16,7 @@ interface AvatarStackProps {
   className?: string
 }
 
-const OVERFLOW_BG = '#4D4033'
+const OVERFLOW_BG = 'var(--color-text-disabled)'
 
 export default function AvatarStack({
   members,

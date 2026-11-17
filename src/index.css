@@ -63,6 +63,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     --color-overlay: rgba(0, 0, 0, 0.5);
     --color-primary: #D16D30;
     --color-primary-hover: #B85A22;
+    --color-on-primary: #FFFFFF;
+    --color-danger: #EF4444;
+    --color-danger-rgb: 239 68 68;
+    --color-success: #48A480;
+    --color-discord: #5865F2;
 
     /* Marketing diagram accents (HowItWorksSection) — darkened for cream surfaces */
     --color-diagram-discord: #4752C4;

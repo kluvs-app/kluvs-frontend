@@ -174,7 +174,7 @@ export default function MobileTopBar() {
                     <button
                       role="menuitem"
                       onClick={() => { setShowDiscordLink(true); setMenuOpen(false) }}
-                      className={`${menuItemBase} text-[#5865F2] hover:bg-[var(--color-bg-elevated)]`}
+                      className={`${menuItemBase} text-discord hover:bg-[var(--color-bg-elevated)]`}
                     >
                       <DiscordIcon className="w-[18px] h-[18px] shrink-0" />
                       Connect Discord

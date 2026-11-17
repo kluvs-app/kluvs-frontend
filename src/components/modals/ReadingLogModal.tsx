@@ -10,8 +10,6 @@ interface ReadingLogModalProps {
   onClose: () => void
 }
 
-const LABEL_COLOR = '#C9BDA8'
-
 function LogEntry({ entry }: { entry: ReadingLogEntry }) {
   return (
     <div className="flex gap-4 items-start">
@@ -27,7 +25,7 @@ function LogEntry({ entry }: { entry: ReadingLogEntry }) {
         }}>{entry.book?.title}</p>
         <p style={{
           fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontSize: 13, color: LABEL_COLOR,
+          fontSize: 13, color: 'var(--color-text-meta)',
           marginBottom: 4,
         }}>{entry.book?.author}</p>
         <p style={{

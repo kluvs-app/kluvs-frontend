@@ -39,7 +39,7 @@ export default function Avatar({
     ? OWN_COLOR
     : `var(--kluvs-avatar-hue-${Math.abs(Number(userId)) % AVATAR_HUE_COUNT})`
 
-  const color = isOwn ? '#FFFFFF' : 'var(--kluvs-avatar-initials)'
+  const color = isOwn ? 'var(--color-on-primary)' : 'var(--kluvs-avatar-initials)'
 
   const initials = nameInitials(name)
   const isLarge = size === 'xl' || size === '2xl'

@@ -35,8 +35,8 @@ function formatNextDate(scheduledAt: string): string {
 
 // Hairline follows the theme's divider role (dark: card-2, light: divider)
 const HAIRLINE = 'var(--color-divider)'
-const COPPER = '#D16D30'
-const MUTED = '#8C8073'
+const COPPER = 'var(--color-primary)'
+const MUTED = 'var(--color-text-meta)'
 
 // ─── CoverSlot ────────────────────────────────────────────────────────────────
 
@@ -152,7 +152,7 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
         className="hover:brightness-110 active:scale-[0.98] active:brightness-105"
         style={{
           background: 'var(--color-bg-elevated)',
-          borderRadius: 10, padding: '20px 22px',
+          borderRadius: 12, padding: '20px 22px',
           display: 'flex', flexDirection: 'column', gap: 16,
           transition: 'filter 120ms, transform 80ms',
         }}
@@ -336,7 +336,7 @@ export default function ProfilePage() {
               }}>
                 {handle}
                 {member?.discord_id && (
-                  <DiscordIcon className="w-[13px] h-[13px] shrink-0 text-[#5865F2]" />
+                  <DiscordIcon className="w-[13px] h-[13px] shrink-0 text-discord" />
                 )}
               </p>
             )}
@@ -379,7 +379,7 @@ export default function ProfilePage() {
             }}>
               {handle}
               {member?.discord_id && (
-                <DiscordIcon className="w-[14px] h-[14px] shrink-0 text-[#5865F2]" />
+                <DiscordIcon className="w-[14px] h-[14px] shrink-0 text-discord" />
               )}
             </p>
           )}
@@ -653,7 +653,7 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-3.5">
             {loading ? (
               [1, 2, 3].map(i => (
-                <div key={i} className="h-[88px] rounded-[10px] bg-[var(--color-bg-elevated)] animate-pulse" />
+                <div key={i} className="h-[88px] rounded-card bg-[var(--color-bg-elevated)] animate-pulse" />
               ))
             ) : (
               clubItems.map(c => (

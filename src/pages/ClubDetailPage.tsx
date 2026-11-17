@@ -38,7 +38,7 @@ function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
   return (
     <div className="relative group">
       <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full cursor-default transition-colors hover:bg-[rgba(88,101,242,0.1)]">
-        <DiscordIcon className={`w-[15px] h-[15px] text-[#5865F2] ${!hasDiscord ? 'opacity-25' : ''}`} />
+        <DiscordIcon className={`w-[15px] h-[15px] text-discord ${!hasDiscord ? 'opacity-25' : ''}`} />
       </div>
       <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-[120ms] z-50">
         <div
@@ -47,7 +47,7 @@ function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
         >
           {hasDiscord ? (
             <div className="space-y-1.5">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] mb-2" style={{ color: '#5865F2' }}>Discord</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] mb-2" style={{ color: 'var(--color-discord)' }}>Discord</p>
               {club.server_id && (
                 <div className="flex items-baseline justify-between gap-5">
                   <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Server</span>
@@ -482,8 +482,8 @@ export default function ClubDetailPage() {
                           fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
                           padding: '4px 10px',
                           borderRadius: 999,
-                          border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
-                          color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                          border: `1px solid ${idCopied ? 'var(--color-success)' : 'var(--color-divider)'}`,
+                          color: idCopied ? 'var(--color-success)' : 'var(--color-text-secondary)',
                           background: 'transparent',
                           cursor: 'pointer',
                           whiteSpace: 'nowrap',
@@ -757,8 +757,8 @@ export default function ClubDetailPage() {
                     fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
                     padding: '4px 10px',
                     borderRadius: 999,
-                    border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
-                    color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
+                    border: `1px solid ${idCopied ? 'var(--color-success)' : 'var(--color-divider)'}`,
+                    color: idCopied ? 'var(--color-success)' : 'var(--color-text-secondary)',
                     background: 'transparent',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
