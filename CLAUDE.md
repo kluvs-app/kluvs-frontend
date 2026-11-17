@@ -322,6 +322,8 @@ npm run test:coverage     # Run tests with coverage report
 npm run validate          # Run lint + type-check + tests
 ```
 
+**For agents:** running tests is fine, but keep output small. Use `npx vitest run <path> --reporter=dot` (or `npm run test:run -- --reporter=dot`) and read only the summary and any failures — not the full output. Don't run watch mode (`npm run test`) or `npm run dev`.
+
 ### Test Structure
 ```
 src/__tests__/
