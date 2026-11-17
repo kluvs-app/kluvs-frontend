@@ -22,7 +22,7 @@ export default function BookCard({ title, year, author, imageUrl, onClick, compa
         {badge && <KluvsReadRibbon label={badge.label} size={compact ? 'md' : 'lg'} />}
       </CoverSlot>
       <div>
-        <p className="t-title-s t-feature line-clamp-2 text-[var(--color-text-primary)]">
+        <p className="t-title-s line-clamp-2 text-[var(--color-text-primary)]">
           {title}
         </p>
         {(author || year) && (
