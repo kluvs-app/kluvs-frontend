@@ -33,8 +33,8 @@ function formatNextDate(scheduledAt: string): string {
   })
 }
 
-// Warm-dark hairline and button border — design tokens not in CSS vars
-const HAIRLINE = 'rgba(242,237,229,0.08)'
+// Hairline follows the theme's divider role (dark: card-2, light: divider)
+const HAIRLINE = 'var(--color-divider)'
 const COPPER = '#D16D30'
 const MUTED = '#8C8073'
 
