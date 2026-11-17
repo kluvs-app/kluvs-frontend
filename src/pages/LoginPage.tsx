@@ -42,7 +42,7 @@ function ConfirmCard({ eyebrow, email, body }: { eyebrow: string; email: string;
       <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-[10px]">
         {eyebrow}
       </span>
-      <p className="t-mono t-body-m text-[var(--color-text-primary)] break-all mb-[14px]">
+      <p className="t-mono text-[var(--color-text-primary)] break-all mb-[14px]">
         {email}
       </p>
       <p className="t-caption text-[var(--color-text-secondary)]">
@@ -166,7 +166,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => { setEmailMode('signin'); setEmailError(null) }}
-            className="t-caption flex items-center gap-1.5 mb-6 text-primary font-medium bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
+            className="t-label flex items-center gap-1.5 mb-6 text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M15 18l-6-6 6-6" />
@@ -202,7 +202,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setEmailMode('signin'); setResetSent(false); setEmail('') }}
-                className="t-caption font-medium text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                className="t-label text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
               >
                 Back to sign in
               </button>
@@ -222,7 +222,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => { setConfirmationSent(false); setEmail(''); setPassword('') }}
-                className="t-caption font-medium text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                className="t-label text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
               >
                 Try a different email
               </button>
@@ -230,7 +230,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => signUpWithEmail(email, password).catch(() => {})}
-                className="t-caption font-normal text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                className="t-caption text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
               >
                 Resend
               </button>
@@ -346,7 +346,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => { setEmailMode(emailMode === 'signin' ? 'signup' : 'signin'); setEmailError(null) }}
                 disabled={isBusy}
-                className="t-caption font-medium text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
+                className="t-label text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
               >
                 {emailMode === 'signin' ? 'Sign up' : 'Already have an account? Sign in'}
               </button>
@@ -355,7 +355,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => { setEmailMode('reset'); setEmailError(null) }}
                   disabled={isBusy}
-                  className="t-caption font-normal text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
+                  className="t-caption text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
                 >
                   Forgot it?
                 </button>
@@ -366,7 +366,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="mt-9 pt-[22px] border-t border-[var(--color-divider)] text-center">
-          <p className="t-title-s t-feature font-normal text-[var(--color-text-meta)] mb-[14px]">
+          <p className="t-title-s t-feature text-[var(--color-text-meta)] mb-[14px]">
             Reading is done best together.
           </p>
           <div className="inline-flex items-center gap-3">

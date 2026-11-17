@@ -75,7 +75,7 @@ export default function DiscussionsTimeline({
           {isAdmin && onStartSession && (
             <button
               onClick={onStartSession}
-              className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn font-medium transition-all duration-120 cursor-pointer"
+              className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
             >
               Start Session
             </button>
@@ -89,7 +89,7 @@ export default function DiscussionsTimeline({
           {isAdmin && (
             <button
               onClick={onAddDiscussion}
-              className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn font-medium transition-all duration-120 cursor-pointer"
+              className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
             >
               Schedule Discussion
             </button>
@@ -112,7 +112,7 @@ export default function DiscussionsTimeline({
                 {/* Date column */}
                 <div className="text-right pr-1 lg:pr-3.5">
                   <p className={[
-                    't-mono lg:t-fine-print',
+                    't-mono',
                     status === 'next' ? 'text-primary' : 'text-[var(--color-text-secondary)]',
                   ].join(' ')}>
                     {parseScheduledAt(discussion.scheduled_at).toLocaleDateString('en-US', {

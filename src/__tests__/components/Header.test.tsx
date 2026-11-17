@@ -120,7 +120,7 @@ describe('Header', () => {
       renderHeader({ showOpenAppButton: true })
 
       const button = screen.getByRole('link', { name: /Open Kluvs/i })
-      expect(button).toHaveClass('border', 'rounded-btn', 'font-medium', 'transition-colors')
+      expect(button).toHaveClass('border', 'rounded-btn', 't-label', 'transition-colors')
     })
   })
 

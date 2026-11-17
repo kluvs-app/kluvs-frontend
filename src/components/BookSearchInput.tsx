@@ -145,7 +145,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
             onChange={handleQueryChange}
             onFocus={() => results.length > 0 && setShowDropdown(true)}
             placeholder="Search by title or author..."
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-10"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-10"
             disabled={isDisabled}
             aria-label="Search for a book"
             aria-autocomplete="list"

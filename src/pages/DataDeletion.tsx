@@ -9,7 +9,7 @@ export default function DataDeletion() {
       <Header showDiscordLink={true} />
 
       <main className="max-w-3xl mx-auto px-6 py-12">
-        <article className="prose prose-neutral dark:prose-invert max-w-none prose-a:text-primary hover:prose-a:text-primary-hover prose-h1:font-serif">
+        <article className="prose prose-neutral dark:prose-invert max-w-none prose-a:text-primary hover:prose-a:text-primary-hover">
           <ReactMarkdown>{content}</ReactMarkdown>
         </article>
       </main>

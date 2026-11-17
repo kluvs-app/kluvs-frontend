@@ -100,7 +100,7 @@ export default function DiscordPage() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Add Kluvs bot to your Discord server"
-              className="flex items-center justify-center gap-3 bg-discord text-white rounded-btn px-6 py-3 font-medium t-body-m transition-opacity hover:opacity-90"
+              className="flex items-center justify-center gap-3 bg-discord text-white rounded-btn px-6 py-3 t-label transition-opacity hover:opacity-90"
             >
               <DiscordIcon className="w-5 h-5" />
               Add to Server
@@ -172,7 +172,7 @@ export default function DiscordPage() {
                 <div>
                   {commands.map((cmd) => (
                     <div key={cmd.name} className="flex items-start gap-3 py-2.5 border-b border-[var(--color-divider)] last:border-0">
-                      <code className="t-mono t-caption text-primary shrink-0 mt-px">{cmd.name}</code>
+                      <code className="t-mono text-primary shrink-0 mt-px">{cmd.name}</code>
                       <span className="t-body-m text-[var(--color-text-secondary)]">{cmd.description}</span>
                     </div>
                   ))}

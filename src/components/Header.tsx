@@ -25,7 +25,7 @@ export default function Header({ showOpenAppButton = true, showDiscordLink = fal
             <Link
               to="/discord"
               aria-label="Discord"
-              className="inline-flex items-center gap-2 p-2 sm:px-3 rounded-btn t-body-m font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
+              className="inline-flex items-center gap-2 p-2 sm:px-3 rounded-btn t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
             >
               <DiscordIcon className="w-5 h-5 sm:w-[18px] sm:h-[18px]" />
               <span className="hidden sm:inline">Discord</span>
@@ -34,7 +34,7 @@ export default function Header({ showOpenAppButton = true, showDiscordLink = fal
           {showOpenAppButton && (
             <a
               href={getAppHref('/me')}
-              className="border border-[var(--color-divider)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] px-4 py-2 rounded-btn t-body-m font-medium transition-colors"
+              className="border border-[var(--color-divider)] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] px-4 py-2 rounded-btn t-label transition-colors"
             >
               Open Kluvs
             </a>

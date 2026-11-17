@@ -141,7 +141,7 @@ export default function LandingPage() {
                 <a href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer" className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
                   <MatIcon name="phone_android" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
                   <span className="flex-1">
-                    <span className="block t-body-m font-medium text-[var(--color-text-primary)]">Android</span>
+                    <span className="block t-label text-[var(--color-text-primary)]">Android</span>
                     <span className="block t-caption text-[var(--color-text-meta)]">Free on Google Play</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
@@ -151,7 +151,7 @@ export default function LandingPage() {
                 <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
                   <MatIcon name="phone_iphone" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
                   <span className="flex-1">
-                    <span className="block t-body-m font-medium text-[var(--color-text-primary)]">iPhone</span>
+                    <span className="block t-label text-[var(--color-text-primary)]">iPhone</span>
                     <span className="block t-caption text-[var(--color-text-meta)]">Free on the App Store</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
@@ -161,7 +161,7 @@ export default function LandingPage() {
                 <a href={getAppHref('/me')} className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
                   <MatIcon name="language" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
                   <span className="flex-1">
-                    <span className="block t-body-m font-medium text-[var(--color-text-primary)]">Web</span>
+                    <span className="block t-label text-[var(--color-text-primary)]">Web</span>
                     <span className="block t-caption text-[var(--color-text-meta)]">Free in any browser</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
@@ -171,7 +171,7 @@ export default function LandingPage() {
                 <Link to="/discord" className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
                   <DiscordIcon className="w-5 h-5 text-[var(--color-text-secondary)] shrink-0" />
                   <span className="flex-1">
-                    <span className="block t-body-m font-medium text-[var(--color-text-primary)]">Discord</span>
+                    <span className="block t-label text-[var(--color-text-primary)]">Discord</span>
                     <span className="block t-caption text-[var(--color-text-meta)]">A companion bot for your server</span>
                   </span>
                   <MatIcon name="arrow_forward" className="text-[var(--color-text-meta)] !text-[18px]" />
@@ -208,7 +208,7 @@ export default function LandingPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="name" className="block t-body-m font-medium text-[var(--color-text-primary)] mb-1">
+                <label htmlFor="name" className="block t-label text-[var(--color-text-primary)] mb-1">
                   Name
                 </label>
                 <input
@@ -222,7 +222,7 @@ export default function LandingPage() {
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block t-body-m font-medium text-[var(--color-text-primary)] mb-1">
+                <label htmlFor="email" className="block t-label text-[var(--color-text-primary)] mb-1">
                   Email
                 </label>
                 <input
@@ -236,7 +236,7 @@ export default function LandingPage() {
                 />
               </div>
               <div>
-                <label htmlFor="message" className="block t-body-m font-medium text-[var(--color-text-primary)] mb-1">
+                <label htmlFor="message" className="block t-label text-[var(--color-text-primary)] mb-1">
                   Message
                 </label>
                 <textarea
@@ -251,7 +251,7 @@ export default function LandingPage() {
               </div>
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-btn font-medium t-body-l transition-colors"
+                className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-btn t-label transition-colors"
               >
                 Send Message
               </button>

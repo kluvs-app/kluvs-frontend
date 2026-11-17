@@ -146,7 +146,7 @@ export default function DiscussionNoteModal({
           <button
             onClick={handleDelete}
             disabled={loading || fetching}
-            className="t-caption px-3.5 py-1.5 font-medium text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
+            className="t-label px-3.5 py-1.5 text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
           >Delete note…</button>
         </div>
       ) : undefined}

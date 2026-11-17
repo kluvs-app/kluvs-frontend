@@ -379,7 +379,7 @@ export default function ClubDetailPage() {
 
                   {/* Book reading */}
                   {sidebarClubs[c.id]?.active_session?.book?.title && (
-                    <p className="t-caption text-[var(--color-text-secondary)] truncate mb-2 italic">
+                    <p className="t-caption t-feature text-[var(--color-text-secondary)] truncate mb-2">
                       {sidebarClubs[c.id].active_session!.book!.title}
                     </p>
                   )}
@@ -570,7 +570,7 @@ export default function ClubDetailPage() {
                                     <button
                                       onClick={() => handleToggleMember(member.id, true)}
                                       disabled={togglingMemberId === member.id}
-                                      className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
+                                      className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn transition-all duration-120 cursor-pointer disabled:opacity-50"
                                     >
                                       Join this Read
                                     </button>
@@ -693,7 +693,7 @@ export default function ClubDetailPage() {
                           </p>
                           <button
                             onClick={handleAddMember}
-                            className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn font-medium transition-all duration-120 cursor-pointer"
+                            className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
                           >
                             Invite Members
                           </button>
@@ -920,7 +920,7 @@ export default function ClubDetailPage() {
                               <button
                                 onClick={() => handleToggleMember(member.id, true)}
                                 disabled={togglingMemberId === member.id}
-                                className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-btn font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
+                                className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-btn transition-all duration-120 cursor-pointer disabled:opacity-50"
                               >
                                 Join this Read
                               </button>
@@ -1004,7 +1004,7 @@ export default function ClubDetailPage() {
                   </p>
                   <button
                     onClick={() => setMobileTab('members')}
-                    className="t-fine-print text-primary font-medium"
+                    className="t-label text-primary"
                   >
                     See all {clubMembers.length}
                   </button>
@@ -1061,7 +1061,7 @@ export default function ClubDetailPage() {
                 {isAdmin && (
                   <button
                     onClick={handleAddMember}
-                    className="t-caption border border-[var(--color-divider)] text-[var(--color-text-primary)] font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
+                    className="t-label border border-[var(--color-divider)] text-[var(--color-text-primary)] px-3 py-1.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
                   >
                     + Invite
                   </button>
@@ -1095,7 +1095,7 @@ export default function ClubDetailPage() {
                   </p>
                   <button
                     onClick={handleAddMember}
-                    className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn font-medium transition-all duration-120 cursor-pointer"
+                    className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
                   >
                     Invite Members
                   </button>

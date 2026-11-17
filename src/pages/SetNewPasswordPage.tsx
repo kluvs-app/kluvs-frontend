@@ -55,7 +55,7 @@ export default function SetNewPasswordPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={submitting}
-            className="w-full px-4 py-2.5 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-input text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="t-body-m w-full px-4 py-2.5 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-input text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
           <input
             type="password"
@@ -64,7 +64,7 @@ export default function SetNewPasswordPage() {
             onChange={(e) => setConfirm(e.target.value)}
             required
             disabled={submitting}
-            className="w-full px-4 py-2.5 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-input text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="t-body-m w-full px-4 py-2.5 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-input text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
           {error && (
             <p className="text-danger t-body-m text-center">{error}</p>
@@ -72,7 +72,7 @@ export default function SetNewPasswordPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium t-body-l transition-colors"
+            className="w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn t-label transition-colors"
           >
             {submitting ? 'Updating…' : 'Update password'}
           </button>

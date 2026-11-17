@@ -84,6 +84,24 @@ export default {
             dark: 'rgba(0, 0, 0, 0.70)',
           },
         },
+        typography: {
+          DEFAULT: {
+            css: {
+              // DS families (design-system/docs/typography.md): body = Body L, headings = Headline/Title (serif, medium), code = Mono
+              fontSize: '16px',
+              lineHeight: '24px',
+              letterSpacing: '0.5px',
+              p: { fontSize: '16px', lineHeight: '24px', letterSpacing: '0.5px' },
+              li: { fontSize: '16px', lineHeight: '24px', letterSpacing: '0.5px' },
+              strong: { fontWeight: '500' },
+              h1: { fontFamily: "'EB Garamond', Georgia, serif", fontWeight: '500', fontSize: '30px', lineHeight: '36px', letterSpacing: '0' },
+              h2: { fontFamily: "'EB Garamond', Georgia, serif", fontWeight: '500', fontSize: '24px', lineHeight: '30px', letterSpacing: '0' },
+              h3: { fontFamily: "'EB Garamond', Georgia, serif", fontWeight: '500', fontSize: '19px', lineHeight: '24px', letterSpacing: '0' },
+              h4: { fontFamily: "'EB Garamond', Georgia, serif", fontWeight: '500', fontSize: '15px', lineHeight: '20px', letterSpacing: '0' },
+              code: { fontFamily: "ui-monospace, 'SF Mono', monospace", fontWeight: '400', fontSize: '13px', lineHeight: '18px', letterSpacing: '0' },
+            },
+          },
+        },
         borderRadius: {
           'sm': '0.25rem',
           'input': '0.5rem',

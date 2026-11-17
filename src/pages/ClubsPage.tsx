@@ -92,7 +92,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
           </span>
           <button
             onClick={() => setShowAddClubModal(true)}
-            className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-lg font-medium transition-all duration-120 cursor-pointer"
+            className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-lg transition-all duration-120 cursor-pointer"
           >
             + New
           </button>

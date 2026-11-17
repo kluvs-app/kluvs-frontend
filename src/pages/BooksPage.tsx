@@ -625,7 +625,7 @@ export default function BooksPage() {
             )}
 
             {!loadingShelves && shelvesError && (
-              <p className="t-body-m text-[var(--color-text-secondary)] italic">{shelvesError}</p>
+              <p className="t-caption t-feature text-[var(--color-text-secondary)]">{shelvesError}</p>
             )}
 
             {!loadingShelves && !shelvesError && !hasShelvedBooks && (
@@ -768,7 +768,7 @@ export default function BooksPage() {
               </h2>
 
               {subtitle && (
-                <p className="t-title-s font-normal text-[var(--color-text-secondary)] mb-1.5">
+                <p className="t-title-s text-[var(--color-text-secondary)] mb-1.5">
                   {subtitle}
                 </p>
               )}
@@ -821,7 +821,7 @@ export default function BooksPage() {
                     {description}
                   </p>
                 ) : (
-                  <p className="t-caption text-[var(--color-text-secondary)] italic">No description available.</p>
+                  <p className="t-caption t-feature text-[var(--color-text-secondary)]">No description available.</p>
                 )}
               </section>
 
