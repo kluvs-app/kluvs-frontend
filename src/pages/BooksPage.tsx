@@ -635,7 +635,7 @@ export default function BooksPage() {
                   <p className="t-headline-s t-feature text-[var(--color-text-secondary)] mb-[10px] lg:t-headline-m">
                     Nothing shelved yet.
                   </p>
-                  <p className="t-caption text-[var(--color-text-meta)] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     Search for a book and add it to Want to Read, Read, or Not Finished, and it'll show up here.
                   </p>
                 </div>
@@ -688,7 +688,7 @@ export default function BooksPage() {
                   <p className="t-headline-s t-feature text-[var(--color-text-secondary)] mb-[10px] lg:t-headline-m">
                     Start typing.
                   </p>
-                  <p className="t-caption text-[var(--color-text-meta)] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     Find a book by title or author. We'll pull the cover, the blurb, and a note on the author.
                   </p>
                 </div>
@@ -706,7 +706,7 @@ export default function BooksPage() {
                   <p className="t-headline-s t-feature text-[var(--color-text-secondary)] mb-[10px] lg:t-headline-m">
                     No matches.
                   </p>
-                  <p className="t-caption text-[var(--color-text-meta)] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     No books found for "{query}". Try a different title or author.
                   </p>
                 </div>
