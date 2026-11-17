@@ -71,7 +71,7 @@ export default function AppShell() {
             }
           >
             {icon}
-            <span className="t-label text-inherit">{label}</span>
+            <span className="t-fine-print text-inherit">{label}</span>
           </NavLink>
         ))}
       </nav>
