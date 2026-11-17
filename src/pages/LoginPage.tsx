@@ -299,11 +299,11 @@ export default function LoginPage() {
 
             {/* "or with email" divider */}
             <div className="flex items-center gap-3 my-[18px]">
-              <div className="flex-1 h-px bg-[rgba(242,237,229,0.08)]" />
+              <div className="flex-1 h-px bg-[var(--color-divider)]" />
               <span className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)]">
                 or with email
               </span>
-              <div className="flex-1 h-px bg-[rgba(242,237,229,0.08)]" />
+              <div className="flex-1 h-px bg-[var(--color-divider)]" />
             </div>
 
             {/* Email / password form */}
@@ -365,7 +365,7 @@ export default function LoginPage() {
         )}
 
         {/* Footer */}
-        <div className="mt-9 pt-[22px] border-t border-[rgba(242,237,229,0.08)] text-center">
+        <div className="mt-9 pt-[22px] border-t border-[var(--color-divider)] text-center">
           <p className="font-serif italic font-normal text-[15px] leading-none tracking-[0.005em] text-[#C9BDA8] mb-[14px]">
             Reading is done best together.
           </p>

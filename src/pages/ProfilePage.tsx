@@ -33,8 +33,8 @@ function formatNextDate(scheduledAt: string): string {
   })
 }
 
-// Warm-dark hairline and button border — design tokens not in CSS vars
-const HAIRLINE = 'rgba(242,237,229,0.08)'
+// Hairline follows the theme's divider role (dark: card-2, light: divider)
+const HAIRLINE = 'var(--color-divider)'
 const COPPER = '#D16D30'
 const MUTED = '#8C8073'
 
@@ -49,7 +49,7 @@ function CoverSlot({ url, w, h }: { url?: string | null; w: number; h: number })
         width: w, height: h, borderRadius: 2, flexShrink: 0, overflow: 'hidden',
         boxShadow: '0 3px 8px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.02)',
         background: showPlaceholder
-          ? 'repeating-linear-gradient(135deg, #241C17 0, #241C17 5px, #332B24 5px, #332B24 10px)'
+          ? 'repeating-linear-gradient(135deg, var(--color-bg-elevated) 0, var(--color-bg-elevated) 5px, var(--color-divider) 5px, var(--color-divider) 10px)'
           : undefined,
         position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
       }}
