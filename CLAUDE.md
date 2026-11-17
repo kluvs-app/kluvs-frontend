@@ -53,7 +53,7 @@ src/
 │   │   ├── Avatar.tsx           # User avatar with initials fallback
 │   │   ├── BookCover.tsx        # Book cover image with placeholder
 │   │   ├── CoverSlot.tsx        # Low-level cover display
-│   │   ├── GhostButton.tsx      # Transparent/text-only button
+│   │   ├── Button.tsx           # Button family: primary/danger/secondary/outlined/text/social
 │   │   ├── KebabMenu.tsx        # Three-dot dropdown menu
 │   │   └── RoleEyebrow.tsx      # Role badge (owner/admin/member)
 │   ├── icons/
@@ -216,7 +216,7 @@ Use the button family in `src/components/ui/Button.tsx` (`design-system/docs/but
 - Modal footers: `<Button variant="text">Cancel</Button>` on the left, `primary` (or `danger` for destructive) on the right; show `<KluvsSpinner color="var(--color-on-primary)" />` while `loading`.
 - Radius is `rounded-btn` (12px); text color on filled variants is `--color-on-primary`. No raw `bg-primary … text-white` button strings.
 - Button text is the `t-label` family (see Typography); don't set size, weight, `leading-*` or `tracking-*` on a button.
-- Not yet migrated into the family: OAuth/social buttons, pills, segmented controls, `LoginPage` primaries, and `GhostButton` (equivalent to `outlined`).
+- OAuth provider buttons use `variant="social"` (brand colors via `className`). Pills (Fine print) and segmented controls stay hand-written; icon-only buttons stay raw.
 
 ### Member Updates
 After modifying member data, call `refreshMemberData()` (not page reload):
@@ -379,7 +379,7 @@ Current coverage (as of 2026-05-27): **~1,093 tests across 44 test files**
 - **Pages**: LandingPage, LoginPage, ProfilePage, ClubsPage, ClubDetailPage, BooksPage, JoinPage, SetNewPasswordPage, PrivacyPolicy, TermsOfUse, DataDeletion, DiscordPage
 - **Layout**: AppShell, AppSidebar, Sidebar, TopNavbar
 - **Core Components**: Header, Footer, KluvsSpinner, KluvsHexBackground, BookSearchInput, BookInfo, DiscussionsTimeline, MembersTable, ThemeToggle
-- **UI Primitives**: Avatar, BookCover, CoverSlot, GhostButton, KebabMenu, RoleEyebrow
+- **UI Primitives**: Avatar, BookCover, CoverSlot, KebabMenu, RoleEyebrow
 - **Modals**: All 15 modals
 
 **Coverage Status:**

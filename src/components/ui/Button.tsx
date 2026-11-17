@@ -6,7 +6,8 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react'
 //   secondary → copper outline, "active" emphasis
 //   outlined  → grey outline, "muted" variant
 //   text      → no container; grey, or copper with `emphasized`
-export type ButtonVariant = 'primary' | 'danger' | 'secondary' | 'outlined' | 'text'
+//   social    → full-width OAuth provider button; brand colors come from className
+export type ButtonVariant = 'primary' | 'danger' | 'secondary' | 'outlined' | 'text' | 'social'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -18,15 +19,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const BASE =
-  'inline-flex items-center justify-center gap-2 rounded-btn font-medium cursor-pointer transition-colors disabled:cursor-not-allowed'
+  'inline-flex items-center justify-center gap-2 t-label rounded-btn cursor-pointer transition-colors disabled:cursor-not-allowed'
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'px-4 py-1.5 text-[13px]',
-  md: 'px-5 py-2 text-[14px]',
-  lg: 'px-6 py-2.5 text-[14px]',
+  sm: 'px-4 py-1.5',
+  md: 'px-5 py-2',
+  lg: 'px-6 py-2.5',
 }
 
 const VARIANTS: Record<Exclude<ButtonVariant, 'text'>, string> = {
+  social: 'w-full h-11 px-4 gap-3',
   primary:
     'bg-primary hover:bg-primary-hover text-[var(--color-on-primary)] active:scale-[0.97] disabled:opacity-40',
   danger:
@@ -48,12 +50,14 @@ export default function Button({
   const style =
     variant === 'text'
       ? [
-          'text-[14px] disabled:opacity-40',
+          'disabled:opacity-40',
           emphasized
             ? 'text-primary hover:text-primary-hover'
             : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
         ].join(' ')
-      : `${SIZES[size]} ${VARIANTS[variant]}`
+      : variant === 'social'
+        ? VARIANTS.social
+        : `${SIZES[size]} ${VARIANTS[variant]}`
 
   return (
     <button

@@ -2,7 +2,6 @@ import { parseScheduledAt, isPast } from '../utils/dates'
 import type { Club, Discussion } from '../types'
 import KebabMenu from './ui/KebabMenu'
 import AttendanceControl from './AttendanceControl'
-import GhostButton from './ui/GhostButton'
 import Button from './ui/Button'
 
 interface DiscussionsTimelineProps {
@@ -59,9 +58,10 @@ export default function DiscussionsTimeline({
           )}
         </div>
         {isAdmin && selectedClub.active_session && (
-          <GhostButton variant="sm" icon="+" onClick={onAddDiscussion}>
-            Add
-          </GhostButton>
+          <Button variant="outlined" size="sm" onClick={onAddDiscussion}>
+            <span aria-hidden>+</span>
+Add
+          </Button>
         )}
       </div>
 

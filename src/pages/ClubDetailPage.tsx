@@ -23,7 +23,6 @@ import { parseLocalDate, parseScheduledAt, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
 import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
-import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
 import AvatarStack from '../components/ui/AvatarStack'
 import MemberBadge from '../components/MemberBadge'
@@ -429,18 +428,18 @@ export default function ClubDetailPage() {
                     </span>
                     {isAdmin && (
                       <div className="flex items-center gap-2">
-                        <GhostButton
-                          variant="md"
+                        <Button
+                          variant="outlined" size="md"
                           onClick={() => setShowShareModal(true)}
                         >
                           Share
-                        </GhostButton>
-                        <GhostButton
-                          variant="md"
+                        </Button>
+                        <Button
+                          variant="outlined" size="md"
                           onClick={() => setShowEditClubModal(true)}
                         >
                           Edit club
-                        </GhostButton>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -560,13 +559,13 @@ export default function ClubDetailPage() {
                                 {/* Right: opt-in/out CTA */}
                                 {showCTA && (
                                   isReading ? (
-                                    <GhostButton
-                                      variant="sm"
+                                    <Button
+                                      variant="outlined" size="sm"
                                       onClick={() => handleToggleMember(member.id, false)}
                                       disabled={togglingMemberId === member.id}
                                     >
                                       Opt out
-                                    </GhostButton>
+                                    </Button>
                                   ) : (
                                     <Button
                                       variant="primary" size="sm" className="disabled:opacity-50"
@@ -657,13 +656,13 @@ export default function ClubDetailPage() {
                           </span>
                         </div>
                         {isAdmin && (
-                          <GhostButton
-                            variant="sm"
-                            icon="+"
+                          <Button
+                            variant="outlined" size="sm"
                             onClick={handleAddMember}
                           >
-                            Invite
-                          </GhostButton>
+                            <span aria-hidden>+</span>
+Invite
+                          </Button>
                         )}
                       </div>
 
@@ -762,9 +761,9 @@ export default function ClubDetailPage() {
                 <DiscordIndicator club={club} isAdmin={isAdmin} />
               </div>
               <div className="flex items-center gap-1.5">
-                <GhostButton variant="sm" onClick={() => setShowShareModal(true)}>
+                <Button variant="outlined" size="sm" onClick={() => setShowShareModal(true)}>
                   Share
-                </GhostButton>
+                </Button>
                 <KebabMenu
                   items={[
                     { label: 'Edit club', onClick: () => setShowEditClubModal(true) },
@@ -910,13 +909,13 @@ export default function ClubDetailPage() {
                           </div>
                           {showCTA && (
                             isReading ? (
-                              <GhostButton
-                                variant="sm"
+                              <Button
+                                variant="outlined" size="sm"
                                 onClick={() => handleToggleMember(member.id, false)}
                                 disabled={togglingMemberId === member.id}
                               >
                                 Opt out
-                              </GhostButton>
+                              </Button>
                             ) : (
                               <Button
                                 variant="primary" className="disabled:opacity-50"
