@@ -95,7 +95,7 @@ function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book,
         <div className="flex justify-between items-start gap-4 mb-5">
           {/* Left: Book Title & Author */}
           <div className="flex-1 min-w-0">
-            <p className="t-title-m t-feature" style={{ color: 'var(--color-text-primary)',
+            <p className="t-title-l t-feature md:t-headline-s" style={{ color: 'var(--color-text-primary)',
               marginBottom: 4,
             }}>{title}</p>
             <p className="t-body-m" style={{ color: 'var(--color-label-variant)',
@@ -147,7 +147,7 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-          <p className="t-title-m" style={{ color: 'var(--color-text-primary)',
+          <p className="t-title-l" style={{ color: 'var(--color-text-primary)',
             minWidth: 0, overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{name}</p>
@@ -302,7 +302,7 @@ export default function ProfilePage() {
             className="shrink-0"
           />
           <div className="min-w-0">
-            <p className="t-headline-l" style={{ color: 'var(--color-text-primary)',
+            <p className="t-headline-s" style={{ color: 'var(--color-text-primary)',
             }}>{member?.name ?? 'User'}</p>
             {handle && (
               <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', marginTop: 5,
@@ -341,7 +341,7 @@ export default function ProfilePage() {
           <p className="t-headline-l" style={{ color: 'var(--color-text-primary)',
           }}>{member?.name ?? 'User'}</p>
           {handle && (
-            <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', marginTop: 10,
+            <p className="t-body-l" style={{ color: 'var(--color-text-secondary)', marginTop: 10,
               display: 'flex', alignItems: 'center', gap: 6,
             }}>
               {handle}
@@ -371,7 +371,7 @@ export default function ProfilePage() {
         {mobileStats.map((s, i) => (
           <div key={i} className="flex-1 flex flex-col gap-2"
             style={{ borderLeft: i > 0 ? `1px solid ${HAIRLINE}` : 'none', paddingLeft: i > 0 ? 16 : 0 }}>
-            <p className="t-headline-l" style={{ color: 'var(--color-text-primary)',
+            <p className="t-headline-s" style={{ color: 'var(--color-text-primary)',
             }}>{s.num}</p>
             <span className="t-eyebrow" style={{
               color: 'var(--color-label-variant)',
@@ -410,7 +410,7 @@ export default function ProfilePage() {
               <span className="t-eyebrow" style={{
                 color: COPPER,
               }}>Up Next</span>
-              <span className="t-caption" style={{
+              <span className="t-fine-print" style={{
                 color: COPPER,
               }}>{nextDiscDate}</span>
             </div>
@@ -421,7 +421,7 @@ export default function ProfilePage() {
                 } as React.CSSProperties}>
                   {nextDiscussion.title}
                 </p>
-                <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', 
+                <p className="t-caption" style={{ color: 'var(--color-text-secondary)', 
                 }}>
                   {nextDiscussion.clubName}
                   {nextDiscussion.location && (
@@ -456,18 +456,18 @@ export default function ProfilePage() {
                 display: 'block',
                 color: COPPER,
               }}>Up Next</span>
-              <span className="t-caption" style={{ display: 'block',
+              <span className="t-fine-print" style={{ display: 'block',
                 color: COPPER, marginTop: 10,
               }}>{nextDiscDate}</span>
             </div>
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1 min-w-0">
-                <p className="t-title-l t-feature" style={{ color: 'var(--color-text-primary)',
+                <p className="t-headline-l t-feature" style={{ color: 'var(--color-text-primary)',
                   maxWidth: 760, marginBottom: 18,
                 } as React.CSSProperties}>
                   {nextDiscussion.title}
                 </p>
-                <p className="t-body-m" style={{ color: 'var(--color-text-secondary)',
+                <p className="t-body-l" style={{ color: 'var(--color-text-secondary)',
                   display: 'flex', gap: 10,
                 }}>
                   <span>{nextDiscussion.clubName}</span>
@@ -502,13 +502,13 @@ export default function ProfilePage() {
 
       {!loading && clubItems.length === 0 && (
         <div className="pt-10 md:pt-16 flex flex-col items-center text-center gap-5 pb-10">
-          <p className="t-title-l t-feature" style={{ color: 'var(--color-text-primary)',
+          <p className="t-headline-s t-feature" style={{ color: 'var(--color-text-primary)',
           }}>No clubs yet.</p>
           <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', maxWidth: 320,
           }}>You haven't joined any book clubs. Find one and start reading with others.</p>
           <Link
             to="/clubs"
-            className="t-caption" style={{ color: COPPER, textDecoration: 'none',
+            className="t-label" style={{ color: COPPER, textDecoration: 'none',
               border: `1px solid ${COPPER}`,
               padding: '9px 18px', borderRadius: 8,
               display: 'inline-block',
@@ -529,7 +529,7 @@ export default function ProfilePage() {
             <span className="t-eyebrow" style={{
               color: 'var(--color-text-secondary)',
             }}>On Your Shelf</span>
-            <span className="t-title-s t-feature" style={{ color: 'var(--color-text-secondary)',
+            <span className="t-title-m t-feature" style={{ color: 'var(--color-text-secondary)',
             }}>{shelfItems.length} books in progress</span>
           </div>
 

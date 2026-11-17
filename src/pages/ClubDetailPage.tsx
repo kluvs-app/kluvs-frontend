@@ -522,10 +522,10 @@ export default function ClubDetailPage() {
                                 />
                               )}
                             </div>
-                            <h2 className="t-title-l t-feature text-[var(--color-text-primary)] mb-2">
+                            <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-2">
                               {club.active_session.book?.title || '(Untitled)'}
                             </h2>
-                            <p className="t-body-m text-[var(--color-text-secondary)]">
+                            <p className="t-body-l text-[var(--color-text-secondary)]">
                               {club.active_session.book?.author}
                             </p>
                           </div>
@@ -548,12 +548,12 @@ export default function ClubDetailPage() {
                                   {readingMembers.length > 0 ? (
                                     <>
                                       <AvatarStack members={readingMembers} size="sm" currentMemberId={member?.id} />
-                                      <span className="t-caption text-[var(--color-text-secondary)]">
+                                      <span className="t-fine-print text-[var(--color-text-secondary)]">
                                         {readingMembers.length} of {clubMembers.length} reading
                                       </span>
                                     </>
                                   ) : (
-                                    <span className="t-body-m text-[var(--color-text-secondary)]">No participants yet</span>
+                                    <span className="t-fine-print text-[var(--color-text-secondary)]">No participants yet</span>
                                   )}
                                 </div>
                                 {/* Right: opt-in/out CTA */}
@@ -615,10 +615,10 @@ export default function ClubDetailPage() {
                       <p className="t-eyebrow text-[var(--color-text-secondary)] mb-3">
                         GETTING STARTED
                       </p>
-                      <h2 className="t-title-l t-feature text-[var(--color-text-primary)] mb-3">
+                      <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-3">
                         Start reading together.
                       </h2>
-                      <p className="t-body-m text-[var(--color-text-secondary)] mb-6 max-w-[360px]">
+                      <p className="t-body-l text-[var(--color-text-secondary)] mb-6 max-w-[360px]">
                         Pick a book and kick off your club's first session.
                       </p>
                       {isAdmin && (
@@ -837,7 +837,7 @@ export default function ClubDetailPage() {
                   <p className="t-eyebrow text-[var(--color-text-secondary)] mb-2">
                     NO SESSION YET
                   </p>
-                  <p className="t-title-l t-feature text-[var(--color-text-primary)] mb-4">
+                  <p className="t-headline-s t-feature text-[var(--color-text-primary)] mb-4">
                     Start reading together.
                   </p>
                   {isAdmin && (
@@ -872,10 +872,10 @@ export default function ClubDetailPage() {
                           />
                         )}
                       </div>
-                      <h3 className="t-title-l t-feature text-[var(--color-text-primary)] mb-0.5">
+                      <h3 className="t-headline-s t-feature text-[var(--color-text-primary)] mb-0.5">
                         {club.active_session.book?.title || '(Untitled)'}
                       </h3>
-                      <p className="t-body-m text-[var(--color-text-secondary)] mb-2">
+                      <p className="t-caption text-[var(--color-text-secondary)] mb-2">
                         {club.active_session.book?.author}
                       </p>
                     </div>
@@ -899,12 +899,12 @@ export default function ClubDetailPage() {
                             {readingMembers.length > 0 ? (
                               <>
                                 <AvatarStack members={readingMembers} size="sm" currentMemberId={member?.id} />
-                                <span className="t-caption text-[var(--color-text-secondary)]">
+                                <span className="t-fine-print text-[var(--color-text-secondary)]">
                                   {readingMembers.length} of {clubMembers.length} reading
                                 </span>
                               </>
                             ) : (
-                              <span className="t-body-m text-[var(--color-text-secondary)]">No participants yet</span>
+                              <span className="t-fine-print text-[var(--color-text-secondary)]">No participants yet</span>
                             )}
                           </div>
                           {showCTA && (
@@ -966,7 +966,7 @@ export default function ClubDetailPage() {
                         (d) => !isPast(d.scheduled_at)
                       )
                       return nextDiscussion ? (
-                        <p className="t-caption text-primary">
+                        <p className="t-fine-print text-primary">
                           {parseScheduledAt(nextDiscussion.scheduled_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -986,7 +986,7 @@ export default function ClubDetailPage() {
                           {nextDiscussion.title}
                         </p>
                         {nextDiscussion.location && (
-                          <p className="t-body-m text-[var(--color-text-secondary)]">
+                          <p className="t-fine-print text-[var(--color-text-secondary)]">
                             {nextDiscussion.location}
                           </p>
                         )}
@@ -1004,7 +1004,7 @@ export default function ClubDetailPage() {
                   </p>
                   <button
                     onClick={() => setMobileTab('members')}
-                    className="t-label text-primary"
+                    className="t-fine-print text-primary"
                   >
                     See all {clubMembers.length}
                   </button>
@@ -1028,7 +1028,7 @@ export default function ClubDetailPage() {
                 </div>
 
                 {/* Role breakdown */}
-                <p className="t-caption text-[var(--color-text-secondary)]">
+                <p className="t-fine-print text-[var(--color-text-secondary)]">
                   {(() => {
                     const owners = clubMembers.filter((m) => m.role === 'owner').length
                     const admins = clubMembers.filter((m) => m.role === 'admin').length

@@ -54,10 +54,10 @@ export default function MembersTable({
 
             {/* Name + handle */}
             <div className="flex-1 min-w-0">
-              <p className="t-body-l text-[var(--color-text-primary)]">
+              <p className="t-label text-[var(--color-text-primary)]">
                 {member.name}
               </p>
-              <p className="t-body-m text-[var(--color-text-secondary)] mt-0.5">
+              <p className="t-fine-print text-[var(--color-text-secondary)] mt-0.5">
                 @{member.handle}
               </p>
             </div>

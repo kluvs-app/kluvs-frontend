@@ -172,7 +172,7 @@ export default function ReadingProgressModal({
               onClick={() => setProgressType('page')}
               disabled={loading}
               className={[
-                't-label flex-1 py-2 transition-colors duration-150',
+                't-label flex-1 py-2 transition-colors duration-150 text-inherit',
                 progressType === 'page'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
@@ -184,7 +184,7 @@ export default function ReadingProgressModal({
               onClick={() => setProgressType('percent')}
               disabled={loading}
               className={[
-                't-label flex-1 py-2 transition-colors duration-150 border-l border-[var(--color-divider)]',
+                't-label flex-1 py-2 transition-colors duration-150 border-l border-[var(--color-divider)] text-inherit',
                 progressType === 'percent'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',

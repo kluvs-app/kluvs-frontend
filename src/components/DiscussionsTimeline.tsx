@@ -163,12 +163,12 @@ export default function DiscussionsTimeline({
                     )}
                     <p className={[
                       't-feature text-[var(--color-text-primary)]',
-                      status === 'next' ? 't-title-l' : 't-title-m',
+                      status === 'next' ? 't-title-l' : 't-title-m lg:t-title-l',
                     ].join(' ')}>
                       {discussion.title}
                     </p>
                     {discussion.location && (
-                      <p className="t-body-m text-[var(--color-text-secondary)] mt-1">
+                      <p className="t-caption text-[var(--color-text-secondary)] mt-1">
                         {discussion.location}
                       </p>
                     )}

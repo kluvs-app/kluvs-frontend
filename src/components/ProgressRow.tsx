@@ -67,14 +67,14 @@ export default function ProgressRow({
             </span>
           ) : (
             <span
-              className="t-title-s text-[var(--color-text-secondary)] t-feature"
+              className="t-title-m text-[var(--color-text-secondary)] t-feature"
             >
               {leftLabel}
             </span>
           )
         ) : <div />}
         <span
-          className="t-caption text-primary"
+          className="t-fine-print text-primary"
         >
           {label}
         </span>

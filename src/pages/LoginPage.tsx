@@ -42,10 +42,10 @@ function ConfirmCard({ eyebrow, email, body }: { eyebrow: string; email: string;
       <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-[10px]">
         {eyebrow}
       </span>
-      <p className="t-body-l text-[var(--color-text-primary)] break-all mb-[14px]">
+      <p className="t-body-m text-[var(--color-text-primary)] break-all mb-[14px]">
         {email}
       </p>
-      <p className="t-body-m text-[var(--color-text-secondary)]">
+      <p className="t-caption text-[var(--color-text-secondary)]">
         {body}
       </p>
     </div>
@@ -180,7 +180,7 @@ export default function LoginPage() {
           <a href="https://kluvs.com" aria-label="Back to home">
             <img src="/ic-mark.svg" alt="" className="w-16 h-16 mx-auto mb-[22px] hover:opacity-80 transition-opacity" />
           </a>
-          <h1 className="t-headline-s t-feature text-[var(--color-text-primary)] mb-3 [text-wrap:pretty]">
+          <h1 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-3 [text-wrap:pretty]">
             {voicePhrase}
           </h1>
           {subhead && (

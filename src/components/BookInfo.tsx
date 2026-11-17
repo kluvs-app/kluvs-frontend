@@ -35,7 +35,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
             </p>
           )}
           {dueDate && (
-            <p className="t-label text-primary mt-2">
+            <p className="t-body-l text-primary mt-2">
               Due {parseLocalDate(dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </p>
           )}
@@ -45,13 +45,13 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
         <div className="flex gap-2">
           <button
             onClick={onEditBook}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
+            className="t-body-m text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
           >
             Edit Book
           </button>
           <button
             onClick={onNewSession}
-            className="t-label bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
+            className="t-body-m bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
           >
             New Session
           </button>

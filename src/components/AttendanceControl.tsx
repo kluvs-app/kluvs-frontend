@@ -140,7 +140,7 @@ export default function AttendanceControl({ discussion, disabled = false }: Atte
       </div>
 
       {/* Stats row */}
-      <p className="t-caption text-[var(--color-text-meta)] tabular-nums">
+      <p className="t-fine-print text-[var(--color-text-meta)] tabular-nums">
         {counts.yes} yes &middot; {counts.no} no &middot; {counts.maybe} maybe
       </p>
     </div>
