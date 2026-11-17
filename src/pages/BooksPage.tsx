@@ -903,7 +903,7 @@ export default function BooksPage() {
                           </div>
                         </div>
                         {authorInfo.extract && (
-                          <p className="t-caption text-[var(--color-text-primary)]">
+                          <p className="t-body-l text-[var(--color-text-primary)]">
                             {authorInfo.extract}
                           </p>
                         )}
