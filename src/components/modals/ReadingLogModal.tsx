@@ -15,10 +15,10 @@ function LogEntry({ entry }: { entry: ReadingLogEntry }) {
     <div className="flex gap-4 items-start">
       <CoverSlot imageUrl={entry.book?.image_url} width={40} height={56} />
       <div className="flex-1 min-w-0">
-        <p className="t-title-m t-feature" style={{ color: 'var(--color-text-primary)',
+        <p className="t-title-s t-feature" style={{ color: 'var(--color-text-primary)',
           marginBottom: 4,
         }}>{entry.book?.title}</p>
-        <p className="t-caption" style={{ color: 'var(--color-text-meta)',
+        <p className="t-body-m" style={{ color: 'var(--color-text-meta)',
           marginBottom: 4,
         }}>{entry.book?.author}</p>
         <p className="t-eyebrow" style={{

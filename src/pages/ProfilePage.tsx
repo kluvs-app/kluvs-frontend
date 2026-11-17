@@ -95,7 +95,7 @@ function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book,
         <div className="flex justify-between items-start gap-4 mb-5">
           {/* Left: Book Title & Author */}
           <div className="flex-1 min-w-0">
-            <p className="t-title-l t-feature md:t-headline-s" style={{ color: 'var(--color-text-primary)',
+            <p className="t-title-m t-feature" style={{ color: 'var(--color-text-primary)',
               marginBottom: 4,
             }}>{title}</p>
             <p className="t-body-m" style={{ color: 'var(--color-label-variant)',
@@ -410,7 +410,7 @@ export default function ProfilePage() {
               <span className="t-eyebrow" style={{
                 color: COPPER,
               }}>Up Next</span>
-              <span className="t-eyebrow" style={{
+              <span className="t-caption" style={{
                 color: COPPER,
               }}>{nextDiscDate}</span>
             </div>
@@ -456,7 +456,7 @@ export default function ProfilePage() {
                 display: 'block',
                 color: COPPER,
               }}>Up Next</span>
-              <span className="t-eyebrow" style={{ display: 'block',
+              <span className="t-caption" style={{ display: 'block',
                 color: COPPER, marginTop: 10,
               }}>{nextDiscDate}</span>
             </div>
@@ -529,7 +529,7 @@ export default function ProfilePage() {
             <span className="t-eyebrow" style={{
               color: 'var(--color-text-secondary)',
             }}>On Your Shelf</span>
-            <span className="t-title-m t-feature" style={{ color: 'var(--color-text-secondary)',
+            <span className="t-title-s t-feature" style={{ color: 'var(--color-text-secondary)',
             }}>{shelfItems.length} books in progress</span>
           </div>
 

@@ -74,7 +74,7 @@ export default function ProgressRow({
           )
         ) : <div />}
         <span
-          className="t-fine-print text-primary"
+          className="t-caption text-primary"
         >
           {label}
         </span>
