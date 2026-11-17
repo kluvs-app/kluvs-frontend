@@ -209,6 +209,15 @@ const isAdmin = role === 'owner' || role === 'admin'
 - Page-level data: component-level `loading` state → inline spinner
 - Both use `<KluvsSpinner>` for consistency
 
+### Buttons
+Use the button family in `src/components/ui/Button.tsx` (`design-system/docs/buttons.md`) — don't hand-write button class strings.
+
+- **Variants:** `primary` (copper fill — one per view), `danger` (filled destructive confirm), `secondary` (copper outline), `outlined` (grey outline), `text` (no container; grey, or copper with `emphasized`). Sizes `sm | md | lg`.
+- Modal footers: `<Button variant="text">Cancel</Button>` on the left, `primary` (or `danger` for destructive) on the right; show `<KluvsSpinner color="var(--color-on-primary)" />` while `loading`.
+- Radius is `rounded-btn` (12px); text color on filled variants is `--color-on-primary`. No raw `bg-primary … text-white` button strings.
+- Button text is the `t-label` family (see Typography); don't set size, weight, `leading-*` or `tracking-*` on a button.
+- Not yet migrated into the family: OAuth/social buttons, pills, segmented controls, `LoginPage` primaries, and `GhostButton` (equivalent to `outlined`).
+
 ### Member Updates
 After modifying member data, call `refreshMemberData()` (not page reload):
 ```tsx
