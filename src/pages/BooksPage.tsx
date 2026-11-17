@@ -322,6 +322,16 @@ export default function BooksPage() {
     debounceRef.current = setTimeout(() => search(val, 0), 400)
   }
 
+  const clearQuery = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    setQuery('')
+    setResults([])
+    setSearchError('')
+    setSearchPage(0)
+    setHasMore(false)
+    searchInputRef.current?.focus()
+  }
+
   const goToSearch = () => setView('search')
   const backFromSearch = () => {
     setView('shelf')
@@ -574,13 +584,25 @@ export default function BooksPage() {
               className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2.5 pr-10 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               aria-label="Search for a book"
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] group-focus-within:text-primary transition-colors">
-              {searching ? (
-                <KluvsSpinner size={16} aria-label="Searching" />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-[var(--color-text-secondary)] group-focus-within:text-primary transition-colors">
+              {searching && <KluvsSpinner size={16} aria-label="Searching" />}
+              {query ? (
+                <button
+                  type="button"
+                  onClick={clearQuery}
+                  aria-label="Clear search"
+                  className="flex items-center justify-center hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                !searching && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )
               )}
             </div>
           </div>

@@ -333,6 +333,28 @@ describe('BooksPage', () => {
         expect.anything()
       )
     })
+
+    it('shows no clear button while the query is empty', async () => {
+      await renderAndWait()
+      await openSearch()
+      expect(screen.queryByRole('button', { name: /clear search/i })).not.toBeInTheDocument()
+    })
+
+    it('clear button empties the query, results, and returns to the empty state', async () => {
+      await renderAndWait()
+      mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, books: [mockSearchResult] }, error: null })
+      await typeAndSearch('gatsby')
+      expect(screen.getByText('The Great Gatsby')).toBeInTheDocument()
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /clear search/i }))
+      })
+
+      expect(screen.getByRole('textbox', { name: /search for a book/i })).toHaveValue('')
+      expect(screen.queryByText('The Great Gatsby')).not.toBeInTheDocument()
+      expect(screen.getByText(/start typing\./i)).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /clear search/i })).not.toBeInTheDocument()
+    })
   })
 
   describe('Book selection and detail', () => {
