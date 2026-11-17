@@ -66,7 +66,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
               Start a club to read alongside friends, or accept an invite to join one.
             </p>
             <Button
-              variant="primary" size="lg" className="w-full max-w-[280px]"
+              variant="primary" className="w-full max-w-[280px]"
               onClick={() => setShowAddClubModal(true)}
             >
               Create your first club

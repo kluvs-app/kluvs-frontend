@@ -429,13 +429,13 @@ export default function ClubDetailPage() {
                     {isAdmin && (
                       <div className="flex items-center gap-2">
                         <Button
-                          variant="outlined" size="md"
+                          variant="outlined"
                           onClick={() => setShowShareModal(true)}
                         >
                           Share
                         </Button>
                         <Button
-                          variant="outlined" size="md"
+                          variant="outlined"
                           onClick={() => setShowEditClubModal(true)}
                         >
                           Edit club
@@ -560,7 +560,7 @@ export default function ClubDetailPage() {
                                 {showCTA && (
                                   isReading ? (
                                     <Button
-                                      variant="outlined" size="sm"
+                                      variant="outlined"
                                       onClick={() => handleToggleMember(member.id, false)}
                                       disabled={togglingMemberId === member.id}
                                     >
@@ -568,7 +568,7 @@ export default function ClubDetailPage() {
                                     </Button>
                                   ) : (
                                     <Button
-                                      variant="primary" size="sm" className="disabled:opacity-50"
+                                      variant="primary" className="disabled:opacity-50"
                                       onClick={() => handleToggleMember(member.id, true)}
                                       disabled={togglingMemberId === member.id}
                                     >
@@ -623,7 +623,7 @@ export default function ClubDetailPage() {
                       </p>
                       {isAdmin && (
                         <Button
-                          variant="primary" size="lg"
+                          variant="primary"
                           onClick={() => setShowNewSessionModal(true)}
                         >
                           Start Session
@@ -657,7 +657,7 @@ export default function ClubDetailPage() {
                         </div>
                         {isAdmin && (
                           <Button
-                            variant="outlined" size="sm"
+                            variant="outlined"
                             onClick={handleAddMember}
                           >
                             <span aria-hidden>+</span>
@@ -761,7 +761,7 @@ Invite
                 <DiscordIndicator club={club} isAdmin={isAdmin} />
               </div>
               <div className="flex items-center gap-1.5">
-                <Button variant="outlined" size="sm" onClick={() => setShowShareModal(true)}>
+                <Button variant="outlined" onClick={() => setShowShareModal(true)}>
                   Share
                 </Button>
                 <KebabMenu
@@ -842,7 +842,7 @@ Invite
                   </p>
                   {isAdmin && (
                     <Button
-                      variant="primary" size="lg"
+                      variant="primary"
                       onClick={() => setShowNewSessionModal(true)}
                     >
                       Start Session
@@ -910,7 +910,7 @@ Invite
                           {showCTA && (
                             isReading ? (
                               <Button
-                                variant="outlined" size="sm"
+                                variant="outlined"
                                 onClick={() => handleToggleMember(member.id, false)}
                                 disabled={togglingMemberId === member.id}
                               >

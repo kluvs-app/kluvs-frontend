@@ -237,7 +237,7 @@ export default function LoginPage() {
             />
             {emailError && <ErrorBanner message={emailError} />}
             <div className="mt-1">
-              <Button type="submit" disabled={isBusy} variant="primary" size="lg" className="w-full h-11 border border-primary disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)]">
+              <Button type="submit" disabled={isBusy} variant="primary" className="w-full border border-primary disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)]">
                 {signingIn === 'email' ? 'Sending…' : 'Send reset link'}
               </Button>
             </div>
@@ -294,7 +294,7 @@ export default function LoginPage() {
               />
               {emailError && <ErrorBanner message={emailError} />}
               <div className="mt-1">
-                <Button type="submit" disabled={isBusy} variant="primary" size="lg" className="w-full h-11 border border-primary disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)]">
+                <Button type="submit" disabled={isBusy} variant="primary" className="w-full border border-primary disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)]">
                   {signingIn === 'email'
                     ? (emailMode === 'signin' ? 'Signing in…' : 'Creating account…')
                     : (emailMode === 'signin' ? 'Sign in' : 'Create account')}

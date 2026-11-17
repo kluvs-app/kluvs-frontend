@@ -641,7 +641,7 @@ export default function BooksPage() {
                   </p>
                 </div>
                 <Button
-                  variant="primary" size="lg"
+                  variant="primary"
                   onClick={goToSearch}
                 >
                   Search for a book

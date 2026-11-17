@@ -50,7 +50,7 @@ export default function ProgressRow({
           />
         </div>
         <Button
-          variant="outlined" size="sm"
+          variant="outlined"
           onClick={() => setShowModal(true)}
         >
           Update

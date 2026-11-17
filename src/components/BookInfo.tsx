@@ -51,7 +51,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
             Edit Book
           </button>
           <Button
-            variant="primary" size="sm"
+            variant="primary"
             onClick={onNewSession}
           >
             New Session

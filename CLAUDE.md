@@ -212,7 +212,7 @@ const isAdmin = role === 'owner' || role === 'admin'
 ### Buttons
 Use the button family in `src/components/ui/Button.tsx` (`design-system/docs/buttons.md`) — don't hand-write button class strings.
 
-- **Variants:** `primary` (copper fill — one per view), `danger` (filled destructive confirm), `secondary` (copper outline), `outlined` (grey outline), `text` (no container; grey, or copper with `emphasized`). Sizes `sm | md | lg`.
+- **Variants:** `primary` (copper fill — one per view), `danger` (filled destructive confirm), `secondary` (copper outline), `outlined` (grey outline), `text` (no container; grey, or copper with `emphasized`). There is one size: 40 high, radius 12, 24px side padding (text variant 12) — don't pass `size` or padding/height overrides.
 - Modal footers: `<Button variant="text">Cancel</Button>` on the left, `primary` (or `danger` for destructive) on the right; show `<KluvsSpinner color="var(--color-on-primary)" />` while `loading`.
 - Radius is `rounded-btn` (12px); text color on filled variants is `--color-on-primary`. No raw `bg-primary … text-white` button strings.
 - Button text is the `t-label` family (see Typography); don't set size, weight, `leading-*` or `tracking-*` on a button.

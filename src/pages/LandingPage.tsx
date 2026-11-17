@@ -251,7 +251,7 @@ export default function LandingPage() {
                 />
               </div>
               <Button
-                variant="primary" size="lg" className="text-body-lg"
+                variant="primary" className="text-body-lg"
                 type="submit"
               >
                 Send Message

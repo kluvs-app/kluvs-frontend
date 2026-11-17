@@ -58,7 +58,7 @@ export default function DiscussionsTimeline({
           )}
         </div>
         {isAdmin && selectedClub.active_session && (
-          <Button variant="outlined" size="sm" onClick={onAddDiscussion}>
+          <Button variant="outlined" onClick={onAddDiscussion}>
             <span aria-hidden>+</span>
 Add
           </Button>
