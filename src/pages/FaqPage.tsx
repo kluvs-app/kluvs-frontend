@@ -36,7 +36,7 @@ export default function FaqPage() {
 
       <main className="max-w-3xl mx-auto px-6 py-12">
         <header className="mb-12">
-          <h1 className="t-headline-m text-[var(--color-text-primary)] mb-3">
+          <h1 className="t-headline-s sm:t-headline-m text-[var(--color-text-primary)] mb-3">
             Frequently Asked Questions
           </h1>
           <p className="t-body-l text-[var(--color-text-secondary)]">

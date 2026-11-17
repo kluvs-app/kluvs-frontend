@@ -87,7 +87,7 @@ export default function LandingPage() {
         <KluvsHexBackground />
         <div className="relative z-10 pt-[260px]">
           <div className="max-w-2xl mx-auto">
-            <h1 className="t-headline-l t-feature sm:t-display-s text-[var(--color-text-primary)] mb-6">
+            <h1 className="t-display-s t-feature sm:t-display-m lg:t-display-l text-[var(--color-text-primary)] mb-6">
               Reading is done best together.
             </h1>
             <p className="t-body-l text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">

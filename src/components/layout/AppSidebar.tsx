@@ -94,7 +94,7 @@ export default function AppSidebar() {
               {member?.name ?? 'User'}
             </p>
             {member?.handle && (
-              <p className="t-fine-print text-[var(--color-text-secondary)] truncate">
+              <p className="t-caption text-[var(--color-text-secondary)] truncate">
                 {member.handle.startsWith('@') ? member.handle : `@${member.handle}`}
               </p>
             )}

@@ -152,7 +152,7 @@ export default function MobileTopBar() {
                       {member?.name ?? 'User'}
                     </p>
                     {member?.handle && (
-                      <p className="t-fine-print text-[var(--color-text-secondary)] truncate mt-0.5">
+                      <p className="t-caption text-[var(--color-text-secondary)] truncate mt-0.5">
                         {member.handle.startsWith('@') ? member.handle : `@${member.handle}`}
                       </p>
                     )}

@@ -3,7 +3,7 @@
 
 export const eyebrow = 't-eyebrow'
 
-export const headline = 't-headline-s text-[var(--color-text-primary)]'
+export const headline = 't-headline-s sm:t-headline-m text-[var(--color-text-primary)]'
 
 export const cardTitle = 't-title-m text-[var(--color-text-primary)]'
 

@@ -87,7 +87,7 @@ export default function DiscordPage() {
       <section className="px-6 pt-24 pb-20 text-center">
         <div className="max-w-2xl mx-auto">
           <p className={`${eyebrow} text-[var(--color-text-meta)] mb-4`}>Kluvs for Discord</p>
-          <h1 className="t-headline-l t-feature sm:t-display-s text-[var(--color-text-primary)] mb-6">
+          <h1 className="t-display-s t-feature sm:t-display-m lg:t-display-l text-[var(--color-text-primary)] mb-6">
             Your club, right in your server.
           </h1>
           <p className="t-body-l text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">

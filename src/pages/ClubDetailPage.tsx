@@ -1028,7 +1028,7 @@ export default function ClubDetailPage() {
                 </div>
 
                 {/* Role breakdown */}
-                <p className="t-fine-print text-[var(--color-text-secondary)]">
+                <p className="t-caption text-[var(--color-text-secondary)]">
                   {(() => {
                     const owners = clubMembers.filter((m) => m.role === 'owner').length
                     const admins = clubMembers.filter((m) => m.role === 'admin').length
