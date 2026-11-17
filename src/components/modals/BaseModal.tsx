@@ -33,7 +33,7 @@ export default function BaseModal({
 
   if (!isOpen) return null
 
-  const titleColor = titleVariant === 'danger' ? 'var(--color-danger)' : '#D16D30'
+  const titleColor = titleVariant === 'danger' ? 'var(--color-danger)' : 'var(--color-primary)'
   const maxWidthClass = maxWidth === 'md' ? 'max-w-md' : 'max-w-sm'
 
   return (

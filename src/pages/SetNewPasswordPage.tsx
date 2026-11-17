@@ -55,7 +55,7 @@ export default function SetNewPasswordPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={submitting}
-            className="w-full px-4 py-2.5 bg-[var(--color-surface-1)] border border-[var(--color-divider)] rounded-[10px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full px-4 py-2.5 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-[10px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
           <input
             type="password"
@@ -64,7 +64,7 @@ export default function SetNewPasswordPage() {
             onChange={(e) => setConfirm(e.target.value)}
             required
             disabled={submitting}
-            className="w-full px-4 py-2.5 bg-[var(--color-surface-1)] border border-[var(--color-divider)] rounded-[10px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full px-4 py-2.5 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-[10px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
           {error && (
             <p className="text-danger text-body text-center">{error}</p>

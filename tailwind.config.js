@@ -94,6 +94,7 @@ export default {
           'helper-sm': ['0.75rem', { lineHeight: '1rem', fontWeight: '400' }],
         },
         borderRadius: {
+          'sm': '0.25rem',
           'input': '0.5rem',
           'btn': '0.75rem',
           'card': '0.75rem',

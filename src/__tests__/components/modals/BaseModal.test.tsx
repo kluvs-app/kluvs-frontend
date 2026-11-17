@@ -76,7 +76,7 @@ describe('BaseModal', () => {
     it('applies copper color for default variant', () => {
       render(<BaseModal {...defaultProps} />)
       const heading = screen.getByRole('heading', { name: 'Test Modal' })
-      expect(heading).toHaveStyle({ color: '#D16D30' })
+      expect(heading).toHaveStyle({ color: 'var(--color-primary)' })
     })
 
     it('applies danger color for danger variant', () => {
