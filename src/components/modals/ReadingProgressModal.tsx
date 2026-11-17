@@ -15,9 +15,7 @@ interface ReadingProgressModalProps {
 
 const labelStyle = {
   display: 'block' as const,
-  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-  fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-  textTransform: 'uppercase' as const, color: 'var(--color-text-secondary)',
+  color: 'var(--color-text-secondary)',
   marginBottom: 8,
 }
 
@@ -167,7 +165,7 @@ export default function ReadingProgressModal({
         </div>
 
         <div>
-          <label style={labelStyle}>Track By</label>
+          <label className="t-eyebrow" style={labelStyle}>Track By</label>
           <div className="flex w-full items-stretch border border-[var(--color-divider)] rounded-full overflow-hidden">
             <button
               type="button"
@@ -198,7 +196,7 @@ export default function ReadingProgressModal({
 
         {progressType === 'page' ? (
           <div>
-            <label htmlFor="current-page-input" style={labelStyle}>Current Page{pageCount ? ` (of ${pageCount})` : ''}</label>
+            <label htmlFor="current-page-input" className="t-eyebrow" style={labelStyle}>Current Page{pageCount ? ` (of ${pageCount})` : ''}</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-secondary)] font-medium pointer-events-none">
                 #
@@ -224,7 +222,7 @@ export default function ReadingProgressModal({
           </div>
         ) : (
           <div>
-            <label htmlFor="percent-complete-input" style={labelStyle}>Percent Complete</label>
+            <label htmlFor="percent-complete-input" className="t-eyebrow" style={labelStyle}>Percent Complete</label>
             <div className="relative">
               <input
                 id="percent-complete-input"

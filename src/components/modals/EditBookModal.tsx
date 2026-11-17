@@ -97,11 +97,9 @@ export default function EditBookModal({
     >
       <div className="space-y-5">
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Book</label>
           <BookSearchInput
@@ -113,11 +111,9 @@ export default function EditBookModal({
         </div>
 
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Due Date <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
           <input

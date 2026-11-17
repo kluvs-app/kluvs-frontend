@@ -52,7 +52,7 @@ export default function DiscussionsTimeline({
             DISCUSSIONS
           </span>
           {selectedClub.active_session && sortedDiscussions.length > 0 && (
-            <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
+            <span className="t-title-s t-feature text-[var(--color-text-secondary)]">
               {sortedDiscussions.length} scheduled
             </span>
           )}
@@ -67,7 +67,7 @@ export default function DiscussionsTimeline({
       {/* Empty states */}
       {!selectedClub.active_session ? (
         <div className="flex flex-col items-center text-center py-6">
-          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+          <p className="t-title-l t-feature text-[var(--color-text-secondary)] leading-snug mb-4">
             {isAdmin
               ? 'Start a session first to schedule discussions.'
               : 'Discussions will appear here once a session begins.'}
@@ -75,7 +75,7 @@ export default function DiscussionsTimeline({
           {isAdmin && onStartSession && (
             <button
               onClick={onStartSession}
-              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+              className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn font-medium transition-all duration-120 cursor-pointer"
             >
               Start Session
             </button>
@@ -83,13 +83,13 @@ export default function DiscussionsTimeline({
         </div>
       ) : sortedDiscussions.length === 0 ? (
         <div className="flex flex-col items-center text-center py-6">
-          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-5">
+          <p className="t-title-l t-feature text-[var(--color-text-secondary)] leading-snug mb-5">
             No discussions scheduled yet.
           </p>
           {isAdmin && (
             <button
               onClick={onAddDiscussion}
-              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
+              className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn font-medium transition-all duration-120 cursor-pointer"
             >
               Schedule Discussion
             </button>
@@ -168,11 +168,11 @@ export default function DiscussionsTimeline({
                       {discussion.title}
                     </p>
                     {discussion.location && (
-                      <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">
+                      <p className="t-caption text-[var(--color-text-secondary)] mt-1">
                         {discussion.location}
                       </p>
                     )}
-                    <p className="flex items-center gap-1.5 text-[13px] text-[var(--color-text-secondary)] mt-1">
+                    <p className="t-caption flex items-center gap-1.5 text-[var(--color-text-secondary)] mt-1">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                       </svg>

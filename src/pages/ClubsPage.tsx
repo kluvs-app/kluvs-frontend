@@ -58,7 +58,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
         <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center justify-center px-5 py-8 gap-8">
           <BookCover size="lg" title="Book cover placeholder" />
           <div className="text-center">
-            <h2 className="font-serif italic text-[48px] font-medium text-[var(--color-text-primary)] mb-4">
+            <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-4">
               No clubs yet.
             </h2>
             <p className="text-[15px] text-[var(--color-text-secondary)] mb-8 max-w-[280px] mx-auto leading-relaxed">
@@ -92,12 +92,12 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
           </span>
           <button
             onClick={() => setShowAddClubModal(true)}
-            className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-lg text-[13px] font-medium transition-all duration-120 cursor-pointer"
+            className="t-caption bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-lg font-medium transition-all duration-120 cursor-pointer"
           >
             + New
           </button>
         </div>
-        <h1 className="font-serif text-[48px] font-medium leading-[1] text-[var(--color-text-primary)] tracking-[-0.022em]">
+        <h1 className="t-headline-l leading-[1] text-[var(--color-text-primary)] tracking-[-0.022em]">
           Clubs
         </h1>
       </div>
@@ -124,7 +124,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                 <div className="flex-1 min-w-0 flex flex-col">
                   {/* Club name + role */}
                   <div className="flex items-center gap-2 mb-1.5">
-                    <h3 className="font-serif text-[21px] font-medium text-[var(--color-text-primary)] truncate">
+                    <h3 className="t-title-m text-[var(--color-text-primary)] truncate">
                       {club.name}
                     </h3>
                     <RoleEyebrow role={club.role ?? 'member'} />
@@ -132,7 +132,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
 
                   {/* Book title */}
                   {fullClub?.active_session?.book?.title && (
-                    <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)] mb-2 truncate">
+                    <p className="t-title-s t-feature text-[var(--color-text-secondary)] mb-2 truncate">
                       {fullClub.active_session.book.title}
                     </p>
                   )}

@@ -127,11 +127,9 @@ export default function AddClubModal({
       <div className="space-y-5">
         <div>
           <label
-            style={{
+            className="t-eyebrow" style={{
               display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              color: 'var(--color-text-secondary)',
               marginBottom: 8,
             }}
           >Club Name</label>
@@ -154,10 +152,8 @@ export default function AddClubModal({
           >
             <div className="flex items-center gap-2">
               <DiscordIcon className="w-4 h-4 shrink-0 text-discord" />
-              <span style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              <span className="t-eyebrow" style={{
+                color: 'var(--color-text-secondary)',
               }}>Discord</span>
             </div>
 
@@ -177,11 +173,9 @@ export default function AddClubModal({
                   <div>
                     <label
                       htmlFor="add-club-server-select"
-                      style={{
+                      className="t-eyebrow" style={{
                         display: 'block',
-                        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                        fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                        textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                        color: 'var(--color-text-secondary)',
                         marginBottom: 8,
                       }}
                     >Server</label>
@@ -212,11 +206,9 @@ export default function AddClubModal({
                   <div>
                     <label
                       htmlFor="add-club-channel-select"
-                      style={{
+                      className="t-eyebrow" style={{
                         display: 'block',
-                        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                        fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                        textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                        color: 'var(--color-text-secondary)',
                         marginBottom: 8,
                       }}
                     >Channel <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>

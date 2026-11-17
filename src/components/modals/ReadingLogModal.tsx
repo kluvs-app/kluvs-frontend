@@ -15,23 +15,16 @@ function LogEntry({ entry }: { entry: ReadingLogEntry }) {
     <div className="flex gap-4 items-start">
       <CoverSlot imageUrl={entry.book?.image_url} width={40} height={56} />
       <div className="flex-1 min-w-0">
-        <p style={{
-          fontFamily: '"EB Garamond", Georgia, serif',
-          fontStyle: 'italic', fontWeight: 500,
-          fontSize: 18, lineHeight: 1.15,
+        <p className="t-title-m t-feature" style={{          lineHeight: 1.15,
           letterSpacing: '-0.008em',
           color: 'var(--color-text-primary)',
           marginBottom: 4,
         }}>{entry.book?.title}</p>
-        <p style={{
-          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontSize: 13, color: 'var(--color-text-meta)',
+        <p className="t-caption" style={{          color: 'var(--color-text-meta)',
           marginBottom: 4,
         }}>{entry.book?.author}</p>
-        <p style={{
-          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontSize: 11, fontWeight: 500, letterSpacing: '0.10em',
-          textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+        <p className="t-eyebrow" style={{
+          color: 'var(--color-text-secondary)',
         }}>{entry.club?.name}</p>
       </div>
     </div>
@@ -40,11 +33,9 @@ function LogEntry({ entry }: { entry: ReadingLogEntry }) {
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <span style={{
+    <span className="t-eyebrow" style={{
       display: 'block',
-      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-      fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-      textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+      color: 'var(--color-text-secondary)',
       marginBottom: 16,
     }}>{label}</span>
   )
@@ -52,9 +43,7 @@ function SectionLabel({ label }: { label: string }) {
 
 function EmptyState() {
   return (
-    <p style={{
-      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-      fontSize: 13, color: 'var(--color-text-secondary)',
+    <p className="t-caption" style={{      color: 'var(--color-text-secondary)',
       fontStyle: 'italic',
     }}>Nothing here yet.</p>
   )
@@ -108,9 +97,7 @@ export default function ReadingLogModal({ isOpen, onClose }: ReadingLogModalProp
       )}
 
       {!loading && error && (
-        <p style={{
-          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-          fontSize: 13, color: 'var(--color-danger)',
+        <p className="t-caption" style={{          color: 'var(--color-danger)',
           textAlign: 'center', padding: '24px 0',
         }}>{error}</p>
       )}

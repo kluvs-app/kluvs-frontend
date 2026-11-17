@@ -134,16 +134,14 @@ export default function EditClubModal({
           className="rounded-input px-4 py-3"
           style={{ background: 'rgba(220, 38, 38, 0.06)', border: '1px solid rgba(220, 38, 38, 0.2)' }}
         >
-          <p style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+          <p className="t-eyebrow" style={{
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Danger Zone</p>
           <button
             onClick={onDeleteClub}
             disabled={loading}
-            className="px-3.5 py-1.5 text-[13px] font-medium text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
+            className="t-caption px-3.5 py-1.5 font-medium text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
           >
             Delete club…
           </button>
@@ -171,11 +169,9 @@ export default function EditClubModal({
 
         {/* Name */}
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Club Name</label>
           <input
@@ -198,10 +194,8 @@ export default function EditClubModal({
           >
             <div className="flex items-center gap-2">
               <DiscordIcon className="w-4 h-4 shrink-0 text-discord" />
-              <span style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              <span className="t-eyebrow" style={{
+                color: 'var(--color-text-secondary)',
               }}>Discord</span>
             </div>
 
@@ -219,11 +213,9 @@ export default function EditClubModal({
                   </div>
                 ) : (
                   <div>
-                    <label htmlFor="edit-club-server-select" style={{
+                    <label htmlFor="edit-club-server-select" className="t-eyebrow" style={{
                       display: 'block',
-                      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                      fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                      textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                      color: 'var(--color-text-secondary)',
                       marginBottom: 8,
                     }}>Server</label>
                     <div className="relative">
@@ -252,11 +244,9 @@ export default function EditClubModal({
 
                 {selectedServer && (
                   <div>
-                    <label htmlFor="edit-club-channel-select" style={{
+                    <label htmlFor="edit-club-channel-select" className="t-eyebrow" style={{
                       display: 'block',
-                      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                      fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                      textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                      color: 'var(--color-text-secondary)',
                       marginBottom: 8,
                     }}>Channel <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
                     <div className="relative">
@@ -310,11 +300,9 @@ export default function EditClubModal({
 
         {/* Founded Date */}
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>
             Founded Date{' '}

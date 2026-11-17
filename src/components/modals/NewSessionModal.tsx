@@ -106,11 +106,9 @@ export default function NewSessionModal({
       <div className="space-y-5">
         <p className="text-sm text-[var(--color-text-secondary)]">Begin reading a new book</p>
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Book</label>
           <BookSearchInput
@@ -121,11 +119,9 @@ export default function NewSessionModal({
         </div>
 
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Due Date</label>
           <input
@@ -142,11 +138,9 @@ export default function NewSessionModal({
         </div>
 
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase' as const, color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Participation</label>
           <div className="flex items-center justify-between">

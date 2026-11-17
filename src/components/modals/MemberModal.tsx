@@ -22,11 +22,6 @@ interface MemberFormData {
 
 const labelStyle = {
   display: 'block',
-  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-  fontSize: 11,
-  fontWeight: 500,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase' as const,
   color: 'var(--color-text-secondary)',
   marginBottom: 8,
 }
@@ -199,7 +194,7 @@ export default function MemberModal({
       <div className="space-y-5">
         {!isEditing && (
           <div>
-            <label style={labelStyle}>Member Name</label>
+            <label className="t-eyebrow" style={labelStyle}>Member Name</label>
             <input
               type="text"
               value={formData.name}
@@ -215,7 +210,7 @@ export default function MemberModal({
 
         {canEditRole && (
           <div>
-            <label style={labelStyle}>Role</label>
+            <label className="t-eyebrow" style={labelStyle}>Role</label>
             <div className="relative">
               <select
                 value={formData.role}
@@ -235,7 +230,7 @@ export default function MemberModal({
 
         {isEditing && (
           <div>
-            <label style={labelStyle}>Reading this session</label>
+            <label className="t-eyebrow" style={labelStyle}>Reading this session</label>
             <div className="flex items-center justify-between">
               <p className="text-sm text-[var(--color-text-primary)]">
                 {formData.is_reading ? 'Reading' : 'Not reading'}

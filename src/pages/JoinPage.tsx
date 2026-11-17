@@ -215,7 +215,7 @@ export default function JoinPage() {
                   className="rounded-2xl p-8 mb-6"
                   style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
                 >
-                  <p className="font-serif text-[28px] font-medium text-[var(--color-text-primary)] mb-3">
+                  <p className="t-headline-s text-[var(--color-text-primary)] mb-3">
                     {title}
                   </p>
                   <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
@@ -237,7 +237,7 @@ export default function JoinPage() {
               >
                 You're invited
               </p>
-              <h1 className="font-serif text-[40px] font-medium leading-[1.1] text-[var(--color-text-primary)] mb-6 tracking-[-0.015em]">
+              <h1 className="t-headline-l leading-[1.1] text-[var(--color-text-primary)] mb-6 tracking-[-0.015em]">
                 {clubPreview.name}
               </h1>
               <div className="flex flex-col gap-3">
@@ -267,7 +267,7 @@ export default function JoinPage() {
                 </button>
               </div>
             </div>
-            <p className="text-[12px] text-[var(--color-text-secondary)]">
+            <p className="t-fine-print text-[var(--color-text-secondary)]">
               You'll be asked to sign in if you haven't already.
             </p>
           </div>

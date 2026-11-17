@@ -25,7 +25,7 @@ export default function Footer({ showVersion = false }: Props) {
     <footer className="border-t border-[var(--color-divider)] px-6 py-8">
       <div className="mx-auto max-w-6xl flex flex-col items-center gap-6 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
         <div className="flex flex-col items-center gap-2 sm:items-start">
-          <p className="font-serif italic text-[17px] leading-none text-[var(--color-text-meta)]">
+          <p className="t-title-s t-feature leading-none text-[var(--color-text-meta)]">
             Reading is done best together.
           </p>
           <p className="t-fine-print text-[var(--color-text-meta)]">

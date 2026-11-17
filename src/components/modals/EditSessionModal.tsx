@@ -17,9 +17,7 @@ interface EditSessionModalProps {
 
 const labelStyle = {
   display: 'block' as const,
-  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-  fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-  textTransform: 'uppercase' as const, color: 'var(--color-text-secondary)',
+  color: 'var(--color-text-secondary)',
   marginBottom: 8,
 }
 
@@ -193,7 +191,7 @@ export default function EditSessionModal({
           </p>
 
           <div>
-            <label style={labelStyle}>New Book</label>
+            <label className="t-eyebrow" style={labelStyle}>New Book</label>
             <BookSearchInput
               key={bookKey}
               onSelect={setNewBookId}
@@ -202,7 +200,7 @@ export default function EditSessionModal({
           </div>
 
           <div>
-            <label style={labelStyle}>Due Date</label>
+            <label className="t-eyebrow" style={labelStyle}>Due Date</label>
             <input
               type="date"
               value={newDueDate}
@@ -244,7 +242,7 @@ export default function EditSessionModal({
     >
       <div className="space-y-5">
         <div>
-          <label style={labelStyle}>Due Date</label>
+          <label className="t-eyebrow" style={labelStyle}>Due Date</label>
           <input
             type="date"
             value={dueDate}
@@ -256,7 +254,7 @@ export default function EditSessionModal({
         </div>
 
         <div>
-          <label style={labelStyle}>Reading Members</label>
+          <label className="t-eyebrow" style={labelStyle}>Reading Members</label>
           <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
             {members.map(m => {
               const isReading = readingMap[m.id] ?? false

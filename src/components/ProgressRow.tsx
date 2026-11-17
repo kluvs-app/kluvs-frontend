@@ -68,7 +68,7 @@ export default function ProgressRow({
             </span>
           ) : (
             <span 
-              className="text-[17px] text-[var(--color-text-secondary)] font-serif italic leading-none"
+              className="t-title-s text-[var(--color-text-secondary)] t-feature leading-none"
               style={{ fontFamily: '"EB Garamond", serif' }}
             >
               {leftLabel}
@@ -76,7 +76,7 @@ export default function ProgressRow({
           )
         ) : <div />}
         <span 
-          className="text-[12px] text-primary font-medium tracking-[0.04em] leading-none"
+          className="t-fine-print text-primary font-medium tracking-[0.04em] leading-none"
           style={{ fontFamily: '"IBM Plex Sans", sans-serif' }}
         >
           {label}

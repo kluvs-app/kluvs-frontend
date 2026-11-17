@@ -139,16 +139,14 @@ export default function DiscussionNoteModal({
           className="rounded-input px-4 py-3"
           style={{ background: 'rgba(220, 38, 38, 0.06)', border: '1px solid rgba(220, 38, 38, 0.2)' }}
         >
-          <p style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+          <p className="t-eyebrow" style={{
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Danger Zone</p>
           <button
             onClick={handleDelete}
             disabled={loading || fetching}
-            className="px-3.5 py-1.5 text-[13px] font-medium text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
+            className="t-caption px-3.5 py-1.5 font-medium text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
           >Delete note…</button>
         </div>
       ) : undefined}
@@ -182,11 +180,9 @@ export default function DiscussionNoteModal({
         </div>
 
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Your Note</label>
           {fetching ? (

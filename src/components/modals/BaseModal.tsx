@@ -55,12 +55,7 @@ export default function BaseModal({
         >
           <h2
             id={labelId}
-            style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
+            className="t-eyebrow" style={{
               color: titleColor,
               margin: 0,
             }}

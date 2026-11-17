@@ -142,11 +142,6 @@ export default function AddMemberModal({
 
   const sectionLabelStyle = {
     display: 'block',
-    fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-    fontSize: 11,
-    fontWeight: 500,
-    letterSpacing: '0.14em',
-    textTransform: 'uppercase' as const,
     color: 'var(--color-text-secondary)',
     marginBottom: 12,
   }
@@ -161,7 +156,7 @@ export default function AddMemberModal({
       <div className="space-y-6">
         {/* Section 1 — Find a member */}
         <div>
-          <p style={sectionLabelStyle}>Find a member</p>
+          <p className="t-eyebrow" style={sectionLabelStyle}>Find a member</p>
           <input
             type="text"
             value={query}
@@ -193,7 +188,7 @@ export default function AddMemberModal({
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-input text-left hover:bg-[var(--color-bg-elevated)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="w-8 h-8 rounded-full bg-[var(--color-text-disabled)] flex items-center justify-center flex-shrink-0">
-                      <span className="text-[13px] font-medium text-[var(--color-text-primary)]">
+                      <span className="t-caption font-medium text-[var(--color-text-primary)]">
                         {r.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -215,7 +210,7 @@ export default function AddMemberModal({
 
         {/* Section 2 — Invite link */}
         <div>
-          <p style={sectionLabelStyle}>Invite link</p>
+          <p className="t-eyebrow" style={sectionLabelStyle}>Invite link</p>
 
           {/* Policy toggle */}
           <div

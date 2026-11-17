@@ -71,12 +71,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
         {/* Who can join? */}
         <div>
           <p
-            style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
+            className="t-eyebrow" style={{
               color: 'var(--color-text-secondary)',
               marginBottom: 12,
             }}

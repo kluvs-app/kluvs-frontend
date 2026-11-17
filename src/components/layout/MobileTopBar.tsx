@@ -113,7 +113,7 @@ export default function MobileTopBar() {
               {/* Avatar */}
               <div className="relative w-8 h-8 shrink-0">
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-medium font-serif"
+                  className="t-title-s w-8 h-8 rounded-full flex items-center justify-center text-white"
                   style={{ background: 'var(--color-primary)' }}
                 >
                   {initials}
@@ -191,7 +191,7 @@ export default function MobileTopBar() {
                   >
                     <ThemeIcon theme={theme} />
                     <span className="flex-1 text-left">Appearance</span>
-                    <span className="text-[12px] text-[var(--color-text-secondary)] ml-auto">{themeLabel}</span>
+                    <span className="t-fine-print text-[var(--color-text-secondary)] ml-auto">{themeLabel}</span>
                   </button>
 
                   {/* Help / FAQ — lives on the marketing site, so open it in a new tab */}

@@ -87,7 +87,7 @@ export default function DiscordPage() {
       <section className="px-6 pt-24 pb-20 text-center">
         <div className="max-w-2xl mx-auto">
           <p className={`${eyebrow} text-[var(--color-text-meta)] mb-4`}>Kluvs for Discord</p>
-          <h1 className="font-serif font-medium italic text-[40px] sm:text-[48px] leading-[1.1] text-[var(--color-text-primary)] mb-6">
+          <h1 className="t-headline-l t-feature sm:t-display-s leading-[1.1] text-[var(--color-text-primary)] mb-6">
             Your club, right in your server.
           </h1>
           <p className="t-body-l text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
@@ -172,7 +172,7 @@ export default function DiscordPage() {
                 <div>
                   {commands.map((cmd) => (
                     <div key={cmd.name} className="flex items-start gap-3 py-2.5 border-b border-[var(--color-divider)] last:border-0">
-                      <code className="text-[13px] font-mono text-primary shrink-0 mt-px">{cmd.name}</code>
+                      <code className="t-caption font-mono text-primary shrink-0 mt-px">{cmd.name}</code>
                       <span className="t-body-m text-[var(--color-text-secondary)]">{cmd.description}</span>
                     </div>
                   ))}

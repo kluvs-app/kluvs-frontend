@@ -185,11 +185,9 @@ export default function EditProfileModal({
         {/* Name */}
         <div>
           <label
-            style={{
+            className="t-eyebrow" style={{
               display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              color: 'var(--color-text-secondary)',
               marginBottom: 8,
             }}
           >Display Name</label>
@@ -208,11 +206,9 @@ export default function EditProfileModal({
         {/* Handle */}
         <div>
           <label
-            style={{
+            className="t-eyebrow" style={{
               display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              color: 'var(--color-text-secondary)',
               marginBottom: 8,
             }}
           >Handle</label>

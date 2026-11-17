@@ -40,7 +40,7 @@ export default function MemberBadge({
       {/* Name + handle */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-[14px] font-medium text-[var(--color-text-primary)] truncate">
+          <p className="t-label text-[var(--color-text-primary)] truncate">
             {member.name}
           </p>
           {isOwn && (
@@ -49,7 +49,7 @@ export default function MemberBadge({
             </span>
           )}
         </div>
-        <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
+        <p className="t-fine-print text-[var(--color-text-secondary)] mt-0.5">
           @{member.handle}
         </p>
       </div>
