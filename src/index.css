@@ -53,6 +53,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
    on top of these. */
 @layer components {
   .t-display-s   { @apply font-serif font-bold;   font-size: 48px; line-height: 52px;  letter-spacing: 0; }
+  /* Display M / L: reserved, unused on web — do not use (DS: only Display S is in use). */
   .t-display-m   { @apply font-serif font-bold;   font-size: 64px; line-height: 68px;  letter-spacing: 0; }
   .t-display-l   { @apply font-serif font-bold;   font-size: 96px; line-height: 100px; letter-spacing: 0; }
   .t-headline-s  { @apply font-serif font-medium; font-size: 30px; line-height: 36px;  letter-spacing: 0; }
