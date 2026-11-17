@@ -90,7 +90,7 @@ export default function DiscordPage() {
           <h1 className="font-serif font-medium italic text-[40px] sm:text-[48px] leading-[1.1] text-[var(--color-text-primary)] mb-6">
             Your club, right in your server.
           </h1>
-          <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
+          <p className="t-body-l text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
             The Kluvs bot keeps the current read, the next discussion, and your members in step without leaving Discord. Everything stays in sync with the app.
           </p>
 
@@ -100,7 +100,7 @@ export default function DiscordPage() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Add Kluvs bot to your Discord server"
-              className="flex items-center justify-center gap-3 bg-discord text-white rounded-btn px-6 py-3 font-medium text-body transition-opacity hover:opacity-90"
+              className="flex items-center justify-center gap-3 bg-discord text-white rounded-btn px-6 py-3 font-medium t-body-m transition-opacity hover:opacity-90"
             >
               <DiscordIcon className="w-5 h-5" />
               Add to Server
@@ -115,7 +115,7 @@ export default function DiscordPage() {
               Join Support Server
             </a>
           </div>
-          <p className="mt-6 text-helper text-[var(--color-text-meta)]">
+          <p className="mt-6 t-caption text-[var(--color-text-meta)]">
             <a
               href={TOPGG_URL}
               target="_blank"
@@ -141,7 +141,7 @@ export default function DiscordPage() {
               <div key={feature.title} className={`${card} p-6`}>
                 <MatIcon name={feature.icon} className="text-[var(--color-text-secondary)] mb-4 block" />
                 <h3 className={`${cardTitle} mb-2`}>{feature.title}</h3>
-                <p className="text-body text-[var(--color-text-secondary)]">{feature.description}</p>
+                <p className="t-body-m text-[var(--color-text-secondary)]">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -158,7 +158,7 @@ export default function DiscordPage() {
           <header className="text-center mb-12">
             <p className={`${eyebrow} text-[var(--color-text-meta)] mb-3`}>Reference</p>
             <h2 className={`${headline} mb-3`}>Commands</h2>
-            <p className="text-body-lg text-[var(--color-text-secondary)] max-w-lg mx-auto">
+            <p className="t-body-l text-[var(--color-text-secondary)] max-w-lg mx-auto">
               All commands use Discord's slash command system. Admin commands need the server owner or a club admin.
             </p>
           </header>
@@ -173,7 +173,7 @@ export default function DiscordPage() {
                   {commands.map((cmd) => (
                     <div key={cmd.name} className="flex items-start gap-3 py-2.5 border-b border-[var(--color-divider)] last:border-0">
                       <code className="text-[13px] font-mono text-primary shrink-0 mt-px">{cmd.name}</code>
-                      <span className="text-body text-[var(--color-text-secondary)]">{cmd.description}</span>
+                      <span className="t-body-m text-[var(--color-text-secondary)]">{cmd.description}</span>
                     </div>
                   ))}
                 </div>

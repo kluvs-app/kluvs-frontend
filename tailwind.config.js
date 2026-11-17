@@ -84,15 +84,6 @@ export default {
             dark: 'rgba(0, 0, 0, 0.70)',
           },
         },
-        fontSize: {
-          'page-heading': ['1.875rem', { lineHeight: '2.25rem', fontWeight: '700' }],
-          'section-heading': ['1.25rem', { lineHeight: '1.75rem', fontWeight: '700' }],
-          'card-heading': ['1.125rem', { lineHeight: '1.5rem', fontWeight: '700' }],
-          'body-lg': ['1rem', { lineHeight: '1.5rem', fontWeight: '400' }],
-          'body': ['0.875rem', { lineHeight: '1.25rem', fontWeight: '400' }],
-          'helper': ['0.8125rem', { lineHeight: '1.125rem', fontWeight: '400' }],
-          'helper-sm': ['0.75rem', { lineHeight: '1rem', fontWeight: '400' }],
-        },
         borderRadius: {
           'sm': '0.25rem',
           'input': '0.5rem',

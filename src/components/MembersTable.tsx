@@ -23,7 +23,7 @@ export default function MembersTable({
     <>
       {/* Section heading */}
       <div className="flex justify-between items-center mb-4">
-        <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">
+        <p className="t-eyebrow text-[var(--color-text-secondary)]">
           Members ({selectedClub.members?.length ?? 0})
         </p>
         {isAdmin && (

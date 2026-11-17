@@ -232,7 +232,7 @@ export default function JoinPage() {
               style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
             >
               <p
-                className="text-[11px] font-medium uppercase tracking-[0.14em] mb-4"
+                className="t-eyebrow mb-4"
                 style={{ color: 'var(--color-primary)' }}
               >
                 You're invited

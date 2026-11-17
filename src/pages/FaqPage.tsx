@@ -39,7 +39,7 @@ export default function FaqPage() {
           <h1 className="font-serif font-medium text-[34px] leading-[1.15] text-[var(--color-text-primary)] mb-3">
             Frequently Asked Questions
           </h1>
-          <p className="text-body-lg text-[var(--color-text-secondary)]">
+          <p className="t-body-l text-[var(--color-text-secondary)]">
             New to Kluvs? Start with how clubs, sessions, and discussions fit together.
           </p>
         </header>

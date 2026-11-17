@@ -84,7 +84,7 @@ export default function DeleteDiscussionModal({
           className="rounded-input px-4 py-3 space-y-1"
           style={{ background: 'rgba(var(--color-danger-rgb, 220 38 38) / 0.06)', border: '1px solid rgba(var(--color-danger-rgb, 220 38 38) / 0.2)' }}
         >
-          <p className="text-xs font-medium text-danger uppercase tracking-wider mb-2">This will permanently delete:</p>
+          <p className="t-eyebrow text-danger mb-2">This will permanently delete:</p>
           <p className="text-sm text-[var(--color-text-secondary)]">The discussion event</p>
           <p className="text-sm text-[var(--color-text-secondary)]">All associated details</p>
         </div>

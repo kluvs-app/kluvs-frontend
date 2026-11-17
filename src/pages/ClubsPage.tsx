@@ -87,7 +87,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
       {/* Mobile Header */}
       <div className="border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-5 py-6">
         <div className="flex items-baseline justify-between gap-4 mb-4">
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+          <span className="t-eyebrow text-[var(--color-text-secondary)]">
             Your
           </span>
           <button
@@ -148,7 +148,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                       const parsedDate = parseScheduledAt(next.scheduled_at)
                       if (isNaN(parsedDate.getTime())) return null
                       return (
-                        <span className="text-[12px] text-[var(--color-text-secondary)] font-medium uppercase tracking-[0.02em]">
+                        <span className="t-eyebrow text-[var(--color-text-secondary)]">
                           Next · {parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
                       )

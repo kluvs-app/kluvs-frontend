@@ -241,7 +241,7 @@ export default function EditProfileModal({
           >
             <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Discord</p>
+              <p className="t-eyebrow text-[var(--color-text-secondary)]">Discord</p>
               <p className="text-sm text-[var(--color-text-primary)] font-mono truncate mt-0.5">{currentMember.discord_id}</p>
             </div>
             <span className="text-xs font-medium text-secondary shrink-0">Connected</span>

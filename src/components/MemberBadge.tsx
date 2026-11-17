@@ -44,7 +44,7 @@ export default function MemberBadge({
             {member.name}
           </p>
           {isOwn && (
-            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary flex-shrink-0">
+            <span className="t-eyebrow text-primary flex-shrink-0">
               YOU
             </span>
           )}

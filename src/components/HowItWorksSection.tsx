@@ -6,7 +6,7 @@ function ConnectorTrack({ label }: { label: string }) {
       <div className="relative flex items-center justify-center h-[70px]">
         <div className="absolute left-1/2 top-0 bottom-0 w-px" style={{ background: 'var(--color-divider)' }} />
         <div
-          className="relative rounded-full px-3.5 py-[3px] text-[10px] font-medium uppercase tracking-[0.07em] whitespace-nowrap border"
+          className="t-eyebrow relative rounded-full px-3.5 py-[3px] tracking-[0.07em] whitespace-nowrap border"
           style={{ background: 'var(--color-bg-raised)', borderColor: 'var(--color-divider)', color: 'var(--color-text-meta)' }}
         >
           {label}
@@ -29,13 +29,13 @@ export default function HowItWorksSection() {
     <section className="px-6 py-16" style={{ background: 'var(--color-bg)' }}>
       <div className="max-w-[900px] mx-auto">
         <header className="text-center mb-16">
-          <p className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-meta)] mb-3">
+          <p className="t-eyebrow text-[var(--color-text-meta)] mb-3">
             How it works
           </p>
           <h2 className="text-3xl font-serif font-bold text-[var(--color-text-primary)] mb-3">
             One server, many clubs
           </h2>
-          <p className="text-body-lg text-[var(--color-text-secondary)] max-w-md mx-auto">
+          <p className="t-body-l text-[var(--color-text-secondary)] max-w-md mx-auto">
             Each channel can hold its own club, with its own book, members, and discussions.
           </p>
         </header>

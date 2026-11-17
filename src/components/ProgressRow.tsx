@@ -61,7 +61,7 @@ export default function ProgressRow({
         {leftLabel ? (
           leftLabelVariant === 'eyebrow' ? (
             <span 
-              className="text-[10px] text-primary font-medium uppercase tracking-[0.14em] leading-none"
+              className="t-eyebrow text-primary leading-none"
               style={{ fontFamily: '"IBM Plex Sans", sans-serif' }}
             >
               {leftLabel}

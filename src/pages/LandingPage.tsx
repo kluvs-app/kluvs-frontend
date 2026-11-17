@@ -90,7 +90,7 @@ export default function LandingPage() {
             <h1 className="font-serif font-medium italic text-[40px] sm:text-[48px] leading-[1.1] text-[var(--color-text-primary)] mb-6">
               Reading is done best together.
             </h1>
-            <p className="text-body-lg text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
+            <p className="t-body-l text-[var(--color-text-secondary)] mb-10 max-w-lg mx-auto">
               Kluvs gives your book club a quiet place to keep the current read, the next discussion, and everything you meant to bring up. On your phone and on the web.
             </p>
             {/* Official store badges, unmodified per Google's and Apple's brand guidelines. Google's PNG
@@ -120,7 +120,7 @@ export default function LandingPage() {
               <div key={feature.title} className={`${card} p-6`}>
                 <MatIcon name={feature.icon} className="text-[var(--color-text-secondary)] mb-4 block" />
                 <h3 className={`${cardTitle} mb-2`}>{feature.title}</h3>
-                <p className="text-body text-[var(--color-text-secondary)]">{feature.description}</p>
+                <p className="t-body-m text-[var(--color-text-secondary)]">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -133,7 +133,7 @@ export default function LandingPage() {
           <div>
             <p className={`${eyebrow} text-[var(--color-text-meta)] mb-3`}>Wherever you read</p>
             <h2 className={`${headline} mb-3`}>Your club follows you</h2>
-            <p className="text-body-lg text-[var(--color-text-secondary)] mb-8 max-w-md">
+            <p className="t-body-l text-[var(--color-text-secondary)] mb-8 max-w-md">
               Start on your phone, pick it up on your laptop. Everything stays in step, and it’s free on Android, iPhone, and the web.
             </p>
             <ul className="space-y-3 max-w-md">
@@ -141,8 +141,8 @@ export default function LandingPage() {
                 <a href={GOOGLE_PLAY_URL} target="_blank" rel="noopener noreferrer" className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
                   <MatIcon name="phone_android" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
                   <span className="flex-1">
-                    <span className="block text-body font-medium text-[var(--color-text-primary)]">Android</span>
-                    <span className="block text-helper text-[var(--color-text-meta)]">Free on Google Play</span>
+                    <span className="block t-body-m font-medium text-[var(--color-text-primary)]">Android</span>
+                    <span className="block t-caption text-[var(--color-text-meta)]">Free on Google Play</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
                 </a>
@@ -151,8 +151,8 @@ export default function LandingPage() {
                 <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
                   <MatIcon name="phone_iphone" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
                   <span className="flex-1">
-                    <span className="block text-body font-medium text-[var(--color-text-primary)]">iPhone</span>
-                    <span className="block text-helper text-[var(--color-text-meta)]">Free on the App Store</span>
+                    <span className="block t-body-m font-medium text-[var(--color-text-primary)]">iPhone</span>
+                    <span className="block t-caption text-[var(--color-text-meta)]">Free on the App Store</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
                 </a>
@@ -161,8 +161,8 @@ export default function LandingPage() {
                 <a href={getAppHref('/me')} className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
                   <MatIcon name="language" className="text-[var(--color-text-secondary)] !text-[20px] shrink-0" />
                   <span className="flex-1">
-                    <span className="block text-body font-medium text-[var(--color-text-primary)]">Web</span>
-                    <span className="block text-helper text-[var(--color-text-meta)]">Free in any browser</span>
+                    <span className="block t-body-m font-medium text-[var(--color-text-primary)]">Web</span>
+                    <span className="block t-caption text-[var(--color-text-meta)]">Free in any browser</span>
                   </span>
                   <MatIcon name="arrow_outward" className="text-[var(--color-text-meta)] !text-[18px]" />
                 </a>
@@ -171,8 +171,8 @@ export default function LandingPage() {
                 <Link to="/discord" className={`${card} flex items-center gap-4 p-4 hover:border-[var(--color-text-disabled)] transition-colors`}>
                   <DiscordIcon className="w-5 h-5 text-[var(--color-text-secondary)] shrink-0" />
                   <span className="flex-1">
-                    <span className="block text-body font-medium text-[var(--color-text-primary)]">Discord</span>
-                    <span className="block text-helper text-[var(--color-text-meta)]">A companion bot for your server</span>
+                    <span className="block t-body-m font-medium text-[var(--color-text-primary)]">Discord</span>
+                    <span className="block t-caption text-[var(--color-text-meta)]">A companion bot for your server</span>
                   </span>
                   <MatIcon name="arrow_forward" className="text-[var(--color-text-meta)] !text-[18px]" />
                 </Link>
@@ -193,14 +193,14 @@ export default function LandingPage() {
         <div className="max-w-lg mx-auto">
           <p className={`${eyebrow} text-[var(--color-text-meta)] mb-3`}>Contact</p>
           <h2 className={`${headline} mb-3`}>Write to us</h2>
-          <p className="text-body-lg text-[var(--color-text-secondary)] mb-8">
+          <p className="t-body-l text-[var(--color-text-secondary)] mb-8">
             Questions, ideas, or a book we should read next. We read everything.
           </p>
 
           {submitted ? (
             <div className={`${card} p-6 text-center`}>
               <p className={`${cardTitle} mb-1`}>Your mail app should open.</p>
-              <p className="text-body text-[var(--color-text-secondary)]">
+              <p className="t-body-m text-[var(--color-text-secondary)]">
                 Your message will be ready to send from there. If nothing opened, write to us at{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-[var(--color-text-primary)] underline underline-offset-2">{CONTACT_EMAIL}</a>.
               </p>
@@ -208,7 +208,7 @@ export default function LandingPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-body font-medium text-[var(--color-text-primary)] mb-1">
+                <label htmlFor="name" className="block t-body-m font-medium text-[var(--color-text-primary)] mb-1">
                   Name
                 </label>
                 <input
@@ -217,12 +217,12 @@ export default function LandingPage() {
                   required
                   value={form.name}
                   onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2 text-[var(--color-text-primary)] text-body focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2 text-[var(--color-text-primary)] t-body-m focus:outline-none focus:ring-2 focus:ring-primary/50"
                   placeholder="Your name"
                 />
               </div>
               <div>
-                <label htmlFor="email" className="block text-body font-medium text-[var(--color-text-primary)] mb-1">
+                <label htmlFor="email" className="block t-body-m font-medium text-[var(--color-text-primary)] mb-1">
                   Email
                 </label>
                 <input
@@ -231,12 +231,12 @@ export default function LandingPage() {
                   required
                   value={form.email}
                   onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2 text-[var(--color-text-primary)] text-body focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2 text-[var(--color-text-primary)] t-body-m focus:outline-none focus:ring-2 focus:ring-primary/50"
                   placeholder="you@example.com"
                 />
               </div>
               <div>
-                <label htmlFor="message" className="block text-body font-medium text-[var(--color-text-primary)] mb-1">
+                <label htmlFor="message" className="block t-body-m font-medium text-[var(--color-text-primary)] mb-1">
                   Message
                 </label>
                 <textarea
@@ -245,17 +245,17 @@ export default function LandingPage() {
                   rows={4}
                   value={form.message}
                   onChange={(e) => setForm(f => ({ ...f, message: e.target.value }))}
-                  className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2 text-[var(--color-text-primary)] text-body focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                  className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2 text-[var(--color-text-primary)] t-body-m focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
                   placeholder="What’s on your mind?"
                 />
               </div>
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-btn font-medium text-body-lg transition-colors"
+                className="bg-primary hover:bg-primary-hover text-white px-6 py-3 rounded-btn font-medium t-body-l transition-colors"
               >
                 Send Message
               </button>
-              <p className="text-helper text-[var(--color-text-meta)]">
+              <p className="t-caption text-[var(--color-text-meta)]">
                 Or write us directly at{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors">{CONTACT_EMAIL}</a>.
               </p>

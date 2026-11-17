@@ -39,7 +39,7 @@ function ErrorBanner({ message }: { message: string }) {
 function ConfirmCard({ eyebrow, email, body }: { eyebrow: string; email: string; body: string }) {
   return (
     <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] rounded-card py-5 px-[22px] text-center">
-      <span className="block font-sans text-[11px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)] mb-[10px]">
+      <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-[10px]">
         {eyebrow}
       </span>
       <p className="font-mono text-[14px] tracking-[0.01em] text-[var(--color-text-primary)] break-all mb-[14px]">
@@ -300,7 +300,7 @@ export default function LoginPage() {
             {/* "or with email" divider */}
             <div className="flex items-center gap-3 my-[18px]">
               <div className="flex-1 h-px bg-[var(--color-divider)]" />
-              <span className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)]">
+              <span className="t-eyebrow text-[var(--color-text-secondary)]">
                 or with email
               </span>
               <div className="flex-1 h-px bg-[var(--color-divider)]" />
@@ -372,14 +372,14 @@ export default function LoginPage() {
           <div className="inline-flex items-center gap-3">
             <a
               href="https://kluvs.com/privacy"
-              className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)] no-underline hover:opacity-80 transition-opacity"
+              className="t-eyebrow text-[var(--color-text-secondary)] no-underline hover:opacity-80 transition-opacity"
             >
               Privacy
             </a>
             <span className="w-[3px] h-[3px] rounded-full bg-[var(--color-text-disabled)] flex-shrink-0 inline-block" aria-hidden="true" />
             <a
               href="https://kluvs.com/terms"
-              className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)] no-underline hover:opacity-80 transition-opacity"
+              className="t-eyebrow text-[var(--color-text-secondary)] no-underline hover:opacity-80 transition-opacity"
             >
               Terms
             </a>

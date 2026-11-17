@@ -47,15 +47,15 @@ function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
         >
           {hasDiscord ? (
             <div className="space-y-1.5">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] mb-2" style={{ color: 'var(--color-discord)' }}>Discord</p>
+              <p className="t-eyebrow mb-2" style={{ color: 'var(--color-discord)' }}>Discord</p>
               {club.server_id && (
                 <div className="flex items-baseline justify-between gap-5">
-                  <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Server</span>
+                  <span className="t-eyebrow text-[var(--color-text-secondary)]">Server</span>
                   <span className="text-[11px] font-mono text-[var(--color-text-primary)]">{club.server_id}</span>
                 </div>
               )}
               <div className="flex items-baseline justify-between gap-5">
-                <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Channel</span>
+                <span className="t-eyebrow text-[var(--color-text-secondary)]">Channel</span>
                 <span className="text-[11px] font-mono text-[var(--color-text-primary)]">{club.discord_channel}</span>
               </div>
             </div>
@@ -339,7 +339,7 @@ export default function ClubDetailPage() {
           {/* Rail header */}
           <div className="border-b border-[var(--color-divider)] px-6 py-[18px]">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+              <span className="t-eyebrow text-[var(--color-text-secondary)]">
                 YOUR CLUBS
               </span>
               <button
@@ -386,7 +386,7 @@ export default function ClubDetailPage() {
 
                   {/* Members + next date */}
                   {sidebarClubs[c.id]?.members ? (
-                    <div className="flex items-center justify-between text-[11px] text-[var(--color-text-secondary)] uppercase tracking-[0.04em]">
+                    <div className="t-eyebrow flex items-center justify-between text-[var(--color-text-secondary)] tracking-[0.04em]">
                       <div>{sidebarClubs[c.id].members?.length ?? 0} MEMBERS</div>
                       {(() => {
                         const next = sidebarClubs[c.id].active_session?.discussions?.find((d) => !isPast(d.scheduled_at))
@@ -423,7 +423,7 @@ export default function ClubDetailPage() {
                 <div className="mb-10 pb-8 border-b border-[var(--color-divider)]">
                   {/* Util row */}
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                    <span className="t-eyebrow text-[var(--color-text-secondary)]">
                       CLUB
                     </span>
                     {isAdmin && (
@@ -455,13 +455,13 @@ export default function ClubDetailPage() {
                     <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                     {club.founded_date && (
                       <>
-                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                        <span className="t-eyebrow text-[var(--color-text-secondary)]">
                           FOUNDED {parseLocalDate(club.founded_date).getFullYear()}
                         </span>
                         <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                       </>
                     )}
-                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                    <span className="t-eyebrow text-[var(--color-text-secondary)]">
                       {clubMembers.length} MEMBERS
                     </span>
                   </div>
@@ -515,7 +515,7 @@ export default function ClubDetailPage() {
                         <div className="flex flex-col justify-between">
                           <div>
                             <div className="flex items-center justify-between mb-3.5">
-                              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                              <p className="t-eyebrow text-primary">
                                 ACTIVE SESSION
                                 </p>
                               {isAdmin && club.active_session.status === 'active' && (
@@ -609,7 +609,7 @@ export default function ClubDetailPage() {
                       {/* Finished badge */}
                       {club.active_session.status === 'finished' && (
                         <div className="mt-4">
-                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full">
+                          <span className="t-eyebrow text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full">
                             Session finished
                           </span>
                         </div>
@@ -617,7 +617,7 @@ export default function ClubDetailPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center text-center mb-12 pb-12 border-b border-[var(--color-divider)]">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-3">
+                      <p className="t-eyebrow text-[var(--color-text-secondary)] mb-3">
                         GETTING STARTED
                       </p>
                       <h2 className="font-serif italic text-[48px] font-medium leading-[1.1] tracking-[-0.015em] text-[var(--color-text-primary)] mb-3">
@@ -653,7 +653,7 @@ export default function ClubDetailPage() {
                     <div>
                       <div className="flex items-center justify-between mb-9">
                         <div className="flex items-center gap-3">
-                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                          <span className="t-eyebrow text-[var(--color-text-secondary)]">
                             MEMBERS
                           </span>
                           <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
@@ -718,7 +718,7 @@ export default function ClubDetailPage() {
 
         {/* Masthead */}
         <div className="px-5 py-6 border-b border-[var(--color-divider)]">
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] block mb-2">
+          <span className="t-eyebrow text-[var(--color-text-secondary)] block mb-2">
             CLUB
           </span>
           <h1 className="font-serif text-[40px] font-medium leading-[1] text-[var(--color-text-primary)] mb-4 tracking-[-0.022em]">
@@ -729,13 +729,13 @@ export default function ClubDetailPage() {
             {club.founded_date && (
               <>
                 <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
-                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                <span className="t-eyebrow text-[var(--color-text-secondary)]">
                   FOUNDED {parseLocalDate(club.founded_date).getFullYear()}
                 </span>
               </>
             )}
             <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
-            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+            <span className="t-eyebrow text-[var(--color-text-secondary)]">
               {clubMembers.length} MEMBERS
             </span>
           </div>
@@ -844,7 +844,7 @@ export default function ClubDetailPage() {
               {/* NOW READING */}
               {!club.active_session && (
                 <div className="flex flex-col items-center text-center py-4 pb-2">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+                  <p className="t-eyebrow text-[var(--color-text-secondary)] mb-2">
                     NO SESSION YET
                   </p>
                   <p className="font-serif italic text-[28px] font-medium text-[var(--color-text-primary)] leading-snug mb-4">
@@ -870,7 +870,7 @@ export default function ClubDetailPage() {
                     />
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                        <p className="t-eyebrow text-primary">
                           ACTIVE SESSION
                           </p>
                         {isAdmin && club.active_session.status === 'active' && (
@@ -956,7 +956,7 @@ export default function ClubDetailPage() {
 
                   {club.active_session.status === 'finished' && (
                     <div className="mt-3">
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full inline-block">
+                      <span className="t-eyebrow text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full inline-block">
                         Session finished
                       </span>
                     </div>
@@ -968,7 +968,7 @@ export default function ClubDetailPage() {
               {club.active_session?.discussions && club.active_session.discussions.length > 0 && (
                 <div className="border-t border-b border-[var(--color-divider)] py-4">
                   <div className="flex items-baseline justify-between mb-2 gap-2">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                    <p className="t-eyebrow text-primary">
                       UP NEXT
                     </p>
                     {(() => {
@@ -976,7 +976,7 @@ export default function ClubDetailPage() {
                         (d) => !isPast(d.scheduled_at)
                       )
                       return nextDiscussion ? (
-                        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                        <p className="t-eyebrow text-primary">
                           {parseScheduledAt(nextDiscussion.scheduled_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -1009,7 +1009,7 @@ export default function ClubDetailPage() {
               {/* THE ROSTER */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                  <p className="t-eyebrow text-[var(--color-text-secondary)]">
                     THE ROSTER
                   </p>
                   <button

@@ -162,7 +162,7 @@ export default function ReadingProgressModal({
           className="rounded-input px-4 py-3"
           style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
         >
-          <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Book</p>
+          <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Book</p>
           <p className="text-sm text-[var(--color-text-primary)]">{book.title}</p>
         </div>
 

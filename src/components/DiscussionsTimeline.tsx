@@ -48,7 +48,7 @@ export default function DiscussionsTimeline({
       {/* Section header */}
       <div className="flex items-center justify-between mb-6 lg:mb-9">
         <div className="flex items-center gap-3">
-          <span className="hidden lg:inline text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+          <span className="t-eyebrow hidden lg:inline text-[var(--color-text-secondary)]">
             DISCUSSIONS
           </span>
           {selectedClub.active_session && sortedDiscussions.length > 0 && (
@@ -157,7 +157,7 @@ export default function DiscussionsTimeline({
                 <div className="flex items-start justify-between gap-2 lg:gap-4 pt-0.5">
                   <div className="flex-1 min-w-0">
                     {status === 'next' && (
-                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-1">
+                      <p className="t-eyebrow text-primary mb-1">
                         UP NEXT
                       </p>
                     )}

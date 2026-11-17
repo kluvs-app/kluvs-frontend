@@ -170,7 +170,7 @@ export default function AddClubModal({
               <>
                 {guilds.length === 1 ? (
                   <div>
-                    <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Server</p>
+                    <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Server</p>
                     <p className="text-sm text-[var(--color-text-primary)]">{guilds[0].name}</p>
                   </div>
                 ) : (

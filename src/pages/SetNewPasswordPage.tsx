@@ -39,10 +39,10 @@ export default function SetNewPasswordPage() {
           <Link to="/" aria-label="Back to home">
             <img src="/ic-mark.svg" alt="Kluvs" className="h-16 w-16 mx-auto mb-6 hover:opacity-80 transition-opacity" />
           </Link>
-          <h1 className="text-page-heading text-[var(--color-text-primary)] mb-2">
+          <h1 className="t-headline-s text-[var(--color-text-primary)] mb-2">
             Set new password
           </h1>
-          <p className="text-[var(--color-text-secondary)] text-body-lg">
+          <p className="text-[var(--color-text-secondary)] t-body-l">
             Choose a strong password for your account.
           </p>
         </div>
@@ -67,12 +67,12 @@ export default function SetNewPasswordPage() {
             className="w-full px-4 py-2.5 bg-[var(--color-bg-raised)] border border-[var(--color-divider)] rounded-input text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           />
           {error && (
-            <p className="text-danger text-body text-center">{error}</p>
+            <p className="text-danger t-body-m text-center">{error}</p>
           )}
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium text-body-lg transition-colors"
+            className="w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn font-medium t-body-l transition-colors"
           >
             {submitting ? 'Updating…' : 'Update password'}
           </button>

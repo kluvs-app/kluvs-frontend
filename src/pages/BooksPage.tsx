@@ -541,7 +541,7 @@ export default function BooksPage() {
         {/* My Shelf header */}
         <div className={`flex items-start justify-between gap-4 transition-opacity duration-150 ${view === 'search' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div>
-            <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+            <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-2">
               Library
             </span>
             <h1 className="font-serif font-medium text-[32px] lg:text-[38px] leading-none tracking-[-0.02em] text-[var(--color-text-primary)]">
@@ -663,7 +663,7 @@ export default function BooksPage() {
                   return (
                     <div key={value}>
                       <div className="flex items-baseline gap-2 mb-4">
-                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                        <span className="t-eyebrow text-[var(--color-text-secondary)]">
                           {label}
                         </span>
                         <span className="text-[10px] text-[var(--color-text-meta)] tabular-nums">{entries.length}</span>
@@ -737,7 +737,7 @@ export default function BooksPage() {
 
             {/* Panel header — desktop only; mobile uses the global top bar */}
             <div className="hidden lg:flex items-center justify-between px-5 lg:px-12 pt-5 lg:pt-6 pb-2">
-              <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+              <span className="t-eyebrow text-primary">
                 Book
               </span>
 
@@ -807,7 +807,7 @@ export default function BooksPage() {
 
               {/* About */}
               <section className="mb-6">
-                <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-3">
+                <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-3">
                   About
                 </span>
                 {loadingDetail && !description ? (
@@ -830,7 +830,7 @@ export default function BooksPage() {
                 <>
                   <hr className="border-[var(--color-divider)] mb-6" />
                   <section className="mb-6">
-                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+                    <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-2">
                       Details
                     </span>
                     {loadingDetail && metaRows.length === 0 ? (
@@ -865,7 +865,7 @@ export default function BooksPage() {
                 <>
                   <hr className="border-[var(--color-divider)] mb-6" />
                   <section className="mb-6">
-                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-[14px]">
+                    <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-[14px]">
                       About the Author
                     </span>
                     {loadingAuthor && !authorInfo ? (
@@ -896,7 +896,7 @@ export default function BooksPage() {
                               </p>
                             )}
                             {authorInfo.description && (
-                              <span className="block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mt-1">
+                              <span className="t-eyebrow block text-[var(--color-text-secondary)] mt-1">
                                 {authorInfo.description}
                               </span>
                             )}
@@ -918,7 +918,7 @@ export default function BooksPage() {
                 <>
                   <hr className="border-[var(--color-divider)] mb-6" />
                   <section>
-                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
+                    <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-4">
                       More by {selectedBook?.author?.split(/\s*(?:,|&| and )\s*/i)[0]}
                     </span>
                     <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
