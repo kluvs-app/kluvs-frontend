@@ -817,7 +817,7 @@ export default function BooksPage() {
                     ))}
                   </div>
                 ) : description ? (
-                  <p className="t-caption text-[var(--color-text-primary)] whitespace-pre-line break-words">
+                  <p className="t-body-l text-[var(--color-text-primary)] whitespace-pre-line break-words">
                     {description}
                   </p>
                 ) : (

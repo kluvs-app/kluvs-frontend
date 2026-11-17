@@ -445,7 +445,7 @@ export default function ClubDetailPage() {
                   </div>
 
                   {/* Club name */}
-                  <h1 className="t-display-s text-[var(--color-text-primary)] mb-3">
+                  <h1 className="t-headline-l text-[var(--color-text-primary)] mb-3">
                     {club.name}
                   </h1>
 

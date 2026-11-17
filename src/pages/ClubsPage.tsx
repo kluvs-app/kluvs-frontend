@@ -97,7 +97,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
             + New
           </button>
         </div>
-        <h1 className="t-headline-l text-[var(--color-text-primary)]">
+        <h1 className="t-headline-s lg:t-headline-l text-[var(--color-text-primary)]">
           Clubs
         </h1>
       </div>
