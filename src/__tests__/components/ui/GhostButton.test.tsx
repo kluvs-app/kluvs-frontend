@@ -88,7 +88,7 @@ describe('GhostButton', () => {
     it('applies base button styles', () => {
       render(<GhostButton>Button</GhostButton>)
       const button = screen.getByRole('button')
-      expect(button.className).toContain('font-medium')
+      expect(button.className).toContain('t-label')
       expect(button.className).toContain('rounded-lg')
       expect(button.className).toContain('cursor-pointer')
       expect(button.className).toContain('whitespace-nowrap')

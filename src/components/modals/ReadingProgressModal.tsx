@@ -15,9 +15,7 @@ interface ReadingProgressModalProps {
 
 const labelStyle = {
   display: 'block' as const,
-  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-  fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-  textTransform: 'uppercase' as const, color: 'var(--color-text-secondary)',
+  color: 'var(--color-text-secondary)',
   marginBottom: 8,
 }
 
@@ -144,12 +142,12 @@ export default function ReadingProgressModal({
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleSave}
             disabled={loading}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Saving…' : 'Save Progress'}
@@ -162,19 +160,19 @@ export default function ReadingProgressModal({
           className="rounded-input px-4 py-3"
           style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
         >
-          <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Book</p>
-          <p className="text-sm text-[var(--color-text-primary)]">{book.title}</p>
+          <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Book</p>
+          <p className="t-body-m text-[var(--color-text-primary)]">{book.title}</p>
         </div>
 
         <div>
-          <label style={labelStyle}>Track By</label>
+          <label className="t-eyebrow" style={labelStyle}>Track By</label>
           <div className="flex w-full items-stretch border border-[var(--color-divider)] rounded-full overflow-hidden">
             <button
               type="button"
               onClick={() => setProgressType('page')}
               disabled={loading}
               className={[
-                'flex-1 py-2 text-xs font-medium transition-colors duration-150',
+                't-label flex-1 py-2 transition-colors duration-150 text-inherit',
                 progressType === 'page'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
@@ -186,7 +184,7 @@ export default function ReadingProgressModal({
               onClick={() => setProgressType('percent')}
               disabled={loading}
               className={[
-                'flex-1 py-2 text-xs font-medium transition-colors duration-150 border-l border-[var(--color-divider)]',
+                't-label flex-1 py-2 transition-colors duration-150 border-l border-[var(--color-divider)] text-inherit',
                 progressType === 'percent'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
@@ -198,9 +196,9 @@ export default function ReadingProgressModal({
 
         {progressType === 'page' ? (
           <div>
-            <label htmlFor="current-page-input" style={labelStyle}>Current Page{pageCount ? ` (of ${pageCount})` : ''}</label>
+            <label htmlFor="current-page-input" className="t-eyebrow" style={labelStyle}>Current Page{pageCount ? ` (of ${pageCount})` : ''}</label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-secondary)] font-medium pointer-events-none">
+              <span className="t-label absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none">
                 #
               </span>
               <input
@@ -211,20 +209,20 @@ export default function ReadingProgressModal({
                 value={currentPage}
                 onChange={(e) => setCurrentPage(e.target.value)}
                 placeholder="0"
-                className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-10 pr-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-10 pr-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                 disabled={loading}
                 autoFocus
               />
             </div>
             {previewPercent != null && (
-              <p className="text-xs text-[var(--color-text-secondary)] mt-2">
+              <p className="t-fine-print text-[var(--color-text-secondary)] mt-2">
                 That's about {previewPercent}% complete.
               </p>
             )}
           </div>
         ) : (
           <div>
-            <label htmlFor="percent-complete-input" style={labelStyle}>Percent Complete</label>
+            <label htmlFor="percent-complete-input" className="t-eyebrow" style={labelStyle}>Percent Complete</label>
             <div className="relative">
               <input
                 id="percent-complete-input"
@@ -234,11 +232,11 @@ export default function ReadingProgressModal({
                 value={percentComplete}
                 onChange={(e) => setPercentComplete(e.target.value)}
                 placeholder="0"
-                className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 pr-10 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                 disabled={loading}
                 autoFocus
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[var(--color-text-secondary)] font-medium pointer-events-none">
+              <span className="t-label absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] pointer-events-none">
                 %
               </span>
             </div>
@@ -246,7 +244,7 @@ export default function ReadingProgressModal({
         )}
 
         <div className="flex items-center justify-between py-1">
-          <span className="text-sm text-[var(--color-text-primary)]">Mark as finished</span>
+          <span className="t-body-m text-[var(--color-text-primary)]">Mark as finished</span>
           <button
             type="button"
             role="switch"
@@ -269,7 +267,7 @@ export default function ReadingProgressModal({
         </div>
 
         {error && (
-          <p className="text-sm text-danger">{error}</p>
+          <p className="t-body-m text-danger">{error}</p>
         )}
       </div>
     </BaseModal>

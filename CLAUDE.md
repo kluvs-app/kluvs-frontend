@@ -220,6 +220,16 @@ refreshMemberData()
 ### Modals
 All modals use `BaseModal` wrapper. Accept `isOpen: boolean` and `onClose: () => void` at minimum.
 
+### Typography
+Every piece of text is a design-system **family/rung** (`design-system/docs/typography.md`, `tokens.json` → `typography.family`). The `t-*` classes in `src/index.css` carry the exact size, weight, px line-height and tracking — nothing else should.
+
+- **Families:** `t-display-{s,m,l}`, `t-headline-{s,m,l}`, `t-title-{s,m,l}` (serif); `t-body-{l,m}`, `t-caption`, `t-eyebrow`, `t-label`, `t-fine-print` (sans); `t-mono`. Modifier: `t-feature` (italic — Headline/Title/Caption only).
+- **Never** add raw type utilities on top of a family or on their own: no `text-xs/sm/base/lg/3xl`, `text-[Npx]`, `leading-*`, `tracking-*`, `font-semibold`/`font-bold` (Bold is Display-only), `font-medium`/`font-normal` (the family sets the weight), `font-serif/sans/mono`, `italic`, and no inline `fontSize`/`fontFamily`/`fontWeight`/`fontStyle`/`lineHeight`/`letterSpacing`/`textTransform` styles. Never go below 11px (Eyebrow).
+- **Pick by role, not size:** page/session titles and Profile name/stats are Headline; Display is hero/masthead only; uppercase tracked text is `t-eyebrow`; button, nav, menu-item and medium-weight sans text is `t-label`; prose is `t-body-m`/`t-body-l`; dates/ISBNs/IDs are `t-mono`; an italic sans aside is `t-caption t-feature`.
+- **One family per element.** To change size at a breakpoint, switch rungs (`lg:t-title-l`), never raw px.
+- **Color is separate:** `t-caption` and `t-fine-print` bake in the muted color; add an explicit color class (or `text-inherit` to follow the parent) when you need something else. Other families take color from context.
+- **Exempt:** Avatar initials (sized per `docs/avatars.md`) and Material Symbols icon sizes. Markdown prose (`prose`) is themed to the families in `tailwind.config.js`.
+
 ## Environment Variables
 Required in `.env.local`:
 ```

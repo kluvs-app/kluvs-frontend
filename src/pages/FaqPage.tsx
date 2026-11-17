@@ -36,10 +36,10 @@ export default function FaqPage() {
 
       <main className="max-w-3xl mx-auto px-6 py-12">
         <header className="mb-12">
-          <h1 className="font-serif font-medium text-[34px] leading-[1.15] text-[var(--color-text-primary)] mb-3">
+          <h1 className="t-headline-m text-[var(--color-text-primary)] mb-3">
             Frequently Asked Questions
           </h1>
-          <p className="text-body-lg text-[var(--color-text-secondary)]">
+          <p className="t-body-l text-[var(--color-text-secondary)]">
             New to Kluvs? Start with how clubs, sessions, and discussions fit together.
           </p>
         </header>
@@ -49,7 +49,7 @@ export default function FaqPage() {
             <section key={category.id} aria-labelledby={`cat-${category.id}`}>
               <h2
                 id={`cat-${category.id}`}
-                className="font-serif font-medium text-[24px] text-[var(--color-text-primary)] mb-4"
+                className="t-title-l text-[var(--color-text-primary)] mb-4"
               >
                 {category.title}
               </h2>

@@ -28,8 +28,8 @@ export function PublicAuthRoute() {
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
           <KluvsSpinner size={64} className="mx-auto" />
-          <p className="mt-6 text-[var(--color-text-primary)] text-lg font-medium">Loading your library...</p>
-          <div className="mt-2 text-[var(--color-text-secondary)] text-sm">Checking authentication</div>
+          <p className="t-body-l mt-6 text-[var(--color-text-primary)]">Loading your library...</p>
+          <div className="t-body-m mt-2 text-[var(--color-text-secondary)]">Checking authentication</div>
         </div>
       </div>
     )
@@ -50,8 +50,8 @@ export function ProtectedRoute() {
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center">
         <div className="text-center">
           <KluvsSpinner size={64} className="mx-auto" />
-          <p className="mt-6 text-[var(--color-text-primary)] text-lg font-medium">Loading your library...</p>
-          <div className="mt-2 text-[var(--color-text-secondary)] text-sm">Checking authentication</div>
+          <p className="t-body-l mt-6 text-[var(--color-text-primary)]">Loading your library...</p>
+          <div className="t-body-m mt-2 text-[var(--color-text-secondary)]">Checking authentication</div>
         </div>
       </div>
     )

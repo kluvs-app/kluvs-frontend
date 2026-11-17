@@ -134,16 +134,14 @@ export default function EditClubModal({
           className="rounded-input px-4 py-3"
           style={{ background: 'rgba(220, 38, 38, 0.06)', border: '1px solid rgba(220, 38, 38, 0.2)' }}
         >
-          <p style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+          <p className="t-eyebrow" style={{
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Danger Zone</p>
           <button
             onClick={onDeleteClub}
             disabled={loading}
-            className="px-3.5 py-1.5 text-[13px] font-medium text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
+            className="t-label px-3.5 py-1.5 text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
           >
             Delete club…
           </button>
@@ -154,12 +152,12 @@ export default function EditClubModal({
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={!canSave}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Saving…' : 'Save'}
@@ -171,11 +169,9 @@ export default function EditClubModal({
 
         {/* Name */}
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Club Name</label>
           <input
@@ -183,7 +179,7 @@ export default function EditClubModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Fantasy Book Club"
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
             maxLength={100}
             autoFocus
@@ -198,15 +194,13 @@ export default function EditClubModal({
           >
             <div className="flex items-center gap-2">
               <DiscordIcon className="w-4 h-4 shrink-0 text-discord" />
-              <span style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              <span className="t-eyebrow" style={{
+                color: 'var(--color-text-secondary)',
               }}>Discord</span>
             </div>
 
             {guildsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+              <div className="t-body-m flex items-center gap-2 text-[var(--color-text-secondary)]">
                 <KluvsSpinner size={16} />
                 <span>Loading servers…</span>
               </div>
@@ -214,16 +208,14 @@ export default function EditClubModal({
               <>
                 {guilds.length === 1 ? (
                   <div>
-                    <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Server</p>
-                    <p className="text-sm text-[var(--color-text-primary)]">{guilds[0].name}</p>
+                    <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Server</p>
+                    <p className="t-body-m text-[var(--color-text-primary)]">{guilds[0].name}</p>
                   </div>
                 ) : (
                   <div>
-                    <label htmlFor="edit-club-server-select" style={{
+                    <label htmlFor="edit-club-server-select" className="t-eyebrow" style={{
                       display: 'block',
-                      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                      fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                      textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                      color: 'var(--color-text-secondary)',
                       marginBottom: 8,
                     }}>Server</label>
                     <div className="relative">
@@ -235,7 +227,7 @@ export default function EditClubModal({
                           setSelectedChannel('')
                           setDiscordAcknowledged(false)
                         }}
-                        className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                         disabled={loading}
                       >
                         <option value="">No server</option>
@@ -252,13 +244,11 @@ export default function EditClubModal({
 
                 {selectedServer && (
                   <div>
-                    <label htmlFor="edit-club-channel-select" style={{
+                    <label htmlFor="edit-club-channel-select" className="t-eyebrow" style={{
                       display: 'block',
-                      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                      fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                      textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                      color: 'var(--color-text-secondary)',
                       marginBottom: 8,
-                    }}>Channel <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+                    }}>Channel <span className="t-fine-print normal-case text-[var(--color-text-secondary)]">(optional)</span></label>
                     <div className="relative">
                       <select
                         id="edit-club-channel-select"
@@ -267,7 +257,7 @@ export default function EditClubModal({
                           setSelectedChannel(e.target.value)
                           setDiscordAcknowledged(false)
                         }}
-                        className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                         disabled={loading}
                       >
                         <option value="">No channel</option>
@@ -287,7 +277,7 @@ export default function EditClubModal({
                     className="rounded-lg px-4 py-3 space-y-3"
                     style={{ background: 'rgba(209,109,48,0.08)', border: '1px solid rgba(209,109,48,0.25)' }}
                   >
-                    <p className="text-sm leading-relaxed" style={{ color: 'var(--color-primary)' }}>
+                    <p className="t-body-m" style={{ color: 'var(--color-primary)' }}>
                       {isDisconnecting
                         ? "You're disconnecting this club from Discord. Bot notifications will stop until a new channel is connected."
                         : "You're moving this club to a different Discord channel. The bot will stop posting to the current channel."}
@@ -299,7 +289,7 @@ export default function EditClubModal({
                         onChange={(e) => setDiscordAcknowledged(e.target.checked)}
                         className="w-4 h-4 rounded accent-primary"
                       />
-                      <span className="text-sm text-[var(--color-text-primary)]">I understand</span>
+                      <span className="t-body-m text-[var(--color-text-primary)]">I understand</span>
                     </label>
                   </div>
                 )}
@@ -310,24 +300,22 @@ export default function EditClubModal({
 
         {/* Founded Date */}
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>
             Founded Date{' '}
-            <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+            <span className="t-fine-print normal-case">(optional)</span>
           </label>
           <input
             type="date"
             value={foundedDate}
             onChange={(e) => setFoundedDate(e.target.value)}
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
           />
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
+          <p className="t-fine-print mt-2 text-[var(--color-text-secondary)]">
             This date was automatically set when your club was created in Kluvs. You can change it to reflect when your book club was actually founded. We know great clubs predate this app.
           </p>
         </div>

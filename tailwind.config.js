@@ -84,14 +84,23 @@ export default {
             dark: 'rgba(0, 0, 0, 0.70)',
           },
         },
-        fontSize: {
-          'page-heading': ['1.875rem', { lineHeight: '2.25rem', fontWeight: '700' }],
-          'section-heading': ['1.25rem', { lineHeight: '1.75rem', fontWeight: '700' }],
-          'card-heading': ['1.125rem', { lineHeight: '1.5rem', fontWeight: '700' }],
-          'body-lg': ['1rem', { lineHeight: '1.5rem', fontWeight: '400' }],
-          'body': ['0.875rem', { lineHeight: '1.25rem', fontWeight: '400' }],
-          'helper': ['0.8125rem', { lineHeight: '1.125rem', fontWeight: '400' }],
-          'helper-sm': ['0.75rem', { lineHeight: '1rem', fontWeight: '400' }],
+        typography: {
+          DEFAULT: {
+            css: {
+              // DS families (design-system/docs/typography.md): body = Body L, headings = Headline/Title (serif, medium), code = Mono
+              fontSize: '16px',
+              lineHeight: '24px',
+              letterSpacing: '0.5px',
+              p: { fontSize: '16px', lineHeight: '24px', letterSpacing: '0.5px' },
+              li: { fontSize: '16px', lineHeight: '24px', letterSpacing: '0.5px' },
+              strong: { fontWeight: '500' },
+              h1: { fontFamily: "'EB Garamond', Georgia, serif", fontWeight: '500', fontSize: '30px', lineHeight: '36px', letterSpacing: '0' },
+              h2: { fontFamily: "'EB Garamond', Georgia, serif", fontWeight: '500', fontSize: '24px', lineHeight: '30px', letterSpacing: '0' },
+              h3: { fontFamily: "'EB Garamond', Georgia, serif", fontWeight: '500', fontSize: '19px', lineHeight: '24px', letterSpacing: '0' },
+              h4: { fontFamily: "'EB Garamond', Georgia, serif", fontWeight: '500', fontSize: '15px', lineHeight: '20px', letterSpacing: '0' },
+              code: { fontFamily: "ui-monospace, 'SF Mono', monospace", fontWeight: '400', fontSize: '13px', lineHeight: '18px', letterSpacing: '0' },
+            },
+          },
         },
         borderRadius: {
           'sm': '0.25rem',

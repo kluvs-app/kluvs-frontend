@@ -24,10 +24,10 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
           />
         )}
         <div className="flex-1 min-w-0">
-          <h3 className="text-card-heading font-serif italic text-[var(--color-text-primary)]">{book.title}</h3>
-          <p className="text-body text-[var(--color-text-secondary)] mt-1">by {book.author}</p>
+          <h3 className="t-title-m t-feature text-[var(--color-text-primary)]">{book.title}</h3>
+          <p className="t-body-m text-[var(--color-text-secondary)] mt-1">by {book.author}</p>
           {(book.year || book.page_count) && (
-            <p className="text-body text-[var(--color-text-secondary)] mt-0.5">
+            <p className="t-body-m text-[var(--color-text-secondary)] mt-0.5">
               {[
                 book.year,
                 book.page_count && `${book.page_count} pages`
@@ -35,7 +35,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
             </p>
           )}
           {dueDate && (
-            <p className="text-body-lg text-primary font-medium mt-2">
+            <p className="t-body-l text-primary mt-2">
               Due {parseLocalDate(dueDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </p>
           )}
@@ -45,13 +45,13 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
         <div className="flex gap-2">
           <button
             onClick={onEditBook}
-            className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
+            className="t-body-m text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
           >
             Edit Book
           </button>
           <button
             onClick={onNewSession}
-            className="text-sm bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
+            className="t-body-m bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
           >
             New Session
           </button>
@@ -59,7 +59,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
       )}
       {onShelfChange !== undefined && (
         <div className="flex flex-col gap-1.5">
-          <span className="text-xs text-[var(--color-text-secondary)] font-medium uppercase tracking-[0.08em]">
+          <span className="t-eyebrow text-[var(--color-text-secondary)]">
             My Shelf
           </span>
           <div className="flex flex-wrap gap-1.5" role="group" aria-label="Select shelf">
@@ -72,7 +72,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
                   disabled={!book.id}
                   aria-pressed={isActive}
                   aria-label={`Shelf: ${label}`}
-                  className={`text-sm px-3 py-1.5 rounded-btn border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  className={`t-label px-3 py-1.5 rounded-btn border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                     isActive
                       ? 'border-primary text-primary bg-primary/10'
                       : 'border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'

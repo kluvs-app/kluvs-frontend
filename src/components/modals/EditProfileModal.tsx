@@ -126,12 +126,12 @@ export default function EditProfileModal({
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={loading || !name.trim() || !handle.trim() || !hasChanges}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Saving…' : 'Save'}
@@ -177,7 +177,7 @@ export default function EditProfileModal({
             className="hidden"
             onChange={handleFileChange}
           />
-          <span className="text-[11px] text-[var(--color-text-secondary)]">
+          <span className="t-fine-print text-[var(--color-text-secondary)]">
             {avatarFile ? avatarFile.name : 'Click to change'}
           </span>
         </div>
@@ -185,11 +185,9 @@ export default function EditProfileModal({
         {/* Name */}
         <div>
           <label
-            style={{
+            className="t-eyebrow" style={{
               display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              color: 'var(--color-text-secondary)',
               marginBottom: 8,
             }}
           >Display Name</label>
@@ -201,23 +199,21 @@ export default function EditProfileModal({
             disabled={loading}
             maxLength={100}
             autoFocus
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
           />
         </div>
 
         {/* Handle */}
         <div>
           <label
-            style={{
+            className="t-eyebrow" style={{
               display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              color: 'var(--color-text-secondary)',
               marginBottom: 8,
             }}
           >Handle</label>
           <div className="flex items-center bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent transition-colors">
-            <span className="pl-4 pr-1 text-sm text-[var(--color-text-secondary)] select-none shrink-0">@</span>
+            <span className="t-body-m pl-4 pr-1 text-[var(--color-text-secondary)] select-none shrink-0">@</span>
             <input
               type="text"
               value={handle}
@@ -225,11 +221,11 @@ export default function EditProfileModal({
               placeholder="bookworm42"
               disabled={loading}
               maxLength={50}
-              className="flex-1 bg-transparent py-3 pr-4 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none"
+              className="t-body-m flex-1 bg-transparent py-3 pr-4 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none"
             />
           </div>
           {inlineError && (
-            <p className="mt-2 text-sm text-red-400">{inlineError}</p>
+            <p className="t-body-m mt-2 text-red-400">{inlineError}</p>
           )}
         </div>
 
@@ -241,10 +237,10 @@ export default function EditProfileModal({
           >
             <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider">Discord</p>
-              <p className="text-sm text-[var(--color-text-primary)] font-mono truncate mt-0.5">{currentMember.discord_id}</p>
+              <p className="t-eyebrow text-[var(--color-text-secondary)]">Discord</p>
+              <p className="t-mono text-[var(--color-text-primary)] truncate mt-0.5">{currentMember.discord_id}</p>
             </div>
-            <span className="text-xs font-medium text-secondary shrink-0">Connected</span>
+            <span className="t-fine-print text-secondary shrink-0">Connected</span>
           </div>
         ) : (
           <div
@@ -252,7 +248,7 @@ export default function EditProfileModal({
             style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
           >
             <img src="/ic-discord.svg" alt="" className="w-4 h-4 shrink-0 opacity-40" />
-            <p className="text-sm text-[var(--color-text-secondary)] flex-1">Discord not connected</p>
+            <p className="t-body-m text-[var(--color-text-secondary)] flex-1">Discord not connected</p>
           </div>
         )}
       </div>

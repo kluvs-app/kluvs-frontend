@@ -58,15 +58,15 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
         <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center justify-center px-5 py-8 gap-8">
           <BookCover size="lg" title="Book cover placeholder" />
           <div className="text-center">
-            <h2 className="font-serif italic text-[48px] font-medium text-[var(--color-text-primary)] mb-4">
+            <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-4">
               No clubs yet.
             </h2>
-            <p className="text-[15px] text-[var(--color-text-secondary)] mb-8 max-w-[280px] mx-auto leading-relaxed">
+            <p className="t-body-l text-[var(--color-text-secondary)] mb-8 max-w-[280px] mx-auto">
               Start a club to read alongside friends, or accept an invite to join one.
             </p>
             <button
               onClick={() => setShowAddClubModal(true)}
-              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-8 py-3 rounded-lg text-[15px] font-medium transition-all duration-120 cursor-pointer w-full max-w-[280px]"
+              className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-8 py-3 rounded-lg transition-all duration-120 cursor-pointer w-full max-w-[280px]"
             >
               Create your first club
             </button>
@@ -87,17 +87,17 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
       {/* Mobile Header */}
       <div className="border-b border-[var(--color-divider)] bg-[var(--color-bg)] px-5 py-6">
         <div className="flex items-baseline justify-between gap-4 mb-4">
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+          <span className="t-eyebrow text-[var(--color-text-secondary)]">
             Your
           </span>
           <button
             onClick={() => setShowAddClubModal(true)}
-            className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-lg text-[13px] font-medium transition-all duration-120 cursor-pointer"
+            className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-lg transition-all duration-120 cursor-pointer"
           >
             + New
           </button>
         </div>
-        <h1 className="font-serif text-[48px] font-medium leading-[1] text-[var(--color-text-primary)] tracking-[-0.022em]">
+        <h1 className="t-headline-s lg:t-headline-l text-[var(--color-text-primary)]">
           Clubs
         </h1>
       </div>
@@ -124,7 +124,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                 <div className="flex-1 min-w-0 flex flex-col">
                   {/* Club name + role */}
                   <div className="flex items-center gap-2 mb-1.5">
-                    <h3 className="font-serif text-[21px] font-medium text-[var(--color-text-primary)] truncate">
+                    <h3 className="t-title-m text-[var(--color-text-primary)] truncate">
                       {club.name}
                     </h3>
                     <RoleEyebrow role={club.role ?? 'member'} />
@@ -132,7 +132,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
 
                   {/* Book title */}
                   {fullClub?.active_session?.book?.title && (
-                    <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)] mb-2 truncate">
+                    <p className="t-title-s t-feature text-[var(--color-text-secondary)] mb-2 truncate">
                       {fullClub.active_session.book.title}
                     </p>
                   )}
@@ -148,7 +148,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                       const parsedDate = parseScheduledAt(next.scheduled_at)
                       if (isNaN(parsedDate.getTime())) return null
                       return (
-                        <span className="text-[12px] text-[var(--color-text-secondary)] font-medium uppercase tracking-[0.02em]">
+                        <span className="t-eyebrow text-[var(--color-text-secondary)]">
                           Next · {parsedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
                       )
@@ -157,7 +157,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                 </div>
 
                 {/* Chevron */}
-                <div className="text-[var(--color-text-secondary)] text-lg flex-shrink-0">›</div>
+                <div className="t-body-l text-[var(--color-text-secondary)] flex-shrink-0">›</div>
               </Link>
             )
           })}

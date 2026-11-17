@@ -51,12 +51,12 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
           <button
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >Cancel</button>
           <button
             onClick={handleDelete}
             disabled={loading || !member}
-            className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Deleting…' : 'Delete Account'}
@@ -65,14 +65,14 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
       }
     >
       <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
-          This will permanently delete your account and profile. This action is <span className="font-semibold">immediate and cannot be undone</span>.
+        <p className="t-body-m text-[var(--color-text-primary)]">
+          This will permanently delete your account and profile. This action is <span className="font-medium">immediate and cannot be undone</span>.
         </p>
-        <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+        <p className="t-body-m text-[var(--color-text-secondary)]">
           If you own a club, ownership will be automatically transferred to another member (an admin, if there is one), or the club will be deleted if you're its only member.
         </p>
         {inlineError && (
-          <p className="text-sm text-red-400">{inlineError}</p>
+          <p className="t-body-m text-red-400">{inlineError}</p>
         )}
       </div>
     </BaseModal>

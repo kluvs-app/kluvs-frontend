@@ -40,16 +40,16 @@ export default function MemberBadge({
       {/* Name + handle */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-[14px] font-medium text-[var(--color-text-primary)] truncate">
+          <p className="t-label text-[var(--color-text-primary)] truncate">
             {member.name}
           </p>
           {isOwn && (
-            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary flex-shrink-0">
+            <span className="t-eyebrow text-primary flex-shrink-0">
               YOU
             </span>
           )}
         </div>
-        <p className="text-[12px] text-[var(--color-text-secondary)] mt-0.5">
+        <p className="t-fine-print text-[var(--color-text-secondary)] mt-0.5">
           @{member.handle}
         </p>
       </div>

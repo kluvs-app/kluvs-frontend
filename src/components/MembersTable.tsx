@@ -23,13 +23,13 @@ export default function MembersTable({
     <>
       {/* Section heading */}
       <div className="flex justify-between items-center mb-4">
-        <p className="text-helper-sm font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">
+        <p className="t-eyebrow text-[var(--color-text-secondary)]">
           Members ({selectedClub.members?.length ?? 0})
         </p>
         {isAdmin && (
           <button
             onClick={onAddMember}
-            className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn text-sm font-medium transition-colors"
+            className="t-label bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-btn transition-colors"
           >
             Add Member
           </button>
@@ -54,17 +54,17 @@ export default function MembersTable({
 
             {/* Name + handle */}
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-[var(--color-text-primary)] text-sm leading-tight">
+              <p className="t-label text-[var(--color-text-primary)]">
                 {member.name}
               </p>
-              <p className="text-xs text-[var(--color-text-secondary)] mt-0.5">
+              <p className="t-fine-print text-[var(--color-text-secondary)] mt-0.5">
                 @{member.handle}
               </p>
             </div>
 
             {/* Right side: pts + admin actions */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] font-medium tabular-nums">
+              <span className="t-label flex items-center gap-1.5 text-[var(--color-text-secondary)] tabular-nums">
                 {member.books_read}
                 <svg className="w-4 h-4 flex-shrink-0" viewBox="0 -960 960 960" fill="currentColor">
                   <path d="M290.96-60.78q-62.53 0-106.35-43.83-43.83-43.82-43.83-106.35v-538.08q0-62.53 43.83-106.35 43.82-43.83 106.35-43.83h528.26v638.44q-20.76 0-35.29 14.53-14.54 14.53-14.54 35.29 0 20.76 14.54 35.3 14.53 14.53 35.29 14.53v100.35H290.96Zm30.17-300.92h100.35v-437.17H321.13v437.17Zm-30.17 200.57h387.13q-4.18-11.79-6.61-24-2.44-12.22-2.44-26.01 0-12.99 2.09-25.48 2.09-12.5 6.96-24.16H290.96q-21.6 0-35.71 14.53-14.12 14.53-14.12 35.29 0 21.6 14.12 35.71 14.11 14.12 35.71 14.12Z" />

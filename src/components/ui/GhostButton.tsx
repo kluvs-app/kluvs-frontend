@@ -15,15 +15,15 @@ export default function GhostButton({
 }: GhostButtonProps) {
   const sizeClasses =
     variant === 'md'
-      ? 'px-4 py-2.5 text-[13px]'
-      : 'px-3 py-1.5 text-[12px]'
+      ? 't-label px-4 py-2.5'
+      : 't-label px-3 py-1.5'
   const iconSize = variant === 'md' ? 'text-[16px]' : 'text-[14px]'
 
   return (
     <button
       {...props}
       className={[
-        'inline-flex items-center gap-1.5 font-medium rounded-lg cursor-pointer whitespace-nowrap flex-shrink-0',
+        'inline-flex items-center gap-1.5 rounded-lg cursor-pointer whitespace-nowrap flex-shrink-0',
         'bg-transparent border border-[var(--color-divider)] text-[var(--color-text-primary)]',
         'hover:bg-[var(--color-bg-elevated)] active:scale-[0.97] transition-[background,transform] duration-[120ms]',
         sizeClasses,
@@ -32,7 +32,7 @@ export default function GhostButton({
     >
       {icon && (
         <span
-          className={`${iconSize} text-[var(--color-text-secondary)] font-normal leading-none`}
+          className={`${iconSize} text-[var(--color-text-secondary)] font-normal`}
           aria-hidden
         >
           {icon}

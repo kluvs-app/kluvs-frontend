@@ -60,24 +60,21 @@ export default function ProgressRow({
       <div className="flex items-center justify-between mt-1">
         {leftLabel ? (
           leftLabelVariant === 'eyebrow' ? (
-            <span 
-              className="text-[10px] text-primary font-medium uppercase tracking-[0.14em] leading-none"
-              style={{ fontFamily: '"IBM Plex Sans", sans-serif' }}
+            <span
+              className="t-eyebrow text-primary"
             >
               {leftLabel}
             </span>
           ) : (
-            <span 
-              className="text-[17px] text-[var(--color-text-secondary)] font-serif italic leading-none"
-              style={{ fontFamily: '"EB Garamond", serif' }}
+            <span
+              className="t-title-m text-[var(--color-text-secondary)] t-feature"
             >
               {leftLabel}
             </span>
           )
         ) : <div />}
-        <span 
-          className="text-[12px] text-primary font-medium tracking-[0.04em] leading-none"
-          style={{ fontFamily: '"IBM Plex Sans", sans-serif' }}
+        <span
+          className="t-fine-print text-primary"
         >
           {label}
         </span>

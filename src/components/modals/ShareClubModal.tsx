@@ -71,12 +71,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
         {/* Who can join? */}
         <div>
           <p
-            style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
+            className="t-eyebrow" style={{
               color: 'var(--color-text-secondary)',
               marginBottom: 12,
             }}
@@ -92,7 +87,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
               onClick={() => handlePolicyChange('PRIVATE')}
               disabled={loading}
               className={[
-                'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-2.5 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
@@ -104,7 +99,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
               onClick={() => handlePolicyChange('INVITE_LINK')}
               disabled={loading}
               className={[
-                'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-2.5 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
@@ -117,14 +112,14 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
 
         {/* Inline error */}
         {error && (
-          <p className="text-sm text-red-400">{error}</p>
+          <p className="t-body-m text-red-400">{error}</p>
         )}
 
         {/* Invite URL row — shown when INVITE_LINK */}
         {policy === 'INVITE_LINK' && (
           <div>
             {loading ? (
-              <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+              <div className="t-body-m flex items-center gap-2 text-[var(--color-text-secondary)]">
                 <KluvsSpinner size={16} />
                 <span>Generating link…</span>
               </div>
@@ -137,7 +132,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
                 }}
               >
                 <p
-                  className="flex-1 min-w-0 text-sm text-[var(--color-text-secondary)] truncate font-mono"
+                  className="t-mono flex-1 min-w-0 text-[var(--color-text-secondary)] truncate"
                   title={inviteUrl}
                 >
                   {inviteUrl}
@@ -145,7 +140,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
                 <button
                   onClick={handleCopy}
                   className={[
-                    'shrink-0 text-sm font-medium transition-colors duration-120',
+                    't-label shrink-0 transition-colors duration-120',
                     copied ? 'text-success' : 'text-primary hover:text-primary-hover',
                   ].join(' ')}
                 >
