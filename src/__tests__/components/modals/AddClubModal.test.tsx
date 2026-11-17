@@ -162,6 +162,20 @@ describe('AddClubModal', () => {
       })
     })
 
+    it('should not send member data or owner fields on create', async () => {
+      mockUseAuth.mockReturnValue({ member: mockRegularMember })
+      const user = userEvent.setup()
+      render(<AddClubModal {...defaultProps} />)
+      await user.type(screen.getByPlaceholderText('e.g., Fantasy Book Club'), 'My Book Club')
+      await user.click(screen.getByRole('button', { name: /Create Club/i }))
+      await waitFor(() => {
+        expect(mockSupabase.functions.invoke).toHaveBeenCalled()
+      })
+      const { body } = mockSupabase.functions.invoke.mock.calls[0][1]
+      expect(body).not.toHaveProperty('members')
+      expect(body).not.toHaveProperty('owner_member_id')
+    })
+
     it('should trim club name before submission', async () => {
       const user = userEvent.setup()
       render(<AddClubModal {...defaultProps} />)
