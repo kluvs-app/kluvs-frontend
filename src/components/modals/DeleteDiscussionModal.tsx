@@ -78,7 +78,7 @@ export default function DeleteDiscussionModal({
       <div className="space-y-4">
         <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to delete{' '}
-          <span className="font-medium">"{discussionToDelete.title}"</span>?
+          <span className="t-label">"{discussionToDelete.title}"</span>?
         </p>
         <p className="t-body-m text-[var(--color-text-secondary)]">This action cannot be undone</p>
         <div

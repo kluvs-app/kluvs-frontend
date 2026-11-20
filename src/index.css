@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Touch targets: on touch devices every button gets at least a 48px tappable area
+   (design-system buttons.md). The visible size is unchanged — the extra area is an
+   invisible ::after. Utilities (fixed/absolute) still win over this base position. Add `no-touch-target`
+   to adjacent small buttons (e.g. segmented icons) whose expanded areas would overlap. */
+@layer base {
+  @media (pointer: coarse) {
+    button:not(:disabled):not(.no-touch-target) {
+      position: relative;
+    }
+    button:not(:disabled):not(.no-touch-target)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 48px);
+      height: max(100%, 48px);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
 input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.85;

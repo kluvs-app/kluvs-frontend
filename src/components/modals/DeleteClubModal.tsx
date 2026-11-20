@@ -80,7 +80,7 @@ export default function DeleteClubModal({
       <div className="space-y-4">
         <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to delete{' '}
-          <span className="font-medium">"{clubToDelete.name}"</span>?
+          <span className="t-label">"{clubToDelete.name}"</span>?
           This action cannot be undone.
         </p>
         <div

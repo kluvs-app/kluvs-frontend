@@ -121,7 +121,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
             />
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[var(--color-text-primary)] font-medium truncate">{selectedBook.title}</p>
+            <p className="t-label text-[var(--color-text-primary)] truncate">{selectedBook.title}</p>
             <p className="t-body-m text-[var(--color-text-secondary)] truncate">{selectedBook.author}</p>
           </div>
           {!isDisabled && (
@@ -145,7 +145,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
             onChange={handleQueryChange}
             onFocus={() => results.length > 0 && setShowDropdown(true)}
             placeholder="Search by title or author..."
-            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-10"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[9px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-10"
             disabled={isDisabled}
             aria-label="Search for a book"
             aria-autocomplete="list"
@@ -164,7 +164,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
       )}
 
       {searchError && (
-        <p className="t-fine-print text-red-500 mt-1">{searchError}</p>
+        <p className="t-fine-print text-danger mt-1">{searchError}</p>
       )}
 
       {showDropdown && results.length > 0 && (
@@ -196,7 +196,7 @@ export default function BookSearchInput({ onSelect, initialBook, disabled }: Boo
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[var(--color-text-primary)] font-medium truncate">{book.title}</p>
+                  <p className="t-label text-[var(--color-text-primary)] truncate">{book.title}</p>
                   <p className="t-body-m text-[var(--color-text-secondary)] truncate">{book.author}</p>
                   {book.year && (
                     <p className="t-fine-print text-[var(--color-text-secondary)]">{book.year}</p>

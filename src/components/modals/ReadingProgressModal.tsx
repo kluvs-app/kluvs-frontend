@@ -173,9 +173,9 @@ export default function ReadingProgressModal({
               onClick={() => setProgressType('page')}
               disabled={loading}
               className={[
-                't-label flex-1 py-2 transition-colors duration-150 text-inherit',
+                't-label flex-1 py-[7px] transition-colors duration-150 text-inherit',
                 progressType === 'page'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
                 loading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
               ].join(' ')}
@@ -185,9 +185,9 @@ export default function ReadingProgressModal({
               onClick={() => setProgressType('percent')}
               disabled={loading}
               className={[
-                't-label flex-1 py-2 transition-colors duration-150 border-l border-[var(--color-divider)] text-inherit',
+                't-label flex-1 py-[7px] transition-colors duration-150 border-l border-[var(--color-divider)] text-inherit',
                 progressType === 'percent'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
                 loading ? 'cursor-not-allowed opacity-70' : 'cursor-pointer',
               ].join(' ')}
@@ -210,7 +210,7 @@ export default function ReadingProgressModal({
                 value={currentPage}
                 onChange={(e) => setCurrentPage(e.target.value)}
                 placeholder="0"
-                className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-10 pr-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-10 pr-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                 disabled={loading}
                 autoFocus
               />
@@ -233,7 +233,7 @@ export default function ReadingProgressModal({
                 value={percentComplete}
                 onChange={(e) => setPercentComplete(e.target.value)}
                 placeholder="0"
-                className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 pr-10 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 pr-10 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                 disabled={loading}
                 autoFocus
               />

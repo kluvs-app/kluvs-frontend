@@ -88,9 +88,9 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
               onClick={() => handlePolicyChange('PRIVATE')}
               disabled={loading}
               className={[
-                't-label flex-1 py-2 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-[7px] transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
@@ -100,9 +100,9 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
               onClick={() => handlePolicyChange('INVITE_LINK')}
               disabled={loading}
               className={[
-                't-label flex-1 py-2 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-[7px] transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
@@ -113,7 +113,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
 
         {/* Inline error */}
         {error && (
-          <p className="t-body-m text-red-400">{error}</p>
+          <p className="t-body-m text-danger">{error}</p>
         )}
 
         {/* Invite URL row — shown when INVITE_LINK */}

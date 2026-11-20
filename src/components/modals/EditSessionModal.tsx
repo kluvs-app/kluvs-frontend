@@ -186,7 +186,7 @@ export default function EditSessionModal({
         <div className="space-y-5">
           <p className="t-body-m text-[var(--color-text-primary)]">
             This will immediately end the current session for{' '}
-            <span className="font-medium">"{session.book?.title}"</span>. Its discussions and
+            <span className="t-label">"{session.book?.title}"</span>. Its discussions and
             history will be permanently removed. Members currently marked as reading will carry
             over to the new session.
           </p>
@@ -207,7 +207,7 @@ export default function EditSessionModal({
               value={newDueDate}
               onChange={(e) => setNewDueDate(e.target.value)}
               min={tomorrowString}
-              className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               disabled={loading}
             />
           </div>
@@ -249,7 +249,7 @@ export default function EditSessionModal({
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
             min={tomorrowString}
-            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
           />
         </div>

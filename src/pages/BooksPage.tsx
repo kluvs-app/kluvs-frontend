@@ -600,7 +600,7 @@ export default function BooksPage() {
 
         {view === 'search' && (
           <>
-            {searchError && <p className="t-body-m text-red-500 mb-4">{searchError}</p>}
+            {searchError && <p className="t-body-m text-danger mb-4">{searchError}</p>}
 
             {!query.trim() && (
               <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">

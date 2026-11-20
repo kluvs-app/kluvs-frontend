@@ -45,13 +45,13 @@ describe('Avatar', () => {
     it('applies medium size classes by default', () => {
       render(<Avatar name="John Doe" userId="123" />)
       const avatar = screen.getByText('JD').parentElement
-      expect(avatar).toHaveClass('w-6', 'h-6', 'text-[10px]')
+      expect(avatar).toHaveClass('w-6', 'h-6', 'text-[9.6px]')
     })
 
     it('applies large size classes', () => {
       render(<Avatar name="John Doe" userId="123" size="lg" />)
       const avatar = screen.getByText('JD').parentElement
-      expect(avatar).toHaveClass('w-10', 'h-10', 'text-[12px]')
+      expect(avatar).toHaveClass('w-10', 'h-10', 'text-[16px]')
     })
 
     it('applies xl size classes', () => {
