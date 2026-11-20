@@ -65,10 +65,11 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
         {oauthError && (
           <p className="t-body-m text-danger">{oauthError}</p>
         )}
-        <button
+        <Button
+          variant="social"
           onClick={handleOAuthLink}
           disabled={oauthLoading}
-          className="t-label w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn transition-colors"
+          className="bg-discord hover:bg-discord-hover disabled:opacity-40 text-white"
         >
           {oauthLoading ? (
             <>
@@ -81,7 +82,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
               <span>Sign in with Discord</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
     </BaseModal>
   )

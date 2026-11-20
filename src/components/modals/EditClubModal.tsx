@@ -139,13 +139,10 @@ export default function EditClubModal({
             color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Danger Zone</p>
-          <button
-            onClick={onDeleteClub}
-            disabled={loading}
-            className="t-label px-3.5 py-1.5 text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
-          >
+          <Button variant="outlined" onClick={onDeleteClub}
+            disabled={loading}>
             Delete club…
-          </button>
+          </Button>
         </div>
       }
       footer={

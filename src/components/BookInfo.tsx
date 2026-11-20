@@ -44,12 +44,9 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
       </div>
       {isAdmin && (
         <div className="flex gap-2">
-          <button
-            onClick={onEditBook}
-            className="t-body-m text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
-          >
+          <Button variant="outlined" onClick={onEditBook}>
             Edit Book
-          </button>
+          </Button>
           <Button
             variant="primary"
             onClick={onNewSession}

@@ -476,7 +476,7 @@ export default function ClubDetailPage() {
                           setTimeout(() => setIdCopied(false), 1500)
                         }}
                         className="t-fine-print transition-all duration-[120ms]"
-                        style={{ padding: '4px 10px',
+                        style={{ height: 32, padding: '0 16px', display: 'inline-flex', alignItems: 'center',
                           borderRadius: 999,
                           border: `1px solid ${idCopied ? 'var(--color-success)' : 'var(--color-divider)'}`,
                           color: idCopied ? 'var(--color-success)' : 'var(--color-text-secondary)',
@@ -746,7 +746,7 @@ Invite
                     setTimeout(() => setIdCopied(false), 1500)
                   }}
                   className="t-fine-print transition-all duration-[120ms]"
-                  style={{ padding: '4px 10px',
+                  style={{ height: 32, padding: '0 16px', display: 'inline-flex', alignItems: 'center',
                     borderRadius: 999,
                     border: `1px solid ${idCopied ? 'var(--color-success)' : 'var(--color-divider)'}`,
                     color: idCopied ? 'var(--color-success)' : 'var(--color-text-secondary)',
@@ -1059,12 +1059,9 @@ Invite
                   {clubMembers.length} members
                 </p>
                 {isAdmin && (
-                  <button
-                    onClick={handleAddMember}
-                    className="t-label border border-[var(--color-divider)] text-[var(--color-text-primary)] px-3 py-1.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
-                  >
+                  <Button variant="outlined" onClick={handleAddMember}>
                     + Invite
-                  </button>
+                  </Button>
                 )}
               </div>
 

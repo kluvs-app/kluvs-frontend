@@ -144,11 +144,8 @@ export default function DiscussionNoteModal({
             color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Danger Zone</p>
-          <button
-            onClick={handleDelete}
-            disabled={loading || fetching}
-            className="t-label px-3.5 py-1.5 text-[var(--color-text-secondary)] border border-[var(--color-text-secondary)] rounded-btn bg-transparent hover:opacity-70 transition-opacity disabled:opacity-40"
-          >Delete note…</button>
+          <Button variant="outlined" onClick={handleDelete}
+            disabled={loading || fetching}>Delete note…</Button>
         </div>
       ) : undefined}
       footer={

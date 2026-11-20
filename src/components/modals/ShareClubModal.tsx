@@ -87,7 +87,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
               onClick={() => handlePolicyChange('PRIVATE')}
               disabled={loading}
               className={[
-                't-label flex-1 py-2.5 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-2 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
@@ -99,7 +99,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
               onClick={() => handlePolicyChange('INVITE_LINK')}
               disabled={loading}
               className={[
-                't-label flex-1 py-2.5 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-2 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',

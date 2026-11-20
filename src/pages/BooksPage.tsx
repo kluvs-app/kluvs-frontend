@@ -110,7 +110,7 @@ function ShelfPill({ shelf, onShelfChange, disabled }: {
         aria-label={shelf ? `Shelf: ${SHELF_LABELS[shelf]}` : 'Add to shelf'}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className={`flex items-center gap-2 t-label px-4 py-2 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+        className={`flex items-center gap-2 t-fine-print h-8 px-4 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
           shelf
             ? 'border-primary text-primary'
             : 'border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
