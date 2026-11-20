@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club, ClubUpdateResponse, MemberUpdateResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import TriggerPill from '../ui/TriggerPill'
 
 // GET /member?search returns { members: SearchResult[] }, which the spec does not
 // document yet (it only declares the single-member lookup shape). Kept local until it does.
@@ -221,7 +222,7 @@ export default function AddMemberModal({
               onClick={() => handlePolicyChange('PRIVATE')}
               disabled={toggleLoading}
               className={[
-                't-label flex-1 py-2.5 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-2 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
@@ -233,7 +234,7 @@ export default function AddMemberModal({
               onClick={() => handlePolicyChange('INVITE_LINK')}
               disabled={toggleLoading}
               className={[
-                't-label flex-1 py-2.5 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-2 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
                   ? 'bg-primary text-white'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
@@ -267,15 +268,9 @@ export default function AddMemberModal({
                 >
                   {inviteUrl}
                 </p>
-                <button
-                  onClick={handleCopy}
-                  className={[
-                    't-label shrink-0 transition-colors duration-120',
-                    copied ? 'text-success' : 'text-primary hover:text-primary-hover',
-                  ].join(' ')}
-                >
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
+                <TriggerPill onClick={handleCopy} success={copied}>
+ {copied ? 'Copied!' : 'Copy'}
+ </TriggerPill>
               </div>
             ) : null
           )}

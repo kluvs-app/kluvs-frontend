@@ -8,6 +8,7 @@ import AddClubModal from '../components/modals/AddClubModal'
 import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
 import AvatarStack from '../components/ui/AvatarStack'
+import Button from '../components/ui/Button'
 
 interface ClubsPageProps {
   openNewModal?: boolean
@@ -64,12 +65,12 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
             <p className="t-body-l text-[var(--color-text-secondary)] mb-8 max-w-[280px] mx-auto">
               Start a club to read alongside friends, or accept an invite to join one.
             </p>
-            <button
+            <Button
+              variant="primary" className="w-full max-w-[280px]"
               onClick={() => setShowAddClubModal(true)}
-              className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-8 py-3 rounded-lg transition-all duration-120 cursor-pointer w-full max-w-[280px]"
             >
               Create your first club
-            </button>
+            </Button>
           </div>
         </div>
         <AddClubModal
@@ -90,12 +91,12 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
           <span className="t-eyebrow text-[var(--color-text-secondary)]">
             Your
           </span>
-          <button
+          <Button
+            variant="primary"
             onClick={() => setShowAddClubModal(true)}
-            className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-lg transition-all duration-120 cursor-pointer"
           >
             + New
-          </button>
+          </Button>
         </div>
         <h1 className="t-headline-s lg:t-headline-l text-[var(--color-text-primary)]">
           Clubs

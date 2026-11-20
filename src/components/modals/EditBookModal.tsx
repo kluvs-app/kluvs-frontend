@@ -4,6 +4,7 @@ import type { Club, SessionUpdateResponse } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface EditBookModalProps {
   isOpen: boolean
@@ -79,19 +80,19 @@ export default function EditBookModal({
       labelId="modal-title-edit-book"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
             disabled={loading || !selectedBookId}
-            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Updating…' : 'Update Book'}
-          </button>
+          </Button>
         </>
       }
     >

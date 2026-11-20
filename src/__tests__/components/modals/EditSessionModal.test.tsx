@@ -75,7 +75,7 @@ describe('EditSessionModal', () => {
 
     it('should show a "Change Book" link', () => {
       render(<EditSessionModal {...defaultProps} />)
-      expect(screen.getByRole('button', { name: 'Change Book…' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Change Book' })).toBeInTheDocument()
     })
   })
 
@@ -181,7 +181,7 @@ describe('EditSessionModal', () => {
     it('should switch to the Change Book confirmation view', async () => {
       const user = userEvent.setup()
       render(<EditSessionModal {...defaultProps} />)
-      await user.click(screen.getByRole('button', { name: 'Change Book…' }))
+      await user.click(screen.getByRole('button', { name: 'Change Book' }))
 
       expect(screen.getByRole('heading', { name: 'Change Book' })).toBeInTheDocument()
       expect(screen.getByText(/permanently removed/i)).toBeInTheDocument()
@@ -191,7 +191,7 @@ describe('EditSessionModal', () => {
     it('should go back to the edit view', async () => {
       const user = userEvent.setup()
       render(<EditSessionModal {...defaultProps} />)
-      await user.click(screen.getByRole('button', { name: 'Change Book…' }))
+      await user.click(screen.getByRole('button', { name: 'Change Book' }))
       await user.click(screen.getByRole('button', { name: 'Back' }))
 
       expect(screen.getByRole('heading', { name: 'Edit Session' })).toBeInTheDocument()
@@ -200,7 +200,7 @@ describe('EditSessionModal', () => {
     it('should disable the restart button until a book is selected', async () => {
       const user = userEvent.setup()
       render(<EditSessionModal {...defaultProps} />)
-      await user.click(screen.getByRole('button', { name: 'Change Book…' }))
+      await user.click(screen.getByRole('button', { name: 'Change Book' }))
 
       expect(screen.getByRole('button', { name: /restart with new book/i })).toBeDisabled()
       await user.click(screen.getByTestId('mock-select-book'))
@@ -210,7 +210,7 @@ describe('EditSessionModal', () => {
     it('should delete the old session, create a new one, and carry over reading members', async () => {
       const user = userEvent.setup()
       render(<EditSessionModal {...defaultProps} />)
-      await user.click(screen.getByRole('button', { name: 'Change Book…' }))
+      await user.click(screen.getByRole('button', { name: 'Change Book' }))
       await user.click(screen.getByTestId('mock-select-book'))
       await user.click(screen.getByRole('button', { name: /restart with new book/i }))
 
@@ -236,7 +236,7 @@ describe('EditSessionModal', () => {
       mockInvoke.mockResolvedValueOnce({ data: null, error: new Error('Delete failed') })
       const user = userEvent.setup()
       render(<EditSessionModal {...defaultProps} />)
-      await user.click(screen.getByRole('button', { name: 'Change Book…' }))
+      await user.click(screen.getByRole('button', { name: 'Change Book' }))
       await user.click(screen.getByTestId('mock-select-book'))
       await user.click(screen.getByRole('button', { name: /restart with new book/i }))
 

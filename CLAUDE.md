@@ -53,7 +53,7 @@ src/
 │   │   ├── Avatar.tsx           # User avatar with initials fallback
 │   │   ├── BookCover.tsx        # Book cover image with placeholder
 │   │   ├── CoverSlot.tsx        # Low-level cover display
-│   │   ├── GhostButton.tsx      # Transparent/text-only button
+│   │   ├── Button.tsx           # Button family: primary/danger/secondary/outlined/text/social
 │   │   ├── KebabMenu.tsx        # Three-dot dropdown menu
 │   │   └── RoleEyebrow.tsx      # Role badge (owner/admin/member)
 │   ├── icons/
@@ -208,6 +208,15 @@ const isAdmin = role === 'owner' || role === 'admin'
 - Initial app load: `AuthContext.loading` → full-screen spinner
 - Page-level data: component-level `loading` state → inline spinner
 - Both use `<KluvsSpinner>` for consistency
+
+### Buttons
+Use the button family in `src/components/ui/Button.tsx` (`design-system/docs/buttons.md`) — don't hand-write button class strings.
+
+- **Variants:** `primary` (copper fill — one per view), `danger` (filled destructive confirm), `secondary` (copper outline), `outlined` (grey outline), `text` (no container; grey, or copper with `emphasized`). There is one size: 40 high, radius 12, 24px side padding (text variant 12) — don't pass `size` or padding/height overrides.
+- Modal footers: `<Button variant="text">Cancel</Button>` on the left, `primary` (or `danger` for destructive) on the right; show `<KluvsSpinner color="var(--color-on-primary)" />` while `loading`.
+- Radius is `rounded-btn` (12px); text color on filled variants is `--color-on-primary`. No raw `bg-primary … text-white` button strings.
+- Button text is the `t-label` family (see Typography); don't set size, weight, `leading-*` or `tracking-*` on a button.
+- OAuth provider buttons use `variant="social"` (brand colors via `className`). One-shot pills ("Copy", "Copy Club ID") use `TriggerPill`; the shelf menu is `ShelfPill` (dropdown, 34 high, Label). `text` takes `destructive` for red text actions. Labels never end in an ellipsis except while loading ("Deleting…"). Segmented controls stay hand-written (34 high); icon-only buttons stay raw (outlined icon button: 40×40, 20 icon).
 
 ### Member Updates
 After modifying member data, call `refreshMemberData()` (not page reload):
@@ -370,7 +379,7 @@ Current coverage (as of 2026-05-27): **~1,093 tests across 44 test files**
 - **Pages**: LandingPage, LoginPage, ProfilePage, ClubsPage, ClubDetailPage, BooksPage, JoinPage, SetNewPasswordPage, PrivacyPolicy, TermsOfUse, DataDeletion, DiscordPage
 - **Layout**: AppShell, AppSidebar, Sidebar, TopNavbar
 - **Core Components**: Header, Footer, KluvsSpinner, KluvsHexBackground, BookSearchInput, BookInfo, DiscussionsTimeline, MembersTable, ThemeToggle
-- **UI Primitives**: Avatar, BookCover, CoverSlot, GhostButton, KebabMenu, RoleEyebrow
+- **UI Primitives**: Avatar, BookCover, CoverSlot, KebabMenu, RoleEyebrow
 - **Modals**: All 15 modals
 
 **Coverage Status:**

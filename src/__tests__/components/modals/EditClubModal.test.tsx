@@ -241,13 +241,13 @@ describe('EditClubModal', () => {
   describe('Delete club', () => {
     it('renders the Delete club button', () => {
       render(<EditClubModal {...defaultProps} />)
-      expect(screen.getByRole('button', { name: 'Delete club…' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Delete club' })).toBeInTheDocument()
     })
 
     it('calls onDeleteClub when Delete club is clicked', async () => {
       const user = userEvent.setup()
       render(<EditClubModal {...defaultProps} />)
-      await user.click(screen.getByRole('button', { name: 'Delete club…' }))
+      await user.click(screen.getByRole('button', { name: 'Delete club' }))
       expect(mockOnDeleteClub).toHaveBeenCalledTimes(1)
     })
   })

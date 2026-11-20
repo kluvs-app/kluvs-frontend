@@ -3,6 +3,7 @@ import { supabase } from '../../supabase'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import DiscordIcon from '../icons/DiscordIcon'
+import Button from '../ui/Button'
 
 interface DiscordLinkModalProps {
   isOpen: boolean
@@ -50,11 +51,11 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
       loading={oauthLoading}
       labelId="modal-title-discord-link"
       footer={
-        <button
+        <Button
+          variant="text"
           onClick={handleClose}
           disabled={oauthLoading}
-          className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-        >Cancel</button>
+        >Cancel</Button>
       }
     >
       <div className="space-y-4">
@@ -64,10 +65,11 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
         {oauthError && (
           <p className="t-body-m text-danger">{oauthError}</p>
         )}
-        <button
+        <Button
+          variant="social"
           onClick={handleOAuthLink}
           disabled={oauthLoading}
-          className="t-label w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn transition-colors"
+          className="bg-discord hover:bg-discord-hover disabled:opacity-40 text-white"
         >
           {oauthLoading ? (
             <>
@@ -80,7 +82,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
               <span>Sign in with Discord</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
     </BaseModal>
   )

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Book, ReadingProgress } from '../types'
 import ReadingProgressModal from './modals/ReadingProgressModal'
-import GhostButton from './ui/GhostButton'
+import Button from './ui/Button'
 
 interface ProgressRowProps {
   book: Book
@@ -49,12 +49,12 @@ export default function ProgressRow({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <GhostButton
-          variant="sm"
+        <Button
+          variant="outlined"
           onClick={() => setShowModal(true)}
         >
           Update
-        </GhostButton>
+        </Button>
       </div>
 
       <div className="flex items-center justify-between mt-1">

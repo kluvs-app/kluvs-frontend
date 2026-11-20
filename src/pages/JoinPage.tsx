@@ -4,6 +4,7 @@ import { supabase, invokeFunction } from '../supabase'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import KluvsSpinner from '../components/KluvsSpinner'
+import Button from '../components/ui/Button'
 
 interface ClubPreview {
   id: string
@@ -241,10 +242,11 @@ export default function JoinPage() {
                 {clubPreview.name}
               </h1>
               <div className="flex flex-col gap-3">
-                <button
+                <Button
+                  variant="social"
                   onClick={() => handleJoinWithProvider('discord')}
                   disabled={signingIn !== null || joining}
-                  className="t-label w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-btn transition-colors"
+                  className="bg-discord hover:bg-discord-hover disabled:opacity-60 text-white"
                 >
                   {signingIn === 'discord' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
@@ -252,11 +254,12 @@ export default function JoinPage() {
                     <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
                   )}
                   Continue with Discord
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="social"
                   onClick={() => handleJoinWithProvider('google')}
                   disabled={signingIn !== null || joining}
-                  className="t-label w-full flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover disabled:opacity-60 disabled:cursor-not-allowed text-google-text py-3 rounded-btn transition-colors"
+                  className="bg-google-bg hover:bg-google-bg-hover disabled:opacity-60 text-google-text"
                 >
                   {signingIn === 'google' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-google-text border-t-transparent" />
@@ -264,7 +267,7 @@ export default function JoinPage() {
                     <img src="/ic-google.svg" alt="" className="h-4 w-4" />
                   )}
                   Continue with Google
-                </button>
+                </Button>
               </div>
             </div>
             <p className="t-fine-print text-[var(--color-text-secondary)]">

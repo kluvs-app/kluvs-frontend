@@ -1,6 +1,7 @@
 import type { Book, ShelfValue } from '../types'
 import { parseLocalDate } from '../utils/dates'
-import { SHELF_OPTIONS } from '../constants/shelves'
+import ShelfPill from './ShelfPill'
+import Button from './ui/Button'
 
 interface BookInfoProps {
   book: Book
@@ -43,18 +44,15 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
       </div>
       {isAdmin && (
         <div className="flex gap-2">
-          <button
-            onClick={onEditBook}
-            className="t-body-m text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] px-3 py-1.5 rounded-btn border border-[var(--color-divider)] hover:border-[var(--color-text-secondary)] transition-colors"
-          >
+          <Button variant="text" onClick={onEditBook}>
             Edit Book
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="primary"
             onClick={onNewSession}
-            className="t-body-m bg-primary hover:bg-primary-hover text-white px-3 py-1.5 rounded-btn transition-colors"
           >
             New Session
-          </button>
+          </Button>
         </div>
       )}
       {onShelfChange !== undefined && (
@@ -62,27 +60,7 @@ export default function BookInfo({ book, dueDate, isAdmin, onEditBook, onNewSess
           <span className="t-eyebrow text-[var(--color-text-secondary)]">
             My Shelf
           </span>
-          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Select shelf">
-            {SHELF_OPTIONS.map(({ value, label }) => {
-              const isActive = shelf === value
-              return (
-                <button
-                  key={label}
-                  onClick={() => onShelfChange(value)}
-                  disabled={!book.id}
-                  aria-pressed={isActive}
-                  aria-label={`Shelf: ${label}`}
-                  className={`t-label px-3 py-1.5 rounded-btn border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                    isActive
-                      ? 'border-primary text-primary bg-primary/10'
-                      : 'border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-                  }`}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
+          <ShelfPill shelf={shelf ?? null} onShelfChange={onShelfChange} disabled={!book.id} />
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import Button from '../components/ui/Button'
 
 export default function SetNewPasswordPage() {
   const { updatePassword } = useAuth()
@@ -69,13 +70,13 @@ export default function SetNewPasswordPage() {
           {error && (
             <p className="text-danger t-body-m text-center">{error}</p>
           )}
-          <button
+          <Button
+            variant="primary" className="w-full disabled:bg-gray-400 dark:disabled:bg-gray-700 text-body-lg"
             type="submit"
             disabled={submitting}
-            className="w-full bg-primary hover:bg-primary-hover disabled:bg-gray-400 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-btn t-label transition-colors"
           >
             {submitting ? 'Updating…' : 'Update password'}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

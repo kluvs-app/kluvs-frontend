@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import DiscordIcon from '../icons/DiscordIcon'
+import Button from '../ui/Button'
 
 interface AddClubModalProps {
   isOpen: boolean
@@ -108,19 +109,19 @@ export default function AddClubModal({
       labelId="modal-title-add-club"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
             disabled={loading || !formData.name.trim()}
-            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Creating…' : 'Create Club'}
-          </button>
+          </Button>
         </>
       }
     >

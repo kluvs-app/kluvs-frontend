@@ -23,12 +23,13 @@ import { parseLocalDate, parseScheduledAt, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
 import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
-import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
 import AvatarStack from '../components/ui/AvatarStack'
 import MemberBadge from '../components/MemberBadge'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import ProgressRow from '../components/ProgressRow'
+import Button from '../components/ui/Button'
+import TriggerPill from '../components/ui/TriggerPill'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
@@ -428,18 +429,18 @@ export default function ClubDetailPage() {
                     </span>
                     {isAdmin && (
                       <div className="flex items-center gap-2">
-                        <GhostButton
-                          variant="md"
+                        <Button
+                          variant="outlined"
                           onClick={() => setShowShareModal(true)}
                         >
                           Share
-                        </GhostButton>
-                        <GhostButton
-                          variant="md"
+                        </Button>
+                        <Button
+                          variant="outlined"
                           onClick={() => setShowEditClubModal(true)}
                         >
                           Edit club
-                        </GhostButton>
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -469,25 +470,17 @@ export default function ClubDetailPage() {
                   {/* Utility row — admin only */}
                   {isAdmin && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
+                      <TriggerPill
+ onClick={() => {
                           navigator.clipboard.writeText(club.id)
                           setIdCopied(true)
                           setTimeout(() => setIdCopied(false), 1500)
                         }}
-                        className="t-fine-print transition-all duration-[120ms]"
-                        style={{ padding: '4px 10px',
-                          borderRadius: 999,
-                          border: `1px solid ${idCopied ? 'var(--color-success)' : 'var(--color-divider)'}`,
-                          color: idCopied ? 'var(--color-success)' : 'var(--color-text-secondary)',
-                          background: 'transparent',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                        }}
-                        title="Copy Club ID"
-                      >
-                        {idCopied ? 'Copied!' : 'Copy Club ID'}
-                      </button>
+ success={idCopied}
+ title="Copy Club ID"
+ >
+ {idCopied ? 'Copied!' : 'Copy Club ID'}
+ </TriggerPill>
                       <DiscordIndicator club={club} isAdmin={isAdmin} />
                     </div>
                   )}
@@ -559,21 +552,21 @@ export default function ClubDetailPage() {
                                 {/* Right: opt-in/out CTA */}
                                 {showCTA && (
                                   isReading ? (
-                                    <GhostButton
-                                      variant="sm"
+                                    <Button
+                                      variant="outlined"
                                       onClick={() => handleToggleMember(member.id, false)}
                                       disabled={togglingMemberId === member.id}
                                     >
                                       Opt out
-                                    </GhostButton>
+                                    </Button>
                                   ) : (
-                                    <button
+                                    <Button
+                                      variant="primary" className="disabled:opacity-50"
                                       onClick={() => handleToggleMember(member.id, true)}
                                       disabled={togglingMemberId === member.id}
-                                      className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn transition-all duration-120 cursor-pointer disabled:opacity-50"
                                     >
                                       Join this Read
-                                    </button>
+                                    </Button>
                                   )
                                 )}
                               </div>
@@ -622,12 +615,12 @@ export default function ClubDetailPage() {
                         Pick a book and kick off your club's first session.
                       </p>
                       {isAdmin && (
-                        <button
+                        <Button
+                          variant="primary"
                           onClick={() => setShowNewSessionModal(true)}
-                          className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn transition-all duration-120 cursor-pointer"
                         >
                           Start Session
-                        </button>
+                        </Button>
                       )}
                     </div>
                   )}
@@ -656,13 +649,13 @@ export default function ClubDetailPage() {
                           </span>
                         </div>
                         {isAdmin && (
-                          <GhostButton
-                            variant="sm"
-                            icon="+"
+                          <Button
+                            variant="outlined"
                             onClick={handleAddMember}
                           >
-                            Invite
-                          </GhostButton>
+                            <span aria-hidden>+</span>
+Invite
+                          </Button>
                         )}
                       </div>
 
@@ -691,12 +684,12 @@ export default function ClubDetailPage() {
                           <p className="t-title-m t-feature text-[var(--color-text-secondary)] mb-4">
                             Invite others to get the conversation going.
                           </p>
-                          <button
+                          <Button
+                            variant="primary"
                             onClick={handleAddMember}
-                            className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
                           >
                             Invite Members
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -739,31 +732,23 @@ export default function ClubDetailPage() {
           {isAdmin && (
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
+                <TriggerPill
+ onClick={() => {
                     navigator.clipboard.writeText(club.id)
                     setIdCopied(true)
                     setTimeout(() => setIdCopied(false), 1500)
                   }}
-                  className="t-fine-print transition-all duration-[120ms]"
-                  style={{ padding: '4px 10px',
-                    borderRadius: 999,
-                    border: `1px solid ${idCopied ? 'var(--color-success)' : 'var(--color-divider)'}`,
-                    color: idCopied ? 'var(--color-success)' : 'var(--color-text-secondary)',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                  title="Copy Club ID"
-                >
-                  {idCopied ? 'Copied!' : 'Copy Club ID'}
-                </button>
+ success={idCopied}
+ title="Copy Club ID"
+ >
+ {idCopied ? 'Copied!' : 'Copy Club ID'}
+ </TriggerPill>
                 <DiscordIndicator club={club} isAdmin={isAdmin} />
               </div>
               <div className="flex items-center gap-1.5">
-                <GhostButton variant="sm" onClick={() => setShowShareModal(true)}>
+                <Button variant="outlined" onClick={() => setShowShareModal(true)}>
                   Share
-                </GhostButton>
+                </Button>
                 <KebabMenu
                   items={[
                     { label: 'Edit club', onClick: () => setShowEditClubModal(true) },
@@ -841,12 +826,12 @@ export default function ClubDetailPage() {
                     Start reading together.
                   </p>
                   {isAdmin && (
-                    <button
+                    <Button
+                      variant="primary"
                       onClick={() => setShowNewSessionModal(true)}
-                      className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn transition-all duration-120 cursor-pointer"
                     >
                       Start Session
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -909,21 +894,21 @@ export default function ClubDetailPage() {
                           </div>
                           {showCTA && (
                             isReading ? (
-                              <GhostButton
-                                variant="sm"
+                              <Button
+                                variant="outlined"
                                 onClick={() => handleToggleMember(member.id, false)}
                                 disabled={togglingMemberId === member.id}
                               >
                                 Opt out
-                              </GhostButton>
+                              </Button>
                             ) : (
-                              <button
+                              <Button
+                                variant="primary" className="disabled:opacity-50"
                                 onClick={() => handleToggleMember(member.id, true)}
                                 disabled={togglingMemberId === member.id}
-                                className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-btn transition-all duration-120 cursor-pointer disabled:opacity-50"
                               >
                                 Join this Read
-                              </button>
+                              </Button>
                             )
                           )}
                         </div>
@@ -1059,12 +1044,9 @@ export default function ClubDetailPage() {
                   {clubMembers.length} members
                 </p>
                 {isAdmin && (
-                  <button
-                    onClick={handleAddMember}
-                    className="t-label border border-[var(--color-divider)] text-[var(--color-text-primary)] px-3 py-1.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
-                  >
+                  <Button variant="outlined" onClick={handleAddMember}>
                     + Invite
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -1093,12 +1075,12 @@ export default function ClubDetailPage() {
                   <p className="t-title-m t-feature text-[var(--color-text-secondary)] mb-4">
                     Invite others to get the conversation going.
                   </p>
-                  <button
+                  <Button
+                    variant="primary"
                     onClick={handleAddMember}
-                    className="t-label bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn transition-all duration-120 cursor-pointer"
                   >
                     Invite Members
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

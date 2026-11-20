@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import DiscordIcon from '../components/icons/DiscordIcon'
+import Button from '../components/ui/Button'
 
 function GoogleGlyph() {
   return (
@@ -163,16 +164,12 @@ export default function LoginPage() {
 
         {/* Back link — forgot screen only */}
         {isForgotMode && (
-          <button
-            type="button"
-            onClick={() => { setEmailMode('signin'); setEmailError(null) }}
-            className="t-label flex items-center gap-1.5 mb-6 text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
-          >
+          <Button type="button" onClick={() => { setEmailMode('signin'); setEmailError(null) }} variant="text" emphasized className="gap-1.5 mb-6">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M15 18l-6-6 6-6" />
             </svg>
             Sign in
-          </button>
+          </Button>
         )}
 
         {/* Masthead */}
@@ -199,13 +196,9 @@ export default function LoginPage() {
               body="Open the link from your email to choose a new password. The link is good for one hour."
             />
             <div className="mt-5 text-center">
-              <button
-                type="button"
-                onClick={() => { setEmailMode('signin'); setResetSent(false); setEmail('') }}
-                className="t-label text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
-              >
+              <Button type="button" onClick={() => { setEmailMode('signin'); setResetSent(false); setEmail('') }} variant="text" emphasized>
                 Back to sign in
-              </button>
+              </Button>
             </div>
           </>
         )}
@@ -219,21 +212,13 @@ export default function LoginPage() {
               body="Open the link from your email to finish setting up your account."
             />
             <div className="mt-5 flex justify-center items-center gap-[14px]">
-              <button
-                type="button"
-                onClick={() => { setConfirmationSent(false); setEmail(''); setPassword('') }}
-                className="t-label text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
-              >
+              <Button type="button" onClick={() => { setConfirmationSent(false); setEmail(''); setPassword('') }} variant="text" emphasized>
                 Try a different email
-              </button>
+              </Button>
               <span className="w-[3px] h-[3px] rounded-full bg-[var(--color-text-disabled)] flex-shrink-0 inline-block" aria-hidden="true" />
-              <button
-                type="button"
-                onClick={() => signUpWithEmail(email, password).catch(() => {})}
-                className="t-caption text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 transition-opacity"
-              >
+              <Button type="button" onClick={() => signUpWithEmail(email, password).catch(() => {})} variant="text">
                 Resend
-              </button>
+              </Button>
             </div>
           </>
         )}
@@ -252,13 +237,9 @@ export default function LoginPage() {
             />
             {emailError && <ErrorBanner message={emailError} />}
             <div className="mt-1">
-              <button
-                type="submit"
-                disabled={isBusy}
-                className="t-label w-full h-11 px-4 bg-primary border border-primary rounded-btn text-white disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
-              >
+              <Button type="submit" disabled={isBusy} variant="primary" className="w-full border border-primary disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)]">
                 {signingIn === 'email' ? 'Sending…' : 'Send reset link'}
-              </button>
+              </Button>
             </div>
           </form>
         )}
@@ -268,33 +249,18 @@ export default function LoginPage() {
           <>
             {/* OAuth row */}
             <div className={`flex flex-col gap-[10px] transition-opacity ${isBusy ? 'opacity-50 pointer-events-none' : ''}`}>
-              <button
-                type="button"
-                onClick={handleDiscordSignIn}
-                disabled={isBusy}
-                className="t-label w-full h-11 flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover rounded-btn px-4 text-white disabled:cursor-not-allowed transition-colors"
-              >
+              <Button type="button" onClick={handleDiscordSignIn} disabled={isBusy} variant="social" className="bg-discord hover:bg-discord-hover text-white">
                 <DiscordIcon className="h-[18px] w-[18px]" />
                 <span>{providerLabel('Discord')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={isBusy}
-                className="t-label w-full h-11 flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover border border-google-stroke rounded-btn px-4 text-google-text disabled:cursor-not-allowed transition-colors"
-              >
+              </Button>
+              <Button type="button" onClick={handleGoogleSignIn} disabled={isBusy} variant="social" className="bg-google-bg hover:bg-google-bg-hover border border-google-stroke text-google-text">
                 <GoogleGlyph />
                 <span>{providerLabel('Google')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleAppleSignIn}
-                disabled={isBusy}
-                className="t-label w-full h-11 flex items-center justify-center gap-3 bg-black hover:opacity-90 rounded-btn px-4 text-white disabled:cursor-not-allowed transition-opacity"
-              >
+              </Button>
+              <Button type="button" onClick={handleAppleSignIn} disabled={isBusy} variant="social" className="bg-black hover:opacity-90 text-white">
                 <AppleGlyph />
                 <span>{providerLabel('Apple')}</span>
-              </button>
+              </Button>
             </div>
 
             {/* "or with email" divider */}
@@ -328,37 +294,23 @@ export default function LoginPage() {
               />
               {emailError && <ErrorBanner message={emailError} />}
               <div className="mt-1">
-                <button
-                  type="submit"
-                  disabled={isBusy}
-                  className="t-label w-full h-11 px-4 bg-primary border border-primary rounded-btn text-white disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)] disabled:cursor-not-allowed transition-colors"
-                >
+                <Button type="submit" disabled={isBusy} variant="primary" className="w-full border border-primary disabled:bg-[var(--color-bg-elevated)] disabled:border-[var(--color-input-border)] disabled:text-[var(--color-text-secondary)]">
                   {signingIn === 'email'
                     ? (emailMode === 'signin' ? 'Signing in…' : 'Creating account…')
                     : (emailMode === 'signin' ? 'Sign in' : 'Create account')}
-                </button>
+                </Button>
               </div>
             </form>
 
             {/* Linkbar */}
             <div className="flex justify-between items-center mt-[18px]">
-              <button
-                type="button"
-                onClick={() => { setEmailMode(emailMode === 'signin' ? 'signup' : 'signin'); setEmailError(null) }}
-                disabled={isBusy}
-                className="t-label text-primary bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
-              >
+              <Button type="button" onClick={() => { setEmailMode(emailMode === 'signin' ? 'signup' : 'signin'); setEmailError(null) }} disabled={isBusy} variant="text" emphasized>
                 {emailMode === 'signin' ? 'Sign up' : 'Already have an account? Sign in'}
-              </button>
+              </Button>
               {emailMode === 'signin' && (
-                <button
-                  type="button"
-                  onClick={() => { setEmailMode('reset'); setEmailError(null) }}
-                  disabled={isBusy}
-                  className="t-caption text-[var(--color-text-secondary)] bg-transparent border-0 p-0 cursor-pointer hover:opacity-80 disabled:opacity-50 transition-opacity"
-                >
+                <Button type="button" onClick={() => { setEmailMode('reset'); setEmailError(null) }} disabled={isBusy} variant="text">
                   Forgot it?
-                </button>
+                </Button>
               )}
             </div>
           </>

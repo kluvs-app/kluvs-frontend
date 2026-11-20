@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club, ClubMember, MemberCreateResponse, MemberUpdateResponse, SessionUpdateResponse, UserRole } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface MemberModalProps {
   isOpen: boolean
@@ -173,21 +174,21 @@ export default function MemberModal({
       labelId="modal-title-member"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
             disabled={isSubmitDisabled}
-            className="t-label flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading
               ? (isEditing ? 'Updating…' : 'Adding…')
               : (isEditing ? 'Update Member' : 'Add Member')}
-          </button>
+          </Button>
         </>
       }
     >

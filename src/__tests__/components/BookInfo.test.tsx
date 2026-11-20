@@ -57,59 +57,63 @@ describe('BookInfo', () => {
     })
   })
 
-  describe('Shelf picker', () => {
-    it('does not render shelf picker when onShelfChange is not provided', () => {
+  describe('Shelf dropdown', () => {
+    it('does not render the shelf dropdown when onShelfChange is not provided', () => {
       render(<BookInfo book={mockBook} />)
-      expect(screen.queryByRole('group', { name: /select shelf/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /shelf/i })).not.toBeInTheDocument()
     })
 
-    it('renders shelf picker with all options when onShelfChange is provided', () => {
+    it('shows "Add to shelf" when the book is not shelved', () => {
       render(<BookInfo book={mockBook} shelf={null} onShelfChange={vi.fn()} />)
-      expect(screen.getByRole('group', { name: /select shelf/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /shelf: none/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /shelf: want to read/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /shelf: read/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /shelf: not finished/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /add to shelf/i })).toBeInTheDocument()
     })
 
-    it('marks the current shelf option as pressed', () => {
+    it('shows the current shelf on the trigger', () => {
       render(<BookInfo book={mockBook} shelf="read" onShelfChange={vi.fn()} />)
-      expect(screen.getByRole('button', { name: /shelf: read/i })).toHaveAttribute('aria-pressed', 'true')
-      expect(screen.getByRole('button', { name: /shelf: none/i })).toHaveAttribute('aria-pressed', 'false')
+      expect(screen.getByRole('button', { name: /shelf: read/i })).toBeInTheDocument()
     })
 
-    it('marks None as pressed when shelf is null', () => {
+    it('opens a listbox with all shelf options', () => {
       render(<BookInfo book={mockBook} shelf={null} onShelfChange={vi.fn()} />)
-      expect(screen.getByRole('button', { name: /shelf: none/i })).toHaveAttribute('aria-pressed', 'true')
+      fireEvent.click(screen.getByRole('button', { name: /add to shelf/i }))
+      expect(screen.getByRole('listbox', { name: /select shelf/i })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: /none/i })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: /want to read/i })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: /not finished/i })).toBeInTheDocument()
     })
 
-    it('calls onShelfChange with the selected value when a shelf button is clicked', () => {
+    it('marks the current shelf option as selected', () => {
+      render(<BookInfo book={mockBook} shelf="read" onShelfChange={vi.fn()} />)
+      fireEvent.click(screen.getByRole('button', { name: /shelf: read/i }))
+      expect(screen.getByRole('option', { name: /^read$/i })).toHaveAttribute('aria-selected', 'true')
+      expect(screen.getByRole('option', { name: /none/i })).toHaveAttribute('aria-selected', 'false')
+    })
+
+    it('calls onShelfChange with the selected value', () => {
       const onShelfChange = vi.fn()
       render(<BookInfo book={mockBook} shelf={null} onShelfChange={onShelfChange} />)
-      fireEvent.click(screen.getByRole('button', { name: /shelf: want to read/i }))
+      fireEvent.click(screen.getByRole('button', { name: /add to shelf/i }))
+      fireEvent.click(screen.getByRole('option', { name: /want to read/i }))
       expect(onShelfChange).toHaveBeenCalledWith('want_to_read' as ShelfValue)
     })
 
-    it('calls onShelfChange with null when None is clicked', () => {
+    it('calls onShelfChange with null when None is chosen', () => {
       const onShelfChange = vi.fn()
       render(<BookInfo book={mockBook} shelf="read" onShelfChange={onShelfChange} />)
-      fireEvent.click(screen.getByRole('button', { name: /shelf: none/i }))
+      fireEvent.click(screen.getByRole('button', { name: /shelf: read/i }))
+      fireEvent.click(screen.getByRole('option', { name: /none/i }))
       expect(onShelfChange).toHaveBeenCalledWith(null)
     })
 
-    it('disables all shelf buttons when book has no id', () => {
+    it('disables the trigger when the book has no id', () => {
       const bookWithoutId: Book = { ...mockBook, id: undefined }
       render(<BookInfo book={bookWithoutId} shelf={null} onShelfChange={vi.fn()} />)
-      const shelfButtons = screen.getAllByRole('button', { name: /shelf:/i })
-      shelfButtons.forEach(btn => expect(btn).toBeDisabled())
+      expect(screen.getByRole('button', { name: /add to shelf/i })).toBeDisabled()
     })
 
-    it('enables shelf buttons when book has an id', () => {
+    it('enables the trigger when the book has an id', () => {
       render(<BookInfo book={mockBook} shelf={null} onShelfChange={vi.fn()} />)
-      const shelfButtons = screen.getAllByRole('button', { name: /shelf:/i })
-      shelfButtons.forEach(btn => expect(btn).not.toBeDisabled())
+      expect(screen.getByRole('button', { name: /add to shelf/i })).not.toBeDisabled()
     })
   })
-
-
 })

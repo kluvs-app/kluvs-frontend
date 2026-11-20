@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface SignOutModalProps {
   isOpen: boolean
@@ -32,19 +33,19 @@ export default function SignOutModal({ isOpen, onClose }: SignOutModalProps) {
       labelId="modal-title-sign-out"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={onClose}
             disabled={loading}
-            className="t-label text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="danger"
             onClick={handleSignOut}
             disabled={loading}
-            className="t-label flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn transition-colors"
           >
             {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Signing out…' : 'Sign Out'}
-          </button>
+          </Button>
         </>
       }
     >
