@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club, ClubUpdateResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import TriggerPill from '../ui/TriggerPill'
 
 interface ShareClubModalProps {
   isOpen: boolean
@@ -137,15 +138,9 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
                 >
                   {inviteUrl}
                 </p>
-                <button
-                  onClick={handleCopy}
-                  className={[
-                    't-label shrink-0 transition-colors duration-120',
-                    copied ? 'text-success' : 'text-primary hover:text-primary-hover',
-                  ].join(' ')}
-                >
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
+                <TriggerPill onClick={handleCopy} success={copied}>
+ {copied ? 'Copied!' : 'Copy'}
+ </TriggerPill>
               </div>
             ) : null}
           </div>

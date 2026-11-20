@@ -141,7 +141,7 @@ export default function EditClubModal({
           }}>Danger Zone</p>
           <Button variant="outlined" onClick={onDeleteClub}
             disabled={loading}>
-            Delete club…
+            Delete club
           </Button>
         </div>
       }

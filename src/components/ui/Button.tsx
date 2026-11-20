@@ -13,6 +13,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   /** text variant only: copper instead of grey */
   emphasized?: boolean
+  /** text variant only: destructive red (DS text-destructive) */
+  destructive?: boolean
   children?: ReactNode
 }
 
@@ -36,6 +38,7 @@ const VARIANTS: Record<Exclude<ButtonVariant, 'text'>, string> = {
 export default function Button({
   variant = 'primary',
   emphasized = false,
+  destructive = false,
   className = '',
   children,
   ...props
@@ -44,9 +47,11 @@ export default function Button({
     variant === 'text'
       ? [
           'px-3 disabled:opacity-40',
-          emphasized
-            ? 'text-primary hover:text-primary-hover'
-            : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
+          destructive
+            ? 'text-danger hover:text-danger-hover'
+            : emphasized
+              ? 'text-primary hover:text-primary-hover'
+              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]',
         ].join(' ')
       : variant === 'social'
         ? VARIANTS.social

@@ -216,7 +216,7 @@ Use the button family in `src/components/ui/Button.tsx` (`design-system/docs/but
 - Modal footers: `<Button variant="text">Cancel</Button>` on the left, `primary` (or `danger` for destructive) on the right; show `<KluvsSpinner color="var(--color-on-primary)" />` while `loading`.
 - Radius is `rounded-btn` (12px); text color on filled variants is `--color-on-primary`. No raw `bg-primary … text-white` button strings.
 - Button text is the `t-label` family (see Typography); don't set size, weight, `leading-*` or `tracking-*` on a button.
-- OAuth provider buttons use `variant="social"` (brand colors via `className`). Pills (Fine print) and segmented controls stay hand-written; icon-only buttons stay raw.
+- OAuth provider buttons use `variant="social"` (brand colors via `className`). One-shot pills ("Copy", "Copy Club ID") use `TriggerPill`; the shelf menu is `ShelfPill` (dropdown, 34 high, Label). `text` takes `destructive` for red text actions. Labels never end in an ellipsis except while loading ("Deleting…"). Segmented controls stay hand-written (34 high); icon-only buttons stay raw (outlined icon button: 40×40, 20 icon).
 
 ### Member Updates
 After modifying member data, call `refreshMemberData()` (not page reload):

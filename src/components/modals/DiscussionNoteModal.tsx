@@ -145,7 +145,7 @@ export default function DiscussionNoteModal({
             marginBottom: 8,
           }}>Danger Zone</p>
           <Button variant="outlined" onClick={handleDelete}
-            disabled={loading || fetching}>Delete note…</Button>
+            disabled={loading || fetching}>Delete note</Button>
         </div>
       ) : undefined}
       footer={

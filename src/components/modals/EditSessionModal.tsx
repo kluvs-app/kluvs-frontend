@@ -295,14 +295,15 @@ export default function EditSessionModal({
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="text"
+          destructive
           onClick={() => { onError(''); setView('changeBook') }}
           disabled={loading}
-          className="t-label text-danger hover:text-danger-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Change Book…
-        </button>
+          Change Book
+        </Button>
       </div>
     </BaseModal>
   )

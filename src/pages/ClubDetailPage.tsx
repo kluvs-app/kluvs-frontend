@@ -29,6 +29,7 @@ import MemberBadge from '../components/MemberBadge'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import ProgressRow from '../components/ProgressRow'
 import Button from '../components/ui/Button'
+import TriggerPill from '../components/ui/TriggerPill'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
@@ -469,25 +470,17 @@ export default function ClubDetailPage() {
                   {/* Utility row — admin only */}
                   {isAdmin && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
+                      <TriggerPill
+ onClick={() => {
                           navigator.clipboard.writeText(club.id)
                           setIdCopied(true)
                           setTimeout(() => setIdCopied(false), 1500)
                         }}
-                        className="t-fine-print transition-all duration-[120ms]"
-                        style={{ height: 32, padding: '0 16px', display: 'inline-flex', alignItems: 'center',
-                          borderRadius: 999,
-                          border: `1px solid ${idCopied ? 'var(--color-success)' : 'var(--color-divider)'}`,
-                          color: idCopied ? 'var(--color-success)' : 'var(--color-text-secondary)',
-                          background: 'transparent',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                        }}
-                        title="Copy Club ID"
-                      >
-                        {idCopied ? 'Copied!' : 'Copy Club ID'}
-                      </button>
+ success={idCopied}
+ title="Copy Club ID"
+ >
+ {idCopied ? 'Copied!' : 'Copy Club ID'}
+ </TriggerPill>
                       <DiscordIndicator club={club} isAdmin={isAdmin} />
                     </div>
                   )}
@@ -739,25 +732,17 @@ Invite
           {isAdmin && (
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
+                <TriggerPill
+ onClick={() => {
                     navigator.clipboard.writeText(club.id)
                     setIdCopied(true)
                     setTimeout(() => setIdCopied(false), 1500)
                   }}
-                  className="t-fine-print transition-all duration-[120ms]"
-                  style={{ height: 32, padding: '0 16px', display: 'inline-flex', alignItems: 'center',
-                    borderRadius: 999,
-                    border: `1px solid ${idCopied ? 'var(--color-success)' : 'var(--color-divider)'}`,
-                    color: idCopied ? 'var(--color-success)' : 'var(--color-text-secondary)',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                  title="Copy Club ID"
-                >
-                  {idCopied ? 'Copied!' : 'Copy Club ID'}
-                </button>
+ success={idCopied}
+ title="Copy Club ID"
+ >
+ {idCopied ? 'Copied!' : 'Copy Club ID'}
+ </TriggerPill>
                 <DiscordIndicator club={club} isAdmin={isAdmin} />
               </div>
               <div className="flex items-center gap-1.5">
