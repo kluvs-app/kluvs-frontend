@@ -251,7 +251,7 @@ export default function JoinPage() {
                   {signingIn === 'discord' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
                   ) : (
-                    <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
+                    <img src="/ic-discord.svg" alt="" className="h-5 w-5" />
                   )}
                   Continue with Discord
                 </Button>
@@ -264,7 +264,7 @@ export default function JoinPage() {
                   {signingIn === 'google' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-google-text border-t-transparent" />
                   ) : (
-                    <img src="/ic-google.svg" alt="" className="h-4 w-4" />
+                    <img src="/ic-google.svg" alt="" className="h-5 w-5" />
                   )}
                   Continue with Google
                 </Button>

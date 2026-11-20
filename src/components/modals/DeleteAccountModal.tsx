@@ -67,13 +67,13 @@ export default function DeleteAccountModal({ isOpen, onClose }: DeleteAccountMod
     >
       <div className="space-y-4">
         <p className="t-body-m text-[var(--color-text-primary)]">
-          This will permanently delete your account and profile. This action is <span className="font-medium">immediate and cannot be undone</span>.
+          This will permanently delete your account and profile. This action is <span className="t-label">immediate and cannot be undone</span>.
         </p>
         <p className="t-body-m text-[var(--color-text-secondary)]">
           If you own a club, ownership will be automatically transferred to another member (an admin, if there is one), or the club will be deleted if you're its only member.
         </p>
         {inlineError && (
-          <p className="t-body-m text-red-400">{inlineError}</p>
+          <p className="t-body-m text-danger">{inlineError}</p>
         )}
       </div>
     </BaseModal>

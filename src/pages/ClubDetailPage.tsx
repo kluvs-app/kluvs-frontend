@@ -304,7 +304,7 @@ export default function ClubDetailPage() {
     return error ? (
       <main className="px-6 py-6">
         <div className="bg-danger/10 border border-danger/30 rounded-card p-4">
-          <p className="text-danger font-medium">{error}</p>
+          <p className="t-label text-danger">{error}</p>
         </div>
       </main>
     ) : null
@@ -781,7 +781,7 @@ Invite
                 key={tab}
                 onClick={() => setMobileTab(tab)}
                 className={[
-                  't-label flex-1 px-4 py-3.5 relative transition-colors duration-120',
+                  't-label flex-1 px-4 py-[14.5px] relative transition-colors duration-120',
                   isActive
                     ? 'text-[var(--color-text-primary)]'
                     : 'text-[var(--color-text-secondary)]',

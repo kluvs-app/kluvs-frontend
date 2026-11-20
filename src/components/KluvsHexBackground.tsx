@@ -154,7 +154,7 @@ function getTrefoilState(phase: number, jumpPx: number): { dy: number; scale: nu
 }
 
 export default function KluvsHexBackground({
-  accentColor = '#D16D30',
+  accentColor = 'var(--color-primary)',
   bgFill,
   bgContour,
   cellSize = 32,
@@ -293,7 +293,10 @@ export default function KluvsHexBackground({
         ctx.globalAlpha = 1
       }
 
-      // Trefoil
+      // Trefoil (canvas can't read CSS vars, so resolve the token to its current value)
+      const accent = accentColor.startsWith('var(')
+        ? getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#D16D30'
+        : accentColor
       const trefoilPhase = reducedMotion ? 0 : (elapsed / totalCycle) % 1
       const { dy: tDy, scale: tScale } = getTrefoilState(trefoilPhase, jumpPx)
 
@@ -305,7 +308,7 @@ export default function KluvsHexBackground({
 
       // Bevel outline
       drawPolygonPath(ctx, bevelPts)
-      ctx.strokeStyle = accentColor
+      ctx.strokeStyle = accent
       ctx.lineWidth = STROKE_W
       ctx.lineJoin = 'round'
       ctx.stroke()
@@ -314,7 +317,7 @@ export default function KluvsHexBackground({
       for (const { q, r } of TREFOIL) {
         const { x, y } = axial(q, r)
         drawHex(ctx, x + offX, y + offY, innerR)
-        ctx.fillStyle = accentColor
+        ctx.fillStyle = accent
         ctx.fill()
       }
 

@@ -177,7 +177,7 @@ export default function EditClubModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Fantasy Book Club"
-            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
             maxLength={100}
             autoFocus
@@ -225,7 +225,7 @@ export default function EditClubModal({
                           setSelectedChannel('')
                           setDiscordAcknowledged(false)
                         }}
-                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                         disabled={loading}
                       >
                         <option value="">No server</option>
@@ -255,7 +255,7 @@ export default function EditClubModal({
                           setSelectedChannel(e.target.value)
                           setDiscordAcknowledged(false)
                         }}
-                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                         disabled={loading}
                       >
                         <option value="">No channel</option>
@@ -310,7 +310,7 @@ export default function EditClubModal({
             type="date"
             value={foundedDate}
             onChange={(e) => setFoundedDate(e.target.value)}
-            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
           />
           <p className="t-fine-print mt-2 text-[var(--color-text-secondary)]">

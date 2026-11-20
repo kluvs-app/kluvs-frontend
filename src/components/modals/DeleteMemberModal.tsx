@@ -81,7 +81,7 @@ export default function DeleteMemberModal({
       <div className="space-y-4">
         <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to remove{' '}
-          <span className="font-medium">"{memberToDelete.name}"</span>{' '}
+          <span className="t-label">"{memberToDelete.name}"</span>{' '}
           from this club?
         </p>
         <p className="t-body-m text-[var(--color-text-secondary)]">Their account and membership in other clubs will not be affected.</p>

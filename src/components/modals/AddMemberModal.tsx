@@ -163,12 +163,12 @@ export default function AddMemberModal({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for a member by name or handle"
-            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             autoFocus
           />
 
           {inlineError && (
-            <p className="t-body-m mt-2 text-red-400">{inlineError}</p>
+            <p className="t-body-m mt-2 text-danger">{inlineError}</p>
           )}
 
           <div className="mt-3">
@@ -222,9 +222,9 @@ export default function AddMemberModal({
               onClick={() => handlePolicyChange('PRIVATE')}
               disabled={toggleLoading}
               className={[
-                't-label flex-1 py-2 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-[7px] transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
@@ -234,9 +234,9 @@ export default function AddMemberModal({
               onClick={() => handlePolicyChange('INVITE_LINK')}
               disabled={toggleLoading}
               className={[
-                't-label flex-1 py-2 transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-[7px] transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
@@ -245,7 +245,7 @@ export default function AddMemberModal({
           </div>
 
           {toggleError && (
-            <p className="t-body-m mb-3 text-red-400">{toggleError}</p>
+            <p className="t-body-m mb-3 text-danger">{toggleError}</p>
           )}
 
           {policy === 'INVITE_LINK' && (

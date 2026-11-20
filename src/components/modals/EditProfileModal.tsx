@@ -200,7 +200,7 @@ export default function EditProfileModal({
             disabled={loading}
             maxLength={100}
             autoFocus
-            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
           />
         </div>
 
@@ -222,11 +222,11 @@ export default function EditProfileModal({
               placeholder="bookworm42"
               disabled={loading}
               maxLength={50}
-              className="t-body-m flex-1 bg-transparent py-3 pr-4 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none"
+              className="t-body-m flex-1 bg-transparent py-[13px] pr-4 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none"
             />
           </div>
           {inlineError && (
-            <p className="t-body-m mt-2 text-red-400">{inlineError}</p>
+            <p className="t-body-m mt-2 text-danger">{inlineError}</p>
           )}
         </div>
 

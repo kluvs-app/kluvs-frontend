@@ -30,15 +30,15 @@ export default function AppShell() {
       {!isOnline && (
         <div
           className="flex items-center justify-center gap-2 py-2 px-4"
-          style={{ background: '#1A140F', borderBottom: '1px solid rgba(242,237,229,0.08)' }}
+          style={{ background: 'var(--color-bg-raised)', borderBottom: '1px solid var(--color-divider)' }}
           role="status"
           aria-live="polite"
         >
-          <svg className="w-4 h-4 shrink-0" style={{ color: '#8C8073' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4 shrink-0" style={{ color: 'var(--color-text-meta)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 010 12.728M5.636 5.636a9 9 0 000 12.728M12 12h.01" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
           </svg>
-          <span className="t-label" style={{ color: '#8C8073' }}>
+          <span className="t-label" style={{ color: 'var(--color-text-meta)' }}>
             You're offline. Content may be out of date.
           </span>
         </div>
