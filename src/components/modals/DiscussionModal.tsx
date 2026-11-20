@@ -4,6 +4,7 @@ import type { Club, Discussion } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import { parseLocalDate, scheduledAtToLocalParts, localPartsToScheduledAt } from '../../utils/dates'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface DiscussionModalProps {
   isOpen: boolean
@@ -119,31 +120,29 @@ export default function DiscussionModal({
       labelId="modal-title-discussion"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
             disabled={loading || !formData.title.trim() || !formData.date || !formData.time}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading
               ? (isEditing ? 'Updating…' : 'Adding…')
               : <span>{isEditing ? 'Update Discussion' : 'Add Discussion'}</span>}
-          </button>
+          </Button>
         </>
       }
     >
       <div className="space-y-5">
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Title</label>
           <input
@@ -151,7 +150,7 @@ export default function DiscussionModal({
             value={formData.title}
             onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
             placeholder="e.g., Chapters 1–5"
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
             maxLength={200}
             autoFocus
@@ -159,11 +158,9 @@ export default function DiscussionModal({
         </div>
 
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Date</label>
           <input
@@ -171,42 +168,38 @@ export default function DiscussionModal({
             value={formData.date}
             onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
             min={today}
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
           />
         </div>
 
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
           }}>Time</label>
           <input
             type="time"
             value={formData.time}
             onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
           />
         </div>
 
         <div>
-          <label style={{
+          <label className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 8,
-          }}>Location <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+          }}>Location <span className="t-fine-print normal-case">(optional)</span></label>
           <input
             type="text"
             value={formData.location}
             onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
             placeholder="e.g., Community Center, Discord"
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
             maxLength={100}
           />
@@ -216,8 +209,8 @@ export default function DiscussionModal({
           className="rounded-input px-4 py-3"
           style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
         >
-          <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Reading Session</p>
-          <p className="text-sm text-[var(--color-text-primary)]">{selectedClub.active_session.book?.title}</p>
+          <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Reading Session</p>
+          <p className="t-body-m text-[var(--color-text-primary)]">{selectedClub.active_session.book?.title}</p>
         </div>
       </div>
     </BaseModal>

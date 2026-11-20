@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club, ClubMember, MemberCreateResponse, MemberUpdateResponse, SessionUpdateResponse, UserRole } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface MemberModalProps {
   isOpen: boolean
@@ -22,11 +23,6 @@ interface MemberFormData {
 
 const labelStyle = {
   display: 'block',
-  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-  fontSize: 11,
-  fontWeight: 500,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase' as const,
   color: 'var(--color-text-secondary)',
   marginBottom: 8,
 }
@@ -178,34 +174,34 @@ export default function MemberModal({
       labelId="modal-title-member"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
             disabled={isSubmitDisabled}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading
               ? (isEditing ? 'Updating…' : 'Adding…')
               : (isEditing ? 'Update Member' : 'Add Member')}
-          </button>
+          </Button>
         </>
       }
     >
       <div className="space-y-5">
         {!isEditing && (
           <div>
-            <label style={labelStyle}>Member Name</label>
+            <label className="t-eyebrow" style={labelStyle}>Member Name</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
               placeholder="e.g., BookLover42"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               disabled={loading}
               maxLength={100}
               autoFocus
@@ -215,13 +211,13 @@ export default function MemberModal({
 
         {canEditRole && (
           <div>
-            <label style={labelStyle}>Role</label>
+            <label className="t-eyebrow" style={labelStyle}>Role</label>
             <div className="relative">
               <select
                 value={formData.role}
                 onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'admin' | 'member' }))}
                 disabled={loading}
-                className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
@@ -235,9 +231,9 @@ export default function MemberModal({
 
         {isEditing && (
           <div>
-            <label style={labelStyle}>Reading this session</label>
+            <label className="t-eyebrow" style={labelStyle}>Reading this session</label>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-[var(--color-text-primary)]">
+              <p className="t-body-m text-[var(--color-text-primary)]">
                 {formData.is_reading ? 'Reading' : 'Not reading'}
               </p>
               <button
@@ -250,7 +246,7 @@ export default function MemberModal({
                   'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   !hasActiveSession || loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
-                  formData.is_reading && hasActiveSession ? 'bg-primary' : 'bg-[#4D4033]',
+                  formData.is_reading && hasActiveSession ? 'bg-primary' : 'bg-[var(--color-text-disabled)]',
                 ].join(' ')}
               >
                 <span
@@ -262,7 +258,7 @@ export default function MemberModal({
               </button>
             </div>
             {!hasActiveSession && (
-              <p className="mt-2 text-xs text-[var(--color-text-secondary)] leading-relaxed">
+              <p className="t-fine-print mt-2 text-[var(--color-text-secondary)]">
                 Start a session to enable this option.
               </p>
             )}
@@ -270,15 +266,15 @@ export default function MemberModal({
         )}
 
         {error && (
-          <p className="text-sm text-danger">{error}</p>
+          <p className="t-body-m text-danger">{error}</p>
         )}
 
         <div
           className="rounded-input px-4 py-3"
           style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
         >
-          <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Club</p>
-          <p className="text-sm text-[var(--color-text-primary)]">{selectedClub.name}</p>
+          <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Club</p>
+          <p className="t-body-m text-[var(--color-text-primary)]">{selectedClub.name}</p>
         </div>
       </div>
     </BaseModal>

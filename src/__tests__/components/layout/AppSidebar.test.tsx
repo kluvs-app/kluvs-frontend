@@ -50,7 +50,7 @@ beforeEach(() => {
     member: { id: 1, name: 'Jane Doe', handle: '@jane', discord_id: 'disc-123' },
     isOnline: true,
   })
-  mockUseTheme.mockReturnValue({ theme: 'dark', setTheme: mockSetTheme })
+  mockUseTheme.mockReturnValue({ theme: 'dark', resolvedTheme: 'dark', setTheme: mockSetTheme })
 })
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -182,7 +182,7 @@ describe('AppSidebar', () => {
     })
 
     it('renders with label "Light" when theme is light', () => {
-      mockUseTheme.mockReturnValue({ theme: 'light', setTheme: mockSetTheme })
+      mockUseTheme.mockReturnValue({ theme: 'light', resolvedTheme: 'light', setTheme: mockSetTheme })
       renderSidebar()
       expect(screen.getByRole('button', { name: /theme: light/i })).toBeInTheDocument()
       expect(screen.getByText('Light')).toBeInTheDocument()
@@ -196,7 +196,7 @@ describe('AppSidebar', () => {
     })
 
     it('calls setTheme("dark") when clicked in light mode', async () => {
-      mockUseTheme.mockReturnValue({ theme: 'light', setTheme: mockSetTheme })
+      mockUseTheme.mockReturnValue({ theme: 'light', resolvedTheme: 'light', setTheme: mockSetTheme })
       const user = userEvent.setup()
       renderSidebar()
       await user.click(screen.getByRole('button', { name: /theme: light/i }))

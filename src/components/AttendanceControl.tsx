@@ -125,7 +125,7 @@ export default function AttendanceControl({ discussion, disabled = false }: Atte
               aria-pressed={isSelected}
               title={value.charAt(0).toUpperCase() + value.slice(1)}
               className={[
-                'flex items-center justify-center w-7 h-7 transition-colors duration-150',
+                'no-touch-target flex items-center justify-center w-7 h-7 transition-colors duration-150',
                 isSelected
                   ? pressedClass
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
@@ -140,7 +140,7 @@ export default function AttendanceControl({ discussion, disabled = false }: Atte
       </div>
 
       {/* Stats row */}
-      <p className="text-[11px] text-[var(--color-text-meta)] tabular-nums">
+      <p className="t-fine-print text-[var(--color-text-meta)] tabular-nums">
         {counts.yes} yes &middot; {counts.no} no &middot; {counts.maybe} maybe
       </p>
     </div>

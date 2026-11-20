@@ -53,7 +53,7 @@ src/
 │   │   ├── Avatar.tsx           # User avatar with initials fallback
 │   │   ├── BookCover.tsx        # Book cover image with placeholder
 │   │   ├── CoverSlot.tsx        # Low-level cover display
-│   │   ├── GhostButton.tsx      # Transparent/text-only button
+│   │   ├── Button.tsx           # Button family: primary/danger/secondary/outlined/text/social
 │   │   ├── KebabMenu.tsx        # Three-dot dropdown menu
 │   │   └── RoleEyebrow.tsx      # Role badge (owner/admin/member)
 │   ├── icons/
@@ -91,7 +91,7 @@ src/
 │   ├── ProfilePage.tsx      # /me — user profile, stats, settings
 │   ├── ClubsPage.tsx        # /clubs — club list (mobile-optimized)
 │   ├── ClubDetailPage.tsx   # /clubs/:slug — full club view with sessions/discussions
-│   ├── BooksPage.tsx        # /books — book search via Google Books API
+│   ├── BooksPage.tsx        # /books — book search + details via `book` / `book-enrichment` Edge Functions
 │   ├── JoinPage.tsx         # /join/:token — invite link club-join handler
 │   └── SetNewPasswordPage.tsx # password recovery (shown during PASSWORD_RECOVERY auth state)
 ├── types/
@@ -209,6 +209,15 @@ const isAdmin = role === 'owner' || role === 'admin'
 - Page-level data: component-level `loading` state → inline spinner
 - Both use `<KluvsSpinner>` for consistency
 
+### Buttons
+Use the button family in `src/components/ui/Button.tsx` (`design-system/docs/buttons.md`) — don't hand-write button class strings.
+
+- **Variants:** `primary` (copper fill — one per view), `danger` (filled destructive confirm), `secondary` (copper outline), `outlined` (grey outline), `text` (no container; grey, or copper with `emphasized`). There is one size: 40 high, radius 12, 24px side padding (text variant 12) — don't pass `size` or padding/height overrides.
+- Modal footers: `<Button variant="text">Cancel</Button>` on the left, `primary` (or `danger` for destructive) on the right; show `<KluvsSpinner color="var(--color-on-primary)" />` while `loading`.
+- Radius is `rounded-btn` (12px); text color on filled variants is `--color-on-primary`. No raw `bg-primary … text-white` button strings.
+- Button text is the `t-label` family (see Typography); don't set size, weight, `leading-*` or `tracking-*` on a button.
+- OAuth provider buttons use `variant="social"` (brand colors via `className`). One-shot pills ("Copy", "Copy Club ID") use `TriggerPill`; the shelf menu is `ShelfPill` (dropdown, 34 high, Label). `text` takes `destructive` for red text actions. Labels never end in an ellipsis except while loading ("Deleting…"). Segmented controls stay hand-written (34 high); icon-only buttons stay raw (outlined icon button: 40×40, 20 icon).
+
 ### Member Updates
 After modifying member data, call `refreshMemberData()` (not page reload):
 ```tsx
@@ -219,6 +228,16 @@ refreshMemberData()
 
 ### Modals
 All modals use `BaseModal` wrapper. Accept `isOpen: boolean` and `onClose: () => void` at minimum.
+
+### Typography
+Every piece of text is a design-system **family/rung** (`design-system/docs/typography.md`, `tokens.json` → `typography.family`). The `t-*` classes in `src/index.css` carry the exact size, weight, px line-height and tracking — nothing else should.
+
+- **Families:** `t-display-{s,m,l}`, `t-headline-{s,m,l}`, `t-title-{s,m,l}` (serif); `t-body-{l,m}`, `t-caption`, `t-eyebrow`, `t-label`, `t-fine-print` (sans); `t-mono`. Modifier: `t-feature` (italic — Headline/Title/Caption only).
+- **Never** add raw type utilities on top of a family or on their own: no `text-xs/sm/base/lg/3xl`, `text-[Npx]`, `leading-*`, `tracking-*`, `font-semibold`/`font-bold` (Bold is Display-only), `font-medium`/`font-normal` (the family sets the weight), `font-serif/sans/mono`, `italic`, and no inline `fontSize`/`fontFamily`/`fontWeight`/`fontStyle`/`lineHeight`/`letterSpacing`/`textTransform` styles. Never go below 11px (Eyebrow).
+- **Pick by role, not size:** page/session titles and Profile name/stats are Headline; Display is hero/masthead only; uppercase tracked text is `t-eyebrow`; button, nav, menu-item and medium-weight sans text is `t-label`; prose is `t-body-m`/`t-body-l`; dates/ISBNs/IDs are `t-mono`; an italic sans aside is `t-caption t-feature`.
+- **One family per element.** To change size at a breakpoint, switch rungs (`lg:t-title-l`), never raw px.
+- **Color is separate:** `t-caption` and `t-fine-print` bake in the muted color; add an explicit color class (or `text-inherit` to follow the parent) when you need something else. Other families take color from context.
+- **Exempt:** Avatar initials (sized per `docs/avatars.md`) and Material Symbols icon sizes. Markdown prose (`prose`) is themed to the families in `tailwind.config.js`.
 
 ## Environment Variables
 Required in `.env.local`:
@@ -322,6 +341,8 @@ npm run test:coverage     # Run tests with coverage report
 npm run validate          # Run lint + type-check + tests
 ```
 
+**For agents:** running tests is fine, but keep output small. Use `npx vitest run <path> --reporter=dot` (or `npm run test:run -- --reporter=dot`) and read only the summary and any failures — not the full output. Don't run watch mode (`npm run test`) or `npm run dev`.
+
 ### Test Structure
 ```
 src/__tests__/
@@ -358,7 +379,7 @@ Current coverage (as of 2026-05-27): **~1,093 tests across 44 test files**
 - **Pages**: LandingPage, LoginPage, ProfilePage, ClubsPage, ClubDetailPage, BooksPage, JoinPage, SetNewPasswordPage, PrivacyPolicy, TermsOfUse, DataDeletion, DiscordPage
 - **Layout**: AppShell, AppSidebar, Sidebar, TopNavbar
 - **Core Components**: Header, Footer, KluvsSpinner, KluvsHexBackground, BookSearchInput, BookInfo, DiscussionsTimeline, MembersTable, ThemeToggle
-- **UI Primitives**: Avatar, BookCover, CoverSlot, GhostButton, KebabMenu, RoleEyebrow
+- **UI Primitives**: Avatar, BookCover, CoverSlot, KebabMenu, RoleEyebrow
 - **Modals**: All 15 modals
 
 **Coverage Status:**

@@ -3,7 +3,7 @@ import { VERSION } from '../version'
 import { GitHubIcon, InstagramIcon, XIcon, TikTokIcon } from './icons/SocialIcons'
 
 const eyebrowLink =
-  'font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-secondary)] no-underline hover:text-[var(--color-text-primary)] transition-colors'
+  't-eyebrow text-[var(--color-text-secondary)] no-underline hover:text-[var(--color-text-primary)] transition-colors'
 
 const socialLinks = [
   { name: 'GitHub', href: 'https://github.com/kluvs-app', Icon: GitHubIcon },
@@ -25,13 +25,13 @@ export default function Footer({ showVersion = false }: Props) {
     <footer className="border-t border-[var(--color-divider)] px-6 py-8">
       <div className="mx-auto max-w-6xl flex flex-col items-center gap-6 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
         <div className="flex flex-col items-center gap-2 sm:items-start">
-          <p className="font-serif italic text-[17px] leading-none text-[var(--color-text-meta)]">
+          <p className="t-title-m t-feature text-[var(--color-text-meta)]">
             Reading is done best together.
           </p>
-          <p className="text-helper-sm text-[var(--color-text-meta)]">
+          <p className="t-fine-print text-[var(--color-text-meta)]">
             © 2026 Kluvs. All rights reserved.
             {showVersion && (
-              <span className="ml-2 text-helper text-[var(--color-text-secondary)] opacity-50">v{VERSION}</span>
+              <span className="ml-2 t-caption text-[var(--color-text-secondary)] opacity-50">v{VERSION}</span>
             )}
           </p>
         </div>

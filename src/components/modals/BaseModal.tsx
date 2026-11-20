@@ -33,7 +33,7 @@ export default function BaseModal({
 
   if (!isOpen) return null
 
-  const titleColor = titleVariant === 'danger' ? 'var(--color-danger)' : '#D16D30'
+  const titleColor = titleVariant === 'danger' ? 'var(--color-danger)' : 'var(--color-primary)'
   const maxWidthClass = maxWidth === 'md' ? 'max-w-md' : 'max-w-sm'
 
   return (
@@ -55,12 +55,7 @@ export default function BaseModal({
         >
           <h2
             id={labelId}
-            style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11,
-              fontWeight: 500,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
+            className="t-eyebrow" style={{
               color: titleColor,
               margin: 0,
             }}

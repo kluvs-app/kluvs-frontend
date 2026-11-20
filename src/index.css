@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Touch targets: on touch devices every button gets at least a 48px tappable area
+   (design-system buttons.md). The visible size is unchanged — the extra area is an
+   invisible ::after. Utilities (fixed/absolute) still win over this base position. Add `no-touch-target`
+   to adjacent small buttons (e.g. segmented icons) whose expanded areas would overlap. */
+@layer base {
+  @media (pointer: coarse) {
+    button:not(:disabled):not(.no-touch-target) {
+      position: relative;
+    }
+    button:not(:disabled):not(.no-touch-target)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 48px);
+      height: max(100%, 48px);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
 input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.85;
@@ -45,6 +66,33 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .kluvs-read-ribbon--md { width: 16px; height: 28px; right: 8px; }  /* For 80x120 cover */
 .kluvs-read-ribbon--lg { width: 24px; height: 42px; right: 12px; } /* For 128x192 cover */
 
+
+/* ─── Typography families (design-system/docs/typography.md, tokens.json v2.11.0) ──
+   family + rung with exact px line-height and tracking; `t-feature` is the italic
+   modifier. Color comes from context (except caption / fine-print, which bake in
+   the muted role). Do not add leading-* / tracking-* / font-semibold / font-bold
+   on top of these. */
+@layer components {
+  .t-display-s   { @apply font-serif font-bold;   font-size: 48px; line-height: 52px;  letter-spacing: 0; }
+  /* Display M / L: reserved, unused on web — do not use (DS: only Display S is in use). */
+  .t-display-m   { @apply font-serif font-bold;   font-size: 64px; line-height: 68px;  letter-spacing: 0; }
+  .t-display-l   { @apply font-serif font-bold;   font-size: 96px; line-height: 100px; letter-spacing: 0; }
+  .t-headline-s  { @apply font-serif font-medium; font-size: 30px; line-height: 36px;  letter-spacing: 0; }
+  .t-headline-m  { @apply font-serif font-medium; font-size: 34px; line-height: 40px;  letter-spacing: 0; }
+  .t-headline-l  { @apply font-serif font-medium; font-size: 40px; line-height: 46px;  letter-spacing: 0; }
+  .t-title-s     { @apply font-serif font-medium; font-size: 15px; line-height: 20px;  letter-spacing: 0; }
+  .t-title-m     { @apply font-serif font-medium; font-size: 19px; line-height: 24px;  letter-spacing: 0; }
+  .t-title-l     { @apply font-serif font-medium; font-size: 24px; line-height: 30px;  letter-spacing: 0; }
+  .t-body-l      { @apply font-sans font-normal;  font-size: 16px; line-height: 24px;  letter-spacing: 0.5px; }
+  .t-body-m      { @apply font-sans font-normal;  font-size: 14px; line-height: 20px;  letter-spacing: 0.25px; }
+  .t-caption     { @apply font-sans font-normal text-[var(--color-text-meta)]; font-size: 13px; line-height: 18px; letter-spacing: 0.2px; }
+  .t-eyebrow     { @apply font-sans font-medium uppercase; font-size: 11px; line-height: 16px; letter-spacing: 0.14em; }
+  .t-label       { @apply font-sans font-medium;  font-size: 14px; line-height: 18px;  letter-spacing: 0.1px; }
+  .t-fine-print  { @apply font-sans font-normal text-[var(--color-text-meta)]; font-size: 12px; line-height: 16px; letter-spacing: 0.4px; }
+  .t-mono        { @apply font-normal; font-family: ui-monospace, 'SF Mono', monospace; font-size: 13px; line-height: 18px; letter-spacing: 0; }
+  .t-feature     { @apply italic; }
+}
+
 @layer base {
   :root {
     --color-bg: #F2EDE5;
@@ -63,6 +111,11 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     --color-overlay: rgba(0, 0, 0, 0.5);
     --color-primary: #D16D30;
     --color-primary-hover: #B85A22;
+    --color-on-primary: #FFFFFF;
+    --color-danger: #EF4444;
+    --color-danger-rgb: 239 68 68;
+    --color-success: #48A480;
+    --color-discord: #5865F2;
 
     /* Marketing diagram accents (HowItWorksSection) — darkened for cream surfaces */
     --color-diagram-discord: #4752C4;

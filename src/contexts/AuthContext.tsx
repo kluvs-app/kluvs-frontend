@@ -40,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
-  
   // Immediate synchronous tracking of which user is currently being processed
   const processingUserIdRef = useRef<string | null>(null)
   // Stable ref to member — lets handleUserChange (useCallback, no deps) read
@@ -284,7 +283,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Initialize auth state and listen for changes - runs only once per app
   useEffect(() => {
     let initialized = false
-    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       handleUserChange(session?.user ?? null)

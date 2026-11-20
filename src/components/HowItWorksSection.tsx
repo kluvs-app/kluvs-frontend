@@ -6,7 +6,7 @@ function ConnectorTrack({ label }: { label: string }) {
       <div className="relative flex items-center justify-center h-[70px]">
         <div className="absolute left-1/2 top-0 bottom-0 w-px" style={{ background: 'var(--color-divider)' }} />
         <div
-          className="relative rounded-full px-3.5 py-[3px] text-[10px] font-medium uppercase tracking-[0.07em] whitespace-nowrap border"
+          className="t-eyebrow relative rounded-full px-3.5 py-[3px] whitespace-nowrap border"
           style={{ background: 'var(--color-bg-raised)', borderColor: 'var(--color-divider)', color: 'var(--color-text-meta)' }}
         >
           {label}
@@ -29,13 +29,13 @@ export default function HowItWorksSection() {
     <section className="px-6 py-16" style={{ background: 'var(--color-bg)' }}>
       <div className="max-w-[900px] mx-auto">
         <header className="text-center mb-16">
-          <p className="font-sans text-[10px] font-medium tracking-[0.14em] uppercase text-[var(--color-text-meta)] mb-3">
+          <p className="t-eyebrow text-[var(--color-text-meta)] mb-3">
             How it works
           </p>
-          <h2 className="text-3xl font-serif font-bold text-[var(--color-text-primary)] mb-3">
+          <h2 className="t-headline-s text-[var(--color-text-primary)] mb-3">
             One server, many clubs
           </h2>
-          <p className="text-body-lg text-[var(--color-text-secondary)] max-w-md mx-auto">
+          <p className="t-body-l text-[var(--color-text-secondary)] max-w-md mx-auto">
             Each channel can hold its own club, with its own book, members, and discussions.
           </p>
         </header>
@@ -55,9 +55,9 @@ export default function HowItWorksSection() {
                   <DiscordIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: 'var(--color-diagram-discord)' }}>Discord</div>
-                  <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Server</div>
-                  <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-meta)' }}>Your community home</div>
+                  <div className="t-eyebrow mb-0.5" style={{ color: 'var(--color-diagram-discord)' }}>Discord</div>
+                  <div className="t-label" style={{ color: 'var(--color-text-primary)' }}>Server</div>
+                  <div className="t-fine-print mt-0.5" style={{ color: 'var(--color-text-meta)' }}>Your community home</div>
                 </div>
               </div>
             </div>
@@ -85,9 +85,9 @@ export default function HowItWorksSection() {
                     <MatIcon name="menu_book" size={22} />
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: 'var(--color-primary)' }}>Club</div>
-                    <div className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>{name}</div>
-                    <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-meta)' }}>#{channel}-channel</div>
+                    <div className="t-eyebrow mb-0.5" style={{ color: 'var(--color-primary)' }}>Club</div>
+                    <div className="t-body-l" style={{ color: 'var(--color-text-primary)' }}>{name}</div>
+                    <div className="t-fine-print mt-0.5" style={{ color: 'var(--color-text-meta)' }}>#{channel}-channel</div>
                   </div>
                 </div>
               ))}
@@ -97,7 +97,7 @@ export default function HowItWorksSection() {
             <div className="flex flex-col gap-2 mt-3 md:mt-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-[216px]">
               <div className="flex items-center gap-2">
                 <div className="flex-1 border-t border-dashed opacity-30" style={{ borderColor: 'var(--color-primary)' }} />
-                <div className="text-[9px] font-bold uppercase tracking-[0.09em] whitespace-nowrap" style={{ color: 'var(--color-primary)' }}>
+                <div className="t-eyebrow whitespace-nowrap" style={{ color: 'var(--color-primary)' }}>
                   Multiple Members per Club
                 </div>
               </div>
@@ -110,12 +110,12 @@ export default function HowItWorksSection() {
                     <MatIcon name="person" size={16} />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>{handle}</div>
-                    <div className="text-[10px] mt-px" style={{ color: 'var(--color-text-meta)' }}>{role}</div>
+                    <div className="t-fine-print" style={{ color: 'var(--color-text-primary)' }}>{handle}</div>
+                    <div className="t-fine-print mt-px" style={{ color: 'var(--color-text-meta)' }}>{role}</div>
                   </div>
                 </div>
               ))}
-              <div className="text-[10px] font-medium text-center py-0.5" style={{ color: 'var(--color-text-meta)' }}>+ more per club</div>
+              <div className="t-fine-print text-center py-0.5" style={{ color: 'var(--color-text-meta)' }}>+ more per club</div>
             </div>
           </div>
 
@@ -133,8 +133,8 @@ export default function HowItWorksSection() {
                   <MatIcon name="calendar_month" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5 text-tertiary">Session</div>
-                  <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Meditating Motorcycle</div>
+                  <div className="t-eyebrow mb-0.5 text-tertiary">Session</div>
+                  <div className="t-label" style={{ color: 'var(--color-text-primary)' }}>Meditating Motorcycle</div>
                 </div>
               </div>
 
@@ -143,16 +143,16 @@ export default function HowItWorksSection() {
                 className="rounded-xl p-4 flex items-center gap-3 cursor-default transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl relative flex-1 min-w-[136px]"
                 style={{ background: 'rgba(0,103,129,0.22)' }}
               >
-                <div className="absolute -top-[9px] right-3 text-[9px] font-bold uppercase tracking-[0.06em] px-2.5 py-0.5 rounded-full bg-primary text-white">
+                <div className="t-eyebrow absolute -top-[9px] right-3 px-2.5 py-0.5 rounded-full bg-primary text-white">
                   Active
                 </div>
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 text-tertiary" style={{ background: 'var(--color-bg-raised)' }}>
                   <MatIcon name="calendar_month" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5 text-tertiary">Session</div>
-                  <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Pigs on the Wings</div>
-                  <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-meta)' }}>Ends February 30</div>
+                  <div className="t-eyebrow mb-0.5 text-tertiary">Session</div>
+                  <div className="t-label" style={{ color: 'var(--color-text-primary)' }}>Pigs on the Wings</div>
+                  <div className="t-fine-print mt-0.5" style={{ color: 'var(--color-text-meta)' }}>Ends February 30</div>
                 </div>
               </div>
 
@@ -165,8 +165,8 @@ export default function HowItWorksSection() {
                   <MatIcon name="calendar_month" />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5 text-tertiary">Session</div>
-                  <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Stoic Virtue</div>
+                  <div className="t-eyebrow mb-0.5 text-tertiary">Session</div>
+                  <div className="t-label" style={{ color: 'var(--color-text-primary)' }}>Stoic Virtue</div>
                 </div>
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function HowItWorksSection() {
             <div className="flex flex-col gap-2 mt-3 md:mt-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-[216px]">
               <div className="flex items-center gap-2">
                 <div className="flex-1 border-t border-dashed opacity-30" style={{ borderColor: 'var(--color-diagram-book)' }} />
-                <div className="text-[9px] font-bold uppercase tracking-[0.09em] whitespace-nowrap" style={{ color: 'var(--color-diagram-book)' }}>
+                <div className="t-eyebrow whitespace-nowrap" style={{ color: 'var(--color-diagram-book)' }}>
                   1 Book per Session
                 </div>
               </div>
@@ -184,8 +184,8 @@ export default function HowItWorksSection() {
                   <MatIcon name="auto_stories" size={16} />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>Animal Farm</div>
-                  <div className="text-[10px] mt-px" style={{ color: 'var(--color-text-meta)' }}>via Google Books</div>
+                  <div className="t-fine-print" style={{ color: 'var(--color-text-primary)' }}>Animal Farm</div>
+                  <div className="t-fine-print mt-px" style={{ color: 'var(--color-text-meta)' }}>via Google Books</div>
                 </div>
               </div>
             </div>
@@ -210,9 +210,9 @@ export default function HowItWorksSection() {
                     <MatIcon name="forum" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.1em] mb-0.5" style={{ color: 'var(--color-diagram-discussion)' }}>Discussion</div>
-                    <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{name}</div>
-                    <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-meta)' }}>{date}</div>
+                    <div className="t-eyebrow mb-0.5" style={{ color: 'var(--color-diagram-discussion)' }}>Discussion</div>
+                    <div className="t-label" style={{ color: 'var(--color-text-primary)' }}>{name}</div>
+                    <div className="t-fine-print mt-0.5" style={{ color: 'var(--color-text-meta)' }}>{date}</div>
                   </div>
                 </div>
               ))}
@@ -222,7 +222,7 @@ export default function HowItWorksSection() {
             <div className="flex flex-col gap-2 mt-3 md:mt-0 md:absolute md:right-0 md:top-1/2 md:-translate-y-1/2 md:w-[216px]">
               <div className="flex items-center gap-2">
                 <div className="flex-1 border-t border-dashed opacity-30" style={{ borderColor: 'var(--color-diagram-discord)' }} />
-                <div className="text-[9px] font-bold uppercase tracking-[0.09em] whitespace-nowrap" style={{ color: 'var(--color-diagram-discord)' }}>
+                <div className="t-eyebrow whitespace-nowrap" style={{ color: 'var(--color-diagram-discord)' }}>
                   Sync'd with Discord
                 </div>
               </div>
@@ -231,8 +231,8 @@ export default function HowItWorksSection() {
                   <DiscordIcon className="w-3.5 h-3" />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>Server Event</div>
-                  <div className="text-[10px] mt-px" style={{ color: 'var(--color-text-meta)' }}>Discord</div>
+                  <div className="t-fine-print" style={{ color: 'var(--color-text-primary)' }}>Server Event</div>
+                  <div className="t-fine-print mt-px" style={{ color: 'var(--color-text-meta)' }}>Discord</div>
                 </div>
               </div>
             </div>

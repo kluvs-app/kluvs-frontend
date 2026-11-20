@@ -68,25 +68,25 @@ describe('RoleEyebrow', () => {
     it('applies uppercase text transformation', () => {
       const { container } = render(<RoleEyebrow role="admin" />)
       const span = container.querySelector('span')
-      expect(span?.className).toContain('uppercase')
+      expect(span?.className).toContain('t-eyebrow')
     })
 
     it('applies font-medium weight', () => {
       const { container } = render(<RoleEyebrow role="admin" />)
       const span = container.querySelector('span')
-      expect(span?.className).toContain('font-medium')
+      expect(span?.className).toContain('t-eyebrow')
     })
 
     it('applies letter spacing', () => {
       const { container } = render(<RoleEyebrow role="admin" />)
       const span = container.querySelector('span')
-      expect(span?.className).toContain('tracking-')
+      expect(span?.className).toContain('t-eyebrow')
     })
 
     it('applies small text size', () => {
       const { container } = render(<RoleEyebrow role="admin" />)
       const span = container.querySelector('span')
-      expect(span?.className).toContain('text-[11px]')
+      expect(span?.className).toContain('t-eyebrow')
     })
   })
 
@@ -103,8 +103,8 @@ describe('RoleEyebrow', () => {
       const { container } = render(<RoleEyebrow role="admin" className="custom" />)
       const span = container.querySelector('span')
       expect(span?.className).toContain('custom')
-      expect(span?.className).toContain('font-medium')
-      expect(span?.className).toContain('uppercase')
+      expect(span?.className).toContain('t-eyebrow')
+      expect(span?.className).toContain('t-eyebrow')
     })
   })
 

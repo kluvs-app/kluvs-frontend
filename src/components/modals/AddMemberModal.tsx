@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club, ClubUpdateResponse, MemberUpdateResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import TriggerPill from '../ui/TriggerPill'
 
 // GET /member?search returns { members: SearchResult[] }, which the spec does not
 // document yet (it only declares the single-member lookup shape). Kept local until it does.
@@ -142,11 +143,6 @@ export default function AddMemberModal({
 
   const sectionLabelStyle = {
     display: 'block',
-    fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-    fontSize: 11,
-    fontWeight: 500,
-    letterSpacing: '0.14em',
-    textTransform: 'uppercase' as const,
     color: 'var(--color-text-secondary)',
     marginBottom: 12,
   }
@@ -161,28 +157,28 @@ export default function AddMemberModal({
       <div className="space-y-6">
         {/* Section 1 — Find a member */}
         <div>
-          <p style={sectionLabelStyle}>Find a member</p>
+          <p className="t-eyebrow" style={sectionLabelStyle}>Find a member</p>
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for a member by name or handle"
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             autoFocus
           />
 
           {inlineError && (
-            <p className="mt-2 text-sm text-red-400">{inlineError}</p>
+            <p className="t-body-m mt-2 text-danger">{inlineError}</p>
           )}
 
           <div className="mt-3">
             {searching ? (
-              <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)] py-2">
+              <div className="t-body-m flex items-center gap-2 text-[var(--color-text-secondary)] py-2">
                 <KluvsSpinner size={16} />
                 <span>Searching…</span>
               </div>
             ) : query.trim() && results.length === 0 ? (
-              <p className="text-sm text-[var(--color-text-secondary)] py-2">No Kluvs members found</p>
+              <p className="t-body-m text-[var(--color-text-secondary)] py-2">No Kluvs members found</p>
             ) : (
               <div className="space-y-1">
                 {results.map((r) => (
@@ -192,15 +188,15 @@ export default function AddMemberModal({
                     disabled={addingId !== null}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-input text-left hover:bg-[var(--color-bg-elevated)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#4D4033] flex items-center justify-center flex-shrink-0">
-                      <span className="text-[13px] font-medium text-[var(--color-text-primary)]">
+                    <div className="w-8 h-8 rounded-full bg-[var(--color-text-disabled)] flex items-center justify-center flex-shrink-0">
+                      <span className="t-label text-[var(--color-text-primary)]">
                         {r.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">{r.name}</p>
+                      <p className="t-label text-[var(--color-text-primary)] truncate">{r.name}</p>
                       {r.handle && (
-                        <p className="text-xs text-[var(--color-text-secondary)] truncate">@{r.handle}</p>
+                        <p className="t-fine-print text-[var(--color-text-secondary)] truncate">@{r.handle}</p>
                       )}
                     </div>
                     {addingId === r.id && <KluvsSpinner size={16} />}
@@ -215,7 +211,7 @@ export default function AddMemberModal({
 
         {/* Section 2 — Invite link */}
         <div>
-          <p style={sectionLabelStyle}>Invite link</p>
+          <p className="t-eyebrow" style={sectionLabelStyle}>Invite link</p>
 
           {/* Policy toggle */}
           <div
@@ -226,9 +222,9 @@ export default function AddMemberModal({
               onClick={() => handlePolicyChange('PRIVATE')}
               disabled={toggleLoading}
               className={[
-                'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-[7px] transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
@@ -238,9 +234,9 @@ export default function AddMemberModal({
               onClick={() => handlePolicyChange('INVITE_LINK')}
               disabled={toggleLoading}
               className={[
-                'flex-1 py-2.5 text-sm font-medium transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-[7px] transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
               ].join(' ')}
             >
@@ -249,12 +245,12 @@ export default function AddMemberModal({
           </div>
 
           {toggleError && (
-            <p className="mb-3 text-sm text-red-400">{toggleError}</p>
+            <p className="t-body-m mb-3 text-danger">{toggleError}</p>
           )}
 
           {policy === 'INVITE_LINK' && (
             toggleLoading ? (
-              <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+              <div className="t-body-m flex items-center gap-2 text-[var(--color-text-secondary)]">
                 <KluvsSpinner size={16} />
                 <span>Generating link…</span>
               </div>
@@ -267,20 +263,14 @@ export default function AddMemberModal({
                 }}
               >
                 <p
-                  className="flex-1 min-w-0 text-sm text-[var(--color-text-secondary)] truncate font-mono"
+                  className="t-mono flex-1 min-w-0 text-[var(--color-text-secondary)] truncate"
                   title={inviteUrl}
                 >
                   {inviteUrl}
                 </p>
-                <button
-                  onClick={handleCopy}
-                  className={[
-                    'shrink-0 text-sm font-medium transition-colors duration-120',
-                    copied ? 'text-success' : 'text-primary hover:text-primary-hover',
-                  ].join(' ')}
-                >
-                  {copied ? 'Copied!' : 'Copy'}
-                </button>
+                <TriggerPill onClick={handleCopy} success={copied}>
+ {copied ? 'Copied!' : 'Copy'}
+ </TriggerPill>
               </div>
             ) : null
           )}

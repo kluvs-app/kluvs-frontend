@@ -29,8 +29,8 @@ export default function Avatar({
 }: AvatarProps) {
   const sizeClasses = {
     sm: 'w-5 h-5 text-[8px]',
-    md: 'w-6 h-6 text-[10px]',
-    lg: 'w-10 h-10 text-[12px]',
+    md: 'w-6 h-6 text-[9.6px]',
+    lg: 'w-10 h-10 text-[16px]',
     xl: 'w-[88px] h-[88px] text-[35px]',
     '2xl': 'w-[112px] h-[112px] text-[45px]',
   }
@@ -39,7 +39,7 @@ export default function Avatar({
     ? OWN_COLOR
     : `var(--kluvs-avatar-hue-${Math.abs(Number(userId)) % AVATAR_HUE_COUNT})`
 
-  const color = isOwn ? '#FFFFFF' : 'var(--kluvs-avatar-initials)'
+  const color = isOwn ? 'var(--color-on-primary)' : 'var(--kluvs-avatar-initials)'
 
   const initials = nameInitials(name)
   const isLarge = size === 'xl' || size === '2xl'

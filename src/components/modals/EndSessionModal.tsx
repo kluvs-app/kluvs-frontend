@@ -4,6 +4,7 @@ import type { Club, ClubMember, SessionFinishResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import AvatarStack from '../ui/AvatarStack'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface EndSessionModalProps {
   isOpen: boolean
@@ -66,28 +67,28 @@ export default function EndSessionModal({
       labelId="modal-title-end-session"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="danger"
             onClick={handleConfirm}
             disabled={loading}
-            className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Ending…' : 'Confirm End'}
-          </button>
+          </Button>
         </>
       }
     >
       <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+        <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to end the current reading session for{' '}
-          <span className="font-semibold">"{club.active_session?.book?.title}"</span>?
+          <span className="t-label">"{club.active_session?.book?.title}"</span>?
         </p>
 
         {readingMembers.length > 0 ? (
@@ -98,22 +99,22 @@ export default function EndSessionModal({
               size="sm"
               borderColor="var(--color-bg-raised)"
             />
-            <p className="text-sm text-[var(--color-text-secondary)]">
+            <p className="t-body-m text-[var(--color-text-secondary)]">
               {readingCount} member{readingCount !== 1 ? 's' : ''} will receive credit.
             </p>
           </div>
         ) : (
-          <p className="text-sm text-[var(--color-text-secondary)]">
+          <p className="t-body-m text-[var(--color-text-secondary)]">
             No members are marked as reading, so no credit will be awarded.
           </p>
         )}
 
-        <p className="text-xs text-[var(--color-text-secondary)] opacity-70">
+        <p className="t-fine-print text-[var(--color-text-secondary)] opacity-70">
           To adjust who gets credit, cancel and update the participation list first.
         </p>
 
         {error && (
-          <p className="text-sm text-danger">{error}</p>
+          <p className="t-body-m text-danger">{error}</p>
         )}
       </div>
     </BaseModal>

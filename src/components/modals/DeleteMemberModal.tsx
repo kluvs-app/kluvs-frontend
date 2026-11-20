@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { ClubMember, MemberRemoveFromClubResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface DeleteMemberModalProps {
   isOpen: boolean
@@ -61,29 +62,29 @@ export default function DeleteMemberModal({
       labelId="modal-title-delete-member"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={onClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="danger"
             onClick={handleDelete}
             disabled={loading}
-            className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Removing…' : <span>Remove from Club</span>}
-          </button>
+          </Button>
         </>
       }
     >
       <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+        <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to remove{' '}
-          <span className="font-semibold">"{memberToDelete.name}"</span>{' '}
+          <span className="t-label">"{memberToDelete.name}"</span>{' '}
           from this club?
         </p>
-        <p className="text-sm text-[var(--color-text-secondary)]">Their account and membership in other clubs will not be affected.</p>
+        <p className="t-body-m text-[var(--color-text-secondary)]">Their account and membership in other clubs will not be affected.</p>
       </div>
     </BaseModal>
   )

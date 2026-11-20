@@ -33,10 +33,10 @@ function formatNextDate(scheduledAt: string): string {
   })
 }
 
-// Warm-dark hairline and button border — design tokens not in CSS vars
-const HAIRLINE = 'rgba(242,237,229,0.08)'
-const COPPER = '#D16D30'
-const MUTED = '#8C8073'
+// Hairline follows the theme's divider role (dark: card-2, light: divider)
+const HAIRLINE = 'var(--color-divider)'
+const COPPER = 'var(--color-primary)'
+const MUTED = 'var(--color-text-meta)'
 
 // ─── CoverSlot ────────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ function CoverSlot({ url, w, h }: { url?: string | null; w: number; h: number })
         width: w, height: h, borderRadius: 2, flexShrink: 0, overflow: 'hidden',
         boxShadow: '0 3px 8px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.02)',
         background: showPlaceholder
-          ? 'repeating-linear-gradient(135deg, #241C17 0, #241C17 5px, #332B24 5px, #332B24 10px)'
+          ? 'repeating-linear-gradient(135deg, var(--color-bg-elevated) 0, var(--color-bg-elevated) 5px, var(--color-divider) 5px, var(--color-divider) 10px)'
           : undefined,
         position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
       }}
@@ -62,10 +62,7 @@ function CoverSlot({ url, w, h }: { url?: string | null; w: number; h: number })
         />
       )}
       {showPlaceholder && (
-        <span style={{
-          fontFamily: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace',
-          fontSize: w >= 50 ? 8 : 7, color: MUTED,
-          letterSpacing: '0.12em', textTransform: 'uppercase',
+        <span className="t-eyebrow" style={{ color: MUTED,
           paddingBottom: 6, opacity: 0.7, position: 'relative', zIndex: 1,
         }}>cover</span>
       )}
@@ -98,25 +95,17 @@ function ShelfRow({ title, author, coverUrl, clubName, nextDate, progress, book,
         <div className="flex justify-between items-start gap-4 mb-5">
           {/* Left: Book Title & Author */}
           <div className="flex-1 min-w-0">
-            <p style={{
-              fontFamily: '"EB Garamond", Georgia, serif',
-              fontStyle: 'italic', fontWeight: 500,
-              lineHeight: 1.1, letterSpacing: '-0.008em',
-              color: 'var(--color-text-primary)',
+            <p className="t-title-l t-feature md:t-headline-s" style={{ color: 'var(--color-text-primary)',
               marginBottom: 4,
-            }} className="text-[22px] md:text-[28px]">{title}</p>
-            <p style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 14, color: 'var(--color-label-variant)',
+            }}>{title}</p>
+            <p className="t-body-m" style={{ color: 'var(--color-label-variant)',
             }}>{author}</p>
           </div>
 
           {/* Right: Metadata (Club) */}
           <div className="flex flex-col items-end flex-shrink-0 pt-1">
-            <span style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 10, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            <span className="t-eyebrow" style={{
+              color: 'var(--color-text-secondary)',
             }}>{clubName}</span>
           </div>
         </div>
@@ -152,17 +141,13 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
         className="hover:brightness-110 active:scale-[0.98] active:brightness-105"
         style={{
           background: 'var(--color-bg-elevated)',
-          borderRadius: 10, padding: '20px 22px',
+          borderRadius: 12, padding: '20px 22px',
           display: 'flex', flexDirection: 'column', gap: 16,
           transition: 'filter 120ms, transform 80ms',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
-          <p style={{
-            fontFamily: '"EB Garamond", Georgia, serif',
-            fontWeight: 500, fontSize: 22,
-            color: 'var(--color-text-primary)',
-            letterSpacing: '-0.008em',
+          <p className="t-title-l" style={{ color: 'var(--color-text-primary)',
             minWidth: 0, overflow: 'hidden',
             textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{name}</p>
@@ -170,10 +155,7 @@ function ClubCard({ id, name, role, members, memberCount, currentMemberId }: {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <AvatarStack members={members} max={3} size="md" currentMemberId={currentMemberId} />
-          <span style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 13, color: 'var(--color-text-secondary)',
-            letterSpacing: '0.01em',
+          <span className="t-caption" style={{ color: 'var(--color-text-secondary)',
           }}>{memberCount} members</span>
         </div>
       </div>
@@ -206,7 +188,6 @@ export default function ProfilePage() {
       .then(results => {
         const clubData = results.flatMap(r => r.data ? [r.data] : [])
         setClubs(clubData)
-        
         // Fetch progress for all active sessions
         clubData.forEach(c => {
           if (c.active_session?.id) {
@@ -299,10 +280,8 @@ export default function ProfilePage() {
       {/* Mobile hero */}
       <div className="md:hidden">
         <div className="flex justify-between items-center mb-6">
-          <span style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+          <span className="t-eyebrow" style={{
+            color: 'var(--color-text-secondary)',
           }}>Profile</span>
           <KebabMenu
             items={[
@@ -323,20 +302,15 @@ export default function ProfilePage() {
             className="shrink-0"
           />
           <div className="min-w-0">
-            <p style={{
-              fontFamily: '"EB Garamond", Georgia, serif',
-              fontWeight: 500, fontSize: 32, lineHeight: 1.05,
-              letterSpacing: '-0.015em', color: 'var(--color-text-primary)',
+            <p className="t-headline-s" style={{ color: 'var(--color-text-primary)',
             }}>{member?.name ?? 'User'}</p>
             {handle && (
-              <p style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 14, color: 'var(--color-text-secondary)', marginTop: 5,
+              <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', marginTop: 5,
                 display: 'flex', alignItems: 'center', gap: 6,
               }}>
                 {handle}
                 {member?.discord_id && (
-                  <DiscordIcon className="w-[13px] h-[13px] shrink-0 text-[#5865F2]" />
+                  <DiscordIcon className="w-[13px] h-[13px] shrink-0 text-discord" />
                 )}
               </p>
             )}
@@ -359,27 +333,20 @@ export default function ProfilePage() {
         />
 
         <div className="flex-1 min-w-0">
-          <span style={{
+          <span className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 12,
           }}>Profile</span>
-          <p style={{
-            fontFamily: '"EB Garamond", Georgia, serif',
-            fontWeight: 500, fontSize: 56, lineHeight: 1,
-            letterSpacing: '-0.02em', color: 'var(--color-text-primary)',
+          <p className="t-headline-l" style={{ color: 'var(--color-text-primary)',
           }}>{member?.name ?? 'User'}</p>
           {handle && (
-            <p style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 15, color: 'var(--color-text-secondary)', marginTop: 10,
+            <p className="t-body-l" style={{ color: 'var(--color-text-secondary)', marginTop: 10,
               display: 'flex', alignItems: 'center', gap: 6,
             }}>
               {handle}
               {member?.discord_id && (
-                <DiscordIcon className="w-[14px] h-[14px] shrink-0 text-[#5865F2]" />
+                <DiscordIcon className="w-[14px] h-[14px] shrink-0 text-discord" />
               )}
             </p>
           )}
@@ -404,15 +371,10 @@ export default function ProfilePage() {
         {mobileStats.map((s, i) => (
           <div key={i} className="flex-1 flex flex-col gap-2"
             style={{ borderLeft: i > 0 ? `1px solid ${HAIRLINE}` : 'none', paddingLeft: i > 0 ? 16 : 0 }}>
-            <p style={{
-              fontFamily: '"EB Garamond", Georgia, serif',
-              fontWeight: 500, fontSize: 28, lineHeight: 1,
-              letterSpacing: '-0.012em', color: 'var(--color-text-primary)',
+            <p className="t-headline-s" style={{ color: 'var(--color-text-primary)',
             }}>{s.num}</p>
-            <span style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-label-variant)',
+            <span className="t-eyebrow" style={{
+              color: 'var(--color-label-variant)',
             }}>{s.label}</span>
           </div>
         ))}
@@ -426,15 +388,10 @@ export default function ProfilePage() {
         {desktopStats.map((s, i) => (
           <div key={i} className="flex flex-col gap-3"
             style={{ borderLeft: i > 0 ? `1px solid ${HAIRLINE}` : 'none', paddingLeft: i > 0 ? 32 : 0 }}>
-            <p style={{
-              fontFamily: '"EB Garamond", Georgia, serif',
-              fontWeight: 500, fontSize: 56, lineHeight: 1,
-              letterSpacing: '-0.02em', color: 'var(--color-text-primary)',
+            <p className="t-headline-l" style={{ color: 'var(--color-text-primary)',
             }}>{s.num}</p>
-            <span style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-label-variant)',
+            <span className="t-eyebrow" style={{
+              color: 'var(--color-label-variant)',
             }}>{s.label}</span>
           </div>
         ))}
@@ -450,30 +407,21 @@ export default function ProfilePage() {
             style={{ borderBottom: `1px solid ${HAIRLINE}` }}
           >
             <div className="flex justify-between items-baseline mb-3.5">
-              <span style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                textTransform: 'uppercase', color: COPPER,
+              <span className="t-eyebrow" style={{
+                color: COPPER,
               }}>Up Next</span>
-              <span style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.04em',
-                textTransform: 'uppercase', color: COPPER,
+              <span className="t-fine-print" style={{
+                color: COPPER,
               }}>{nextDiscDate}</span>
             </div>
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p style={{
-                  fontFamily: '"EB Garamond", Georgia, serif',
-                  fontWeight: 500, fontStyle: 'italic', fontSize: 26, lineHeight: 1.15,
-                  letterSpacing: '-0.012em', color: 'var(--color-text-primary)',
+                <p className="t-title-l t-feature" style={{ color: 'var(--color-text-primary)',
                   marginBottom: 10,
                 } as React.CSSProperties}>
                   {nextDiscussion.title}
                 </p>
-                <p style={{
-                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                  fontSize: 13, color: 'var(--color-text-secondary)', lineHeight: 1.5,
+                <p className="t-caption" style={{ color: 'var(--color-text-secondary)', 
                 }}>
                   {nextDiscussion.clubName}
                   {nextDiscussion.location && (
@@ -504,32 +452,22 @@ export default function ProfilePage() {
             style={{ borderBottom: `1px solid ${HAIRLINE}` }}
           >
             <div>
-              <span style={{
+              <span className="t-eyebrow" style={{
                 display: 'block',
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                textTransform: 'uppercase', color: COPPER,
+                color: COPPER,
               }}>Up Next</span>
-              <span style={{
-                display: 'block',
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 13, fontWeight: 500, letterSpacing: '0.04em',
-                textTransform: 'uppercase', color: COPPER, marginTop: 10,
+              <span className="t-fine-print" style={{ display: 'block',
+                color: COPPER, marginTop: 10,
               }}>{nextDiscDate}</span>
             </div>
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1 min-w-0">
-                <p style={{
-                  fontFamily: '"EB Garamond", Georgia, serif',
-                  fontWeight: 500, fontStyle: 'italic', fontSize: 44, lineHeight: 1.1,
-                  letterSpacing: '-0.015em', color: 'var(--color-text-primary)',
+                <p className="t-headline-l t-feature" style={{ color: 'var(--color-text-primary)',
                   maxWidth: 760, marginBottom: 18,
                 } as React.CSSProperties}>
                   {nextDiscussion.title}
                 </p>
-                <p style={{
-                  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                  fontSize: 15, color: 'var(--color-text-secondary)',
+                <p className="t-body-l" style={{ color: 'var(--color-text-secondary)',
                   display: 'flex', gap: 10,
                 }}>
                   <span>{nextDiscussion.clubName}</span>
@@ -564,22 +502,13 @@ export default function ProfilePage() {
 
       {!loading && clubItems.length === 0 && (
         <div className="pt-10 md:pt-16 flex flex-col items-center text-center gap-5 pb-10">
-          <p style={{
-            fontFamily: '"EB Garamond", Georgia, serif',
-            fontWeight: 500, fontStyle: 'italic',
-            fontSize: 28, lineHeight: 1.2, letterSpacing: '-0.01em',
-            color: 'var(--color-text-primary)',
+          <p className="t-headline-s t-feature" style={{ color: 'var(--color-text-primary)',
           }}>No clubs yet.</p>
-          <p style={{
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 14, color: 'var(--color-text-secondary)', maxWidth: 320,
+          <p className="t-body-m" style={{ color: 'var(--color-text-secondary)', maxWidth: 320,
           }}>You haven't joined any book clubs. Find one and start reading with others.</p>
           <Link
             to="/clubs"
-            style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 13, fontWeight: 500,
-              color: COPPER, textDecoration: 'none',
+            className="t-label" style={{ color: COPPER, textDecoration: 'none',
               border: `1px solid ${COPPER}`,
               padding: '9px 18px', borderRadius: 8,
               display: 'inline-block',
@@ -597,14 +526,10 @@ export default function ProfilePage() {
         {/* Left: On Your Shelf */}
         <div>
           <div className="flex justify-between items-baseline mb-7">
-            <span style={{
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            <span className="t-eyebrow" style={{
+              color: 'var(--color-text-secondary)',
             }}>On Your Shelf</span>
-            <span style={{
-              fontFamily: '"EB Garamond", Georgia, serif',
-              fontStyle: 'italic', fontSize: 18, color: 'var(--color-text-secondary)',
+            <span className="t-title-m t-feature" style={{ color: 'var(--color-text-secondary)',
             }}>{shelfItems.length} books in progress</span>
           </div>
 
@@ -643,17 +568,15 @@ export default function ProfilePage() {
 
         {/* Right: Your Clubs — desktop only */}
         <div className="hidden lg:block">
-          <span style={{
+          <span className="t-eyebrow" style={{
             display: 'block',
-            fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-            fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+            color: 'var(--color-text-secondary)',
             marginBottom: 28,
           }}>Your Clubs</span>
           <div className="flex flex-col gap-3.5">
             {loading ? (
               [1, 2, 3].map(i => (
-                <div key={i} className="h-[88px] rounded-[10px] bg-[var(--color-bg-elevated)] animate-pulse" />
+                <div key={i} className="h-[88px] rounded-card bg-[var(--color-bg-elevated)] animate-pulse" />
               ))
             ) : (
               clubItems.map(c => (

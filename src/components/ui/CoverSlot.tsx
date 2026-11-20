@@ -63,7 +63,7 @@ export default function CoverSlot({
         />
       )}
       {showPlaceholder && label && (
-        <span className="text-[8px] font-mono uppercase tracking-[0.12em] text-[var(--color-text-meta)] pb-1.5 opacity-70 relative z-10">
+        <span className="t-eyebrow text-[var(--color-text-meta)] pb-1.5 opacity-70 relative z-10">
           {label}
         </span>
       )}

@@ -12,7 +12,7 @@ export default function RoleEyebrow({ role, className = '' }: RoleEyebrowProps) 
   return (
     <span
       className={[
-        'inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.14em]',
+        'inline-flex items-center gap-1.5 t-eyebrow',
         isOwner
           ? 'text-role-owner'
           : isAdmin

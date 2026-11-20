@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import {
   bestCoverUrl,
   extractYear,
@@ -6,31 +6,13 @@ import {
   preferredIsbn,
   displayLanguage,
   formatRatingCount,
-  searchVolumes,
-  getVolume,
-  type GBImageLinks,
-  type GBIndustryIdentifier,
-  type GBVolumeInfo,
-  type KGPerson,
+  type ImageLinks,
+  type IndustryIdentifier,
 } from '../../services/googleBooks'
-
-// ── fetch mock ────────────────────────────────────────────────────────────────
-
-const mockFetch = vi.fn()
-vi.stubGlobal('fetch', mockFetch)
-
-beforeEach(() => vi.clearAllMocks())
-
-function ok(data: unknown) {
-  return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(data) } as Response)
-}
-function notOk(status = 400) {
-  return Promise.resolve({ ok: false, status, json: () => Promise.resolve({}) } as Response)
-}
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
-const mockVolumeInfo: GBVolumeInfo = {
+const mockVolumeInfo = {
   title: 'Nineteen Eighty-Four',
   subtitle: 'A Novel',
   authors: ['George Orwell'],
@@ -43,8 +25,6 @@ const mockVolumeInfo: GBVolumeInfo = {
   ],
   pageCount: 328,
   categories: ['Fiction', 'Classics'],
-  averageRating: 4.2,
-  ratingsCount: 98765,
   imageLinks: {
     smallThumbnail: 'http://example.com/small.jpg',
     thumbnail:      'http://example.com/thumb.jpg',
@@ -56,15 +36,6 @@ const mockVolumeInfo: GBVolumeInfo = {
   language: 'en',
 }
 
-const mockVolume = { id: 'abc123', volumeInfo: mockVolumeInfo }
-
-const mockKGPerson: KGPerson = {
-  name: 'George Orwell',
-  description: 'English author',
-  detailedDescription: { articleBody: 'Eric Arthur Blair, known by his pen name George Orwell.' },
-  image: { contentUrl: 'https://upload.wikimedia.org/orwell.jpg' },
-}
-
 // ── bestCoverUrl ──────────────────────────────────────────────────────────────
 
 describe('bestCoverUrl', () => {
@@ -73,7 +44,7 @@ describe('bestCoverUrl', () => {
   })
 
   it('falls back through the resolution chain', () => {
-    const links: GBImageLinks = { thumbnail: 'http://example.com/t.jpg', small: 'http://example.com/s.jpg' }
+    const links: ImageLinks = { thumbnail: 'http://example.com/t.jpg', small: 'http://example.com/s.jpg' }
     expect(bestCoverUrl(links)).toBe('https://example.com/s.jpg')
   })
 
@@ -87,6 +58,11 @@ describe('bestCoverUrl', () => {
 
   it('returns undefined when both args are undefined', () => {
     expect(bestCoverUrl()).toBeUndefined()
+  })
+
+  it('uses fallback when every image link is null', () => {
+    const links: ImageLinks = { thumbnail: null, small: null, medium: null, large: null, extraLarge: null }
+    expect(bestCoverUrl(links, 'http://example.com/fb.jpg')).toBe('https://example.com/fb.jpg')
   })
 })
 
@@ -154,12 +130,12 @@ describe('preferredIsbn', () => {
   })
 
   it('falls back to ISBN-10 when no ISBN-13', () => {
-    const ids: GBIndustryIdentifier[] = [{ type: 'ISBN_10', identifier: '0451524934' }]
+    const ids: IndustryIdentifier[] = [{ type: 'ISBN_10', identifier: '0451524934' }]
     expect(preferredIsbn(ids)).toBe('0451524934')
   })
 
   it('returns undefined when neither is present', () => {
-    const ids: GBIndustryIdentifier[] = [{ type: 'ISSN', identifier: '1234-5678' }]
+    const ids: IndustryIdentifier[] = [{ type: 'ISSN', identifier: '1234-5678' }]
     expect(preferredIsbn(ids)).toBeUndefined()
   })
 
@@ -197,172 +173,5 @@ describe('formatRatingCount', () => {
 
   it('formats with a thousands separator', () => {
     expect(formatRatingCount(12345)).toMatch(/12.345/)
-  })
-})
-
-// ── searchVolumes ─────────────────────────────────────────────────────────────
-
-describe('searchVolumes', () => {
-  it('returns [] without fetching when query is empty', async () => {
-    expect(await searchVolumes('')).toEqual([])
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it('returns [] without fetching when query is only whitespace', async () => {
-    expect(await searchVolumes('   ')).toEqual([])
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it('calls the Google Books volumes endpoint', async () => {
-    mockFetch.mockReturnValueOnce(ok({ kind: 'books#volumes', totalItems: 1, items: [mockVolume] }))
-    await searchVolumes('1984')
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('googleapis.com/books/v1/volumes'))
-  })
-
-  it('includes the query in the URL', async () => {
-    mockFetch.mockReturnValueOnce(ok({ items: [] }))
-    await searchVolumes('george orwell')
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('q=george+orwell'))
-  })
-
-  it('returns volumes from the items array', async () => {
-    mockFetch.mockReturnValueOnce(ok({ items: [mockVolume] }))
-    const result = await searchVolumes('1984')
-    expect(result).toHaveLength(1)
-    expect(result[0].id).toBe('abc123')
-  })
-
-  it('returns [] when items is absent (zero results)', async () => {
-    mockFetch.mockReturnValueOnce(ok({ kind: 'books#volumes', totalItems: 0 }))
-    expect(await searchVolumes('xyznotfound')).toEqual([])
-  })
-
-  it('caps maxResults at 40', async () => {
-    mockFetch.mockReturnValueOnce(ok({ items: [] }))
-    await searchVolumes('1984', 99)
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('maxResults=40'))
-  })
-
-  it('returns [] on a non-ok response', async () => {
-    mockFetch.mockReturnValueOnce(notOk(500))
-    expect(await searchVolumes('1984')).toEqual([])
-  })
-
-  it('returns [] when fetch throws', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('network'))
-    expect(await searchVolumes('1984')).toEqual([])
-  })
-})
-
-// ── getVolume ─────────────────────────────────────────────────────────────────
-
-describe('getVolume', () => {
-  it('calls the correct volumes endpoint with the volume ID', async () => {
-    mockFetch.mockReturnValueOnce(ok(mockVolume))
-    await getVolume('abc123')
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/volumes/abc123'))
-  })
-
-  it('returns volumeInfo on success', async () => {
-    mockFetch.mockReturnValueOnce(ok(mockVolume))
-    const result = await getVolume('abc123')
-    expect(result?.title).toBe('Nineteen Eighty-Four')
-    expect(result?.authors).toEqual(['George Orwell'])
-  })
-
-  it('returns null on a non-ok response', async () => {
-    mockFetch.mockReturnValueOnce(notOk(404))
-    expect(await getVolume('bad-id')).toBeNull()
-  })
-
-  it('returns null when fetch throws', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('network'))
-    expect(await getVolume('abc123')).toBeNull()
-  })
-})
-
-// ── getAuthor ─────────────────────────────────────────────────────────────────
-// API_KEY is evaluated at module load time, so both the no-key and with-key
-// paths require a fresh module import after stubbing the env var.
-
-describe('getAuthor — no API key', () => {
-  let getAuthorNoKey: (name: string) => Promise<KGPerson | null>
-
-  beforeAll(async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', '')
-    vi.resetModules()
-    const mod = await import('../../services/googleBooks')
-    getAuthorNoKey = mod.getAuthor
-  })
-
-  afterAll(() => {
-    vi.unstubAllEnvs()
-    vi.resetModules()
-  })
-
-  it('returns null for an empty name without fetching', async () => {
-    expect(await getAuthorNoKey('')).toBeNull()
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it('returns null for a whitespace-only name without fetching', async () => {
-    expect(await getAuthorNoKey('   ')).toBeNull()
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-
-  it('returns null without fetching when no API key is configured', async () => {
-    expect(await getAuthorNoKey('George Orwell')).toBeNull()
-    expect(mockFetch).not.toHaveBeenCalled()
-  })
-})
-
-describe('getAuthor — with API key', () => {
-  let getAuthorWithKey: (name: string) => Promise<KGPerson | null>
-
-  beforeAll(async () => {
-    vi.stubEnv('VITE_GOOGLE_BOOKS_API_KEY', 'test-api-key')
-    vi.resetModules()
-    const mod = await import('../../services/googleBooks')
-    getAuthorWithKey = mod.getAuthor
-  })
-
-  afterAll(() => {
-    vi.unstubAllEnvs()
-    vi.resetModules()
-  })
-
-  it('calls the Knowledge Graph endpoint', async () => {
-    mockFetch.mockReturnValueOnce(ok({ itemListElement: [{ result: mockKGPerson }] }))
-    await getAuthorWithKey('George Orwell')
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('kgsearch.googleapis.com'))
-  })
-
-  it('includes the API key in the request URL', async () => {
-    mockFetch.mockReturnValueOnce(ok({ itemListElement: [{ result: mockKGPerson }] }))
-    await getAuthorWithKey('George Orwell')
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('key=test-api-key'))
-  })
-
-  it('returns the first result as a KGPerson', async () => {
-    mockFetch.mockReturnValueOnce(ok({ itemListElement: [{ result: mockKGPerson }] }))
-    const result = await getAuthorWithKey('George Orwell')
-    expect(result?.name).toBe('George Orwell')
-    expect(result?.description).toBe('English author')
-    expect(result?.detailedDescription?.articleBody).toContain('Eric Arthur Blair')
-  })
-
-  it('returns null when itemListElement is empty', async () => {
-    mockFetch.mockReturnValueOnce(ok({ itemListElement: [] }))
-    expect(await getAuthorWithKey('Unknown')).toBeNull()
-  })
-
-  it('returns null on a non-ok response', async () => {
-    mockFetch.mockReturnValueOnce(notOk(403))
-    expect(await getAuthorWithKey('George Orwell')).toBeNull()
-  })
-
-  it('returns null when fetch throws', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('network'))
-    expect(await getAuthorWithKey('George Orwell')).toBeNull()
   })
 })

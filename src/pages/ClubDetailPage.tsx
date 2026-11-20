@@ -23,12 +23,13 @@ import { parseLocalDate, parseScheduledAt, isPast } from '../utils/dates'
 import KluvsSpinner from '../components/KluvsSpinner'
 import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
-import GhostButton from '../components/ui/GhostButton'
 import KebabMenu from '../components/ui/KebabMenu'
 import AvatarStack from '../components/ui/AvatarStack'
 import MemberBadge from '../components/MemberBadge'
 import DiscussionsTimeline from '../components/DiscussionsTimeline'
 import ProgressRow from '../components/ProgressRow'
+import Button from '../components/ui/Button'
+import TriggerPill from '../components/ui/TriggerPill'
 
 type MobileTab = 'overview' | 'discussions' | 'members'
 
@@ -38,7 +39,7 @@ function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
   return (
     <div className="relative group">
       <div className="flex items-center justify-center w-[26px] h-[26px] rounded-full cursor-default transition-colors hover:bg-[rgba(88,101,242,0.1)]">
-        <DiscordIcon className={`w-[15px] h-[15px] text-[#5865F2] ${!hasDiscord ? 'opacity-25' : ''}`} />
+        <DiscordIcon className={`w-[15px] h-[15px] text-discord ${!hasDiscord ? 'opacity-25' : ''}`} />
       </div>
       <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-[120ms] z-50">
         <div
@@ -47,20 +48,20 @@ function DiscordIndicator({ club, isAdmin }: { club: Club; isAdmin: boolean }) {
         >
           {hasDiscord ? (
             <div className="space-y-1.5">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] mb-2" style={{ color: '#5865F2' }}>Discord</p>
+              <p className="t-eyebrow mb-2" style={{ color: 'var(--color-discord)' }}>Discord</p>
               {club.server_id && (
                 <div className="flex items-baseline justify-between gap-5">
-                  <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Server</span>
-                  <span className="text-[11px] font-mono text-[var(--color-text-primary)]">{club.server_id}</span>
+                  <span className="t-eyebrow text-[var(--color-text-secondary)]">Server</span>
+                  <span className="t-mono text-[var(--color-text-primary)]">{club.server_id}</span>
                 </div>
               )}
               <div className="flex items-baseline justify-between gap-5">
-                <span className="text-[10px] uppercase tracking-[0.12em] text-[var(--color-text-secondary)]">Channel</span>
-                <span className="text-[11px] font-mono text-[var(--color-text-primary)]">{club.discord_channel}</span>
+                <span className="t-eyebrow text-[var(--color-text-secondary)]">Channel</span>
+                <span className="t-mono text-[var(--color-text-primary)]">{club.discord_channel}</span>
               </div>
             </div>
           ) : (
-            <p className="text-[11px] text-[var(--color-text-secondary)]">Not connected to Discord</p>
+            <p className="t-fine-print text-[var(--color-text-secondary)]">Not connected to Discord</p>
           )}
         </div>
       </div>
@@ -291,7 +292,7 @@ export default function ClubDetailPage() {
       <div className="flex items-center justify-center py-24">
         <div className="text-center">
           <KluvsSpinner size={64} className="mx-auto" />
-          <p className="mt-6 text-[var(--color-text-primary)] text-lg font-medium">
+          <p className="t-body-l mt-6 text-[var(--color-text-primary)]">
             Loading club…
           </p>
         </div>
@@ -303,7 +304,7 @@ export default function ClubDetailPage() {
     return error ? (
       <main className="px-6 py-6">
         <div className="bg-danger/10 border border-danger/30 rounded-card p-4">
-          <p className="text-danger font-medium">{error}</p>
+          <p className="t-label text-danger">{error}</p>
         </div>
       </main>
     ) : null
@@ -322,11 +323,11 @@ export default function ClubDetailPage() {
           role="alert"
           className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] max-w-md flex items-start gap-3 bg-[var(--color-bg-elevated)] border border-danger/40 rounded-card p-4 shadow-lg"
         >
-          <p className="flex-1 text-sm font-medium text-danger">{error}</p>
+          <p className="t-label flex-1 text-danger">{error}</p>
           <button
             onClick={() => setError(null)}
             aria-label="Dismiss error"
-            className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] leading-none text-lg"
+            className="t-body-l text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
           >
             ×
           </button>
@@ -339,12 +340,12 @@ export default function ClubDetailPage() {
           {/* Rail header */}
           <div className="border-b border-[var(--color-divider)] px-6 py-[18px]">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+              <span className="t-eyebrow text-[var(--color-text-secondary)]">
                 YOUR CLUBS
               </span>
               <button
                 onClick={() => setShowAddClubModal(true)}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] text-[20px] font-light leading-none"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] !text-[20px] font-light leading-none"
                 title="Add club"
               >
                 +
@@ -371,7 +372,7 @@ export default function ClubDetailPage() {
                 >
                   {/* Club name + role */}
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <p className="font-serif text-[19px] font-medium text-[var(--color-text-primary)] truncate">
+                    <p className="t-title-m text-[var(--color-text-primary)] truncate">
                       {c.name}
                     </p>
                     <RoleEyebrow role={c.role ?? 'member'} />
@@ -379,14 +380,14 @@ export default function ClubDetailPage() {
 
                   {/* Book reading */}
                   {sidebarClubs[c.id]?.active_session?.book?.title && (
-                    <p className="text-[13px] italic text-[var(--color-text-secondary)] truncate mb-2">
+                    <p className="t-title-s t-feature text-[var(--color-text-secondary)] truncate mb-2">
                       {sidebarClubs[c.id].active_session!.book!.title}
                     </p>
                   )}
 
                   {/* Members + next date */}
                   {sidebarClubs[c.id]?.members ? (
-                    <div className="flex items-center justify-between text-[11px] text-[var(--color-text-secondary)] uppercase tracking-[0.04em]">
+                    <div className="t-eyebrow flex items-center justify-between text-[var(--color-text-secondary)]">
                       <div>{sidebarClubs[c.id].members?.length ?? 0} MEMBERS</div>
                       {(() => {
                         const next = sidebarClubs[c.id].active_session?.discussions?.find((d) => !isPast(d.scheduled_at))
@@ -401,7 +402,7 @@ export default function ClubDetailPage() {
                       })()}
                     </div>
                   ) : (
-                    <div className="text-[11px] text-[var(--color-text-secondary)]">—</div>
+                    <div className="t-fine-print text-[var(--color-text-secondary)]">—</div>
                   )}
                 </button>
               )
@@ -423,29 +424,29 @@ export default function ClubDetailPage() {
                 <div className="mb-10 pb-8 border-b border-[var(--color-divider)]">
                   {/* Util row */}
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                    <span className="t-eyebrow text-[var(--color-text-secondary)]">
                       CLUB
                     </span>
                     {isAdmin && (
                       <div className="flex items-center gap-2">
-                        <GhostButton
-                          variant="md"
+                        <Button
+                          variant="outlined"
                           onClick={() => setShowShareModal(true)}
                         >
                           Share
-                        </GhostButton>
-                        <GhostButton
-                          variant="md"
+                        </Button>
+                        <Button
+                          variant="outlined"
                           onClick={() => setShowEditClubModal(true)}
                         >
                           Edit club
-                        </GhostButton>
+                        </Button>
                       </div>
                     )}
                   </div>
 
                   {/* Club name */}
-                  <h1 className="font-serif text-[64px] font-medium leading-[1] text-[var(--color-text-primary)] mb-3 tracking-[-0.022em]">
+                  <h1 className="t-headline-l text-[var(--color-text-primary)] mb-3">
                     {club.name}
                   </h1>
 
@@ -455,13 +456,13 @@ export default function ClubDetailPage() {
                     <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                     {club.founded_date && (
                       <>
-                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                        <span className="t-eyebrow text-[var(--color-text-secondary)]">
                           FOUNDED {parseLocalDate(club.founded_date).getFullYear()}
                         </span>
                         <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
                       </>
                     )}
-                    <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                    <span className="t-eyebrow text-[var(--color-text-secondary)]">
                       {clubMembers.length} MEMBERS
                     </span>
                   </div>
@@ -469,30 +470,17 @@ export default function ClubDetailPage() {
                   {/* Utility row — admin only */}
                   {isAdmin && (
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => {
+                      <TriggerPill
+ onClick={() => {
                           navigator.clipboard.writeText(club.id)
                           setIdCopied(true)
                           setTimeout(() => setIdCopied(false), 1500)
                         }}
-                        className="transition-all duration-[120ms]"
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 500,
-                          fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                          padding: '4px 10px',
-                          borderRadius: 999,
-                          border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
-                          color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
-                          background: 'transparent',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          letterSpacing: '0.04em',
-                        }}
-                        title="Copy Club ID"
-                      >
-                        {idCopied ? 'Copied!' : 'Copy Club ID'}
-                      </button>
+ success={idCopied}
+ title="Copy Club ID"
+ >
+ {idCopied ? 'Copied!' : 'Copy Club ID'}
+ </TriggerPill>
                       <DiscordIndicator club={club} isAdmin={isAdmin} />
                     </div>
                   )}
@@ -515,7 +503,7 @@ export default function ClubDetailPage() {
                         <div className="flex flex-col justify-between">
                           <div>
                             <div className="flex items-center justify-between mb-3.5">
-                              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                              <p className="t-eyebrow text-primary">
                                 ACTIVE SESSION
                                 </p>
                               {isAdmin && club.active_session.status === 'active' && (
@@ -527,10 +515,10 @@ export default function ClubDetailPage() {
                                 />
                               )}
                             </div>
-                            <h2 className="font-serif italic text-[52px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-2 tracking-[-0.015em]">
+                            <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-2">
                               {club.active_session.book?.title || '(Untitled)'}
                             </h2>
-                            <p className="text-[16px] text-[var(--color-text-secondary)]">
+                            <p className="t-body-l text-[var(--color-text-secondary)]">
                               {club.active_session.book?.author}
                             </p>
                           </div>
@@ -553,32 +541,32 @@ export default function ClubDetailPage() {
                                   {readingMembers.length > 0 ? (
                                     <>
                                       <AvatarStack members={readingMembers} size="sm" currentMemberId={member?.id} />
-                                      <span className="text-[12px] text-[var(--color-text-secondary)]">
+                                      <span className="t-fine-print text-[var(--color-text-secondary)]">
                                         {readingMembers.length} of {clubMembers.length} reading
                                       </span>
                                     </>
                                   ) : (
-                                    <span className="text-[12px] text-[var(--color-text-secondary)]">No participants yet</span>
+                                    <span className="t-fine-print text-[var(--color-text-secondary)]">No participants yet</span>
                                   )}
                                 </div>
                                 {/* Right: opt-in/out CTA */}
                                 {showCTA && (
                                   isReading ? (
-                                    <GhostButton
-                                      variant="sm"
+                                    <Button
+                                      variant="outlined"
                                       onClick={() => handleToggleMember(member.id, false)}
                                       disabled={togglingMemberId === member.id}
                                     >
                                       Opt out
-                                    </GhostButton>
+                                    </Button>
                                   ) : (
-                                    <button
+                                    <Button
+                                      variant="primary" className="disabled:opacity-50"
                                       onClick={() => handleToggleMember(member.id, true)}
                                       disabled={togglingMemberId === member.id}
-                                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-1.5 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
                                     >
                                       Join this Read
-                                    </button>
+                                    </Button>
                                   )
                                 )}
                               </div>
@@ -609,7 +597,7 @@ export default function ClubDetailPage() {
                       {/* Finished badge */}
                       {club.active_session.status === 'finished' && (
                         <div className="mt-4">
-                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full">
+                          <span className="t-eyebrow text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full">
                             Session finished
                           </span>
                         </div>
@@ -617,22 +605,22 @@ export default function ClubDetailPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center text-center mb-12 pb-12 border-b border-[var(--color-divider)]">
-                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-3">
+                      <p className="t-eyebrow text-[var(--color-text-secondary)] mb-3">
                         GETTING STARTED
                       </p>
-                      <h2 className="font-serif italic text-[48px] font-medium leading-[1.1] tracking-[-0.015em] text-[var(--color-text-primary)] mb-3">
+                      <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-3">
                         Start reading together.
                       </h2>
-                      <p className="text-[15px] text-[var(--color-text-secondary)] leading-relaxed mb-6 max-w-[360px]">
+                      <p className="t-body-l text-[var(--color-text-secondary)] mb-6 max-w-[360px]">
                         Pick a book and kick off your club's first session.
                       </p>
                       {isAdmin && (
-                        <button
+                        <Button
+                          variant="primary"
                           onClick={() => setShowNewSessionModal(true)}
-                          className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn text-[14px] font-medium transition-all duration-120 cursor-pointer"
                         >
                           Start Session
-                        </button>
+                        </Button>
                       )}
                     </div>
                   )}
@@ -653,21 +641,21 @@ export default function ClubDetailPage() {
                     <div>
                       <div className="flex items-center justify-between mb-9">
                         <div className="flex items-center gap-3">
-                          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                          <span className="t-eyebrow text-[var(--color-text-secondary)]">
                             MEMBERS
                           </span>
-                          <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
+                          <span className="t-title-s t-feature text-[var(--color-text-secondary)]">
                             {clubMembers.length}
                           </span>
                         </div>
                         {isAdmin && (
-                          <GhostButton
-                            variant="sm"
-                            icon="+"
+                          <Button
+                            variant="outlined"
                             onClick={handleAddMember}
                           >
-                            Invite
-                          </GhostButton>
+                            <span aria-hidden>+</span>
+Invite
+                          </Button>
                         )}
                       </div>
 
@@ -693,15 +681,15 @@ export default function ClubDetailPage() {
                       {/* Invite CTA when flying solo */}
                       {clubMembers.length <= 1 && isAdmin && (
                         <div className="mt-5 flex flex-col items-center text-center py-4">
-                          <p className="font-serif italic text-[20px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                          <p className="t-title-m t-feature text-[var(--color-text-secondary)] mb-4">
                             Invite others to get the conversation going.
                           </p>
-                          <button
+                          <Button
+                            variant="primary"
                             onClick={handleAddMember}
-                            className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
                           >
                             Invite Members
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -718,10 +706,10 @@ export default function ClubDetailPage() {
 
         {/* Masthead */}
         <div className="px-5 py-6 border-b border-[var(--color-divider)]">
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] block mb-2">
+          <span className="t-eyebrow text-[var(--color-text-secondary)] block mb-2">
             CLUB
           </span>
-          <h1 className="font-serif text-[40px] font-medium leading-[1] text-[var(--color-text-primary)] mb-4 tracking-[-0.022em]">
+          <h1 className="t-headline-l text-[var(--color-text-primary)] mb-4">
             {club.name}
           </h1>
           <div className="flex items-center gap-2.5 mb-3 flex-wrap">
@@ -729,13 +717,13 @@ export default function ClubDetailPage() {
             {club.founded_date && (
               <>
                 <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
-                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                <span className="t-eyebrow text-[var(--color-text-secondary)]">
                   FOUNDED {parseLocalDate(club.founded_date).getFullYear()}
                 </span>
               </>
             )}
             <span className="inline-block w-1 h-1 rounded-full bg-[var(--color-divider)]" />
-            <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+            <span className="t-eyebrow text-[var(--color-text-secondary)]">
               {clubMembers.length} MEMBERS
             </span>
           </div>
@@ -744,36 +732,23 @@ export default function ClubDetailPage() {
           {isAdmin && (
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
+                <TriggerPill
+ onClick={() => {
                     navigator.clipboard.writeText(club.id)
                     setIdCopied(true)
                     setTimeout(() => setIdCopied(false), 1500)
                   }}
-                  className="transition-all duration-[120ms]"
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                    padding: '4px 10px',
-                    borderRadius: 999,
-                    border: `1px solid ${idCopied ? '#48A480' : 'var(--color-divider)'}`,
-                    color: idCopied ? '#48A480' : 'var(--color-text-secondary)',
-                    background: 'transparent',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    letterSpacing: '0.04em',
-                  }}
-                  title="Copy Club ID"
-                >
-                  {idCopied ? 'Copied!' : 'Copy Club ID'}
-                </button>
+ success={idCopied}
+ title="Copy Club ID"
+ >
+ {idCopied ? 'Copied!' : 'Copy Club ID'}
+ </TriggerPill>
                 <DiscordIndicator club={club} isAdmin={isAdmin} />
               </div>
               <div className="flex items-center gap-1.5">
-                <GhostButton variant="sm" onClick={() => setShowShareModal(true)}>
+                <Button variant="outlined" onClick={() => setShowShareModal(true)}>
                   Share
-                </GhostButton>
+                </Button>
                 <KebabMenu
                   items={[
                     { label: 'Edit club', onClick: () => setShowEditClubModal(true) },
@@ -806,7 +781,7 @@ export default function ClubDetailPage() {
                 key={tab}
                 onClick={() => setMobileTab(tab)}
                 className={[
-                  'flex-1 px-4 py-3.5 text-[13px] font-medium relative transition-colors duration-120',
+                  't-label flex-1 px-4 py-[14.5px] relative transition-colors duration-120',
                   isActive
                     ? 'text-[var(--color-text-primary)]'
                     : 'text-[var(--color-text-secondary)]',
@@ -816,7 +791,7 @@ export default function ClubDetailPage() {
                 {tabCounts[tab] > 0 && (
                   <span
                     className={[
-                      'ml-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full inline-block',
+                      't-fine-print ml-1.5 px-1.5 py-0.5 rounded-full inline-block',
                       isActive
                         ? 'bg-[rgba(209,109,48,0.10)] text-primary'
                         : 'bg-transparent border border-[var(--color-divider)] text-[var(--color-text-secondary)]',
@@ -844,19 +819,19 @@ export default function ClubDetailPage() {
               {/* NOW READING */}
               {!club.active_session && (
                 <div className="flex flex-col items-center text-center py-4 pb-2">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+                  <p className="t-eyebrow text-[var(--color-text-secondary)] mb-2">
                     NO SESSION YET
                   </p>
-                  <p className="font-serif italic text-[28px] font-medium text-[var(--color-text-primary)] leading-snug mb-4">
+                  <p className="t-headline-s t-feature text-[var(--color-text-primary)] mb-4">
                     Start reading together.
                   </p>
                   {isAdmin && (
-                    <button
+                    <Button
+                      variant="primary"
                       onClick={() => setShowNewSessionModal(true)}
-                      className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-6 py-2.5 rounded-btn text-[14px] font-medium transition-all duration-120 cursor-pointer"
                     >
                       Start Session
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -870,7 +845,7 @@ export default function ClubDetailPage() {
                     />
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                        <p className="t-eyebrow text-primary">
                           ACTIVE SESSION
                           </p>
                         {isAdmin && club.active_session.status === 'active' && (
@@ -882,10 +857,10 @@ export default function ClubDetailPage() {
                           />
                         )}
                       </div>
-                      <h3 className="font-serif italic text-[28px] font-medium leading-[1.05] text-[var(--color-text-primary)] mb-0.5">
+                      <h3 className="t-headline-s t-feature text-[var(--color-text-primary)] mb-0.5">
                         {club.active_session.book?.title || '(Untitled)'}
                       </h3>
-                      <p className="text-[13px] text-[var(--color-text-secondary)] mb-2">
+                      <p className="t-caption text-[var(--color-text-secondary)] mb-2">
                         {club.active_session.book?.author}
                       </p>
                     </div>
@@ -909,31 +884,31 @@ export default function ClubDetailPage() {
                             {readingMembers.length > 0 ? (
                               <>
                                 <AvatarStack members={readingMembers} size="sm" currentMemberId={member?.id} />
-                                <span className="text-[12px] text-[var(--color-text-secondary)]">
+                                <span className="t-fine-print text-[var(--color-text-secondary)]">
                                   {readingMembers.length} of {clubMembers.length} reading
                                 </span>
                               </>
                             ) : (
-                              <span className="text-[12px] text-[var(--color-text-secondary)]">No participants yet</span>
+                              <span className="t-fine-print text-[var(--color-text-secondary)]">No participants yet</span>
                             )}
                           </div>
                           {showCTA && (
                             isReading ? (
-                              <GhostButton
-                                variant="sm"
+                              <Button
+                                variant="outlined"
                                 onClick={() => handleToggleMember(member.id, false)}
                                 disabled={togglingMemberId === member.id}
                               >
                                 Opt out
-                              </GhostButton>
+                              </Button>
                             ) : (
-                              <button
+                              <Button
+                                variant="primary" className="disabled:opacity-50"
                                 onClick={() => handleToggleMember(member.id, true)}
                                 disabled={togglingMemberId === member.id}
-                                className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-4 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer disabled:opacity-50"
                               >
                                 Join this Read
-                              </button>
+                              </Button>
                             )
                           )}
                         </div>
@@ -956,7 +931,7 @@ export default function ClubDetailPage() {
 
                   {club.active_session.status === 'finished' && (
                     <div className="mt-3">
-                      <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full inline-block">
+                      <span className="t-eyebrow text-[var(--color-text-secondary)] border border-[var(--color-divider)] px-2.5 py-1 rounded-full inline-block">
                         Session finished
                       </span>
                     </div>
@@ -968,7 +943,7 @@ export default function ClubDetailPage() {
               {club.active_session?.discussions && club.active_session.discussions.length > 0 && (
                 <div className="border-t border-b border-[var(--color-divider)] py-4">
                   <div className="flex items-baseline justify-between mb-2 gap-2">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                    <p className="t-eyebrow text-primary">
                       UP NEXT
                     </p>
                     {(() => {
@@ -976,7 +951,7 @@ export default function ClubDetailPage() {
                         (d) => !isPast(d.scheduled_at)
                       )
                       return nextDiscussion ? (
-                        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+                        <p className="t-fine-print text-primary">
                           {parseScheduledAt(nextDiscussion.scheduled_at).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
@@ -992,11 +967,11 @@ export default function ClubDetailPage() {
                     )
                     return nextDiscussion ? (
                       <div>
-                        <p className="font-serif text-[20px] font-medium text-[var(--color-text-primary)] mb-1">
+                        <p className="t-title-m text-[var(--color-text-primary)] mb-1">
                           {nextDiscussion.title}
                         </p>
                         {nextDiscussion.location && (
-                          <p className="text-[12px] text-[var(--color-text-secondary)]">
+                          <p className="t-fine-print text-[var(--color-text-secondary)]">
                             {nextDiscussion.location}
                           </p>
                         )}
@@ -1009,12 +984,12 @@ export default function ClubDetailPage() {
               {/* THE ROSTER */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                  <p className="t-eyebrow text-[var(--color-text-secondary)]">
                     THE ROSTER
                   </p>
                   <button
                     onClick={() => setMobileTab('members')}
-                    className="text-[12px] text-primary font-medium"
+                    className="t-fine-print text-primary"
                   >
                     See all {clubMembers.length}
                   </button>
@@ -1026,7 +1001,7 @@ export default function ClubDetailPage() {
                   <AvatarStack members={clubMembers} max={4} size="md" currentMemberId={member?.id} className="flex-shrink-0" />
 
                   {/* Names text */}
-                  <p className="text-[15px] text-[var(--color-text-primary)] font-medium">
+                  <p className="t-label text-[var(--color-text-primary)]">
                     {(() => {
                       const displayCount = Math.min(3, clubMembers.length)
                       const displayed = clubMembers.slice(0, displayCount)
@@ -1038,7 +1013,7 @@ export default function ClubDetailPage() {
                 </div>
 
                 {/* Role breakdown */}
-                <p className="text-[12px] text-[var(--color-text-secondary)]">
+                <p className="t-fine-print text-[var(--color-text-secondary)]">
                   {(() => {
                     const owners = clubMembers.filter((m) => m.role === 'owner').length
                     const admins = clubMembers.filter((m) => m.role === 'admin').length
@@ -1065,16 +1040,13 @@ export default function ClubDetailPage() {
             <div>
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
-                <p className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
+                <p className="t-title-s t-feature text-[var(--color-text-secondary)]">
                   {clubMembers.length} members
                 </p>
                 {isAdmin && (
-                  <button
-                    onClick={handleAddMember}
-                    className="border border-[var(--color-divider)] text-[var(--color-text-primary)] text-[13px] font-medium px-3 py-1.5 rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
-                  >
+                  <Button variant="outlined" onClick={handleAddMember}>
                     + Invite
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -1100,15 +1072,15 @@ export default function ClubDetailPage() {
               {/* Invite CTA when flying solo */}
               {clubMembers.length <= 1 && isAdmin && (
                 <div className="mt-5 flex flex-col items-center text-center py-4">
-                  <p className="font-serif italic text-[20px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+                  <p className="t-title-m t-feature text-[var(--color-text-secondary)] mb-4">
                     Invite others to get the conversation going.
                   </p>
-                  <button
+                  <Button
+                    variant="primary"
                     onClick={handleAddMember}
-                    className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
                   >
                     Invite Members
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

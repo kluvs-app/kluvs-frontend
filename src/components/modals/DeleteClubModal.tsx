@@ -3,6 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club, DeleteResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface DeleteClubModalProps {
   isOpen: boolean
@@ -59,37 +60,37 @@ export default function DeleteClubModal({
       labelId="modal-title-delete-club"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={onClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="danger"
             onClick={handleDelete}
             disabled={loading}
             data-testid="modal-club-delete"
-            className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             <span>{loading ? 'Deleting…' : 'Delete Club'}</span>
-          </button>
+          </Button>
         </>
       }
     >
       <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+        <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to delete{' '}
-          <span className="font-semibold">"{clubToDelete.name}"</span>?
+          <span className="t-label">"{clubToDelete.name}"</span>?
           This action cannot be undone.
         </p>
         <div
           className="rounded-input px-4 py-3 space-y-1"
           style={{ background: 'rgba(var(--color-danger-rgb, 220 38 38) / 0.06)', border: '1px solid rgba(var(--color-danger-rgb, 220 38 38) / 0.2)' }}
         >
-          <p className="text-xs font-medium text-danger uppercase tracking-wider mb-2">This will permanently delete:</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">All reading sessions and books</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">All discussions and events</p>
-          <p className="text-sm text-[var(--color-text-secondary)]">All member associations</p>
+          <p className="t-eyebrow text-danger mb-2">This will permanently delete:</p>
+          <p className="t-body-m text-[var(--color-text-secondary)]">All reading sessions and books</p>
+          <p className="t-body-m text-[var(--color-text-secondary)]">All discussions and events</p>
+          <p className="t-body-m text-[var(--color-text-secondary)]">All member associations</p>
         </div>
       </div>
     </BaseModal>

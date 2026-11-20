@@ -1,21 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { invokeFunction } from '../supabase'
 import {
-  getVolume,
-  getAuthor,
-  getWikipediaAuthorInfo,
-  searchVolumes,
   bestCoverUrl,
   extractYear,
   stripHtml,
   preferredIsbn,
   displayLanguage,
-  type GBVolumeInfo,
-  type GBVolume,
-  type KGPerson,
 } from '../services/googleBooks'
 import type {
-  Book, BookRegistrationResponse, BookSearchResponse, LikeStatusResponse, LikeToggleResponse,
+  AuthorBook, AuthorInfo, Book, BookEnrichmentResponse, BookRegistrationResponse, BookSearchResponse,
+  BookVolumeInfo, LikeStatusResponse, LikeToggleResponse,
   ShelfAssignResponse, ShelfEntry, ShelfListResponse, ShelfSingleResponse, ShelfValue,
 } from '../types'
 
@@ -26,7 +20,9 @@ import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import BookCard from '../components/BookCard'
 import CoverSlot from '../components/ui/CoverSlot'
 import KluvsReadBadge from '../components/KluvsReadBadge'
-import { SHELF_OPTIONS, SHELF_LABELS, SHELF_SECTIONS } from '../constants/shelves'
+import { SHELF_SECTIONS } from '../constants/shelves'
+import Button from '../components/ui/Button'
+import ShelfPill from '../components/ShelfPill'
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -90,87 +86,6 @@ function LikePill({ liked, onClick, disabled }: {
   )
 }
 
-function ShelfPill({ shelf, onShelfChange, disabled }: {
-  shelf: ShelfValue | null
-  onShelfChange: (v: ShelfValue | null) => void
-  disabled?: boolean
-}) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(o => !o)}
-        disabled={disabled}
-        aria-label={shelf ? `Shelf: ${SHELF_LABELS[shelf]}` : 'Add to shelf'}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        className={`flex items-center gap-2 text-sm px-4 py-2 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-          shelf
-            ? 'border-primary text-primary'
-            : 'border-[var(--color-divider)] text-[var(--color-text-secondary)] hover:border-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-        }`}
-      >
-        {/* Bookmark icon */}
-        <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill={shelf ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-        </svg>
-        <span>{shelf ? SHELF_LABELS[shelf] : 'Add to Shelf'}</span>
-        {/* Chevron */}
-        <svg
-          className="w-3.5 h-3.5 shrink-0 transition-transform duration-150"
-          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
-          viewBox="0 0 20 20" fill="currentColor"
-        >
-          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-        </svg>
-      </button>
-
-      {open && (
-        <div
-          role="listbox"
-          aria-label="Select shelf"
-          className="absolute top-full left-0 mt-1.5 z-20 min-w-[180px] py-1 rounded-xl border border-[var(--color-divider)] bg-[var(--color-bg-elevated)] shadow-xl overflow-hidden"
-        >
-          {SHELF_OPTIONS.map(({ value, label }) => {
-            const isActive = shelf === value
-            return (
-              <button
-                key={label}
-                role="option"
-                aria-selected={isActive}
-                onClick={() => { onShelfChange(value); setOpen(false) }}
-                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors text-left ${
-                  isActive
-                    ? 'text-primary bg-primary/[0.06]'
-                    : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg)]'
-                }`}
-              >
-                <span>{label}</span>
-                {isActive && (
-                  <svg className="w-4 h-4 text-primary shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ── Grid ──────────────────────────────────────────────────────────────────────
 
 function BookGrid({ books, search, onSelect, badgeFor }: {
@@ -219,15 +134,12 @@ export default function BooksPage() {
   const [searching, setSearching]       = useState(false)
   const [searchError, setSearchError]   = useState('')
   const [selectedBook, setSelectedBook]   = useState<Book | null>(null)
-  const [volumeInfo, setVolumeInfo]       = useState<GBVolumeInfo | null>(null)
+  const [volumeInfo, setVolumeInfo]       = useState<BookVolumeInfo | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
-  const [authorInfo, setAuthorInfo]         = useState<KGPerson | null>(null)
+  const [authorInfo, setAuthorInfo]         = useState<AuthorInfo | null>(null)
   const [loadingAuthor, setLoadingAuthor]   = useState(false)
   const [authorPhotoFailed, setAuthorPhotoFailed] = useState(false)
-  const [wikipediaImage, setWikipediaImage]       = useState<string | null>(null)
-  const [wikipediaExtract, setWikipediaExtract]   = useState<string | null>(null)
-  const [authorBooks, setAuthorBooks]       = useState<GBVolume[]>([])
-  const [loadingAuthorBooks, setLoadingAuthorBooks] = useState(false)
+  const [authorBooks, setAuthorBooks]       = useState<AuthorBook[]>([])
   const [liked, setLiked]           = useState(false)
   const [shelf, setShelf]           = useState<ShelfValue | null>(null)
   const [shelvedBooks, setShelvedBooks]     = useState<ShelvedBook[]>([])
@@ -331,6 +243,16 @@ export default function BooksPage() {
     debounceRef.current = setTimeout(() => search(val, 0), 400)
   }
 
+  const clearQuery = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    setQuery('')
+    setResults([])
+    setSearchError('')
+    setSearchPage(0)
+    setHasMore(false)
+    searchInputRef.current?.focus()
+  }
+
   const goToSearch = () => setView('search')
   const backFromSearch = () => {
     setView('shelf')
@@ -348,46 +270,37 @@ export default function BooksPage() {
     setVolumeInfo(null)
     setAuthorInfo(null)
     setAuthorPhotoFailed(false)
-    setWikipediaImage(null)
-    setWikipediaExtract(null)
     setAuthorBooks([])
-    setLoadingAuthorBooks(false)
     setLiked(false)
     setShelf(null)
 
     const id = book.external_google_id
     if (id) activeId.current = id
 
-    if (id) {
-      setLoadingDetail(true)
-      getVolume(id).then(vi => {
-        if (activeId.current !== id) return
-        setVolumeInfo(vi)
-        setLoadingDetail(false)
-      })
-    }
+    const primaryAuthor = book.author?.split(/\s*(?:,|&| and )\s*/i)[0].trim()
+    setLoadingDetail(!!id)
+    setLoadingAuthor(!!primaryAuthor)
 
-    if (book.author) {
-      const primaryAuthor = book.author.split(/\s*(?:,|&| and )\s*/i)[0].trim()
+    if (id || primaryAuthor) {
+      const params = new URLSearchParams()
+      if (id) params.set('external_google_id', id)
+      if (primaryAuthor) params.set('author', primaryAuthor)
 
-      setLoadingAuthor(true)
-      Promise.all([
-        getAuthor(primaryAuthor),
-        getWikipediaAuthorInfo(primaryAuthor),
-      ]).then(([person, wiki]) => {
-        if (id && activeId.current !== id) return
-        setAuthorInfo(person)
-        setWikipediaImage(wiki.imageUrl)
-        setWikipediaExtract(wiki.extract)
-        setLoadingAuthor(false)
-      })
-
-      setLoadingAuthorBooks(true)
-      searchVolumes(`inauthor:"${primaryAuthor}"`, 10).then(vols => {
-        if (id && activeId.current !== id) return
-        setAuthorBooks(vols.filter(v => v.id !== id))
-        setLoadingAuthorBooks(false)
-      })
+      invokeFunction<BookEnrichmentResponse>(`book-enrichment?${params}`, { method: 'GET' })
+        .then(({ data, error }) => {
+          if (id && activeId.current !== id) return
+          if (!error && data) {
+            setVolumeInfo(data.volumeInfo ?? null)
+            setAuthorInfo(data.authorInfo ?? null)
+            setAuthorBooks(data.authorBooks ?? [])
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (id && activeId.current !== id) return
+          setLoadingDetail(false)
+          setLoadingAuthor(false)
+        })
     }
 
     invokeFunction<BookRegistrationResponse>('book', {
@@ -549,10 +462,10 @@ export default function BooksPage() {
         {/* My Shelf header */}
         <div className={`flex items-start justify-between gap-4 transition-opacity duration-150 ${view === 'search' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div>
-            <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+            <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-2">
               Library
             </span>
-            <h1 className="font-serif font-medium text-[32px] lg:text-[38px] leading-none tracking-[-0.02em] text-[var(--color-text-primary)]">
+            <h1 className="t-headline-s lg:t-headline-l text-[var(--color-text-primary)]">
               My Shelf
             </h1>
           </div>
@@ -589,16 +502,28 @@ export default function BooksPage() {
               value={query}
               onChange={handleQueryChange}
               placeholder="Search by title or author…"
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2.5 pr-10 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-2.5 pr-10 text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               aria-label="Search for a book"
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] group-focus-within:text-primary transition-colors">
-              {searching ? (
-                <KluvsSpinner size={16} aria-label="Searching" />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-[var(--color-text-secondary)] group-focus-within:text-primary transition-colors">
+              {searching && <KluvsSpinner size={16} aria-label="Searching" />}
+              {query ? (
+                <button
+                  type="button"
+                  onClick={clearQuery}
+                  aria-label="Clear search"
+                  className="flex items-center justify-center hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                !searching && (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )
               )}
             </div>
           </div>
@@ -621,26 +546,26 @@ export default function BooksPage() {
             )}
 
             {!loadingShelves && shelvesError && (
-              <p className="text-sm text-[var(--color-text-secondary)] italic">{shelvesError}</p>
+              <p className="t-body-m t-feature text-[var(--color-text-secondary)]">{shelvesError}</p>
             )}
 
             {!loadingShelves && !shelvesError && !hasShelvedBooks && (
               <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
                 <StackedCoverPlaceholder size="lg" />
                 <div>
-                  <p className="font-serif italic font-medium text-[28px] lg:text-[34px] leading-none tracking-[-0.012em] text-[var(--color-text-secondary)] mb-[10px]">
+                  <p className="t-headline-s t-feature text-[var(--color-text-secondary)] mb-[10px] lg:t-headline-m">
                     Nothing shelved yet.
                   </p>
-                  <p className="text-[13px] text-[var(--color-text-meta)] leading-[1.6] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     Search for a book and add it to Want to Read, Read, or Not Finished, and it'll show up here.
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="primary"
                   onClick={goToSearch}
-                  className="text-sm font-medium px-5 py-2.5 rounded-btn bg-primary hover:bg-primary-hover text-white transition-colors"
                 >
                   Search for a book
-                </button>
+                </Button>
               </div>
             )}
 
@@ -659,10 +584,10 @@ export default function BooksPage() {
                   return (
                     <div key={value}>
                       <div className="flex items-baseline gap-2 mb-4">
-                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+                        <span className="t-eyebrow text-[var(--color-text-secondary)]">
                           {label}
                         </span>
-                        <span className="text-[10px] text-[var(--color-text-meta)] tabular-nums">{entries.length}</span>
+                        <span className="t-fine-print text-[var(--color-text-meta)] tabular-nums">{entries.length}</span>
                       </div>
                       <BookGrid books={entries.map(e => e.book)} onSelect={handleSelect} badgeFor={badgeFor} />
                     </div>
@@ -675,16 +600,16 @@ export default function BooksPage() {
 
         {view === 'search' && (
           <>
-            {searchError && <p className="text-red-500 text-sm mb-4">{searchError}</p>}
+            {searchError && <p className="t-body-m text-danger mb-4">{searchError}</p>}
 
             {!query.trim() && (
               <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
                 <StackedCoverPlaceholder size="lg" />
                 <div>
-                  <p className="font-serif italic font-medium text-[28px] lg:text-[34px] leading-none tracking-[-0.012em] text-[var(--color-text-secondary)] mb-[10px]">
+                  <p className="t-headline-s t-feature text-[var(--color-text-secondary)] mb-[10px] lg:t-headline-m">
                     Start typing.
                   </p>
-                  <p className="text-[13px] text-[var(--color-text-meta)] leading-[1.6] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     Find a book by title or author. We'll pull the cover, the blurb, and a note on the author.
                   </p>
                 </div>
@@ -699,10 +624,10 @@ export default function BooksPage() {
               <div className="flex flex-col items-center justify-center text-center gap-6 py-16 lg:py-24">
                 <StackedCoverPlaceholder size="lg" />
                 <div>
-                  <p className="font-serif italic font-medium text-[28px] lg:text-[34px] leading-none tracking-[-0.012em] text-[var(--color-text-secondary)] mb-[10px]">
+                  <p className="t-headline-s t-feature text-[var(--color-text-secondary)] mb-[10px] lg:t-headline-m">
                     No matches.
                   </p>
-                  <p className="text-[13px] text-[var(--color-text-meta)] leading-[1.6] max-w-[340px] mx-auto">
+                  <p className="t-body-m text-[var(--color-text-meta)] max-w-[340px] mx-auto">
                     No books found for "{query}". Try a different title or author.
                   </p>
                 </div>
@@ -733,7 +658,7 @@ export default function BooksPage() {
 
             {/* Panel header — desktop only; mobile uses the global top bar */}
             <div className="hidden lg:flex items-center justify-between px-5 lg:px-12 pt-5 lg:pt-6 pb-2">
-              <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">
+              <span className="t-eyebrow text-primary">
                 Book
               </span>
 
@@ -759,17 +684,17 @@ export default function BooksPage() {
                 className="w-[120px] sm:w-[148px] aspect-[2/3] mb-[18px]"
               />
 
-              <h2 className="font-serif italic font-medium text-[26px] sm:text-[30px] leading-[1.1] tracking-[-0.014em] text-[var(--color-text-primary)] text-pretty mb-1.5">
+              <h2 className="t-title-l t-feature text-[var(--color-text-primary)] text-pretty mb-1.5 sm:t-headline-s">
                 {title}
               </h2>
 
               {subtitle && (
-                <p className="font-serif font-normal text-[15px] leading-[1.3] text-[var(--color-text-secondary)] mb-1.5">
+                <p className="t-title-s text-[var(--color-text-secondary)] mb-1.5">
                   {subtitle}
                 </p>
               )}
 
-              <p className="text-[14px] text-[var(--color-text-secondary)] tracking-[0.005em] mb-4">
+              <p className="t-body-m text-[var(--color-text-secondary)] mb-4">
                 {loadingDetail && !vi?.authors
                   ? <Shimmer className="h-4 w-40 inline-block" />
                   : [authors, ...metaItems].filter(Boolean).join(' · ')
@@ -785,7 +710,7 @@ export default function BooksPage() {
               ) : categories.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                   {categories.map(c => (
-                    <span key={c} className="px-[11px] py-[5px] rounded-full border border-[var(--color-divider)] text-[11px] font-medium tracking-[0.04em] text-[var(--color-text-secondary)] whitespace-nowrap">
+                    <span key={c} className="t-fine-print px-[11px] py-[5px] rounded-full border border-[var(--color-divider)] text-[var(--color-text-secondary)] whitespace-nowrap">
                       {c}
                     </span>
                   ))}
@@ -803,7 +728,7 @@ export default function BooksPage() {
 
               {/* About */}
               <section className="mb-6">
-                <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-3">
+                <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-3">
                   About
                 </span>
                 {loadingDetail && !description ? (
@@ -813,11 +738,11 @@ export default function BooksPage() {
                     ))}
                   </div>
                 ) : description ? (
-                  <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.7] tracking-[0.005em] whitespace-pre-line break-words">
+                  <p className="t-body-m leading-[1.7] text-[var(--color-text-primary)] whitespace-pre-line break-words">
                     {description}
                   </p>
                 ) : (
-                  <p className="text-[13px] text-[var(--color-text-secondary)] italic">No description available.</p>
+                  <p className="t-caption t-feature text-[var(--color-text-secondary)]">No description available.</p>
                 )}
               </section>
 
@@ -826,7 +751,7 @@ export default function BooksPage() {
                 <>
                   <hr className="border-[var(--color-divider)] mb-6" />
                   <section className="mb-6">
-                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-2">
+                    <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-2">
                       Details
                     </span>
                     {loadingDetail && metaRows.length === 0 ? (
@@ -842,10 +767,10 @@ export default function BooksPage() {
                       <dl className="divide-y divide-[var(--color-divider)]">
                         {metaRows.map(({ label, value, mono }) => (
                           <div key={label} className="flex gap-6 py-[12px]">
-                            <dt className="text-[13px] text-[var(--color-text-secondary)] shrink-0" style={{ width: 90 }}>
+                            <dt className="t-caption text-[var(--color-text-secondary)] shrink-0" style={{ width: 90 }}>
                               {label}
                             </dt>
-                            <dd className={`text-[13px] text-[var(--color-text-primary)] font-medium tracking-[0.005em] break-words ${mono ? 'font-mono tracking-[0.01em]' : ''}`}>
+                            <dd className={`${mono ? 't-mono' : 't-caption'} text-[var(--color-text-primary)] break-words`}>
                               {value}
                             </dd>
                           </div>
@@ -861,7 +786,7 @@ export default function BooksPage() {
                 <>
                   <hr className="border-[var(--color-divider)] mb-6" />
                   <section className="mb-6">
-                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-[14px]">
+                    <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-[14px]">
                       About the Author
                     </span>
                     {loadingAuthor && !authorInfo ? (
@@ -877,9 +802,9 @@ export default function BooksPage() {
                     ) : authorInfo && (
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-3">
-                          {(wikipediaImage || authorInfo.image?.contentUrl) && !authorPhotoFailed && (
+                          {authorInfo.imageUrl && !authorPhotoFailed && (
                             <img
-                              src={wikipediaImage ?? authorInfo.image!.contentUrl!}
+                              src={authorInfo.imageUrl}
                               alt={authorInfo.name ?? ''}
                               className="h-12 w-12 rounded-full object-cover shrink-0"
                               onError={() => setAuthorPhotoFailed(true)}
@@ -887,20 +812,20 @@ export default function BooksPage() {
                           )}
                           <div className="min-w-0">
                             {authorInfo.name && (
-                              <p className="font-serif font-medium text-[18px] leading-[1.1] tracking-[-0.008em] text-[var(--color-text-primary)]">
+                              <p className="t-title-m text-[var(--color-text-primary)]">
                                 {authorInfo.name}
                               </p>
                             )}
                             {authorInfo.description && (
-                              <span className="block text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mt-1">
+                              <span className="t-eyebrow block text-[var(--color-text-secondary)] mt-1">
                                 {authorInfo.description}
                               </span>
                             )}
                           </div>
                         </div>
-                        {(wikipediaExtract || authorInfo.detailedDescription?.articleBody) && (
-                          <p className="text-[13px] text-[var(--color-text-primary)] leading-[1.65] tracking-[0.005em]">
-                            {wikipediaExtract ?? authorInfo.detailedDescription!.articleBody}
+                        {authorInfo.extract && (
+                          <p className="t-body-m leading-[1.7] text-[var(--color-text-primary)]">
+                            {authorInfo.extract}
                           </p>
                         )}
                       </div>
@@ -910,15 +835,15 @@ export default function BooksPage() {
               )}
 
               {/* More by this author */}
-              {(loadingAuthorBooks || authorBooks.length > 0) && (
+              {(loadingAuthor || authorBooks.length > 0) && (
                 <>
                   <hr className="border-[var(--color-divider)] mb-6" />
                   <section>
-                    <span className="block text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)] mb-4">
+                    <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-4">
                       More by {selectedBook?.author?.split(/\s*(?:,|&| and )\s*/i)[0]}
                     </span>
                     <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                      {loadingAuthorBooks && authorBooks.length === 0
+                      {loadingAuthor && authorBooks.length === 0
                         ? Array.from({ length: 4 }).map((_, i) => (
                             <div key={i} className="flex flex-col gap-2 shrink-0 w-[80px]">
                               <Shimmer className="w-[80px] h-[116px] rounded-sm" />
@@ -926,23 +851,22 @@ export default function BooksPage() {
                               <Shimmer className="h-3 w-1/2" />
                             </div>
                           ))
-                        : authorBooks.map(vol => {
-                            const vi = vol.volumeInfo
-                            const coverUrl = bestCoverUrl(vi.imageLinks)
-                            const year = extractYear(vi.publishedDate)
+                        : authorBooks.map(authorBook => {
+                            const coverUrl = authorBook.imageUrl ?? undefined
+                            const year = extractYear(authorBook.publishedDate)
+                            // isbn and page_count aren't in AuthorBook — the detail view
+                            // fetches them via book-enrichment when this book is opened.
                             const book: Book = {
-                              title: vi.title,
-                              author: vi.authors?.join(', ') ?? '',
+                              title: authorBook.title,
+                              author: authorBook.authors.join(', '),
                               year: year ? parseInt(year) : undefined,
-                              isbn: preferredIsbn(vi.industryIdentifiers),
                               image_url: coverUrl,
-                              external_google_id: vol.id,
-                              page_count: vi.pageCount,
+                              external_google_id: authorBook.externalGoogleId,
                             }
                             return (
                               <BookCard
-                                key={vol.id}
-                                title={vi.title}
+                                key={authorBook.externalGoogleId}
+                                title={authorBook.title}
                                 year={year}
                                 imageUrl={coverUrl}
                                 onClick={() => handleSelect(book)}
@@ -965,14 +889,13 @@ export default function BooksPage() {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Back to top"
-        className={`fixed bottom-20 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] text-[var(--color-text-secondary)] shadow-lg hover:text-[var(--color-text-primary)] hover:border-[var(--color-text-secondary)] transition-all duration-200 ${
+        className={`fixed bottom-20 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center w-10 h-10 rounded-btn bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] text-[var(--color-text-secondary)] shadow-lg hover:text-[var(--color-text-primary)] hover:border-[var(--color-text-secondary)] transition-all duration-200 cursor-pointer ${
           showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
           <path d="M4.5 15.75l7.5-7.5 7.5 7.5" />
         </svg>
-        Back to top
       </button>
 
     </div>

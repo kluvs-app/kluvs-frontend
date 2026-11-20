@@ -6,6 +6,7 @@ import KluvsSpinner from '../KluvsSpinner'
 import Avatar from '../ui/Avatar'
 import { parseLocalDate } from '../../utils/dates'
 import BaseModal from './BaseModal'
+import Button from '../ui/Button'
 
 interface EditSessionModalProps {
   isOpen: boolean
@@ -17,9 +18,7 @@ interface EditSessionModalProps {
 
 const labelStyle = {
   display: 'block' as const,
-  fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-  fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-  textTransform: 'uppercase' as const, color: 'var(--color-text-secondary)',
+  color: 'var(--color-text-secondary)',
   marginBottom: 8,
 }
 
@@ -168,32 +167,32 @@ export default function EditSessionModal({
         labelId="modal-title-edit-session"
         footer={
           <>
-            <button
+            <Button
+              variant="text"
               onClick={() => setView('edit')}
               disabled={loading}
-              className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            >Back</button>
-            <button
+            >Back</Button>
+            <Button
+              variant="danger"
               onClick={handleChangeBook}
               disabled={loading || !newBookId}
-              className="flex items-center gap-2 bg-danger hover:bg-danger-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
             >
-              {loading && <KluvsSpinner size={14} color="#ffffff" />}
+              {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
               {loading ? 'Restarting…' : 'Restart with New Book'}
-            </button>
+            </Button>
           </>
         }
       >
         <div className="space-y-5">
-          <p className="text-sm text-[var(--color-text-primary)] leading-relaxed">
+          <p className="t-body-m text-[var(--color-text-primary)]">
             This will immediately end the current session for{' '}
-            <span className="font-semibold">"{session.book?.title}"</span>. Its discussions and
+            <span className="t-label">"{session.book?.title}"</span>. Its discussions and
             history will be permanently removed. Members currently marked as reading will carry
             over to the new session.
           </p>
 
           <div>
-            <label style={labelStyle}>New Book</label>
+            <label className="t-eyebrow" style={labelStyle}>New Book</label>
             <BookSearchInput
               key={bookKey}
               onSelect={setNewBookId}
@@ -202,13 +201,13 @@ export default function EditSessionModal({
           </div>
 
           <div>
-            <label style={labelStyle}>Due Date</label>
+            <label className="t-eyebrow" style={labelStyle}>Due Date</label>
             <input
               type="date"
               value={newDueDate}
               onChange={(e) => setNewDueDate(e.target.value)}
               min={tomorrowString}
-              className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               disabled={loading}
             />
           </div>
@@ -226,37 +225,37 @@ export default function EditSessionModal({
       labelId="modal-title-edit-session"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSave}
             disabled={loading}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Saving…' : 'Save Changes'}
-          </button>
+          </Button>
         </>
       }
     >
       <div className="space-y-5">
         <div>
-          <label style={labelStyle}>Due Date</label>
+          <label className="t-eyebrow" style={labelStyle}>Due Date</label>
           <input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
             min={tomorrowString}
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
           />
         </div>
 
         <div>
-          <label style={labelStyle}>Reading Members</label>
+          <label className="t-eyebrow" style={labelStyle}>Reading Members</label>
           <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
             {members.map(m => {
               const isReading = readingMap[m.id] ?? false
@@ -269,7 +268,7 @@ export default function EditSessionModal({
                       imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
                       size="sm"
                     />
-                    <span className="text-sm text-[var(--color-text-primary)]">{m.name}</span>
+                    <span className="t-body-m text-[var(--color-text-primary)]">{m.name}</span>
                   </div>
                   <button
                     type="button"
@@ -282,7 +281,7 @@ export default function EditSessionModal({
                       'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
                       'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                       loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
-                      isReading ? 'bg-primary' : 'bg-[#4D4033]',
+                      isReading ? 'bg-primary' : 'bg-[var(--color-text-disabled)]',
                     ].join(' ')}
                   >
                     <span className={[
@@ -296,14 +295,15 @@ export default function EditSessionModal({
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="text"
+          destructive
           onClick={() => { onError(''); setView('changeBook') }}
           disabled={loading}
-          className="text-sm font-medium text-danger hover:text-danger-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Change Book…
-        </button>
+          Change Book
+        </Button>
       </div>
     </BaseModal>
   )

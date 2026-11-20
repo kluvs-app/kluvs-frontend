@@ -2,7 +2,7 @@ import { parseScheduledAt, isPast } from '../utils/dates'
 import type { Club, Discussion } from '../types'
 import KebabMenu from './ui/KebabMenu'
 import AttendanceControl from './AttendanceControl'
-import GhostButton from './ui/GhostButton'
+import Button from './ui/Button'
 
 interface DiscussionsTimelineProps {
   selectedClub: Club
@@ -48,51 +48,52 @@ export default function DiscussionsTimeline({
       {/* Section header */}
       <div className="flex items-center justify-between mb-6 lg:mb-9">
         <div className="flex items-center gap-3">
-          <span className="hidden lg:inline text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-secondary)]">
+          <span className="t-eyebrow hidden lg:inline text-[var(--color-text-secondary)]">
             DISCUSSIONS
           </span>
           {selectedClub.active_session && sortedDiscussions.length > 0 && (
-            <span className="font-serif italic text-[16px] text-[var(--color-text-secondary)]">
+            <span className="t-title-s t-feature text-[var(--color-text-secondary)]">
               {sortedDiscussions.length} scheduled
             </span>
           )}
         </div>
         {isAdmin && selectedClub.active_session && (
-          <GhostButton variant="sm" icon="+" onClick={onAddDiscussion}>
-            Add
-          </GhostButton>
+          <Button variant="outlined" onClick={onAddDiscussion}>
+            <span aria-hidden>+</span>
+Add
+          </Button>
         )}
       </div>
 
       {/* Empty states */}
       {!selectedClub.active_session ? (
         <div className="flex flex-col items-center text-center py-6">
-          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-4">
+          <p className="t-title-l t-feature text-[var(--color-text-secondary)] mb-4">
             {isAdmin
               ? 'Start a session first to schedule discussions.'
               : 'Discussions will appear here once a session begins.'}
           </p>
           {isAdmin && onStartSession && (
-            <button
+            <Button
+              variant="primary"
               onClick={onStartSession}
-              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
             >
               Start Session
-            </button>
+            </Button>
           )}
         </div>
       ) : sortedDiscussions.length === 0 ? (
         <div className="flex flex-col items-center text-center py-6">
-          <p className="font-serif italic text-[22px] font-medium text-[var(--color-text-secondary)] leading-snug mb-5">
+          <p className="t-title-l t-feature text-[var(--color-text-secondary)] mb-5">
             No discussions scheduled yet.
           </p>
           {isAdmin && (
-            <button
+            <Button
+              variant="primary"
               onClick={onAddDiscussion}
-              className="bg-primary hover:bg-primary-hover active:scale-[0.97] text-white px-5 py-2 rounded-btn text-[13px] font-medium transition-all duration-120 cursor-pointer"
             >
               Schedule Discussion
-            </button>
+            </Button>
           )}
         </div>
       ) : (
@@ -112,7 +113,7 @@ export default function DiscussionsTimeline({
                 {/* Date column */}
                 <div className="text-right pr-1 lg:pr-3.5">
                   <p className={[
-                    'font-medium font-mono tracking-[0.02em] text-[13px] lg:text-[12px]',
+                    't-mono',
                     status === 'next' ? 'text-primary' : 'text-[var(--color-text-secondary)]',
                   ].join(' ')}>
                     {parseScheduledAt(discussion.scheduled_at).toLocaleDateString('en-US', {
@@ -120,7 +121,7 @@ export default function DiscussionsTimeline({
                       day: 'numeric',
                     })}
                   </p>
-                  <p className="text-[10px] lg:text-[11px] text-[var(--color-text-secondary)] mt-0.5 lg:mt-1 opacity-70 lg:opacity-80">
+                  <p className="t-fine-print text-[var(--color-text-secondary)] mt-0.5 lg:mt-1 opacity-70 lg:opacity-80">
                     {parseScheduledAt(discussion.scheduled_at).toLocaleDateString('en-US', {
                       weekday: 'short',
                     })}
@@ -131,7 +132,7 @@ export default function DiscussionsTimeline({
                 <div className="relative flex justify-center pt-2 lg:pt-0">
                   <div className="relative z-10 lg:mt-1">
                     {status === 'past' && (
-                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-[#4D4033]" />
+                      <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-[var(--color-text-disabled)]" />
                     )}
                     {status === 'next' && (
                       <div
@@ -157,22 +158,22 @@ export default function DiscussionsTimeline({
                 <div className="flex items-start justify-between gap-2 lg:gap-4 pt-0.5">
                   <div className="flex-1 min-w-0">
                     {status === 'next' && (
-                      <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary mb-1">
+                      <p className="t-eyebrow text-primary mb-1">
                         UP NEXT
                       </p>
                     )}
                     <p className={[
-                      'font-serif font-medium text-[var(--color-text-primary)]',
-                      status === 'next' ? 'text-[22px] lg:text-[24px]' : 'text-[18px] lg:text-[24px]',
+                      't-feature text-[var(--color-text-primary)]',
+                      status === 'next' ? 't-title-l' : 't-title-m lg:t-title-l',
                     ].join(' ')}>
                       {discussion.title}
                     </p>
                     {discussion.location && (
-                      <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">
+                      <p className="t-caption text-[var(--color-text-secondary)] mt-1">
                         {discussion.location}
                       </p>
                     )}
-                    <p className="flex items-center gap-1.5 text-[13px] text-[var(--color-text-secondary)] mt-1">
+                    <p className="t-caption flex items-center gap-1.5 text-[var(--color-text-secondary)] mt-1">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                       </svg>

@@ -42,6 +42,9 @@ export type ProgressStatus = ReadingProgress['status']
 /** One member's RSVP in a discussion roster (spec: `DiscussionAttendanceRosterEntry`). */
 export type DiscussionAttendance = Schemas['DiscussionAttendanceRosterEntry']
 export type DiscordGuild = Schemas['DiscordGuildWithChannels']
+export type BookVolumeInfo = Schemas['BookVolumeInfo']
+export type AuthorInfo = Schemas['AuthorInfo']
+export type AuthorBook = Schemas['AuthorBook']
 
 // ── Response envelopes ──────────────────────────────────────────────────────
 
@@ -63,6 +66,11 @@ export type ReadingLog = Schemas['SessionReadingLogGroups']
 export type ReadingLogEntry = Schemas['SessionReadingLogEntry']
 export type BookSearchResponse = Schemas['BookSearchResponse']
 export type BookRegistrationResponse = Schemas['BookRegistrationResponse']
+/**
+ * Spec: `BookEnrichmentResponse`. `volumeInfo`/`authorInfo` are typed optional
+ * but the backend sends `null` when a lookup fails or its param was omitted.
+ */
+export type BookEnrichmentResponse = Schemas['BookEnrichmentResponse']
 export type JoinResponse = Schemas['JoinResponse']
 export type JoinPreviewResponse = Schemas['JoinPreviewResponse']
 export type LikeStatusResponse = Schemas['LikeStatusResponse']

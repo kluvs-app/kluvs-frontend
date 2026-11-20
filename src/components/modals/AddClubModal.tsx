@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import DiscordIcon from '../icons/DiscordIcon'
+import Button from '../ui/Button'
 
 interface AddClubModalProps {
   isOpen: boolean
@@ -48,7 +49,6 @@ export default function AddClubModal({
           server_id: selectedServer || null,
           discord_channel: formData.discord_channel.trim() || null,
           founded_date: new Date().toISOString().split('T')[0],
-          members: member ? [{ id: member.id, name: member.name, books_read: member.books_read }] : [],
         }
       })
       if (error) throw error
@@ -109,30 +109,28 @@ export default function AddClubModal({
       labelId="modal-title-add-club"
       footer={
         <>
-          <button
+          <Button
+            variant="text"
             onClick={handleClose}
             disabled={loading}
-            className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-          >Cancel</button>
-          <button
+          >Cancel</Button>
+          <Button
+            variant="primary"
             onClick={handleSubmit}
             disabled={loading || !formData.name.trim()}
-            className="flex items-center gap-2 bg-primary hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2 rounded-btn text-sm font-medium transition-colors"
           >
-            {loading && <KluvsSpinner size={14} color="#ffffff" />}
+            {loading && <KluvsSpinner size={14} color="var(--color-on-primary)" />}
             {loading ? 'Creating…' : 'Create Club'}
-          </button>
+          </Button>
         </>
       }
     >
       <div className="space-y-5">
         <div>
           <label
-            style={{
+            className="t-eyebrow" style={{
               display: 'block',
-              fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-              fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-              textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              color: 'var(--color-text-secondary)',
               marginBottom: 8,
             }}
           >Club Name</label>
@@ -141,7 +139,7 @@ export default function AddClubModal({
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             placeholder="e.g., Fantasy Book Club"
-            className="w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+            className="t-body-m w-full bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input px-4 py-[13px] text-[var(--color-text-primary)] placeholder-[var(--color-text-secondary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
             disabled={loading}
             maxLength={100}
             autoFocus
@@ -154,16 +152,14 @@ export default function AddClubModal({
             style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
           >
             <div className="flex items-center gap-2">
-              <DiscordIcon className="w-4 h-4 shrink-0 text-[#5865F2]" />
-              <span style={{
-                fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+              <DiscordIcon className="w-4 h-4 shrink-0 text-discord" />
+              <span className="t-eyebrow" style={{
+                color: 'var(--color-text-secondary)',
               }}>Discord</span>
             </div>
 
             {guildsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+              <div className="t-body-m flex items-center gap-2 text-[var(--color-text-secondary)]">
                 <KluvsSpinner size={16} />
                 <span>Loading servers…</span>
               </div>
@@ -171,18 +167,16 @@ export default function AddClubModal({
               <>
                 {guilds.length === 1 ? (
                   <div>
-                    <p className="text-xs font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">Server</p>
-                    <p className="text-sm text-[var(--color-text-primary)]">{guilds[0].name}</p>
+                    <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Server</p>
+                    <p className="t-body-m text-[var(--color-text-primary)]">{guilds[0].name}</p>
                   </div>
                 ) : (
                   <div>
                     <label
                       htmlFor="add-club-server-select"
-                      style={{
+                      className="t-eyebrow" style={{
                         display: 'block',
-                        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                        fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                        textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                        color: 'var(--color-text-secondary)',
                         marginBottom: 8,
                       }}
                     >Server</label>
@@ -194,7 +188,7 @@ export default function AddClubModal({
                           setSelectedServer(e.target.value)
                           setFormData(prev => ({ ...prev, discord_channel: '' }))
                         }}
-                        className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                         disabled={loading}
                       >
                         <option value="">No server</option>
@@ -213,20 +207,18 @@ export default function AddClubModal({
                   <div>
                     <label
                       htmlFor="add-club-channel-select"
-                      style={{
+                      className="t-eyebrow" style={{
                         display: 'block',
-                        fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
-                        fontSize: 11, fontWeight: 500, letterSpacing: '0.14em',
-                        textTransform: 'uppercase', color: 'var(--color-text-secondary)',
+                        color: 'var(--color-text-secondary)',
                         marginBottom: 8,
                       }}
-                    >Channel <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+                    >Channel <span className="t-fine-print normal-case text-[var(--color-text-secondary)]">(optional)</span></label>
                     <div className="relative">
                       <select
                         id="add-club-channel-select"
                         value={formData.discord_channel}
                         onChange={(e) => setFormData(prev => ({ ...prev, discord_channel: e.target.value }))}
-                        className="w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-3 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                        className="t-body-m w-full appearance-none bg-[var(--color-input-bg)] border border-[var(--color-input-border)] rounded-input pl-4 pr-10 py-[13px] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                         disabled={loading}
                       >
                         <option value="">Select a channel…</option>

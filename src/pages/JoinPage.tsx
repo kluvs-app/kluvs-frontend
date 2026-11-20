@@ -4,6 +4,7 @@ import { supabase, invokeFunction } from '../supabase'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import KluvsSpinner from '../components/KluvsSpinner'
+import Button from '../components/ui/Button'
 
 interface ClubPreview {
   id: string
@@ -202,7 +203,7 @@ export default function JoinPage() {
         {loading || joining ? (
           <div className="text-center">
             <KluvsSpinner size={48} className="mx-auto" />
-            <p className="mt-5 text-[var(--color-text-secondary)] text-sm">
+            <p className="t-body-m mt-5 text-[var(--color-text-secondary)]">
               {joining ? 'Joining club…' : 'Loading invite…'}
             </p>
           </div>
@@ -215,10 +216,10 @@ export default function JoinPage() {
                   className="rounded-2xl p-8 mb-6"
                   style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
                 >
-                  <p className="font-serif text-[28px] font-medium text-[var(--color-text-primary)] mb-3">
+                  <p className="t-headline-s text-[var(--color-text-primary)] mb-3">
                     {title}
                   </p>
-                  <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed">
+                  <p className="t-body-m text-[var(--color-text-secondary)]">
                     {description}
                   </p>
                 </div>
@@ -232,42 +233,44 @@ export default function JoinPage() {
               style={{ background: 'var(--color-bg-raised)', border: '1px solid var(--color-divider)' }}
             >
               <p
-                className="text-[11px] font-medium uppercase tracking-[0.14em] mb-4"
-                style={{ color: '#D16D30' }}
+                className="t-eyebrow mb-4"
+                style={{ color: 'var(--color-primary)' }}
               >
                 You're invited
               </p>
-              <h1 className="font-serif text-[40px] font-medium leading-[1.1] text-[var(--color-text-primary)] mb-6 tracking-[-0.015em]">
+              <h1 className="t-headline-l text-[var(--color-text-primary)] mb-6">
                 {clubPreview.name}
               </h1>
               <div className="flex flex-col gap-3">
-                <button
+                <Button
+                  variant="social"
                   onClick={() => handleJoinWithProvider('discord')}
                   disabled={signingIn !== null || joining}
-                  className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-60 disabled:cursor-not-allowed text-white py-3 rounded-btn text-sm font-medium transition-colors"
+                  className="bg-discord hover:bg-discord-hover disabled:opacity-60 text-white"
                 >
                   {signingIn === 'discord' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
                   ) : (
-                    <img src="/ic-discord.svg" alt="" className="h-4 w-4" />
+                    <img src="/ic-discord.svg" alt="" className="h-5 w-5" />
                   )}
                   Continue with Discord
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="social"
                   onClick={() => handleJoinWithProvider('google')}
                   disabled={signingIn !== null || joining}
-                  className="w-full flex items-center justify-center gap-3 bg-google-bg hover:bg-google-bg-hover disabled:opacity-60 disabled:cursor-not-allowed text-google-text py-3 rounded-btn text-sm font-medium transition-colors"
+                  className="bg-google-bg hover:bg-google-bg-hover disabled:opacity-60 text-google-text"
                 >
                   {signingIn === 'google' ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-google-text border-t-transparent" />
                   ) : (
-                    <img src="/ic-google.svg" alt="" className="h-4 w-4" />
+                    <img src="/ic-google.svg" alt="" className="h-5 w-5" />
                   )}
                   Continue with Google
-                </button>
+                </Button>
               </div>
             </div>
-            <p className="text-[12px] text-[var(--color-text-secondary)]">
+            <p className="t-fine-print text-[var(--color-text-secondary)]">
               You'll be asked to sign in if you haven't already.
             </p>
           </div>

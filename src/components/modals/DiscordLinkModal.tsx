@@ -3,6 +3,7 @@ import { supabase } from '../../supabase'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import DiscordIcon from '../icons/DiscordIcon'
+import Button from '../ui/Button'
 
 interface DiscordLinkModalProps {
   isOpen: boolean
@@ -50,28 +51,29 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
       loading={oauthLoading}
       labelId="modal-title-discord-link"
       footer={
-        <button
+        <Button
+          variant="text"
           onClick={handleClose}
           disabled={oauthLoading}
-          className="text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-        >Cancel</button>
+        >Cancel</Button>
       }
     >
       <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+        <p className="t-body-m text-[var(--color-text-secondary)]">
           Sign in with Discord to link your account automatically.
         </p>
         {oauthError && (
-          <p className="text-sm text-danger">{oauthError}</p>
+          <p className="t-body-m text-danger">{oauthError}</p>
         )}
-        <button
+        <Button
+          variant="social"
           onClick={handleOAuthLink}
           disabled={oauthLoading}
-          className="w-full flex items-center justify-center gap-3 bg-discord hover:bg-discord-hover disabled:opacity-40 disabled:cursor-not-allowed text-white px-6 py-3 rounded-btn font-medium text-sm transition-colors"
+          className="bg-discord hover:bg-discord-hover disabled:opacity-40 text-white"
         >
           {oauthLoading ? (
             <>
-              <KluvsSpinner size={16} color="#ffffff" />
+              <KluvsSpinner size={16} color="var(--color-on-primary)" />
               <span>Connecting…</span>
             </>
           ) : (
@@ -80,7 +82,7 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
               <span>Sign in with Discord</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
     </BaseModal>
   )
