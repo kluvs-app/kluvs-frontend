@@ -5,6 +5,7 @@ import {
   scheduledAtToLocalParts,
   localPartsToScheduledAt,
   isPast,
+  toLocalDateString,
 } from '../../utils/dates'
 
 describe('parseLocalDate', () => {
@@ -72,6 +73,17 @@ describe('parseScheduledAt', () => {
 
   it('returns an invalid Date for an empty string', () => {
     expect(isNaN(parseScheduledAt('').getTime())).toBe(true)
+  })
+})
+
+describe('toLocalDateString', () => {
+  it('formats a date using its local calendar day', () => {
+    // 23:30 local is the next UTC day for any negative-offset timezone
+    expect(toLocalDateString(new Date(2026, 6, 15, 23, 30))).toBe('2026-07-15')
+  })
+
+  it('pads single-digit months and days', () => {
+    expect(toLocalDateString(new Date(2026, 0, 5))).toBe('2026-01-05')
   })
 })
 

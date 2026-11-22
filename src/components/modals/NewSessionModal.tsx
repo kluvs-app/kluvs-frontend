@@ -3,7 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club, SessionCreateResponse } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
-import { parseLocalDate } from '../../utils/dates'
+import { parseLocalDate, toLocalDateString } from '../../utils/dates'
 import BaseModal from './BaseModal'
 import Button from '../ui/Button'
 
@@ -77,7 +77,7 @@ export default function NewSessionModal({
 
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowString = tomorrow.toISOString().split('T')[0]
+  const tomorrowString = toLocalDateString(tomorrow)
 
   return (
     <BaseModal

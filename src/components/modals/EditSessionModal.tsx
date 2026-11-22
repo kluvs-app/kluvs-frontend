@@ -4,7 +4,7 @@ import type { Club, ClubMember, DeleteResponse, SessionCreateResponse, SessionUp
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
 import Avatar from '../ui/Avatar'
-import { parseLocalDate } from '../../utils/dates'
+import { parseLocalDate, toLocalDateString } from '../../utils/dates'
 import BaseModal from './BaseModal'
 import Button from '../ui/Button'
 
@@ -125,7 +125,7 @@ export default function EditSessionModal({
       setLoading(true)
       onError('')
 
-      const { error: deleteError } = await invokeFunction<DeleteResponse>(`session?id=${session.id}`, { method: 'DELETE' })
+      const { error: deleteError } = await invokeFunction<DeleteResponse>(`session?id=${encodeURIComponent(session.id)}`, { method: 'DELETE' })
       if (deleteError) throw deleteError
 
       const { data, error: createError } = await invokeFunction<SessionCreateResponse>('session', {
@@ -154,7 +154,7 @@ export default function EditSessionModal({
 
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowString = tomorrow.toISOString().split('T')[0]
+  const tomorrowString = toLocalDateString(tomorrow)
 
   if (view === 'changeBook') {
     return (
