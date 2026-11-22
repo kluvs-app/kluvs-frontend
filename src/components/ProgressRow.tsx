@@ -45,7 +45,7 @@ export default function ProgressRow({
       <div className="flex items-center gap-4">
         <div className="flex-1 h-1 rounded-full bg-[var(--color-divider)] overflow-hidden">
           <div
-            className="h-full bg-primary transition-all duration-300"
+            className="h-full bg-primary transition-all duration-[260ms]"
             style={{ width: `${pct}%` }}
           />
         </div>

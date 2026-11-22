@@ -125,7 +125,7 @@ export default function AttendanceControl({ discussion, disabled = false }: Atte
               aria-pressed={isSelected}
               title={value.charAt(0).toUpperCase() + value.slice(1)}
               className={[
-                'no-touch-target flex items-center justify-center w-7 h-7 transition-colors duration-150',
+                'no-touch-target flex items-center justify-center w-7 h-7 transition-colors duration-[180ms]',
                 isSelected
                   ? pressedClass
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
