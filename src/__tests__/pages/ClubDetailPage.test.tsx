@@ -17,7 +17,6 @@ vi.mock('../../supabase', () => {
   }
 })
 
-vi.mock('../../components/layout/Sidebar', () => ({ default: () => null }))
 vi.mock('../../components/modals/EditBookModal', () => ({
   default: ({ isOpen, onBookUpdated, onClose }: any) => isOpen ? (
     <div role="dialog" data-testid="edit-book-modal">

@@ -345,10 +345,11 @@ export default function ClubDetailPage() {
               </span>
               <button
                 onClick={() => setShowAddClubModal(true)}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] !text-[20px] font-light leading-none"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-[120ms] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]"
                 title="Add club"
+                aria-label="Add club"
               >
-                +
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">add</span>
               </button>
             </div>
           </div>

@@ -3,244 +3,89 @@
 [![CI](https://github.com/kluvs-app/kluvs-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/kluvs-app/kluvs-frontend/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/kluvs-app/kluvs-frontend/branch/main/graph/badge.svg)](https://codecov.io/gh/kluvs-app/kluvs-frontend)
 
-A React + TypeScript web application for managing book clubs across multiple Discord servers. Track reading sessions, discussions, members, and club activities with OAuth authentication.
+The Kluvs web client, built with React and TypeScript. One bundle serves two surfaces, chosen by hostname:
+- **the app** (`app.kluvs.com`): manage book clubs, reading sessions, discussions, members and your bookshelf.
+- **the marketing site** (`kluvs.com`): landing, Discord bot, FAQ and legal pages.
 
-## 🚀 Quick Start
+Data comes from Supabase Edge Functions (`kluvs-backend`). Wire types are generated from the OpenAPI spec published by `kluvs-api` ([docs.kluvs.com](https://docs.kluvs.com)).
 
-```bash
-# Clone the repository
-git clone <repository-url>
-cd kluvs-frontend
-
-# Install dependencies
-npm install
-
-# Set up environment variables (see below)
-cp .env.example .env.local
-
-# Start development server
-npm run dev
-
-# Open browser to http://localhost:5173
-```
-
-## 📋 Prerequisites
-
-- **Node.js** v20+ ([Download](https://nodejs.org/))
-  - ⚠️ Node 18 is not supported (reaches EOL April 2025)
-  - ✅ Node 20 LTS (recommended)
-  - ✅ Node 22 (latest)
-- **npm** (comes with Node.js)
-- **Git**
-- **Supabase account** (for backend services)
-
-## 🔧 Installation
-
-### 1. Install Dependencies
+## Quick start
 
 ```bash
 npm install
+# create .env.local (see below)
+npm run dev        # http://localhost:5173
 ```
 
-This will install all required packages including:
-- React 19 + TypeScript
-- Vite (build tool)
-- Tailwind CSS
-- Supabase client
-- Testing libraries (Vitest, React Testing Library)
+### Prerequisites
+- Node.js 20+ (CI uses 20.x)
+- A Supabase project (URL + anon key)
 
-### 2. Environment Setup
-
-Create a `.env.local` file in the project root:
+### Environment
+Create `.env.local` in the project root. It is gitignored; never commit it.
 
 ```bash
-# Supabase Configuration (Required)
 VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_OAUTH_REDIRECT_URL=http://localhost:5173
+VITE_FORCE_APP_DOMAIN=true   # optional: serve the app (not the marketing site) on localhost
 ```
 
-**Where to find these values:**
-1. Go to [Supabase Dashboard](https://app.supabase.com)
-2. Select your project
-3. Go to Settings → API
-4. Copy "Project URL" and "anon public" key
+Find the Supabase values in the Supabase Dashboard under Project Settings → API.
 
-> **Note:** Never commit `.env.local` or `.env.production` files to Git. They're already in `.gitignore`.
-
-## 🏃 Running the App
-
-### Development Mode
-
-```bash
-# Build locally
-npm run dev
-```
-
-Starts the development server at `http://localhost:5173` with:
-- Hot module reloading
-- TypeScript type checking
-- Fast refresh
-
-### Production Build
-
-```bash
-# Build for production
-npm run build
-
-# Preview production build locally
-npm run preview
-```
-
-Build output goes to `/dist` directory.
-
-## 🧪 Testing
-
-### Run Tests
-
-```bash
-# Run tests in watch mode (recommended for development)
-npm run test
-
-# Run tests once (CI/CD)
-npm run test:run
-
-# Run tests with UI
-npm run test:ui
-
-# Run tests with coverage report
-npm run test:coverage
-```
-
-### Writing Tests
-
-See [CLAUDE.md - Testing Section](CLAUDE.md#testing) for guidelines on writing tests.
-
-## 🛠️ Development Scripts
+## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Fix ESLint errors |
-| `npm run test` | Run tests (watch mode) |
-| `npm run test:run` | Run tests once |
-| `npm run test:coverage` | Run tests with coverage |
-| `npm run type-check` | Run TypeScript type checking |
-| `npm run validate` | Run lint + type-check + tests |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Type-check and build to `dist/` |
+| `npm run preview` | Preview the production build |
+| `npm run lint` / `lint:fix` | ESLint |
+| `npm run type-check` | TypeScript (`tsc -b`) |
+| `npm run test` | Tests in watch mode |
+| `npm run test:run` | Tests once |
+| `npm run test:coverage` | Tests with coverage (thresholds: 80% lines/functions/statements, 75% branches) |
+| `npm run validate` | lint + type-check + tests (what CI runs) |
+| `npm run api:generate` | Regenerate `src/types/api.gen.ts` from `api/openapi.json` |
 
-## 📁 Project Structure
+## Project layout
 
 ```
-kluvs-frontend/
-├── src/
-│   ├── components/                 # React components
-│   │   ├── modals/                # 15 modal dialogs
-│   │   ├── layout/                # AppShell, AppSidebar, Sidebar, TopNavbar
-│   │   ├── ui/                    # Reusable primitives (Avatar, BookCover, etc.)
-│   │   ├── icons/                 # SVG icon components
-│   │   ├── Header.tsx             # Shared header (public pages)
-│   │   ├── Footer.tsx             # Shared footer (all pages)
-│   │   ├── DiscussionsTimeline.tsx
-│   │   ├── MembersTable.tsx
-│   │   └── ThemeToggle.tsx        # Light/dark/system theme toggle
-│   ├── content/                   # Markdown content files (legal pages)
-│   │   ├── privacy-policy.md
-│   │   ├── terms-of-use.md
-│   │   └── data-deletion.md
-│   ├── contexts/                  # React contexts
-│   │   ├── AuthContext.tsx        # Authentication state
-│   │   └── ThemeContext.tsx       # Theme state (light/dark/system)
-│   ├── pages/                     # Page components (12 total)
-│   │   ├── LandingPage.tsx        # Public marketing page
-│   │   ├── LoginPage.tsx          # OAuth + email/password auth
-│   │   ├── ProfilePage.tsx        # /me — user profile & settings
-│   │   ├── ClubsPage.tsx          # /clubs — club list
-│   │   ├── ClubDetailPage.tsx     # /clubs/:slug — full club view
-│   │   ├── BooksPage.tsx          # /books — book discovery
-│   │   ├── JoinPage.tsx           # /join/:token — invite link handler
-│   │   ├── SetNewPasswordPage.tsx # Password recovery
-│   │   ├── PrivacyPolicy.tsx
-│   │   ├── TermsOfUse.tsx
-│   │   ├── DataDeletion.tsx
-│   │   └── DiscordPage.tsx
-│   ├── types/                     # TypeScript type definitions
-│   │   └── index.ts
-│   ├── __tests__/                 # ~1,093 tests across 44 test files
-│   │   ├── setup.ts
-│   │   ├── utils/                 # Test utilities & mocks
-│   │   ├── contexts/
-│   │   ├── components/
-│   │   └── pages/
-│   ├── App.tsx                    # Root component — domain-based routing
-│   ├── supabase.ts                # Supabase client + invokeFunction helper
-│   └── version.ts                 # Version string
-├── .husky/                        # Git hooks
-│   └── pre-push                   # Runs validation on push
-├── public/                        # Static assets
-├── .env.local                     # Local environment vars (create this)
-├── package.json                   # Dependencies & scripts
-├── vite.config.ts                 # Vite configuration
-├── vitest.config.ts               # Test configuration
-├── tailwind.config.js             # Tailwind CSS config
-└── tsconfig.json                  # TypeScript config
+src/
+├── App.tsx          # domain-based routing (app vs marketing)
+├── supabase.ts      # Supabase client + invokeFunction helper
+├── components/      # ui/ primitives, modals/, layout/, icons/, domain components
+├── pages/           # one component per route
+├── contexts/        # Auth, Theme, MobileTopBar
+├── types/           # api.gen.ts (generated) + index.ts (aliases)
+├── content/         # legal Markdown + FAQ
+└── __tests__/       # Vitest + React Testing Library, mirrors src/
+api/openapi.json     # committed spec snapshot (generated)
+tools/               # release scripts
 ```
 
-## 🔐 Authentication
+## Stack
 
-The app uses Supabase Auth with multiple providers:
+React 19 · TypeScript · Vite 6 · Tailwind CSS 3 · React Router 7 · Supabase (Auth, Edge Functions, Storage) · Vitest + React Testing Library.
 
-- **OAuth Providers:** Discord, Google, Apple
-- **Email/Password:** Sign up, sign in, password recovery via email link
-- **Session:** Stored in localStorage with auto-refresh
-- **Roles:** Per-club roles — `owner`, `admin` (full access), `member` (read-only)
+Auth supports Discord, Google and Apple OAuth plus email/password. Roles are per club: owners and admins manage the club, members are read-only. Member profiles are created by a backend trigger on sign-up.
 
-### First-Time Login
+Styling follows the Kluvs design system (`design-system` repo: tokens, typography families, component specs).
 
-1. Click "Sign in with Discord", "Sign in with Google", or use email/password
-2. For OAuth: authorize the app and you'll be redirected back automatically
-3. For email: confirm your email if signing up, then log in
-4. A member profile is automatically created on first sign-in
+## Contributing
 
-### Role Management
+1. Branch off `develop` (`feature/…`, `bug/…`, `chore/…`).
+2. Run `npm run validate` before pushing. There are no git hooks; CI (**Test & Coverage**) is the gate.
+3. Open a PR against `develop`, with a [Conventional Commits](https://www.conventionalcommits.org/) title.
 
-Roles are per-club and managed via the backend API. Contact a club admin or owner to change your role.
+API types are never edited by hand. When the spec changes upstream, a GitHub Action opens a regeneration PR automatically.
 
-## 🎨 Tech Stack
+Conventions for code structure, styling, data fetching and testing live in [`CLAUDE.md`](CLAUDE.md) and [`.claude/rules/`](.claude/rules/).
 
-- **Framework:** React 19 with TypeScript
-- **Build Tool:** Vite 6
-- **Styling:** Tailwind CSS 3 + `@tailwindcss/typography`
-- **Markdown:** `react-markdown` for rendering legal pages
-- **Routing:** React Router v7
-- **Backend:** Supabase (Edge Functions + Auth)
-- **Testing:** Vitest + React Testing Library (~1,093 tests across 44 files)
-- **Linting:** ESLint with TypeScript support
-- **Pre-commit Hooks:** Husky (runs validation on push)
+## Releases
 
-## 🤝 Contributing
+```bash
+tools/release-process.sh 1.2.3
+```
 
-1. Create a feature branch: `git checkout -b feature/my-feature`
-2. Make your changes
-3. Run validation: `npm run validate`
-4. Commit changes: `git commit -m "feat: add my feature"`
-5. Push and create pull request
-
-### Code Quality Checks
-
-All PRs must pass (via Husky pre-push hook):
-- ✅ ESLint (no errors)
-- ✅ TypeScript type checking (no errors)
-- ✅ Tests (~1,093 tests must pass across 44 test files)
-- ✅ Build (must compile successfully)
-
-Run `npm run validate` to check all of these locally before pushing.
-
-## 📝 License
-
-[Your License Here]
-
----
-
-**Built with ❤️ using React + TypeScript + Supabase**
+The script cuts `release/1.2.3` from `develop`, bumps `package.json` and `src/version.ts`, merges into `main` and back into `develop`, tags `1.2.3`, and pushes. The tag triggers the Release workflow, which publishes the GitHub release.
