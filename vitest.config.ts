@@ -20,11 +20,12 @@ export default defineConfig({
         'dist/',
         '.eslintrc.cjs',
       ],
-      all: true,
-      lines: 80,
-      functions: 80,
-      branches: 75,
-      statements: 80,
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
     },
   },
   resolve: {

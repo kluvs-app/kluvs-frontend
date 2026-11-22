@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Handle member lookup/creation when user changes
+  // Handle member lookup when user changes
   const handleUserChange = useCallback(async (newUser: User | null) => {
     console.log('🚀 handleUserChange called with user:', newUser?.email)
 

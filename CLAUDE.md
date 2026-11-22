@@ -1,418 +1,85 @@
-# Kluvs Frontend - Book Club Management App
+# Kluvs Frontend
 
-## Project Overview
-A React + TypeScript web application for managing book clubs. Users can track reading sessions, discussions, members, and club activities across multiple book clubs and Discord servers.
+React + TypeScript web client for Kluvs, a book club app. Two surfaces are served from one bundle and picked by hostname:
+- the **app** (`app.*`): clubs, sessions, discussions, members, books, profile.
+- the **marketing site** (everything else): landing, Discord, FAQ, legal pages.
 
-## Tech Stack
-- **Framework**: React 19 with TypeScript
-- **Build Tool**: Vite 6
-- **Styling**: Tailwind CSS 3 + `@tailwindcss/typography` (for prose/markdown rendering)
-- **Routing**: React Router v7 (`react-router-dom`)
-- **Markdown Rendering**: `react-markdown`
-- **Backend**: Supabase (Auth + Edge Functions)
-- **Authentication**: OAuth (Discord, Google) + email/password
-- **Testing**: Vitest + React Testing Library (~1,093 tests across 44 files)
-- **Pre-commit Hooks**: Husky (validates on push)
+All data comes from Supabase Edge Functions in `kluvs-backend`. The wire types are generated from the canonical OpenAPI spec in `kluvs-api`.
 
-## Backend API Compatibility
-- **Backend Repository**: `kluvs-backend`
-- **Compatible with migrations up to**: `20251130205915_add_metadata_fields.sql`
-- **Last synced**: 2026-04-26
-- **Current version**: 0.9.0
-- **Sync notes**:
-  - Fixed member creation to prevent duplicates on OAuth signup
-  - Added new optional fields to TypeScript types: `user_id`, `handle`, `created_at` (Member); `id`, `page_count` (Book); `founded_date` (Club)
-  - Release automation via CI/CD
+**Stack:** React 19, TypeScript 5.8, Vite 6, Tailwind CSS 3 (+ `@tailwindcss/typography`), React Router 7, `react-markdown`, Supabase JS (Auth + Functions + Storage), Vitest 4 + React Testing Library.
 
-## Project Structure
+## Commands
+
+```bash
+npm run test:run                          # full suite once
+npx vitest run <path> --reporter=dot      # one file / folder
+npm run test:coverage                     # suite + coverage thresholds (80/80/75/80)
+npm run type-check                        # tsc -b (never replace with tsc --noEmit)
+npm run lint                              # eslint (lint:fix to autofix)
+npm run validate                          # lint + type-check + test:run (what CI runs)
+npm run build                             # tsc -b && vite build
+npm run api:generate                      # regenerate src/types/api.gen.ts from api/openapi.json
+```
+
+**For agents:** keep test output small. Pass `--reporter=dot` and read only the summary and the failures. Never run `npm run dev`, `npm run test` (watch mode) or `npm run test:ui`; the user runs those locally.
+
+## Absolute rules
+
+- **Never read `.env*` files or any secrets file**, not even to check that one exists. If you need an env value, ask the user. Known vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_OAUTH_REDIRECT_URL`, and optionally `VITE_FORCE_APP_DOMAIN=true` (forces app-domain routing locally).
+- **Never hand-edit `src/types/api.gen.ts` or `api/openapi.json`.** If the spec is wrong, fix it upstream. See `codegen.md`.
+- **A successful `git push` proves nothing.** There are no git hooks. CI is the only gate. Before you call the suite green, run `npm run validate` or check `gh pr checks <pr>`.
+- **Never create a Member from the frontend.** A backend trigger does it. See `auth.md`.
+- **PRs target `develop`** (`gh pr create --base develop`). `main` is production.
+- **Android comes first** whenever Kluvs platforms are listed together. See `ui-and-copy.md`.
+- **Never commit to `chore/regenerate-api-types`.** CI force-pushes that branch.
+
+## Where things live
+
 ```
 src/
+├── App.tsx            # domain-based router (app vs marketing)
+├── supabase.ts        # Supabase client + invokeFunction<T>() (every Edge Function call)
+├── index.css          # theme tokens (--color-*) + t-* typography families
 ├── components/
-│   ├── modals/              # Modal dialogs (15 modal components)
-│   │   ├── BaseModal.tsx        # Shared wrapper (gradient bg, border, rounded-2xl)
-│   │   ├── AddClubModal.tsx
-│   │   ├── EditClubModal.tsx
-│   │   ├── DeleteClubModal.tsx
-│   │   ├── ShareClubModal.tsx   # Invite link generation
-│   │   ├── NewSessionModal.tsx
-│   │   ├── EditBookModal.tsx
-│   │   ├── DiscussionModal.tsx
-│   │   ├── DeleteDiscussionModal.tsx
-│   │   ├── MemberModal.tsx
-│   │   ├── AddMemberModal.tsx
-│   │   ├── DeleteMemberModal.tsx
-│   │   ├── EditProfileModal.tsx
-│   │   ├── DiscordLinkModal.tsx
-│   │   └── SignOutModal.tsx
-│   ├── layout/              # Layout components
-│   │   ├── AppShell.tsx     # Main layout wrapper (bottom mobile nav + desktop sidebar offset)
-│   │   ├── AppSidebar.tsx   # Desktop left sidebar (220px) — clubs list, profile, sign out
-│   │   ├── Sidebar.tsx      # Legacy sidebar (may be unused)
-│   │   └── TopNavbar.tsx    # Top navigation bar
-│   ├── ui/                  # Reusable UI primitives
-│   │   ├── Avatar.tsx           # User avatar with initials fallback
-│   │   ├── BookCover.tsx        # Book cover image with placeholder
-│   │   ├── CoverSlot.tsx        # Low-level cover display
-│   │   ├── Button.tsx           # Button family: primary/danger/secondary/outlined/text/social
-│   │   ├── KebabMenu.tsx        # Three-dot dropdown menu
-│   │   └── RoleEyebrow.tsx      # Role badge (owner/admin/member)
-│   ├── icons/
-│   │   └── DiscordIcon.tsx
-│   ├── Header.tsx           # Shared header (public pages)
-│   ├── Footer.tsx           # Shared footer (with version number)
-│   ├── KluvsSpinner.tsx     # Animated loading spinner
-│   ├── KluvsHexBackground.tsx   # Animated hex background (landing page hero)
-│   ├── HowItWorksSection.tsx    # Server → club → session diagram (Discord page)
-│   ├── BookSearchInput.tsx  # Debounced book search input
-│   ├── BookInfo.tsx         # Book detail display
-│   ├── DiscussionsTimeline.tsx
-│   ├── MembersTable.tsx
-│   ├── ScrollToTop.tsx      # Scroll-to-top on route change
-│   └── ThemeToggle.tsx      # Dark/light/system theme toggle
-├── constants/
-│   ├── marketingStyles.ts   # Shared class strings for marketing pages (eyebrow, headline, card, buttons)
-│   └── shelves.ts           # Shelf options and labels
-├── content/
-│   ├── privacy-policy.md    # Privacy policy content (edit to update)
-│   ├── terms-of-use.md      # Terms of use content (edit to update)
-│   ├── data-deletion.md     # Data deletion content (edit to update)
-│   └── faq.ts               # FAQ categories/questions (Markdown answers; ids are a deep-link contract)
-├── contexts/
-│   ├── AuthContext.tsx      # Authentication state management
-│   └── ThemeContext.tsx     # Theme state (light/dark/system)
-├── pages/
-│   ├── LandingPage.tsx      # Public / — hero (Google Play badge + web), features, platforms, contact
-│   ├── DiscordPage.tsx      # Public /discord — bot features, How It Works diagram, commands
-│   ├── PrivacyPolicy.tsx    # Public /privacy (shell — content in content/)
-│   ├── TermsOfUse.tsx       # Public /terms (shell — content in content/)
-│   ├── DataDeletion.tsx     # Public /delete-account (Google Play Console requirement)
-│   ├── FaqPage.tsx          # Public /faq (shell — content in content/faq.ts; accordion + #anchor deep links)
-│   ├── LoginPage.tsx        # /login — OAuth + email/password auth
-│   ├── ProfilePage.tsx      # /me — user profile, stats, settings
-│   ├── ClubsPage.tsx        # /clubs — club list (mobile-optimized)
-│   ├── ClubDetailPage.tsx   # /clubs/:slug — full club view with sessions/discussions
-│   ├── BooksPage.tsx        # /books — book search + details via `book` / `book-enrichment` Edge Functions
-│   ├── JoinPage.tsx         # /join/:token — invite link club-join handler
-│   └── SetNewPasswordPage.tsx # password recovery (shown during PASSWORD_RECOVERY auth state)
-├── types/
-│   ├── api.gen.ts           # GENERATED from api/openapi.json — never edit by hand
-│   └── index.ts             # Alias layer over api.gen.ts (the app's wire types)
-├── __tests__/               # Test suite (~1,093 tests across 44 files)
-│   ├── setup.ts
-│   ├── utils/
-│   │   ├── mocks.ts             # Mock data (servers, clubs, members)
-│   │   ├── test-utils.tsx       # Custom render functions (renderWithAuth, etc.)
-│   │   └── supabase-mock.ts     # Supabase client mocks
-│   ├── contexts/
-│   │   ├── AuthContext.test.tsx
-│   │   └── ThemeContext.test.tsx
-│   ├── components/              # Component test files
-│   │   ├── modals/              # 15 modal test files
-│   │   ├── layout/
-│   │   └── ui/
-│   └── pages/                   # 11 page test files
-├── App.tsx                  # Root component — domain-based router config
-├── supabase.ts              # Supabase client + invokeFunction helper
-├── version.ts               # Version string (used in Footer)
-└── index.css                # Global styles with CSS variables
+│   ├── ui/            # generic primitives, no domain knowledge (Button, Avatar, KebabMenu…)
+│   ├── modals/        # BaseModal + one file per modal
+│   ├── layout/        # AppShell, AppSidebar, MobileTopBar
+│   ├── icons/         # SVG icon components
+│   └── *.tsx          # domain-aware components (BookCard, ShelfPill, MemberBadge…)
+├── pages/             # one component per route
+├── contexts/          # AuthContext, ThemeContext, MobileTopBarContext
+├── types/             # api.gen.ts (generated) + index.ts (alias layer; import from here)
+├── content/           # legal Markdown + faq.ts
+├── constants/         # marketingStyles.ts, shelves.ts
+├── utils/             # dates.ts (DATE-only parsing), domainNav.ts
+└── __tests__/         # mirrors src/; utils/ has test-utils, mocks, supabase-mock
+api/openapi.json       # committed spec snapshot (generated)
+public/                # static assets, sitemap.xml, brand assets copied from design-system
+tools/                 # release scripts
 ```
 
-## Key Features
+## Rules, skills and references
 
-### Authentication System
-- OAuth login with Discord and Google
-- Email/password login and sign-up with email confirmation
-- Password recovery flow via email link (triggers `PASSWORD_RECOVERY` auth state → `SetNewPasswordPage`)
-- Session persistence via localStorage with auto token refresh (only if within 5 min of expiry)
-- Network status tracking — offline banner shown via AppShell
-- Role-based access control: per-club roles (`owner | admin | member`)
-- Located in: `src/contexts/AuthContext.tsx`
+Path-scoped rules in `.claude/rules/` load automatically when you touch matching files:
 
-### User Roles
-- **Owner/Admin**: Full CRUD access to clubs, books, discussions, and members
-- **Member**: Read-only access
+| Rule | Covers |
+|---|---|
+| `auth.md` | AuthContext, sign-in providers, member lookup, per-club roles |
+| `data-fetching.md` | `invokeFunction`, error handling, query params, loading state |
+| `codegen.md` | generated wire types, alias layer, the spec → regen PR pipeline |
+| `routing.md` | domain routing, route tables, adding routes, SEO/robots, deep-link contracts |
+| `components-and-modals.md` | component structure, `ui/` vs domain components, modal contract |
+| `styling-and-design-system.md` | colors, typography, buttons, motion, theme, brand assets |
+| `testing.md` | test utilities, mocking patterns, coverage, CI |
+| `ui-and-copy.md` | platform ordering, component grouping, legal/FAQ content |
 
-Roles are per-club: `getRoleForClub(clubId)` (i.e. `member?.clubs?.find(c => c.id === clubId)?.role ?? null`) returns `'owner' | 'admin' | 'member' | null`.
+Skill: **`new-page`** adds a marketing or app-domain page end to end: content, route, sitemap, nav, tests.
 
-### Theme System
-- Three modes: `'light'`, `'dark'`, `'system'`
-- Persisted to localStorage (`kluvs-theme`)
-- Applies via `dark` class on `<html>` (Tailwind `darkMode: 'class'`)
-- CSS variables updated in `:root` and `.dark` selectors
-- Located in: `src/contexts/ThemeContext.tsx`
+The design system is the source of truth for tokens and component specs: `../design-system/tokens.json` and `../design-system/docs/*.md` (buttons, typography, modal, avatars, colors, …). Don't hardcode values that the design system defines.
 
-### Main Components
+## Branches and releases
 
-#### AppShell
-Primary layout wrapper for all authenticated pages:
-- Bottom tab bar on mobile (Me, Clubs, Books)
-- Desktop sidebar offset (220px left margin)
-- Offline status banner
-
-#### AppSidebar
-Desktop left sidebar (220px fixed width):
-- User profile section (avatar, name, stats)
-- Edit profile and sign out buttons
-- Clubs list with add club button (admin-only)
-
-#### AuthContext
-Manages all authentication state:
-- `user` (Supabase User), `member` (local profile with clubs/roles)
-- `loading`, `isPasswordRecovery`, `isOnline`
-- Methods: `signInWithDiscord`, `signInWithGoogle`, `signInWithEmail`, `signUpWithEmail`, `resetPasswordForEmail`, `updatePassword`, `signOut`, `refreshMemberData`, `getRoleForClub`
-- Prevents duplicate member lookups with `processingUserIdRef`
-- Retry logic for member lookup (3 retries with exponential backoff — for DB trigger lag)
-
-## Data Flow
-
-### Authentication Flow
-1. User initiates OAuth or email/password login
-2. Supabase Auth handles redirect/token exchange
-3. `onAuthStateChange` fires with new session
-4. `AuthContext` calls `findMemberByUserId` via Edge Function
-5. If member not found (new user), retries up to 3× with exponential backoff
-6. Sets `user` and `member` state
-7. App navigates to `/me` if logged in, `/login` if not
-
-### API Types (generated)
-Wire types are generated from the canonical OpenAPI spec in `kluvs-api` — never hand-written.
-
-- `api/openapi.json` — committed snapshot of the spec
-- `src/types/api.gen.ts` — generated by `npm run api:generate` (openapi-typescript, types only); committed, excluded from ESLint
-- `src/types/index.ts` — alias layer: `export type Club = components['schemas']['Club']`, plus response envelopes (`ClubUpdateResponse`, `ShelfListResponse`, …). Import types from here, not from `api.gen.ts`.
-- **Automation:** when the spec changes on kluvs-api `main`, `notify-consumers.yml` dispatches `api-spec-updated` here and `.github/workflows/regenerate-api-types.yml` opens a PR to `develop` (branch `chore/regenerate-api-types`, a CI force-push target — never commit manual work there). That PR is opened with `GITHUB_TOKEN`, so regular CI does not run on it; the workflow runs `type-check` itself and reports the result in the PR body.
-- **Rules:**
-  - Never edit `api.gen.ts` or `api/openapi.json` by hand. If the spec is wrong, fix the backend `@openapi` annotation (`kluvs-backend/tools/generate-docs.ts`) and let it flow through the pipeline.
-  - Every `invokeFunction` call names its spec response type (`invokeFunction<BookSearchResponse>(…)`). No union-type shape guessing.
-  - Many response fields are optional in the spec even though the backend always sends them (e.g. `Club.members`, `ClubMember.id/name/role`, `ShelfEntry.*`). Handle them explicitly at the call site (`club.members ?? []`, `member.role ?? 'member'`) rather than casting.
-  - UI-only types (props, form state, `SearchResult`, …) stay local to their components.
-
-### Data Fetching
-All data from Supabase Edge Functions via `invokeFunction<T>(path, options)` (see `supabase.ts`), where `T` is the spec response type from `src/types`:
-- `GET /club?id={clubId}&server_id={serverId}` - Club details
-- `GET /member?user_id={userId}` - Member lookup
-- `POST /member` - Create member
-- `PUT /member` - Update member
-
-## Important Patterns
-
-### Role Checks
-```tsx
-const role = getRoleForClub(clubId)          // from useAuth()
-const isAdmin = role === 'owner' || role === 'admin'
-
-{isAdmin && <button onClick={handleAction}>Admin Action</button>}
-```
-
-### Loading States
-- Initial app load: `AuthContext.loading` → full-screen spinner
-- Page-level data: component-level `loading` state → inline spinner
-- Both use `<KluvsSpinner>` for consistency
-
-### Buttons
-Use the button family in `src/components/ui/Button.tsx` (`design-system/docs/buttons.md`) — don't hand-write button class strings.
-
-- **Variants:** `primary` (copper fill — one per view), `danger` (filled destructive confirm), `secondary` (copper outline), `outlined` (grey outline), `text` (no container; grey, or copper with `emphasized`). There is one size: 40 high, radius 12, 24px side padding (text variant 12) — don't pass `size` or padding/height overrides.
-- Modal footers: `<Button variant="text">Cancel</Button>` on the left, `primary` (or `danger` for destructive) on the right; show `<KluvsSpinner color="var(--color-on-primary)" />` while `loading`.
-- Radius is `rounded-btn` (12px); text color on filled variants is `--color-on-primary`. No raw `bg-primary … text-white` button strings.
-- Button text is the `t-label` family (see Typography); don't set size, weight, `leading-*` or `tracking-*` on a button.
-- OAuth provider buttons use `variant="social"` (brand colors via `className`). One-shot pills ("Copy", "Copy Club ID") use `TriggerPill`; the shelf menu is `ShelfPill` (dropdown, 34 high, Label). `text` takes `destructive` for red text actions. Labels never end in an ellipsis except while loading ("Deleting…"). Segmented controls stay hand-written (34 high); icon-only buttons stay raw (outlined icon button: 40×40, 20 icon).
-
-### Member Updates
-After modifying member data, call `refreshMemberData()` (not page reload):
-```tsx
-const { refreshMemberData } = useAuth()
-await updateMember(...)
-refreshMemberData()
-```
-
-### Modals
-All modals use `BaseModal` wrapper. Accept `isOpen: boolean` and `onClose: () => void` at minimum.
-
-### Typography
-Every piece of text is a design-system **family/rung** (`design-system/docs/typography.md`, `tokens.json` → `typography.family`). The `t-*` classes in `src/index.css` carry the exact size, weight, px line-height and tracking — nothing else should.
-
-- **Families:** `t-display-{s,m,l}`, `t-headline-{s,m,l}`, `t-title-{s,m,l}` (serif); `t-body-{l,m}`, `t-caption`, `t-eyebrow`, `t-label`, `t-fine-print` (sans); `t-mono`. Modifier: `t-feature` (italic — Headline/Title/Caption only).
-- **Never** add raw type utilities on top of a family or on their own: no `text-xs/sm/base/lg/3xl`, `text-[Npx]`, `leading-*`, `tracking-*`, `font-semibold`/`font-bold` (Bold is Display-only), `font-medium`/`font-normal` (the family sets the weight), `font-serif/sans/mono`, `italic`, and no inline `fontSize`/`fontFamily`/`fontWeight`/`fontStyle`/`lineHeight`/`letterSpacing`/`textTransform` styles. Never go below 11px (Eyebrow).
-- **Pick by role, not size:** page/session titles and Profile name/stats are Headline; Display is hero/masthead only; uppercase tracked text is `t-eyebrow`; button, nav, menu-item and medium-weight sans text is `t-label`; prose is `t-body-m`/`t-body-l`; dates/ISBNs/IDs are `t-mono`; an italic sans aside is `t-caption t-feature`.
-- **One family per element.** To change size at a breakpoint, switch rungs (`lg:t-title-l`), never raw px.
-- **Color is separate:** `t-caption` and `t-fine-print` bake in the muted color; add an explicit color class (or `text-inherit` to follow the parent) when you need something else. Other families take color from context.
-- **Exempt:** Avatar initials (sized per `docs/avatars.md`) and Material Symbols icon sizes. Markdown prose (`prose`) is themed to the families in `tailwind.config.js`.
-
-## Environment Variables
-Required in `.env.local`:
-```
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_FORCE_APP_DOMAIN=true   # optional — forces app-domain routing in local dev
-```
-
-## Routing Architecture
-
-The app uses React Router v7 (`BrowserRouter`) in `App.tsx`. Routing is **domain-based**: the branch taken depends on `window.location.hostname`.
-
-### App Domain (`app.*` subdomain or `VITE_FORCE_APP_DOMAIN=true`)
-All routes are inside `AuthProvider`.
-
-| Route | Component | Auth |
-|-------|-----------|------|
-| `/` | Redirects → `/me` (if logged in) or `LoginPage` | Public |
-| `/login` | `LoginPage` | Public |
-| `/signup` | Redirects → `/login` | Public |
-| `/join/:token` | `JoinPage` | Public |
-| `/me` | `ProfilePage` | Protected |
-| `/clubs` | `ClubsPage` | Protected |
-| `/clubs/new` | `ClubsPage` with `openNewModal` | Protected |
-| `/clubs/:slug` | `ClubDetailPage` | Protected |
-| `/books` | `BooksPage` | Protected |
-| `/*` | Redirects → `/me` | — |
-
-Protected routes are wrapped: `ProtectedRoute → AppShell → <Outlet />`.  
-`ProtectedRoute` shows `SetNewPasswordPage` during `PASSWORD_RECOVERY` auth state.
-
-### Marketing Domain (all other hostnames)
-No `AuthProvider`. No Supabase auth calls.
-
-| Route | Component |
-|-------|-----------|
-| `/` | `LandingPage` |
-| `/privacy` | `PrivacyPolicy` |
-| `/terms` | `TermsOfUse` |
-| `/delete-account` | `DataDeletion` |
-| `/discord` | `DiscordPage` |
-| `/faq` | `FaqPage` |
-| `/*` | Redirects → `/` |
-
-### Adding a New App-Domain Page
-1. Create the component in `src/pages/`
-2. Add a `<Route>` inside the `<Route element={<AppShell />}>` block in `App.tsx`
-3. Wrap tests in `renderWithAuth()` from `src/__tests__/utils/test-utils.tsx`
-
-### Adding a New Public Page
-1. Create the component in `src/pages/`
-2. Add a `<Route path="/your-path" element={<YourPage />} />` in the marketing-domain `<Routes>` block
-3. Wrap tests in `<MemoryRouter>` (no AuthProvider needed)
-
-## Marketing Site Notes
-- **Theme:** marketing pages follow the visitor's system theme (light or dark). An inline script in `index.html` resolves the theme before first paint to avoid a dark-to-light flash; it mirrors `resolveTheme()` in `ThemeContext.tsx`.
-- **Shared styles:** marketing pages use the class strings in `src/constants/marketingStyles.ts`, which follow the design-system typography families and card spec.
-- **Google Play:** use Google's official badge (`public/google-play-badge.png`) unmodified. Google's brand guidelines reserve the Play logo for the badge, so don't put the Play icon in custom buttons.
-- **Brand assets:** `public/kluvs-lockup-*.svg` and `public/kluvs-wordmark-*.svg` are copied from `design-system/assets/`; update them there first. Lockup naming is inverted: `-light` has cream text (dark surfaces), `-dark` has dark text (light surfaces).
-- **Static SEO files:** `public/sitemap.xml` (marketing routes; update when adding a public page) and `public/og-image.png` (1200×630 share image).
-- **robots.txt is host-dependent:** there is deliberately no `public/robots.txt`. `vercel.json` rewrites `/robots.txt` to `robots-allow.txt` on `kluvs.com` and to `robots-disallow.txt` everywhere else (app, integration, previews). A real `robots.txt` file would take precedence over the rewrite, so don't add one.
-
-## Updating Legal Pages
-- **Privacy Policy**: edit `src/content/privacy-policy.md` — renders at `/privacy`
-- **Terms of Use**: edit `src/content/terms-of-use.md` — renders at `/terms`
-- **Data Deletion**: edit `src/content/data-deletion.md` — renders at `/delete-account`
-
-All are plain Markdown. No code changes needed.
-
-## Updating the FAQ
-- Edit `src/content/faq.ts` — renders at `/faq`. Answers are Markdown strings.
-- Each item's `id` is addressable as `/faq#<id>` and may be deep-linked from mobile/bot. Reword questions freely, but never rename or remove an `id` without a redirect plan (a test guards a few key ids).
-
-## Git Branches
-- `main` - Production branch
-- `develop` - Active development branch
-
-## Pre-commit Hooks (Husky)
-Husky runs validation on `pre-push`:
-
-**Pre-push Hook** (`.husky/pre-push`) runs `npm run validate`:
-- ESLint checks
-- TypeScript type checking (`tsc -b`, the same check `npm run build` runs)
-- Full test suite
-- To bypass (not recommended): `git push --no-verify`
-
-## Testing
-
-### Test Infrastructure
-- **Framework**: Vitest with jsdom environment
-- **Testing Library**: React Testing Library + jest-dom matchers
-- **Coverage Target**: 80%+ statements, functions, lines; 75%+ branches
-
-### Running Tests
-```bash
-npm run test              # Run tests in watch mode
-npm run test:run          # Run tests once
-npm run test:ui           # Run tests with UI
-npm run test:coverage     # Run tests with coverage report
-npm run validate          # Run lint + type-check + tests
-```
-
-**For agents:** running tests is fine, but keep output small. Use `npx vitest run <path> --reporter=dot` (or `npm run test:run -- --reporter=dot`) and read only the summary and any failures — not the full output. Don't run watch mode (`npm run test`) or `npm run dev`.
-
-### Test Structure
-```
-src/__tests__/
-├── setup.ts
-├── utils/
-│   ├── mocks.ts              # Mock data generators
-│   ├── test-utils.tsx        # renderWithAuth() and other helpers
-│   └── supabase-mock.ts      # Supabase client mocks
-├── contexts/
-│   ├── AuthContext.test.tsx
-│   └── ThemeContext.test.tsx
-├── components/
-│   ├── modals/               # 15 modal test files
-│   ├── layout/
-│   ├── ui/
-│   └── [component].test.tsx
-└── pages/                    # 11 page test files
-```
-
-### Writing Tests
-1. Import test utilities: `import { render, screen, waitFor } from '../__tests__/utils/test-utils'`
-2. Import mocks: `import { mockAdminMember, mockClub } from '../__tests__/utils/mocks'`
-3. Mock Supabase client if needed (see `AuthContext.test.tsx` for examples)
-4. Use `renderWithAuth()` for components that need AuthContext
-5. Use `<MemoryRouter>` for components that use `Link` but don't need auth
-6. Test user interactions with `@testing-library/user-event`
-7. Use `waitFor()` for async state updates
-
-### Test Coverage
-Current coverage (as of 2026-05-27): **~1,093 tests across 44 test files**
-
-**Tested components and pages:**
-- **Contexts**: AuthContext, ThemeContext
-- **Pages**: LandingPage, LoginPage, ProfilePage, ClubsPage, ClubDetailPage, BooksPage, JoinPage, SetNewPasswordPage, PrivacyPolicy, TermsOfUse, DataDeletion, DiscordPage
-- **Layout**: AppShell, AppSidebar, Sidebar, TopNavbar
-- **Core Components**: Header, Footer, KluvsSpinner, KluvsHexBackground, BookSearchInput, BookInfo, DiscussionsTimeline, MembersTable, ThemeToggle
-- **UI Primitives**: Avatar, BookCover, CoverSlot, KebabMenu, RoleEyebrow
-- **Modals**: All 15 modals
-
-**Coverage Status:**
-- ✅ All components have test files
-- ✅ 80%+ statements, functions, and lines coverage
-- ✅ 75%+ branch coverage
-
-## Common Tasks
-
-### Adding a New Admin-Only Feature
-1. Get role via `getRoleForClub(clubId)` from `useAuth()`
-2. Conditionally render using `{isAdmin && ...}`
-3. Write tests for both admin and member states
-
-### Creating a New Modal
-1. Create modal component in `src/components/modals/`
-2. Use `BaseModal` as the wrapper
-3. Accept `isOpen`, `onClose` props at minimum
-4. Add modal state in parent component
-5. Write tests for open/close, validation, and submission
-
-### Fetching Data
-1. Use `invokeFunction<T>(path, options)` from `supabase.ts`, with `T` the spec response envelope from `src/types`
-2. Handle loading state with component-level `useState`
-3. Wrap in try/catch for errors
-4. Mock Edge Function responses in tests
-
-## Version Management
-
-The app version is defined in `src/version.ts` and displayed in the Footer component. When creating a release:
-1. Update `src/version.ts` with the new version
-2. Update `package.json` version field
-3. Create a git tag: `git tag v0.x.x`
-4. CI/CD release automation creates a GitHub release automatically
-
-Current version: **0.9.0**
+- Work branches come off `develop`.
+- Releases run through `tools/release-process.sh <X.Y.Z>`. It cuts `release/X.Y.Z` from `develop`, bumps `package.json` and `src/version.ts`, merges into `main` and back into `develop`, tags `X.Y.Z` (no `v` prefix) and pushes.
+- The tag triggers `.github/workflows/release.yml`, which creates the GitHub release.
+- Never edit `src/version.ts` by hand.
