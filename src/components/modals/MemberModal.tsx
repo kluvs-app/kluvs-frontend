@@ -109,9 +109,7 @@ export default function MemberModal({
           }
         })
         if (err) {
-          const raw = err instanceof Error
-            ? err.message
-            : 'Failed to update role'
+          const raw = err.message
           errorMsg = raw === 'Forbidden'
             ? "You don't have permission to change this member's role."
             : raw
@@ -129,9 +127,7 @@ export default function MemberModal({
           }
         })
         if (err) {
-          const raw = err instanceof Error
-            ? err.message
-            : 'Failed to update reading status'
+          const raw = err.message
           errorMsg = errorMsg ? `${errorMsg} ${raw}` : raw
         } else {
           anySucceeded = true

@@ -175,6 +175,19 @@ describe('EditSessionModal', () => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Update failed')
       })
     })
+
+    it('should fall back to a generic message for non-Error failures', async () => {
+      mockInvoke.mockRejectedValue('boom')
+      const user = userEvent.setup()
+      render(<EditSessionModal {...defaultProps} />)
+      const switches = screen.getAllByRole('switch')
+      await user.click(switches[1])
+      await user.click(screen.getByRole('button', { name: /save changes/i }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to update session')
+      })
+    })
   })
 
   describe('Change Book flow', () => {

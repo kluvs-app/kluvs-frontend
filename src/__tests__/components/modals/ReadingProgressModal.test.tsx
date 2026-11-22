@@ -220,6 +220,19 @@ describe('ReadingProgressModal', () => {
     })
   })
 
+  it('falls back to a generic message for non-Error failures', async () => {
+    vi.mocked(invokeFunction).mockRejectedValue('boom')
+
+    render(<ReadingProgressModal {...defaultProps} />)
+    
+    fireEvent.change(screen.getByLabelText(/Current Page/i), { target: { value: '50' } })
+    fireEvent.click(screen.getByRole('button', { name: /Save Progress/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to save progress')).toBeInTheDocument()
+    })
+  })
+
   it('shows preview percentage when tracking by page', () => {
     render(<ReadingProgressModal {...defaultProps} />)
     // mockBook has 180 pages. 90 should be 50%

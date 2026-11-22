@@ -111,6 +111,15 @@ describe('DiscussionNoteModal', () => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Fetch failed')
       })
     })
+
+    it('should fall back to a generic message when fetch rejects with a non-Error', async () => {
+      mockInvoke.mockRejectedValueOnce('boom')
+      render(<DiscussionNoteModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to load note')
+      })
+    })
   })
 
   describe('Add Note mode (no existing note)', () => {
@@ -157,6 +166,34 @@ describe('DiscussionNoteModal', () => {
             }),
           })
         )
+      })
+    })
+
+    it('should call onError when saving a new note fails', async () => {
+      const user = userEvent.setup()
+      render(<DiscussionNoteModal {...defaultProps} />)
+
+      await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument())
+      mockInvoke.mockResolvedValueOnce({ data: null, error: new Error('Save failed') })
+      await user.type(screen.getByRole('textbox'), 'My new note')
+      await user.click(screen.getByRole('button', { name: /add note/i }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Save failed')
+      })
+    })
+
+    it('should fall back to a generic save message for non-Error failures', async () => {
+      const user = userEvent.setup()
+      render(<DiscussionNoteModal {...defaultProps} />)
+
+      await waitFor(() => expect(screen.getByRole('textbox')).toBeInTheDocument())
+      mockInvoke.mockRejectedValueOnce('boom')
+      await user.type(screen.getByRole('textbox'), 'My new note')
+      await user.click(screen.getByRole('button', { name: /add note/i }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to save note')
       })
     })
 
@@ -224,6 +261,20 @@ describe('DiscussionNoteModal', () => {
       })
     })
 
+    it('should fall back to a generic update message for non-Error failures', async () => {
+      const user = userEvent.setup()
+      render(<DiscussionNoteModal {...defaultProps} />)
+
+      await waitFor(() => expect(screen.getByRole('textbox')).toHaveValue(mockNote.content))
+      mockInvoke.mockRejectedValueOnce('boom')
+      await user.type(screen.getByRole('textbox'), ' edited')
+      await user.click(screen.getByRole('button', { name: /save note/i }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to update note')
+      })
+    })
+
     it('should show Danger Zone with Delete button when a note exists', async () => {
       render(<DiscussionNoteModal {...defaultProps} />)
 
@@ -263,6 +314,19 @@ describe('DiscussionNoteModal', () => {
 
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Delete failed')
+      })
+    })
+
+    it('should fall back to a generic delete message for non-Error failures', async () => {
+      const user = userEvent.setup()
+      render(<DiscussionNoteModal {...defaultProps} />)
+
+      await waitFor(() => expect(screen.getByRole('button', { name: /delete note/i })).toBeInTheDocument())
+      mockInvoke.mockRejectedValueOnce('boom')
+      await user.click(screen.getByRole('button', { name: /delete note/i }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to delete note')
       })
     })
   })
