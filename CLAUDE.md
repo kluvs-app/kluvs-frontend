@@ -11,53 +11,54 @@ A React + TypeScript web application for managing book clubs. Users can track re
 - **Markdown Rendering**: `react-markdown`
 - **Backend**: Supabase (Auth + Edge Functions)
 - **Authentication**: OAuth (Discord, Google) + email/password
-- **Testing**: Vitest + React Testing Library (~1,093 tests across 44 files)
-- **Pre-commit Hooks**: Husky (validates on push)
+- **Testing**: Vitest + React Testing Library
 
 ## Backend API Compatibility
-- **Backend Repository**: `kluvs-backend`
-- **Compatible with migrations up to**: `20251130205915_add_metadata_fields.sql`
-- **Last synced**: 2026-04-26
-- **Current version**: 0.9.0
-- **Sync notes**:
-  - Fixed member creation to prevent duplicates on OAuth signup
-  - Added new optional fields to TypeScript types: `user_id`, `handle`, `created_at` (Member); `id`, `page_count` (Book); `founded_date` (Club)
-  - Release automation via CI/CD
+Wire types track the backend through the codegen pipeline (see "API Types (generated)" below), not a manual sync.
 
 ## Project Structure
 ```
 src/
 ├── components/
-│   ├── modals/              # Modal dialogs (15 modal components)
+│   ├── modals/              # Modal dialogs
 │   │   ├── BaseModal.tsx        # Shared wrapper (gradient bg, border, rounded-2xl)
 │   │   ├── AddClubModal.tsx
 │   │   ├── EditClubModal.tsx
 │   │   ├── DeleteClubModal.tsx
 │   │   ├── ShareClubModal.tsx   # Invite link generation
 │   │   ├── NewSessionModal.tsx
+│   │   ├── EditSessionModal.tsx
+│   │   ├── EndSessionModal.tsx
 │   │   ├── EditBookModal.tsx
 │   │   ├── DiscussionModal.tsx
 │   │   ├── DeleteDiscussionModal.tsx
+│   │   ├── DiscussionNoteModal.tsx
+│   │   ├── ReadingProgressModal.tsx
+│   │   ├── ReadingLogModal.tsx
 │   │   ├── MemberModal.tsx
 │   │   ├── AddMemberModal.tsx
 │   │   ├── DeleteMemberModal.tsx
 │   │   ├── EditProfileModal.tsx
+│   │   ├── DeleteAccountModal.tsx   # In-app account deletion
 │   │   ├── DiscordLinkModal.tsx
 │   │   └── SignOutModal.tsx
 │   ├── layout/              # Layout components
 │   │   ├── AppShell.tsx     # Main layout wrapper (bottom mobile nav + desktop sidebar offset)
 │   │   ├── AppSidebar.tsx   # Desktop left sidebar (220px) — clubs list, profile, sign out
-│   │   ├── Sidebar.tsx      # Legacy sidebar (may be unused)
-│   │   └── TopNavbar.tsx    # Top navigation bar
+│   │   └── MobileTopBar.tsx # Mobile top bar (title/back via MobileTopBarContext)
 │   ├── ui/                  # Reusable UI primitives
 │   │   ├── Avatar.tsx           # User avatar with initials fallback
+│   │   ├── AvatarStack.tsx      # Overlapping avatar row
 │   │   ├── BookCover.tsx        # Book cover image with placeholder
 │   │   ├── CoverSlot.tsx        # Low-level cover display
 │   │   ├── Button.tsx           # Button family: primary/danger/secondary/outlined/text/social
+│   │   ├── TriggerPill.tsx      # One-shot action pill ("Copy")
 │   │   ├── KebabMenu.tsx        # Three-dot dropdown menu
 │   │   └── RoleEyebrow.tsx      # Role badge (owner/admin/member)
 │   ├── icons/
-│   │   └── DiscordIcon.tsx
+│   │   ├── DiscordIcon.tsx
+│   │   ├── HexagonIcon.tsx
+│   │   └── SocialIcons.tsx
 │   ├── Header.tsx           # Shared header (public pages)
 │   ├── Footer.tsx           # Shared footer (with version number)
 │   ├── KluvsSpinner.tsx     # Animated loading spinner
@@ -65,10 +66,16 @@ src/
 │   ├── HowItWorksSection.tsx    # Server → club → session diagram (Discord page)
 │   ├── BookSearchInput.tsx  # Debounced book search input
 │   ├── BookInfo.tsx         # Book detail display
+│   ├── BookCard.tsx         # Book list/grid card
+│   ├── KluvsReadBadge.tsx   # "Read/Reading with Kluvs" marker (book came from a club session)
+│   ├── KluvsReadRibbon.tsx  # Same marker as a cover ribbon (BookCard)
+│   ├── ShelfPill.tsx        # Shelf selector dropdown
+│   ├── ProgressRow.tsx      # Reading-progress row for a book
+│   ├── AttendanceControl.tsx    # Discussion attendance segmented control
+│   ├── MemberBadge.tsx      # Club member row (role, reading status, admin actions)
 │   ├── DiscussionsTimeline.tsx
 │   ├── MembersTable.tsx
-│   ├── ScrollToTop.tsx      # Scroll-to-top on route change
-│   └── ThemeToggle.tsx      # Dark/light/system theme toggle
+│   └── ScrollToTop.tsx      # Scroll-to-top on route change
 ├── constants/
 │   ├── marketingStyles.ts   # Shared class strings for marketing pages (eyebrow, headline, card, buttons)
 │   └── shelves.ts           # Shelf options and labels
@@ -79,9 +86,10 @@ src/
 │   └── faq.ts               # FAQ categories/questions (Markdown answers; ids are a deep-link contract)
 ├── contexts/
 │   ├── AuthContext.tsx      # Authentication state management
+│   ├── MobileTopBarContext.tsx  # Per-page mobile top bar title/back state
 │   └── ThemeContext.tsx     # Theme state (light/dark/system)
 ├── pages/
-│   ├── LandingPage.tsx      # Public / — hero (Google Play badge + web), features, platforms, contact
+│   ├── LandingPage.tsx      # Public / — hero (Google Play + App Store badges, web), features, platforms, contact
 │   ├── DiscordPage.tsx      # Public /discord — bot features, How It Works diagram, commands
 │   ├── PrivacyPolicy.tsx    # Public /privacy (shell — content in content/)
 │   ├── TermsOfUse.tsx       # Public /terms (shell — content in content/)
@@ -97,20 +105,12 @@ src/
 ├── types/
 │   ├── api.gen.ts           # GENERATED from api/openapi.json — never edit by hand
 │   └── index.ts             # Alias layer over api.gen.ts (the app's wire types)
-├── __tests__/               # Test suite (~1,093 tests across 44 files)
-│   ├── setup.ts
-│   ├── utils/
-│   │   ├── mocks.ts             # Mock data (servers, clubs, members)
-│   │   ├── test-utils.tsx       # Custom render functions (renderWithAuth, etc.)
-│   │   └── supabase-mock.ts     # Supabase client mocks
-│   ├── contexts/
-│   │   ├── AuthContext.test.tsx
-│   │   └── ThemeContext.test.tsx
-│   ├── components/              # Component test files
-│   │   ├── modals/              # 15 modal test files
-│   │   ├── layout/
-│   │   └── ui/
-│   └── pages/                   # 11 page test files
+├── services/
+│   └── googleBooks.ts       # Display helpers for Google Books volume data (no network calls)
+├── utils/
+│   ├── dates.ts             # DATE-only string parsing/formatting (local midnight)
+│   └── domainNav.ts         # Marketing ↔ app cross-domain link helpers
+├── __tests__/               # Test suite (layout under "Testing" below)
 ├── App.tsx                  # Root component — domain-based router config
 ├── supabase.ts              # Supabase client + invokeFunction helper
 ├── version.ts               # Version string (used in Footer)
@@ -191,7 +191,6 @@ Wire types are generated from the canonical OpenAPI spec in `kluvs-api` — neve
 All data from Supabase Edge Functions via `invokeFunction<T>(path, options)` (see `supabase.ts`), where `T` is the spec response type from `src/types`:
 - `GET /club?id={clubId}&server_id={serverId}` - Club details
 - `GET /member?user_id={userId}` - Member lookup
-- `POST /member` - Create member
 - `PUT /member` - Update member
 
 ## Important Patterns
@@ -316,14 +315,8 @@ All are plain Markdown. No code changes needed.
 - `main` - Production branch
 - `develop` - Active development branch
 
-## Pre-commit Hooks (Husky)
-Husky runs validation on `pre-push`:
-
-**Pre-push Hook** (`.husky/pre-push`) runs `npm run validate`:
-- ESLint checks
-- TypeScript type checking (`tsc -b`, the same check `npm run build` runs)
-- Full test suite
-- To bypass (not recommended): `git push --no-verify`
+## Git Hooks
+None. CI is the only automated gate. See `.claude/rules/testing-and-ci.md`.
 
 ## Testing
 
@@ -351,15 +344,16 @@ src/__tests__/
 │   ├── mocks.ts              # Mock data generators
 │   ├── test-utils.tsx        # renderWithAuth() and other helpers
 │   └── supabase-mock.ts      # Supabase client mocks
-├── contexts/
-│   ├── AuthContext.test.tsx
-│   └── ThemeContext.test.tsx
+├── contexts/                 # One test file per context
 ├── components/
-│   ├── modals/               # 15 modal test files
+│   ├── modals/
 │   ├── layout/
 │   ├── ui/
 │   └── [component].test.tsx
-└── pages/                    # 11 page test files
+├── services/
+├── pages/                    # One test file per page
+├── App.test.tsx
+└── supabase.test.ts
 ```
 
 ### Writing Tests
@@ -372,18 +366,9 @@ src/__tests__/
 7. Use `waitFor()` for async state updates
 
 ### Test Coverage
-Current coverage (as of 2026-05-27): **~1,093 tests across 44 test files**
-
-**Tested components and pages:**
-- **Contexts**: AuthContext, ThemeContext
-- **Pages**: LandingPage, LoginPage, ProfilePage, ClubsPage, ClubDetailPage, BooksPage, JoinPage, SetNewPasswordPage, PrivacyPolicy, TermsOfUse, DataDeletion, DiscordPage
-- **Layout**: AppShell, AppSidebar, Sidebar, TopNavbar
-- **Core Components**: Header, Footer, KluvsSpinner, KluvsHexBackground, BookSearchInput, BookInfo, DiscussionsTimeline, MembersTable, ThemeToggle
-- **UI Primitives**: Avatar, BookCover, CoverSlot, KebabMenu, RoleEyebrow
-- **Modals**: All 15 modals
+Every page and context has a test file; most components do too (`src/__tests__/` mirrors `src/`). New components and modals get a test file.
 
 **Coverage Status:**
-- ✅ All components have test files
 - ✅ 80%+ statements, functions, and lines coverage
 - ✅ 75%+ branch coverage
 
@@ -414,5 +399,3 @@ The app version is defined in `src/version.ts` and displayed in the Footer compo
 2. Update `package.json` version field
 3. Create a git tag: `git tag v0.x.x`
 4. CI/CD release automation creates a GitHub release automatically
-
-Current version: **0.9.0**
