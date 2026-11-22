@@ -36,7 +36,7 @@ const handleSave = async () => {
   }
 }
 ```
-- Use `err instanceof Error ? err.message : '<fallback>'` to extract the message. That is enough, because `invokeFunction` always returns an `Error`. Don't write new `'message' in err` checks. Older call sites still use that idiom; they are a known follow-up.
+- Use `err instanceof Error ? err.message : '<fallback>'` to extract the message. That is enough, because `invokeFunction` always returns an `Error`. Don't write `'message' in err` checks.
 - State lives in the component: `useState` plus `useEffect`. There is no data-fetching library and no custom data hooks. Unmount `cancelled` guards are optional.
 - Show loading with `<KluvsSpinner>`: full-screen for `AuthContext.loading`, inline for page and section data.
 

@@ -60,7 +60,7 @@ Use the family in `src/components/ui/Button.tsx` (`design-system/docs/buttons.md
 Use the design-system motion tokens (`tokens.json` → `motion`):
 - Durations: `duration-[120ms]` (fast: hover, press feedback), `duration-[180ms]` (base: standard UI transitions, modal enter/exit), `duration-[260ms]` (screen: page transitions).
 - Easing: `ease-[cubic-bezier(0.2,0.8,0.2,1)]`.
-- Don't use Tailwind's stock `duration-150/200/300`. Note that `duration-120` is not a Tailwind 3 default and generates nothing. Older sites still use these (follow-up).
+- Don't use Tailwind's stock `duration-150/200/300`. Note that `duration-120` is not a Tailwind 3 default and generates nothing.
 
 ## Icons & brand assets
 - Icons:
