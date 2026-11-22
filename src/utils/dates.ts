@@ -12,6 +12,18 @@ export function parseLocalDate(dateStr: string): Date {
 }
 
 /**
+ * Format a Date as a local YYYY-MM-DD string. Use this instead of
+ * `toISOString().split('T')[0]`, which returns the UTC date and can be off
+ * by one day in the user's timezone.
+ */
+export function toLocalDateString(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/**
  * Parse an ISO 8601 `scheduled_at` string (with timezone offset) into a Date.
  */
 export function parseScheduledAt(scheduledAt: string): Date {
@@ -28,13 +40,10 @@ export function scheduledAtToLocalParts(scheduledAt: string): { date: string; ti
   const parsed = parseScheduledAt(scheduledAt)
   if (isNaN(parsed.getTime())) return { date: '', time: '' }
 
-  const year = parsed.getFullYear()
-  const month = String(parsed.getMonth() + 1).padStart(2, '0')
-  const day = String(parsed.getDate()).padStart(2, '0')
   const hours = String(parsed.getHours()).padStart(2, '0')
   const minutes = String(parsed.getMinutes()).padStart(2, '0')
 
-  return { date: `${year}-${month}-${day}`, time: `${hours}:${minutes}` }
+  return { date: toLocalDateString(parsed), time: `${hours}:${minutes}` }
 }
 
 /**

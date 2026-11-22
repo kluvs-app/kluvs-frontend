@@ -109,9 +109,7 @@ export default function MemberModal({
           }
         })
         if (err) {
-          const raw = err && typeof err === 'object' && 'message' in err
-            ? String((err as { message: unknown }).message)
-            : 'Failed to update role'
+          const raw = err.message
           errorMsg = raw === 'Forbidden'
             ? "You don't have permission to change this member's role."
             : raw
@@ -129,9 +127,7 @@ export default function MemberModal({
           }
         })
         if (err) {
-          const raw = err && typeof err === 'object' && 'message' in err
-            ? String((err as { message: unknown }).message)
-            : 'Failed to update reading status'
+          const raw = err.message
           errorMsg = errorMsg ? `${errorMsg} ${raw}` : raw
         } else {
           anySucceeded = true
@@ -147,8 +143,8 @@ export default function MemberModal({
       }
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : `Failed to ${isEditing ? 'update' : 'add'} member`
       )
     } finally {
@@ -243,7 +239,7 @@ export default function MemberModal({
                 disabled={!hasActiveSession || loading}
                 onClick={() => setFormData(prev => ({ ...prev, is_reading: !prev.is_reading }))}
                 className={[
-                  'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
+                  'relative inline-flex w-9 h-5 rounded-full transition-colors duration-[180ms] flex-shrink-0',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                   !hasActiveSession || loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
                   formData.is_reading && hasActiveSession ? 'bg-primary' : 'bg-[var(--color-text-disabled)]',
@@ -251,7 +247,7 @@ export default function MemberModal({
               >
                 <span
                   className={[
-                    'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-150',
+                    'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-[180ms]',
                     formData.is_reading ? 'translate-x-4' : 'translate-x-0',
                   ].join(' ')}
                 />

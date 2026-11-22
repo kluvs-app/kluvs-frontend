@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { invokeFunction } from '../../supabase'
 import type { Club, Discussion } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
-import { parseLocalDate, scheduledAtToLocalParts, localPartsToScheduledAt } from '../../utils/dates'
+import { parseLocalDate, scheduledAtToLocalParts, localPartsToScheduledAt, toLocalDateString } from '../../utils/dates'
 import BaseModal from './BaseModal'
 import Button from '../ui/Button'
 
@@ -92,8 +92,8 @@ export default function DiscussionModal({
       onDiscussionSaved()
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : `Failed to ${isEditing ? 'update' : 'add'} discussion`
       )
     } finally {
@@ -107,7 +107,7 @@ export default function DiscussionModal({
     onClose()
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = toLocalDateString(new Date())
 
   if (!selectedClub.active_session) return null
 

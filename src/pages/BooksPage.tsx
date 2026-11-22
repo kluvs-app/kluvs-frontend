@@ -460,7 +460,7 @@ export default function BooksPage() {
       <div className="relative px-[22px] lg:px-10 pt-7 lg:pt-9 pb-6 min-h-[78px] lg:min-h-[86px]">
 
         {/* My Shelf header */}
-        <div className={`flex items-start justify-between gap-4 transition-opacity duration-150 ${view === 'search' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className={`flex items-start justify-between gap-4 transition-opacity duration-[180ms] ${view === 'search' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div>
             <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-2">
               Library
@@ -482,7 +482,7 @@ export default function BooksPage() {
 
         {/* Search header — slides/fades in from the search button's position */}
         <div
-          className={`absolute inset-x-[22px] lg:inset-x-10 top-7 lg:top-9 flex items-center gap-3 origin-right transition-all duration-200 ease-out ${
+          className={`absolute inset-x-[22px] lg:inset-x-10 top-7 lg:top-9 flex items-center gap-3 origin-right transition-all duration-[180ms] ease-out ${
             view === 'search' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 pointer-events-none'
           }`}
         >
@@ -889,7 +889,7 @@ export default function BooksPage() {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Back to top"
-        className={`fixed bottom-20 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center w-10 h-10 rounded-btn bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] text-[var(--color-text-secondary)] shadow-lg hover:text-[var(--color-text-primary)] hover:border-[var(--color-text-secondary)] transition-all duration-200 cursor-pointer ${
+        className={`fixed bottom-20 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center w-10 h-10 rounded-btn bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] text-[var(--color-text-secondary)] shadow-lg hover:text-[var(--color-text-primary)] hover:border-[var(--color-text-secondary)] transition-all duration-[180ms] cursor-pointer ${
           showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >

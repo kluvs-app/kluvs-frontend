@@ -189,8 +189,8 @@ export default function ClubDetailPage() {
       setClub(data)
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : 'Failed to fetch club details'
       )
     } finally {
@@ -210,8 +210,8 @@ export default function ClubDetailPage() {
       setClub(data)
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : 'Failed to refresh club details'
       )
     } finally {
@@ -365,7 +365,7 @@ export default function ClubDetailPage() {
                     navigate(`/clubs/${c.id}`, { replace: true })
                   }}
                   className={[
-                    'w-full text-left px-6 py-3.5 border-l-[3px] transition-colors duration-120 relative',
+                    'w-full text-left px-6 py-3.5 border-l-[3px] transition-colors duration-[120ms] relative',
                     isActive
                       ? 'border-l-primary bg-[rgba(209,109,48,0.06)]'
                       : 'border-l-transparent hover:bg-[var(--color-bg-elevated)]',
@@ -782,7 +782,7 @@ Invite
                 key={tab}
                 onClick={() => setMobileTab(tab)}
                 className={[
-                  't-label flex-1 px-4 py-[14.5px] relative transition-colors duration-120',
+                  't-label flex-1 px-4 py-[14.5px] relative transition-colors duration-[120ms]',
                   isActive
                     ? 'text-[var(--color-text-primary)]'
                     : 'text-[var(--color-text-secondary)]',

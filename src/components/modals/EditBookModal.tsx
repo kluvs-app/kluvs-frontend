@@ -53,8 +53,8 @@ export default function EditBookModal({
       onBookUpdated()
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : 'Failed to update book'
       )
     } finally {

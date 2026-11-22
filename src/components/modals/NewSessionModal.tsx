@@ -3,7 +3,7 @@ import { invokeFunction } from '../../supabase'
 import type { Club, SessionCreateResponse } from '../../types'
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
-import { parseLocalDate } from '../../utils/dates'
+import { parseLocalDate, toLocalDateString } from '../../utils/dates'
 import BaseModal from './BaseModal'
 import Button from '../ui/Button'
 
@@ -57,8 +57,8 @@ export default function NewSessionModal({
       onSessionCreated()
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : 'Failed to create session'
       )
     } finally {
@@ -77,7 +77,7 @@ export default function NewSessionModal({
 
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowString = tomorrow.toISOString().split('T')[0]
+  const tomorrowString = toLocalDateString(tomorrow)
 
   return (
     <BaseModal
@@ -155,14 +155,14 @@ export default function NewSessionModal({
               disabled={loading}
               onClick={() => setAllReading(prev => !prev)}
               className={[
-                'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
+                'relative inline-flex w-9 h-5 rounded-full transition-colors duration-[180ms] flex-shrink-0',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                 loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
                 allReading ? 'bg-primary' : 'bg-[var(--color-text-disabled)]',
               ].join(' ')}
             >
               <span className={[
-                'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-150',
+                'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-[180ms]',
                 allReading ? 'translate-x-4' : 'translate-x-0',
               ].join(' ')} />
             </button>

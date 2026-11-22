@@ -40,7 +40,7 @@ export default function ShelfPill({ shelf, onShelfChange, disabled }: {
         <span>{shelf ? SHELF_LABELS[shelf] : 'Add to Shelf'}</span>
         {/* Chevron */}
         <svg
-          className="w-3.5 h-3.5 shrink-0 transition-transform duration-150"
+          className="w-3.5 h-3.5 shrink-0 transition-transform duration-[180ms]"
           style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
           viewBox="0 0 20 20" fill="currentColor"
         >

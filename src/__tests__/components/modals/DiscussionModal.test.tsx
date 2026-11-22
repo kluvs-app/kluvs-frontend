@@ -271,6 +271,27 @@ describe('DiscussionModal', () => {
       })
     })
 
+    it('should fall back to a generic message for non-Error failures', async () => {
+      mockInvoke.mockRejectedValue('boom')
+      const user = userEvent.setup()
+      render(<DiscussionModal {...defaultProps} />)
+
+      await user.type(screen.getByPlaceholderText('e.g., Chapters 1–5'), 'Test')
+      const dateInputs = document.querySelectorAll('input[type="date"]')
+      const dateInput = dateInputs[0] as HTMLInputElement
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 2)
+      await user.type(dateInput, tomorrow.toISOString().split('T')[0])
+      const { fireEvent } = await import('@testing-library/react')
+      fireEvent.change(document.querySelector('input[type="time"]') as HTMLInputElement, { target: { value: '10:00' } })
+
+      await user.click(screen.getByText('Add Discussion', { selector: 'span' }))
+
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to add discussion')
+      })
+    })
+
     it('should call onError with past date message when date is in the past', async () => {
       const user = userEvent.setup()
       render(<DiscussionModal {...defaultProps} />)

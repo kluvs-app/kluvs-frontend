@@ -4,7 +4,7 @@ import type { Club, ClubMember, DeleteResponse, SessionCreateResponse, SessionUp
 import BookSearchInput from '../BookSearchInput'
 import KluvsSpinner from '../KluvsSpinner'
 import Avatar from '../ui/Avatar'
-import { parseLocalDate } from '../../utils/dates'
+import { parseLocalDate, toLocalDateString } from '../../utils/dates'
 import BaseModal from './BaseModal'
 import Button from '../ui/Button'
 
@@ -23,8 +23,8 @@ const labelStyle = {
 }
 
 function getErrorMessage(err: unknown, fallback: string): string {
-  return err && typeof err === 'object' && 'message' in err
-    ? String((err as { message: unknown }).message)
+  return err instanceof Error
+    ? err.message
     : fallback
 }
 
@@ -125,7 +125,7 @@ export default function EditSessionModal({
       setLoading(true)
       onError('')
 
-      const { error: deleteError } = await invokeFunction<DeleteResponse>(`session?id=${session.id}`, { method: 'DELETE' })
+      const { error: deleteError } = await invokeFunction<DeleteResponse>(`session?id=${encodeURIComponent(session.id)}`, { method: 'DELETE' })
       if (deleteError) throw deleteError
 
       const { data, error: createError } = await invokeFunction<SessionCreateResponse>('session', {
@@ -154,7 +154,7 @@ export default function EditSessionModal({
 
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
-  const tomorrowString = tomorrow.toISOString().split('T')[0]
+  const tomorrowString = toLocalDateString(tomorrow)
 
   if (view === 'changeBook') {
     return (
@@ -278,14 +278,14 @@ export default function EditSessionModal({
                     disabled={loading}
                     onClick={() => handleToggleReading(m.id)}
                     className={[
-                      'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
+                      'relative inline-flex w-9 h-5 rounded-full transition-colors duration-[180ms] flex-shrink-0',
                       'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
                       loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
                       isReading ? 'bg-primary' : 'bg-[var(--color-text-disabled)]',
                     ].join(' ')}
                   >
                     <span className={[
-                      'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-150',
+                      'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-[180ms]',
                       isReading ? 'translate-x-4' : 'translate-x-0',
                     ].join(' ')} />
                   </button>

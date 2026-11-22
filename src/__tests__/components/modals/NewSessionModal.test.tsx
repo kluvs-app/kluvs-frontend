@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import NewSessionModal from '../../../components/modals/NewSessionModal'
 import { mockClub } from '../../utils/mocks'
+import { toLocalDateString } from '../../../utils/dates'
 
 vi.mock('../../../components/BookSearchInput', () => ({
   default: ({ onSelect, disabled }: { onSelect: (id: number, book: object) => void; disabled?: boolean }) => (
@@ -66,7 +67,7 @@ describe('NewSessionModal', () => {
       const dateInput = document.querySelector('input[type="date"]') as HTMLInputElement
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
-      expect(dateInput.min).toBe(tomorrow.toISOString().split('T')[0])
+      expect(dateInput.min).toBe(toLocalDateString(tomorrow))
     })
   })
 
