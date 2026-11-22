@@ -92,8 +92,8 @@ export default function DiscussionModal({
       onDiscussionSaved()
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : `Failed to ${isEditing ? 'update' : 'add'} discussion`
       )
     } finally {

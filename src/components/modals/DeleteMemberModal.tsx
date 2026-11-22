@@ -41,8 +41,8 @@ export default function DeleteMemberModal({
       onMemberDeleted()
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : 'Failed to remove member from club'
       )
     } finally {

@@ -293,7 +293,7 @@ describe('ClubDetailPage', () => {
     it('shows error message when club fetch fails', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
-        if (endpoint.includes('club?id=')) return Promise.resolve({ data: null, error: { message: 'Failed to fetch' } })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: null, error: new Error('Failed to fetch') })
         if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
         return Promise.resolve({ data: null, error: null })
       })

@@ -42,8 +42,8 @@ export default function EndSessionModal({
       onSessionEnded()
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : 'Failed to end session'
       )
     } finally {

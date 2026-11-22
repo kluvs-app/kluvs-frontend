@@ -27,8 +27,8 @@ export default function DiscordLinkModal({ isOpen, onClose }: DiscordLinkModalPr
       if (error) throw error
     } catch (err: unknown) {
       setOauthError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: string }).message)
+        err instanceof Error
+          ? err.message
           : 'Failed to connect Discord'
       )
     } finally {

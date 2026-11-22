@@ -109,8 +109,8 @@ export default function MemberModal({
           }
         })
         if (err) {
-          const raw = err && typeof err === 'object' && 'message' in err
-            ? String((err as { message: unknown }).message)
+          const raw = err instanceof Error
+            ? err.message
             : 'Failed to update role'
           errorMsg = raw === 'Forbidden'
             ? "You don't have permission to change this member's role."
@@ -129,8 +129,8 @@ export default function MemberModal({
           }
         })
         if (err) {
-          const raw = err && typeof err === 'object' && 'message' in err
-            ? String((err as { message: unknown }).message)
+          const raw = err instanceof Error
+            ? err.message
             : 'Failed to update reading status'
           errorMsg = errorMsg ? `${errorMsg} ${raw}` : raw
         } else {
@@ -147,8 +147,8 @@ export default function MemberModal({
       }
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : `Failed to ${isEditing ? 'update' : 'add'} member`
       )
     } finally {

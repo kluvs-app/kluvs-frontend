@@ -189,8 +189,8 @@ export default function ClubDetailPage() {
       setClub(data)
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : 'Failed to fetch club details'
       )
     } finally {
@@ -210,8 +210,8 @@ export default function ClubDetailPage() {
       setClub(data)
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : 'Failed to refresh club details'
       )
     } finally {

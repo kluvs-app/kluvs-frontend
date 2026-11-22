@@ -58,8 +58,8 @@ export default function AddClubModal({
       onClubCreated(clubId)
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : 'Failed to create club'
       )
     } finally {

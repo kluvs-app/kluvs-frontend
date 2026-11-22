@@ -21,8 +21,8 @@ const labelStyle = {
 }
 
 function getErrorMessage(err: unknown, fallback: string): string {
-  return err && typeof err === 'object' && 'message' in err
-    ? String((err as { message: unknown }).message)
+  return err instanceof Error
+    ? err.message
     : fallback
 }
 
