@@ -206,7 +206,7 @@ export default function ReadingProgressModal({
                 id="current-page-input"
                 type="number"
                 min={0}
-                max={pageCount}
+                max={pageCount ?? undefined}
                 value={currentPage}
                 onChange={(e) => setCurrentPage(e.target.value)}
                 placeholder="0"

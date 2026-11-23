@@ -83,7 +83,7 @@ describe('EditProfileModal', () => {
     })
 
     it('does not show avatar img when member has no avatar_path', () => {
-      const memberWithoutAvatar = { ...defaultProps.currentMember, avatar_path: undefined }
+      const memberWithoutAvatar = { ...defaultProps.currentMember, avatar_path: null }
       render(<EditProfileModal {...defaultProps} currentMember={memberWithoutAvatar} />)
       expect(screen.queryByAltText('Member avatar')).not.toBeInTheDocument()
     })

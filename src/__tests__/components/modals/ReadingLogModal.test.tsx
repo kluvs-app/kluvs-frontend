@@ -17,6 +17,8 @@ const mockLog: ReadingLog = {
       book: { id: 1, title: 'Dune', author: 'Frank Herbert', image_url: null },
       club: { id: 'club-1', name: 'Sci-Fi Club' },
       due_date: '2026-07-01',
+      started_at: '2026-06-01T00:00:00Z',
+      ended_at: null,
     },
   ],
   finished: [
@@ -24,7 +26,9 @@ const mockLog: ReadingLog = {
       id: 'entry-2',
       book: { id: 2, title: 'Foundation', author: 'Isaac Asimov', image_url: null },
       club: { id: 'club-2', name: 'Classic Club' },
-      // due_date omitted: the backend sends null for undated sessions, but the spec types it as optional (not nullable)
+      due_date: null,
+      started_at: '2026-01-01T00:00:00Z',
+      ended_at: '2026-02-01T00:00:00Z',
     },
   ],
 }

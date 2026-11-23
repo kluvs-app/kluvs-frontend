@@ -19,11 +19,15 @@ const baseProgress: ReadingProgress = {
   id: 'progress-1',
   member_id: 1,
   book_id: 1,
+  session_id: null,
   progress_type: 'page',
   current_page: 45,
+  percent_complete: null,
   status: 'in_progress',
   started_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-02T00:00:00Z',
+  completed_at: null,
+  book: null,
 }
 
 function fill(container: HTMLElement) {

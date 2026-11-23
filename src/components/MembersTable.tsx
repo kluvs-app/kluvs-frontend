@@ -25,7 +25,7 @@ export default function MembersTable({
       {/* Section heading */}
       <div className="flex justify-between items-center mb-4">
         <p className="t-eyebrow text-[var(--color-text-secondary)]">
-          Members ({selectedClub.members?.length ?? 0})
+          Members ({selectedClub.members.length})
         </p>
         {isAdmin && (
           <Button
@@ -39,14 +39,14 @@ export default function MembersTable({
 
       {/* Flat list */}
       <div>
-        {(selectedClub.members ?? []).map(member => (
+        {selectedClub.members.map(member => (
           <div
             key={member.id}
             className="flex items-center gap-4 py-3.5 border-b border-[var(--color-divider)] last:border-b-0 group"
           >
             {/* Avatar */}
             <Avatar
-              name={member.name ?? ''}
+              name={member.name}
               userId={String(member.id)}
               imageUrl={member.avatar_path ? getAvatarUrl(member.avatar_path) : null}
               size="lg"

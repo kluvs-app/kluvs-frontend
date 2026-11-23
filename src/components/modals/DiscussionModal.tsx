@@ -210,7 +210,7 @@ export default function DiscussionModal({
           style={{ background: 'var(--color-bg-elevated)', border: '1px solid var(--color-divider)' }}
         >
           <p className="t-eyebrow text-[var(--color-text-secondary)] mb-1">Reading Session</p>
-          <p className="t-body-m text-[var(--color-text-primary)]">{selectedClub.active_session.book?.title}</p>
+          <p className="t-body-m text-[var(--color-text-primary)]">{selectedClub.active_session.book.title}</p>
         </div>
       </div>
     </BaseModal>

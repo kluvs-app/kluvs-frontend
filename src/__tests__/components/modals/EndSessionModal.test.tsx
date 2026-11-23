@@ -119,7 +119,7 @@ describe('EndSessionModal', () => {
 
     it('does nothing without an active session', async () => {
       const user = userEvent.setup()
-      render(<EndSessionModal {...defaultProps} club={{ ...mockClub, active_session: undefined }} />)
+      render(<EndSessionModal {...defaultProps} club={{ ...mockClub, active_session: null }} />)
 
       await user.click(screen.getByRole('button', { name: 'Confirm End' }))
 

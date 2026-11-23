@@ -24,7 +24,7 @@ export default function EndSessionModal({
 
   const readingMembers = (club.active_session?.members ?? [])
     .filter(sm => sm.is_reading)
-    .map(sm => club.members?.find(m => m.id === sm.member_id))
+    .map(sm => club.members.find(m => m.id === sm.member_id))
     .filter((m): m is ClubMember => m != null)
   const readingCount = readingMembers.length
 
@@ -88,7 +88,7 @@ export default function EndSessionModal({
       <div className="space-y-4">
         <p className="t-body-m text-[var(--color-text-primary)]">
           Are you sure you want to end the current reading session for{' '}
-          <span className="t-label">"{club.active_session?.book?.title}"</span>?
+          <span className="t-label">"{club.active_session?.book.title}"</span>?
         </p>
 
         {readingMembers.length > 0 ? (

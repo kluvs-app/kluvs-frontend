@@ -25,12 +25,12 @@ export default function MemberBadge({
   onDelete,
   className = '',
 }: MemberBadgeProps) {
-  const role = member.role ?? 'member'
+  const role = member.role
 
   return (
     <div className={`flex items-start gap-3.5 py-3 border-b border-[var(--color-divider)] ${className}`}>
       <Avatar
-        name={member.name ?? ''}
+        name={member.name}
         userId={String(member.id)}
         imageUrl={member.avatar_path ? getAvatarUrl(member.avatar_path) : null}
         size="lg"

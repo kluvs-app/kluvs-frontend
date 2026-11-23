@@ -133,7 +133,7 @@ export default function EditSessionModal({
         body: { club_id: selectedClub.id, book_id: newBookId, due_date: newDueDate || undefined, all_reading: false }
       })
       if (createError) throw createError
-      const newSessionId = data?.session?.id
+      const newSessionId = data?.session.id
       if (!newSessionId) throw new Error('Failed to create new session')
 
       const readingMembers = (session.members ?? [])
@@ -186,7 +186,7 @@ export default function EditSessionModal({
         <div className="space-y-5">
           <p className="t-body-m text-[var(--color-text-primary)]">
             This will immediately end the current session for{' '}
-            <span className="t-label">"{session.book?.title}"</span>. Its discussions and
+            <span className="t-label">"{session.book.title}"</span>. Its discussions and
             history will be permanently removed. Members currently marked as reading will carry
             over to the new session.
           </p>
@@ -263,7 +263,7 @@ export default function EditSessionModal({
                 <div key={m.id} className="flex items-center justify-between py-1">
                   <div className="flex items-center gap-2.5">
                     <Avatar
-                      name={m.name ?? ''}
+                      name={m.name}
                       userId={String(m.id)}
                       imageUrl={m.avatar_path ? getAvatarUrl(m.avatar_path) : null}
                       size="sm"

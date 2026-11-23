@@ -305,7 +305,7 @@ describe('DiscussionsTimeline', () => {
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-1', session_id: 'session-1', title: 'Timed Discussion', scheduled_at: localPartsToScheduledAt(dateStr, '19:30') },
+            { id: 'disc-1', session_id: 'session-1', title: 'Timed Discussion', scheduled_at: localPartsToScheduledAt(dateStr, '19:30'), location: null },
           ],
         },
       }
@@ -325,7 +325,7 @@ describe('DiscussionsTimeline', () => {
         active_session: {
           ...mockClub.active_session!,
           discussions: [
-            { id: 'disc-1', session_id: 'session-1', title: 'Untimed Discussion', scheduled_at: localPartsToScheduledAt(dateStr) },
+            { id: 'disc-1', session_id: 'session-1', title: 'Untimed Discussion', scheduled_at: localPartsToScheduledAt(dateStr), location: null },
           ],
         },
       }

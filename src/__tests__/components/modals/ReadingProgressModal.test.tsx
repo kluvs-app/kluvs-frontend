@@ -70,6 +70,7 @@ describe('ReadingProgressModal', () => {
       started_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       completed_at: null,
+      book: null,
     }
 
     render(<ReadingProgressModal {...defaultProps} existing={existing} />)
@@ -178,6 +179,7 @@ describe('ReadingProgressModal', () => {
       started_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       completed_at: null,
+      book: null,
     }
 
     vi.mocked(invokeFunction).mockResolvedValue({
