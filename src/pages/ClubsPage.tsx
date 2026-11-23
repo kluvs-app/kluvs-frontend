@@ -116,7 +116,7 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
               >
                 {/* Cover */}
                 <BookCover
-                  imageUrl={fullClub?.active_session?.book?.image_url}
+                  imageUrl={fullClub?.active_session?.book.image_url}
                   title={`${club.name} book cover`}
                   size="sm"
                 />
@@ -128,11 +128,11 @@ export default function ClubsPage({ openNewModal = false }: ClubsPageProps) {
                     <h3 className="t-title-m text-[var(--color-text-primary)] truncate">
                       {club.name}
                     </h3>
-                    <RoleEyebrow role={club.role ?? 'member'} />
+                    <RoleEyebrow role={club.role} />
                   </div>
 
                   {/* Book title */}
-                  {fullClub?.active_session?.book?.title && (
+                  {fullClub?.active_session?.book.title && (
                     <p className="t-title-s t-feature text-[var(--color-text-secondary)] mb-2 truncate">
                       {fullClub.active_session.book.title}
                     </p>

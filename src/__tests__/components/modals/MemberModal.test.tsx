@@ -129,7 +129,7 @@ describe('MemberModal', () => {
   })
 
   describe('Reading toggle — no active session', () => {
-    const clubNoSession = { ...mockClub, active_session: undefined }
+    const clubNoSession = { ...mockClub, active_session: null }
 
     it('disables the toggle when no active session', () => {
       render(<MemberModal {...defaultProps} selectedClub={clubNoSession} editingMember={mockAdminClubMember} />)

@@ -88,7 +88,7 @@ export default function AddClubModal({
         if (cancelled) return
         if (!error && Array.isArray(data)) {
           setGuilds(data)
-          if (data.length === 1) setSelectedServer(data[0].id ?? '')
+          if (data.length === 1) setSelectedServer(data[0].id)
         }
       } finally {
         if (!cancelled) setGuildsLoading(false)

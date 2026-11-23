@@ -54,7 +54,7 @@ export default function MemberModal({
         const currentRole: MemberFormData['role'] = editingMember.role === 'admin' ? 'admin' : 'member'
         const sessionMember = selectedClub.active_session?.members?.find(sm => sm.member_id === editingMember.id)
         setFormData({
-          name: editingMember.name ?? '',
+          name: editingMember.name,
           role: currentRole,
           is_reading: sessionMember?.is_reading ?? false,
         })

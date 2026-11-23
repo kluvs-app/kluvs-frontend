@@ -64,7 +64,7 @@ export default function EditProfileModal({
       onError('')
       setInlineError(null)
 
-      let newAvatarPath = member.avatar_path ?? null
+      let newAvatarPath = member.avatar_path
 
       if (avatarFile) {
         const ext = avatarFile.name.split('.').pop() ?? 'jpg'

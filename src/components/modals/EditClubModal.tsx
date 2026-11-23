@@ -61,12 +61,12 @@ export default function EditClubModal({
           const currentChannel = club.discord_channel ?? ''
           if (currentChannel) {
             const matchingGuild = data.find(g =>
-              g.channels?.some(ch => ch.id === currentChannel)
+              g.channels.some(ch => ch.id === currentChannel)
             )
-            if (matchingGuild) setSelectedServer(matchingGuild.id ?? '')
-            else if (data.length === 1) setSelectedServer(data[0].id ?? '')
+            if (matchingGuild) setSelectedServer(matchingGuild.id)
+            else if (data.length === 1) setSelectedServer(data[0].id)
           } else if (data.length === 1) {
-            setSelectedServer(data[0].id ?? '')
+            setSelectedServer(data[0].id)
           }
         }
       } finally {

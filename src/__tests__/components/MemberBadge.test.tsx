@@ -20,11 +20,6 @@ describe('MemberBadge', () => {
     expect(screen.getByText('member')).toBeInTheDocument()
   })
 
-  it('defaults a missing role to member', () => {
-    render(<MemberBadge member={{ ...regular, role: undefined }} isOwn={false} isAdmin={false} />)
-    expect(screen.getByText('member')).toBeInTheDocument()
-  })
-
   it('marks the current user with YOU', () => {
     const { rerender } = render(<MemberBadge member={regular} isOwn={false} isAdmin={false} />)
     expect(screen.queryByText('YOU')).not.toBeInTheDocument()

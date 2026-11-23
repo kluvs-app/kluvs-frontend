@@ -177,7 +177,7 @@ export default function ProfilePage() {
   const [showNoteModal, setShowNoteModal] = useState(false)
 
   useEffect(() => {
-    if (!member?.clubs?.length) { setLoading(false); return }
+    if (!member?.clubs.length) { setLoading(false); return }
     Promise.all(
       member.clubs.map(c => {
         const params = new URLSearchParams({ id: c.id })
@@ -226,7 +226,7 @@ export default function ProfilePage() {
     .flatMap(c => {
       const session = c.active_session
       if (!session?.book) return []
-      const discussions = session.discussions ?? []
+      const discussions = session.discussions
       const total = discussions.length
       const done = discussions.filter(d => isPast(d.scheduled_at)).length
       const nextDisc = discussions
@@ -248,9 +248,9 @@ export default function ProfilePage() {
     return {
       id: mc.id,
       name: mc.name,
-      role: mc.role ?? 'member',
+      role: mc.role,
       members: full?.members ?? [],
-      memberCount: full?.members?.length ?? 0,
+      memberCount: full?.members.length ?? 0,
     }
   })
 
@@ -261,13 +261,13 @@ export default function ProfilePage() {
   const nextDiscDate = nextDiscussion ? formatUpNextDate(nextDiscussion.scheduled_at) : null
 
   const desktopStats = [
-    { num: member?.clubs?.length ?? 0, label: 'Active clubs' },
+    { num: member?.clubs.length ?? 0, label: 'Active clubs' },
     { num: member?.books_read ?? 0, label: 'Books read' },
     ...(memberSince ? [{ num: memberSince, label: 'Reading with Kluvs since' }] : []),
   ]
 
   const mobileStats = [
-    { num: member?.clubs?.length ?? 0, label: 'Clubs' },
+    { num: member?.clubs.length ?? 0, label: 'Clubs' },
     { num: member?.books_read ?? 0, label: 'Books' },
     ...(memberSince ? [{ num: memberSince, label: 'Since' }] : []),
   ]

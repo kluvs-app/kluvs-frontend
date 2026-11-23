@@ -18,7 +18,7 @@ paths:
   - it unwraps the backend's `{ success: false, error }` body into a plain `Error`, so `error.message` is fit to show users ("Already a member").
 - Pass `body` as a plain object. Never `JSON.stringify` it.
 - Build query strings with `encodeURIComponent(value)` or `URLSearchParams`. Never interpolate raw values.
-- Many response fields are optional in the spec even though the backend always sends them. Handle that at the call site (`club.members ?? []`, `member.role ?? 'member'`). Don't cast.
+- The spec marks fields the backend always sends as required, and fields it can send as `null` as nullable, so trust the generated types: no defensive `?? []` / `?? ''` on required fields. If a type is looser than the real response, fix the spec upstream (see `codegen.md`); don't cast or paper over it here.
 
 ## Standard call shape
 ```tsx

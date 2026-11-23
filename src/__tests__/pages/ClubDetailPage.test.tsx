@@ -1414,9 +1414,10 @@ describe('ClubDetailPage', () => {
             data: {
               ...mockClub,
               active_session: {
+                ...mockClub.active_session!,
                 discussions: [
-                  { id: '1', title: 'Discussion 1', scheduled_at: '2020-01-01T19:00:00Z' },
-                  { id: '2', title: 'Discussion 2', scheduled_at: '2026-06-15T19:00:00Z' },
+                  { id: '1', session_id: 'session-1', title: 'Discussion 1', scheduled_at: '2020-01-01T19:00:00Z', location: null },
+                  { id: '2', session_id: 'session-1', title: 'Discussion 2', scheduled_at: '2026-06-15T19:00:00Z', location: null },
                 ],
               },
             },
@@ -1440,10 +1441,11 @@ describe('ClubDetailPage', () => {
             data: {
               ...mockClub,
               active_session: {
+                ...mockClub.active_session!,
                 discussions: [
-                  { id: '1', title: 'Past', scheduled_at: '2020-01-01T19:00:00Z' },
-                  { id: '2', title: 'Next', scheduled_at: '2026-06-15T19:00:00Z' },
-                  { id: '3', title: 'Upcoming', scheduled_at: '2026-07-15T19:00:00Z' },
+                  { id: '1', session_id: 'session-1', title: 'Past', scheduled_at: '2020-01-01T19:00:00Z', location: null },
+                  { id: '2', session_id: 'session-1', title: 'Next', scheduled_at: '2026-06-15T19:00:00Z', location: null },
+                  { id: '3', session_id: 'session-1', title: 'Upcoming', scheduled_at: '2026-07-15T19:00:00Z', location: null },
                 ],
               },
             },

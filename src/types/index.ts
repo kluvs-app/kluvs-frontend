@@ -16,7 +16,8 @@ type Schemas = components['schemas']
 // ── Entities ────────────────────────────────────────────────────────────────
 
 export type Server = Schemas['Server']
-export type Club = Schemas['Club']
+/** A club as returned by GET /club (spec: `ClubDetail`), with members and sessions populated. */
+export type Club = Schemas['ClubDetail']
 export type ClubMember = Schemas['ClubMember']
 export type PastSession = Schemas['PastSession']
 export type Session = Schemas['Session']
@@ -27,12 +28,10 @@ export type DiscussionNote = Schemas['DiscussionNote']
 export type Book = Schemas['Book']
 /** A club within a member's `clubs` list, including the member's per-club role. */
 export type MemberClub = Schemas['MemberClubEntry']
-/**
- * Spec: `MemberGetResponse` = allOf(Member, { clubs: MemberClubEntry[], shame_clubs }).
- * The extension *redefines* `clubs`, but openapi-typescript renders allOf as an
- * intersection (`ClubSummary[] & MemberClubEntry[]`), so pick the overriding definition.
- */
-export type Member = Omit<Schemas['MemberGetResponse'], 'clubs'> & { clubs?: MemberClub[] }
+/** Spec: `MemberGetResponse` = allOf(Member, { clubs: MemberClubEntry[], shame_clubs }). */
+export type Member = Schemas['MemberGetResponse']
+/** One result of GET /member?search= (spec: `MemberSearchResult`). */
+export type MemberSearchResult = Schemas['MemberSearchResult']
 export type UserRole = NonNullable<MemberClub['role']>
 export type ShelfValue = Schemas['ShelfStatus']
 export type ShelfEntry = Schemas['ShelfEntry']
@@ -64,12 +63,11 @@ export type SessionFinishResponse = Schemas['SessionFinishResponse']
 export type ReadingLogResponse = Schemas['SessionReadingLogResponse']
 export type ReadingLog = Schemas['SessionReadingLogGroups']
 export type ReadingLogEntry = Schemas['SessionReadingLogEntry']
+/** Spec: `MemberSearchResponse` (GET /member?search=). */
+export type MemberSearchResponse = Schemas['MemberSearchResponse']
 export type BookSearchResponse = Schemas['BookSearchResponse']
 export type BookRegistrationResponse = Schemas['BookRegistrationResponse']
-/**
- * Spec: `BookEnrichmentResponse`. `volumeInfo`/`authorInfo` are typed optional
- * but the backend sends `null` when a lookup fails or its param was omitted.
- */
+/** Spec: `BookEnrichmentResponse`. `volumeInfo`/`authorInfo` are `null` when a lookup fails or its param was omitted. */
 export type BookEnrichmentResponse = Schemas['BookEnrichmentResponse']
 export type JoinResponse = Schemas['JoinResponse']
 export type JoinPreviewResponse = Schemas['JoinPreviewResponse']

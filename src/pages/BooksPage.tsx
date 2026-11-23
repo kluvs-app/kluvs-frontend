@@ -12,9 +12,6 @@ import type {
   BookVolumeInfo, LikeStatusResponse, LikeToggleResponse,
   ShelfAssignResponse, ShelfEntry, ShelfListResponse, ShelfSingleResponse, ShelfValue,
 } from '../types'
-
-/** A shelf entry with the fields the shelf UI needs. Entries missing either are dropped on load. */
-type ShelvedBook = ShelfEntry & { shelf: ShelfValue; book: Book }
 import KluvsSpinner from '../components/KluvsSpinner'
 import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import BookCard from '../components/BookCard'
@@ -142,7 +139,7 @@ export default function BooksPage() {
   const [authorBooks, setAuthorBooks]       = useState<AuthorBook[]>([])
   const [liked, setLiked]           = useState(false)
   const [shelf, setShelf]           = useState<ShelfValue | null>(null)
-  const [shelvedBooks, setShelvedBooks]     = useState<ShelvedBook[]>([])
+  const [shelvedBooks, setShelvedBooks]     = useState<ShelfEntry[]>([])
   const [loadingShelves, setLoadingShelves] = useState(true)
   const [shelvesError, setShelvesError]     = useState('')
   const [searchPage, setSearchPage]         = useState(0)
@@ -172,7 +169,7 @@ export default function BooksPage() {
     invokeFunction<ShelfListResponse>('shelf', { method: 'GET' })
       .then(({ data, error }) => {
         if (error) throw error
-        setShelvedBooks((data?.shelves ?? []).filter((e): e is ShelvedBook => !!e.shelf && !!e.book))
+        setShelvedBooks(data?.shelves ?? [])
       })
       .catch(() => setShelvesError('Could not load shelves.'))
       .finally(() => setLoadingShelves(false))
@@ -290,9 +287,9 @@ export default function BooksPage() {
         .then(({ data, error }) => {
           if (id && activeId.current !== id) return
           if (!error && data) {
-            setVolumeInfo(data.volumeInfo ?? null)
-            setAuthorInfo(data.authorInfo ?? null)
-            setAuthorBooks(data.authorBooks ?? [])
+            setVolumeInfo(data.volumeInfo)
+            setAuthorInfo(data.authorInfo)
+            setAuthorBooks(data.authorBooks)
           }
         })
         .catch(() => {})
@@ -324,13 +321,13 @@ export default function BooksPage() {
             invokeFunction<LikeStatusResponse>('like?book_id=' + saved.id, { method: 'GET' })
               .then(({ data: likeData, error: likeError }) => {
                 if (!likeError && likeData) {
-                  setLiked(likeData.liked ?? false)
+                  setLiked(likeData.liked)
                 }
               }).catch(() => {})
             invokeFunction<ShelfSingleResponse>('shelf?book_id=' + saved.id, { method: 'GET' })
               .then(({ data: shelfData, error: shelfError }) => {
                 if (!shelfError && shelfData) {
-                  setShelf(shelfData.shelf ?? null)
+                  setShelf(shelfData.shelf)
                 }
               }).catch(() => {})
           }
@@ -349,7 +346,7 @@ export default function BooksPage() {
       body: { book_id: bookId },
     }).then(({ data, error }) => {
       if (!error && data) {
-        setLiked(data.liked ?? !prevLiked)
+        setLiked(data.liked)
       } else {
         setLiked(prevLiked)
       }
@@ -372,7 +369,7 @@ export default function BooksPage() {
     } else {
       setShelvedBooks(prev => {
         const idx = prev.findIndex(e => e.book.id === bookId)
-        const entry: ShelvedBook = { shelf: value, updated_at: new Date().toISOString(), source: 'manual', book: selectedBook }
+        const entry: ShelfEntry = { shelf: value, updated_at: new Date().toISOString(), source: 'manual', book: selectedBook }
         if (idx >= 0) return prev.map((e, i) => i === idx ? entry : e)
         return [...prev, entry]
       })
@@ -392,7 +389,7 @@ export default function BooksPage() {
         body: { book_id: bookId, shelf: value },
       }).then(({ data, error }) => {
         if (!error && data) {
-          setShelf(data.shelf ?? value)
+          setShelf(data.shelf)
         } else {
           setShelf(prevShelf)
           setShelvedBooks(prevShelvedBooks)
@@ -419,11 +416,11 @@ export default function BooksPage() {
 
   // ── Derived display values ─────────────────────────────────────────────────
   const vi          = volumeInfo
-  const coverUrl    = bestCoverUrl(vi?.imageLinks, selectedBook?.image_url)
+  const coverUrl    = bestCoverUrl(vi?.imageLinks, selectedBook?.image_url ?? undefined)
   const title       = selectedBook?.title ?? ''
   const subtitle    = vi?.subtitle
-  const authors     = vi?.authors?.join(', ') ?? selectedBook?.author ?? ''
-  const year        = extractYear(vi?.publishedDate, selectedBook?.year)
+  const authors     = vi?.authors.join(', ') ?? selectedBook?.author ?? ''
+  const year        = extractYear(vi?.publishedDate, selectedBook?.year ?? undefined)
   const pages       = (vi?.pageCount ?? selectedBook?.page_count)?.toLocaleString()
   const publisher   = vi?.publisher
   const isbn        = preferredIsbn(vi?.industryIdentifiers) ?? selectedBook?.isbn
@@ -805,7 +802,7 @@ export default function BooksPage() {
                           {authorInfo.imageUrl && !authorPhotoFailed && (
                             <img
                               src={authorInfo.imageUrl}
-                              alt={authorInfo.name ?? ''}
+                              alt={authorInfo.name}
                               className="h-12 w-12 rounded-full object-cover shrink-0"
                               onError={() => setAuthorPhotoFailed(true)}
                             />
