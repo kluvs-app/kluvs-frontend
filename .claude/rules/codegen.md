@@ -28,4 +28,7 @@ Fix the backend `@openapi` annotation in `kluvs-backend` (generator: `kluvs-back
    - That branch is a CI force-push target. Never commit manual work there.
    - The PR is opened with `GITHUB_TOKEN`, so regular CI (lint, tests) does not run on it. The workflow runs `type-check` itself and reports the result in the PR body.
    - To get full CI, close and reopen the PR from the GitHub UI.
-4. A human reviews and merges it. If type-check fails, the app code needs changing in a separate PR.
+4. A human reviews and merges it. If type-check fails, the app code needs changing in a separate PR, **stacked on the regen PR**:
+   - Cut the fix branch from `origin/chore/regenerate-api-types` and open it with `--base chore/regenerate-api-types`, so its diff shows only the app-code fixes.
+   - Merge order: squash-merge the regen PR, retarget the fix PR to `develop`, then squash-merge it. The spec update and its fixes land as two consecutive commits.
+   - Don't cut the fix branch from `develop` and merge the regen branch into it. That hides the regen PR inside the fix PR.
