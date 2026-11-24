@@ -812,6 +812,8 @@ export interface components {
             id?: string;
             /** Format: date */
             due_date?: string;
+            /** @description ID of an existing book. Preferred over `book`; if the book does not exist, the club is created without a session. */
+            book_id?: number;
             book?: components["schemas"]["Book"];
             /** @description Entries missing id, title or scheduled_at are skipped. */
             discussions?: components["schemas"]["ClubActiveSessionDiscussionInput"][];
@@ -828,6 +830,8 @@ export interface components {
             location?: string | null;
         };
         ClubCreateRequest: {
+            /** @description Optional club ID. Generated (UUID) when omitted. */
+            id?: string;
             name: string;
             /** @description Optional Discord Server ID. */
             server_id?: string;
@@ -843,6 +847,11 @@ export interface components {
             members?: {
                 id: number;
             }[];
+            /**
+             * @description Defaults to PRIVATE when omitted.
+             * @enum {string}
+             */
+            join_policy?: "PRIVATE" | "INVITE_LINK";
             active_session?: components["schemas"]["ClubActiveSessionInput"];
             /** @description List of Member IDs to immediately add to the shame list. */
             shame_list?: number[];
@@ -1023,11 +1032,14 @@ export interface components {
         SessionInlineBookInput: {
             title: string;
             author: string;
+            edition?: string;
             year?: number;
             isbn?: string;
             page_count?: number;
         };
         SessionDiscussionInput: {
+            /** @description Optional discussion ID. Generated (UUID) when omitted. */
+            id?: string;
             title?: string;
             /**
              * Format: date-time
@@ -1037,6 +1049,8 @@ export interface components {
             location?: string;
         };
         SessionCreateRequest: {
+            /** @description Optional session ID. Generated (UUID) when omitted. */
+            id?: string;
             /** @description The ID of the club hosting this session. */
             club_id: string;
             /** @description Preferred. The local DB ID of a pre-registered book (from POST /book). */
@@ -1064,6 +1078,9 @@ export interface components {
         SessionBookPatchInput: {
             title?: string;
             author?: string;
+            edition?: string | null;
+            year?: number | null;
+            isbn?: string | null;
         };
         SessionMemberFlagInput: {
             member_id: number;
@@ -2348,6 +2365,13 @@ export interface operations {
                     "application/json": components["schemas"]["Discussion"];
                 };
             };
+            /** @description Missing id, invalid scheduled_at, or no fields to update */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Caller is not owner/admin of the session's club */
             403: {
                 headers: {
@@ -2422,6 +2446,13 @@ export interface operations {
         responses: {
             /** @description Deleted successfully */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Missing id query parameter */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

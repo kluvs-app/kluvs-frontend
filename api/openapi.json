@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Kluvs API",
-    "version": "0.29.0",
+    "version": "0.30.0",
     "description": "Supabase Edge Functions API for managing book clubs."
   },
   "servers": [
@@ -1097,6 +1097,9 @@
               }
             }
           },
+          "400": {
+            "description": "Missing id, invalid scheduled_at, or no fields to update"
+          },
           "403": {
             "description": "Caller is not owner/admin of the session's club"
           },
@@ -1125,6 +1128,9 @@
         "responses": {
           "204": {
             "description": "Deleted successfully"
+          },
+          "400": {
+            "description": "Missing id query parameter"
           },
           "403": {
             "description": "Caller is not owner/admin of the session's club"
@@ -2912,6 +2918,10 @@
             "type": "string",
             "format": "date"
           },
+          "book_id": {
+            "type": "integer",
+            "description": "ID of an existing book. Preferred over `book`; if the book does not exist, the club is created without a session."
+          },
           "book": {
             "$ref": "#/components/schemas/Book"
           },
@@ -2956,6 +2966,10 @@
           "name"
         ],
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "Optional club ID. Generated (UUID) when omitted."
+          },
           "name": {
             "type": "string"
           },
@@ -2989,6 +3003,14 @@
                 }
               }
             }
+          },
+          "join_policy": {
+            "type": "string",
+            "enum": [
+              "PRIVATE",
+              "INVITE_LINK"
+            ],
+            "description": "Defaults to PRIVATE when omitted."
           },
           "active_session": {
             "$ref": "#/components/schemas/ClubActiveSessionInput"
@@ -3520,6 +3542,9 @@
           "author": {
             "type": "string"
           },
+          "edition": {
+            "type": "string"
+          },
           "year": {
             "type": "integer"
           },
@@ -3534,6 +3559,10 @@
       "SessionDiscussionInput": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "Optional discussion ID. Generated (UUID) when omitted."
+          },
           "title": {
             "type": "string"
           },
@@ -3553,6 +3582,10 @@
           "club_id"
         ],
         "properties": {
+          "id": {
+            "type": "string",
+            "description": "Optional session ID. Generated (UUID) when omitted."
+          },
           "club_id": {
             "type": "string",
             "description": "The ID of the club hosting this session."
@@ -3611,6 +3644,18 @@
           },
           "author": {
             "type": "string"
+          },
+          "edition": {
+            "type": "string",
+            "nullable": true
+          },
+          "year": {
+            "type": "integer",
+            "nullable": true
+          },
+          "isbn": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
