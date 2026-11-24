@@ -489,11 +489,11 @@ export interface components {
             id: string;
             name: string;
             /** @description Discord channel ID */
-            discord_channel?: string;
+            discord_channel?: string | null;
             /** @description Parent server ID */
-            server_id?: string;
+            server_id?: string | null;
             /** Format: date */
-            founded_date?: string;
+            founded_date?: string | null;
             /**
              * @description Controls how new members can join. PRIVATE = by admin only; INVITE_LINK = anyone with the link.
              * @default PRIVATE
@@ -505,42 +505,49 @@ export interface components {
              * @description Active invite token UUID (present when join_policy is INVITE_LINK, null otherwise).
              */
             invite_token?: string | null;
-            /** @description Club members with their per-club role. */
-            members?: components["schemas"]["ClubMember"][];
-            active_session?: components["schemas"]["Session"];
-            past_sessions?: components["schemas"]["PastSession"][];
             /** @description Array of member IDs on shame list */
             shame_list?: number[];
+        };
+        /** @description Full club details as returned by GET /club, including members and sessions. */
+        ClubDetail: components["schemas"]["Club"] & {
+            /** @description Club members with their per-club role. */
+            members: components["schemas"]["ClubMember"][];
+            /** @description The club's active session, or null if none. */
+            active_session: components["schemas"]["Session"] | null;
+            past_sessions: components["schemas"]["PastSession"][];
         };
         Member: {
             /** @description Internal member ID */
             id: number;
             name: string;
             /** @default 0 */
-            books_read: number;
+            books_read: number | null;
             /** @description Globally-unique, format-normalized handle. Auto-generated from `name` if not supplied on create. */
             handle: string;
-            avatar_path?: string;
+            avatar_path: string | null;
             /**
              * Format: uuid
              * @description Linked Supabase Auth User ID
              */
-            user_id?: string;
+            user_id: string | null;
             /** @description Discord user snowflake ID. Stored as TEXT to preserve JSON precision. */
-            discord_id?: string | null;
+            discord_id: string | null;
             platform_metadata: components["schemas"]["JsonObject"];
             /** Format: date-time */
-            created_at?: string;
-            /** @description Clubs this member belongs to, each with their per-club role. */
-            clubs?: components["schemas"]["ClubSummary"][];
+            created_at: string;
         };
         Session: {
             id: string;
             club_id: string;
-            book_id?: number;
-            book?: components["schemas"]["Book"];
+            /** @description The hosting club. Returned by GET /session?id= and POST /session; not embedded in a club response's active_session. */
+            club?: {
+                id: string;
+                name?: string;
+                discord_channel?: string | null;
+            };
+            book: components["schemas"]["Book"];
             /** Format: date */
-            due_date?: string;
+            due_date: string | null;
             /**
              * @description Lifecycle status of the session.
              * @enum {string}
@@ -550,13 +557,13 @@ export interface components {
              * Format: date-time
              * @description When the session started. Server-set on insert; null for sessions created before this field existed.
              */
-            started_at?: string | null;
+            started_at: string | null;
             /**
              * Format: date-time
              * @description When the session was finished. Null while the session is active.
              */
-            ended_at?: string | null;
-            discussions?: components["schemas"]["Discussion"][];
+            ended_at: string | null;
+            discussions: components["schemas"]["Discussion"][];
             /** @description Participation roster, as embedded within a club response's active_session. */
             members?: components["schemas"]["SessionParticipantSummary"][];
         };
@@ -575,14 +582,14 @@ export interface components {
             id?: number | null;
             title: string;
             author: string;
-            edition?: string;
-            year?: number;
-            isbn?: string;
-            page_count?: number;
+            edition?: string | null;
+            year?: number | null;
+            isbn?: string | null;
+            page_count?: number | null;
             /** @description Cover image URL (HTTPS) */
-            image_url?: string;
+            image_url?: string | null;
             /** @description Google Books volume ID for deduplication */
-            external_google_id?: string;
+            external_google_id?: string | null;
         };
         BookIndustryIdentifier: {
             /** @enum {string} */
@@ -591,15 +598,15 @@ export interface components {
         };
         BookVolumeInfo: {
             title: string;
-            subtitle?: string | null;
+            subtitle: string | null;
             authors: string[];
-            publisher?: string | null;
-            publishedDate?: string | null;
-            description?: string | null;
+            publisher: string | null;
+            publishedDate: string | null;
+            description: string | null;
             industryIdentifiers: components["schemas"]["BookIndustryIdentifier"][];
             pageCount: number;
             categories: string[];
-            language?: string | null;
+            language: string | null;
             imageLinks: {
                 thumbnail: string | null;
                 small: string | null;
@@ -610,24 +617,24 @@ export interface components {
         };
         AuthorInfo: {
             /** @description Knowledge Graph name, falling back to the matched Wikipedia page title (trailing parenthetical removed), then the author query. Always set when authorInfo is non-null */
-            name?: string | null;
+            name: string;
             /** @description Knowledge Graph short description, e.g. "American novelist" */
-            description?: string | null;
+            description: string | null;
             /** @description Wikipedia thumbnail, falling back to Knowledge Graph portrait */
-            imageUrl?: string | null;
+            imageUrl: string | null;
             /** @description Wikipedia summary extract, falling back to Knowledge Graph detailed description */
-            extract?: string | null;
+            extract: string | null;
         };
         AuthorBook: {
             externalGoogleId: string;
             title: string;
             authors: string[];
-            imageUrl?: string | null;
-            publishedDate?: string | null;
+            imageUrl: string | null;
+            publishedDate: string | null;
         };
         BookEnrichmentResponse: {
-            volumeInfo?: components["schemas"]["BookVolumeInfo"];
-            authorInfo?: components["schemas"]["AuthorInfo"];
+            volumeInfo: components["schemas"]["BookVolumeInfo"] | null;
+            authorInfo: components["schemas"]["AuthorInfo"] | null;
             authorBooks: components["schemas"]["AuthorBook"][];
         };
         Discussion: {
@@ -641,19 +648,19 @@ export interface components {
              */
             scheduled_at: string;
             /** @description Discussion location or platform */
-            location?: string;
+            location: string | null;
         };
         ReadingProgress: {
             /** Format: uuid */
             id: string;
             member_id: number;
             book_id: number;
-            session_id?: string | null;
+            session_id: string | null;
             /** @enum {string} */
             progress_type: "page" | "percent";
-            current_page?: number | null;
+            current_page: number | null;
             /** Format: float */
-            percent_complete?: number | null;
+            percent_complete: number | null;
             /** @enum {string} */
             status: "in_progress" | "completed";
             /** Format: date-time */
@@ -661,8 +668,8 @@ export interface components {
             /** Format: date-time */
             updated_at: string;
             /** Format: date-time */
-            completed_at?: string | null;
-            book?: components["schemas"]["BookSummary"];
+            completed_at: string | null;
+            book: components["schemas"]["BookSummary"] | null;
         };
         ClubInvite: {
             /** Format: uuid */
@@ -734,66 +741,49 @@ export interface components {
         };
         /** @description A member as embedded within a club response, including their per-club role. */
         ClubMember: {
-            id?: number;
-            name?: string;
+            id: number;
+            name: string;
             /**
              * @description Member's role in this club
              * @enum {string}
              */
-            role?: "owner" | "admin" | "member";
+            role: "owner" | "admin" | "member";
             /**
              * Format: date-time
              * @description When the member joined this club (server-set, read-only)
              */
-            joined_at?: string;
+            joined_at: string;
             /** @default 0 */
-            books_read: number;
-            handle?: string;
-            avatar_path?: string;
+            books_read: number | null;
+            handle: string;
+            avatar_path: string | null;
             /** Format: date-time */
-            created_at?: string;
+            created_at: string;
             /** @description IDs of all clubs this member belongs to */
-            clubs?: string[];
-        };
-        /** @description A lightweight club reference as embedded within a member response, including the member's role. */
-        ClubSummary: {
-            id?: string;
-            name?: string;
-            discord_channel?: string;
-            server_id?: string;
-            /**
-             * @description Member's role in this club
-             * @enum {string}
-             */
-            role?: "owner" | "admin" | "member";
-            /**
-             * Format: date-time
-             * @description When the member joined this club (server-set, read-only)
-             */
-            joined_at?: string;
+            clubs: string[];
         };
         /** @description A finished session as embedded within a club response. */
         PastSession: {
-            id?: string;
+            id: string;
             /** Format: date */
-            due_date?: string;
+            due_date: string | null;
             /**
              * Format: date-time
              * @description When the session started. Server-set on insert; null for sessions created before this field existed.
              */
-            started_at?: string | null;
+            started_at: string | null;
             /**
              * Format: date-time
              * @description When the session was finished. Null while the session is active.
              */
-            ended_at?: string | null;
+            ended_at: string | null;
         };
         /** @description A lightweight book reference as embedded within a reading progress entry. */
         BookSummary: {
-            id?: number;
-            title?: string;
-            page_count?: number | null;
-            image_url?: string | null;
+            id: number;
+            title: string;
+            page_count: number | null;
+            image_url: string | null;
         };
         UserBookShelf: {
             member_id: number;
@@ -823,7 +813,19 @@ export interface components {
             /** Format: date */
             due_date?: string;
             book?: components["schemas"]["Book"];
-            discussions?: components["schemas"]["Discussion"][];
+            /** @description Entries missing id, title or scheduled_at are skipped. */
+            discussions?: components["schemas"]["ClubActiveSessionDiscussionInput"][];
+        };
+        ClubActiveSessionDiscussionInput: {
+            /** Format: uuid */
+            id: string;
+            title: string;
+            /**
+             * Format: date-time
+             * @description ISO 8601 timestamp (with timezone offset) for the discussion
+             */
+            scheduled_at: string;
+            location?: string | null;
         };
         ClubCreateRequest: {
             name: string;
@@ -846,17 +848,17 @@ export interface components {
             shame_list?: number[];
         };
         ClubCreateResponse: {
-            success?: boolean;
-            message?: string;
-            club?: components["schemas"]["Club"];
+            success: boolean;
+            message: string;
+            club: components["schemas"]["Club"];
         };
         ClubUpdateRequest: {
             id: string;
             name?: string;
-            discord_channel?: string;
+            discord_channel?: string | null;
             /** Format: date */
-            founded_date?: string;
-            server_id?: string;
+            founded_date?: string | null;
+            server_id?: string | null;
             /**
              * @description Controls how members can join the club. Setting to INVITE_LINK creates (or reuses) an active club invite token; setting to PRIVATE deactivates all active invites for the club.
              * @enum {string}
@@ -865,13 +867,13 @@ export interface components {
             shame_list?: number[];
         };
         ClubUpdateResponse: {
-            success?: boolean;
-            message?: string;
-            club?: components["schemas"]["Club"];
+            success: boolean;
+            message: string;
+            club: components["schemas"]["Club"];
             /** @description Whether the clubs table row was updated. */
-            club_updated?: boolean;
+            club_updated: boolean;
             /** @description Whether the shame list membership changed. */
-            shame_list_updated?: boolean;
+            shame_list_updated: boolean;
         };
         MemberCreateRequest: {
             name: string;
@@ -890,9 +892,12 @@ export interface components {
             id?: number;
         };
         MemberCreateResponse: {
-            success?: boolean;
-            message?: string;
-            member?: components["schemas"]["Member"];
+            success: boolean;
+            message: string;
+            member: components["schemas"]["Member"] & {
+                /** @description Club IDs the member was added to (echo of the request's `clubs`, or [] if omitted). */
+                clubs: string[];
+            };
         };
         /**
          * @description Valid roles assignable via club_roles. Assigning "owner" transfers ownership: the caller must currently be the club's owner, the target must already be a member of the club, and the caller is demoted to "admin" as part of the same request.
@@ -925,23 +930,23 @@ export interface components {
         };
         /** @description Standard update response */
         MemberUpdateResponse: {
-            success?: boolean;
-            message?: string;
+            success: boolean;
+            message: string;
             member?: components["schemas"]["Member"];
             clubs_updated?: boolean;
             roles_updated?: boolean;
         };
         /** @description add_to_club response */
         MemberAddToClubResponse: {
-            success?: boolean;
-            member_id?: number;
-            club_id?: string;
+            success: boolean;
+            member_id: number;
+            club_id: string;
         };
         /** @description remove_from_club response */
         MemberRemoveFromClubResponse: {
-            success?: boolean;
-            member_id?: number;
-            club_id?: string;
+            success: boolean;
+            member_id: number;
+            club_id: string;
         };
         ServerCreateRequest: {
             /** @example The Philosophers */
@@ -954,18 +959,18 @@ export interface components {
         };
         ServerCreateResponse: {
             /** @example true */
-            success?: boolean;
-            message?: string;
-            server?: components["schemas"]["Server"];
+            success: boolean;
+            message: string;
+            server: components["schemas"]["Server"];
         };
         ServerUpdateRequest: {
             id: string;
             name?: string;
         };
         ServerUpdateResponse: {
-            success?: boolean;
-            message?: string;
-            server?: components["schemas"]["Server"];
+            success: boolean;
+            message: string;
+            server: components["schemas"]["Server"];
         };
         /** @description Joined book info for the session */
         ServerClubLatestSessionBook: {
@@ -987,23 +992,23 @@ export interface components {
              * @description When the session was finished. Null while the session is active.
              */
             ended_at?: string | null;
-            books?: components["schemas"]["ServerClubLatestSessionBook"];
+            books?: components["schemas"]["ServerClubLatestSessionBook"] | null;
         } | null;
         /** @description A club embedded within a single-server response, including member_count/latest_session not present on the plain Club schema. */
         ServerClubSummary: components["schemas"]["Club"] & {
             /** @description Number of members in this club */
-            member_count?: number;
-            latest_session?: components["schemas"]["ServerClubLatestSession"];
+            member_count: number;
+            latest_session: components["schemas"]["ServerClubLatestSession"];
         };
         /** @description Response when ID is provided (Single Server) */
         ServerGetSingleResponse: {
-            id?: string;
-            name?: string;
-            clubs?: components["schemas"]["ServerClubSummary"][];
+            id: string;
+            name: string;
+            clubs: components["schemas"]["ServerClubSummary"][];
         };
         /** @description Response when ID is omitted (List of Servers) */
         ServerGetListResponse: {
-            servers?: components["schemas"]["Server"][];
+            servers: components["schemas"]["Server"][];
         };
         /** @description Custom error shape (not the standard Error schema) */
         ServerDeleteConflictResponse: {
@@ -1051,9 +1056,9 @@ export interface components {
             discussions?: components["schemas"]["SessionDiscussionInput"][];
         };
         SessionCreateResponse: {
-            success?: boolean;
-            message?: string;
-            session?: components["schemas"]["Session"];
+            success: boolean;
+            message: string;
+            session: components["schemas"]["Session"];
         };
         /** @description Fields to update on the associated book. */
         SessionBookPatchInput: {
@@ -1068,7 +1073,7 @@ export interface components {
             id: string;
             club_id?: string;
             /** Format: date */
-            due_date?: string;
+            due_date?: string | null;
             book?: components["schemas"]["SessionBookPatchInput"];
             /** @description Upsert participation flags for session members. Reading members have their book moved to the "currently_reading" shelf; opted-out members have their session-derived "currently_reading" shelf entry removed. If this is the only field provided (alongside `id`), any club member may make this request; otherwise owner/admin is required. */
             session_members?: components["schemas"]["SessionMemberFlagInput"][];
@@ -1082,82 +1087,86 @@ export interface components {
         /** @description Response when `finish` is true */
         SessionFinishResponse: {
             /** @example true */
-            success?: boolean;
+            success: boolean;
             /** @example Session finished */
-            message?: string;
+            message: string;
             /** @description Number of is_reading session_members whose books_read count was incremented */
-            members_credited?: number;
+            members_credited: number;
         };
         /** @description Response when no changes were applicable */
         SessionNoChangesResponse: {
             /** @example true */
-            success?: boolean;
+            success: boolean;
             /** @example No changes to apply */
-            message?: string;
+            message: string;
         };
         SessionUpdateFlags: {
             /** @description Whether the associated book was updated */
-            book?: boolean;
+            book: boolean;
             /** @description Whether session fields (club_id, due_date) were updated */
-            session?: boolean;
+            session: boolean;
             /** @description Whether session_members rows were upserted */
-            session_members?: boolean;
+            session_members: boolean;
         };
         /** @description Response for general field updates */
         SessionGeneralUpdateResponse: {
             /** @example true */
-            success?: boolean;
+            success: boolean;
             /** @example Session updated successfully */
-            message?: string;
-            updates?: components["schemas"]["SessionUpdateFlags"];
+            message: string;
+            updates: components["schemas"]["SessionUpdateFlags"];
         };
         SessionReadingLogBook: {
-            id?: number;
-            title?: string;
-            author?: string;
-            image_url?: string | null;
+            id: number;
+            title: string;
+            author: string;
+            image_url: string | null;
         };
         SessionReadingLogClub: {
-            id?: string;
-            name?: string;
+            id: string;
+            name: string;
         };
         SessionReadingLogEntry: {
-            id?: string;
+            id: string;
             /** Format: date */
-            due_date?: string;
+            due_date: string | null;
             /**
              * Format: date-time
              * @description When the session started. Server-set on insert; null for sessions created before this field existed.
              */
-            started_at?: string | null;
+            started_at: string | null;
             /**
              * Format: date-time
              * @description When the session was finished. Null while the session is active.
              */
-            ended_at?: string | null;
-            book?: components["schemas"]["SessionReadingLogBook"];
-            club?: components["schemas"]["SessionReadingLogClub"];
+            ended_at: string | null;
+            book: components["schemas"]["SessionReadingLogBook"];
+            club: components["schemas"]["SessionReadingLogClub"];
         };
         SessionReadingLogGroups: {
-            active?: components["schemas"]["SessionReadingLogEntry"][];
-            finished?: components["schemas"]["SessionReadingLogEntry"][];
+            active: components["schemas"]["SessionReadingLogEntry"][];
+            finished: components["schemas"]["SessionReadingLogEntry"][];
         };
         /** @description Response when no `id` is provided (reading log grouped by session status) */
         SessionReadingLogResponse: {
-            success?: boolean;
-            reading_log?: components["schemas"]["SessionReadingLogGroups"];
+            success: boolean;
+            reading_log: components["schemas"]["SessionReadingLogGroups"];
         };
         /** @description Response for ?q= search queries. */
         BookSearchResponse: {
-            success?: boolean;
-            books?: components["schemas"]["Book"][];
+            success: boolean;
+            books: components["schemas"]["Book"][];
             /** @description Google Books' estimated corpus count (not the number of items returned on this page — use books.length for that). Approximate; Google caps actual delivery at ~1,000 items regardless of the reported total. */
-            total?: number;
+            total: number;
+            /** @description The 0-based offset applied to this page (echo of the normalized `offset` query parameter). */
+            offset: number;
+            /** @description The page size applied (echo of the normalized `limit` query parameter, max 40). */
+            limit: number;
         };
         /** @description Response for ?isbn= or ?id= lookups. */
         BookLookupResponse: {
-            success?: boolean;
-            book?: components["schemas"]["Book"];
+            success: boolean;
+            book: components["schemas"]["Book"];
         };
         BookRegistrationRequest: {
             /** @description Google Books volume ID (recommended for deduplication) */
@@ -1171,11 +1180,11 @@ export interface components {
             image_url?: string;
         };
         BookRegistrationResponse: {
-            success?: boolean;
-            book?: components["schemas"]["Book"];
+            success: boolean;
+            book: components["schemas"]["Book"];
             /** @description False if an existing book (matched by external_google_id) was returned instead of created. */
-            created?: boolean;
-            message?: string;
+            created: boolean;
+            message: string;
         };
         DiscussionCreateRequest: {
             session_id: string;
@@ -1227,13 +1236,13 @@ export interface components {
         };
         /** @description Lightweight club reference returned by the invite preview endpoint. */
         ClubPreview: {
-            id?: string;
-            name?: string;
+            id: string;
+            name: string;
         };
         JoinPreviewResponse: {
             /** @example true */
-            valid?: boolean;
-            club?: components["schemas"]["ClubPreview"];
+            valid: boolean;
+            club: components["schemas"]["ClubPreview"];
         };
         JoinRequest: {
             /**
@@ -1244,41 +1253,41 @@ export interface components {
         };
         JoinResponse: {
             /** @example true */
-            success?: boolean;
-            club_id?: string;
+            success: boolean;
+            club_id: string;
         };
         LikeStatusResponse: {
-            success?: boolean;
-            liked?: boolean;
+            success: boolean;
+            liked: boolean;
         };
         LikeToggleRequest: {
             /** @description Local DB book ID */
             book_id: number;
         };
         LikeToggleResponse: {
-            success?: boolean;
+            success: boolean;
             /** @description New state after toggle (true = just liked, false = just unliked) */
-            liked?: boolean;
+            liked: boolean;
         };
         /** @enum {string} */
         ShelfStatus: "want_to_read" | "read" | "not_finished" | "currently_reading";
         ShelfEntry: {
-            shelf?: components["schemas"]["ShelfStatus"];
+            shelf: components["schemas"]["ShelfStatus"];
             /** Format: date-time */
-            updated_at?: string;
+            updated_at: string;
             /** @enum {string} */
-            source?: "manual" | "session";
-            book?: components["schemas"]["Book"];
+            source: "manual" | "session";
+            book: components["schemas"]["Book"];
         };
         /** @description Response when no book_id is provided (all shelf entries for the caller). */
         ShelfListResponse: {
-            success?: boolean;
-            shelves?: components["schemas"]["ShelfEntry"][];
+            success: boolean;
+            shelves: components["schemas"]["ShelfEntry"][];
         };
         /** @description Response when book_id is provided (shelf for a single book, or null). */
         ShelfSingleResponse: {
-            success?: boolean;
-            shelf?: components["schemas"]["ShelfStatus"];
+            success: boolean;
+            shelf: components["schemas"]["ShelfStatus"] | null;
         };
         ShelfAssignRequest: {
             /** @description Local DB book ID */
@@ -1286,8 +1295,8 @@ export interface components {
             shelf: components["schemas"]["ShelfStatus"];
         };
         ShelfAssignResponse: {
-            success?: boolean;
-            shelf?: components["schemas"]["ShelfStatus"];
+            success: boolean;
+            shelf: components["schemas"]["ShelfStatus"];
         };
         ProgressCreateRequest: {
             /** @description Local DB book ID */
@@ -1320,17 +1329,17 @@ export interface components {
             status?: "in_progress" | "completed";
         };
         ProgressDeleteResponse: {
-            success?: boolean;
+            success: boolean;
         };
         DiscordChannelSummary: {
-            id?: string;
-            name?: string;
+            id: string;
+            name: string;
         };
         DiscordGuildWithChannels: {
             /** @description Discord guild snowflake ID. */
-            id?: string;
-            name?: string;
-            channels?: components["schemas"]["DiscordChannelSummary"][];
+            id: string;
+            name: string;
+            channels: components["schemas"]["DiscordChannelSummary"][];
         };
         /** @description A club embedded within a member's `clubs` list, including the member's per-club role. */
         MemberClubEntry: components["schemas"]["Club"] & {
@@ -1338,14 +1347,30 @@ export interface components {
              * @description Member's role in this specific club
              * @enum {string}
              */
-            role?: "owner" | "admin" | "member";
+            role: "owner" | "admin" | "member";
+            /**
+             * Format: date-time
+             * @description When the member joined this club (server-set, read-only)
+             */
+            joined_at: string;
         };
         /** @description Full member response with relations populated. */
         MemberGetResponse: components["schemas"]["Member"] & {
             /** @description Clubs this member belongs to, with their per-club role. Sorted by the soonest upcoming discussion of each club's active session, then alphabetically by club name (case-insensitive) for ties and clubs with nothing upcoming. */
-            clubs?: components["schemas"]["MemberClubEntry"][];
+            clubs: components["schemas"]["MemberClubEntry"][];
             /** @description List of clubs where this member is currently on the shame list. */
-            shame_clubs?: components["schemas"]["Club"][];
+            shame_clubs: components["schemas"]["Club"][];
+        };
+        /** @description A lightweight member reference returned by GET /member?search=. */
+        MemberSearchResult: {
+            id: number;
+            name: string;
+            handle: string;
+            avatar_path: string | null;
+        };
+        /** @description Response when `search` is provided (up to 10 matching members). */
+        MemberSearchResponse: {
+            members: components["schemas"]["MemberSearchResult"][];
         };
         /** @description Arbitrary JSON object. Generated as kotlinx.serialization.json.JsonObject (see schemaMappings in core/api/build.gradle.kts) instead of Map<String, Any>, which kotlinx.serialization cannot serialize. */
         JsonObject: {
@@ -1382,7 +1407,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Club"];
+                    "application/json": components["schemas"]["ClubDetail"];
                 };
             };
             /** @description Missing required parameters */
@@ -1522,13 +1547,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Member details */
+            /** @description Member details (lookup by `id`, `user_id`, or `discord_id`), or matching members (`search`). */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberGetResponse"];
+                    "application/json": components["schemas"]["MemberGetResponse"] | components["schemas"]["MemberSearchResponse"];
                 };
             };
             /** @description Missing both id and user_id */

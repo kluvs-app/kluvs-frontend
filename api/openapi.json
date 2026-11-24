@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Kluvs API",
-    "version": "0.28.0",
+    "version": "0.29.0",
     "description": "Supabase Edge Functions API for managing book clubs."
   },
   "servers": [
@@ -55,7 +55,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Club"
+                  "$ref": "#/components/schemas/ClubDetail"
                 }
               }
             }
@@ -235,11 +235,18 @@
         ],
         "responses": {
           "200": {
-            "description": "Member details",
+            "description": "Member details (lookup by `id`, `user_id`, or `discord_id`), or matching members (`search`).",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MemberGetResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MemberGetResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MemberSearchResponse"
+                    }
+                  ]
                 }
               }
             }
@@ -1938,15 +1945,18 @@
           },
           "discord_channel": {
             "type": "string",
+            "nullable": true,
             "description": "Discord channel ID"
           },
           "server_id": {
             "type": "string",
+            "nullable": true,
             "description": "Parent server ID"
           },
           "founded_date": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "nullable": true
           },
           "join_policy": {
             "type": "string",
@@ -1963,22 +1973,6 @@
             "nullable": true,
             "description": "Active invite token UUID (present when join_policy is INVITE_LINK, null otherwise)."
           },
-          "members": {
-            "type": "array",
-            "description": "Club members with their per-club role.",
-            "items": {
-              "$ref": "#/components/schemas/ClubMember"
-            }
-          },
-          "active_session": {
-            "$ref": "#/components/schemas/Session"
-          },
-          "past_sessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PastSession"
-            }
-          },
           "shame_list": {
             "type": "array",
             "items": {
@@ -1988,13 +1982,62 @@
           }
         }
       },
+      "ClubDetail": {
+        "description": "Full club details as returned by GET /club, including members and sessions.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Club"
+          },
+          {
+            "type": "object",
+            "required": [
+              "discord_channel",
+              "server_id",
+              "founded_date",
+              "invite_token",
+              "members",
+              "active_session",
+              "past_sessions"
+            ],
+            "properties": {
+              "members": {
+                "type": "array",
+                "description": "Club members with their per-club role.",
+                "items": {
+                  "$ref": "#/components/schemas/ClubMember"
+                }
+              },
+              "active_session": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Session"
+                  }
+                ],
+                "nullable": true,
+                "description": "The club's active session, or null if none."
+              },
+              "past_sessions": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PastSession"
+                }
+              }
+            }
+          }
+        ]
+      },
       "Member": {
         "type": "object",
         "required": [
           "id",
           "name",
+          "books_read",
           "platform_metadata",
-          "handle"
+          "handle",
+          "avatar_path",
+          "user_id",
+          "discord_id",
+          "created_at"
         ],
         "properties": {
           "id": {
@@ -2006,6 +2049,7 @@
           },
           "books_read": {
             "type": "integer",
+            "nullable": true,
             "default": 0
           },
           "handle": {
@@ -2014,11 +2058,13 @@
             "description": "Globally-unique, format-normalized handle. Auto-generated from `name` if not supplied on create."
           },
           "avatar_path": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "user_id": {
             "type": "string",
             "format": "uuid",
+            "nullable": true,
             "description": "Linked Supabase Auth User ID"
           },
           "discord_id": {
@@ -2032,13 +2078,6 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
-          },
-          "clubs": {
-            "type": "array",
-            "description": "Clubs this member belongs to, each with their per-club role.",
-            "items": {
-              "$ref": "#/components/schemas/ClubSummary"
-            }
           }
         }
       },
@@ -2047,7 +2086,12 @@
         "required": [
           "id",
           "club_id",
-          "status"
+          "status",
+          "book",
+          "due_date",
+          "started_at",
+          "ended_at",
+          "discussions"
         ],
         "properties": {
           "id": {
@@ -2056,15 +2100,32 @@
           "club_id": {
             "type": "string"
           },
-          "book_id": {
-            "type": "integer"
+          "club": {
+            "type": "object",
+            "description": "The hosting club. Returned by GET /session?id= and POST /session; not embedded in a club response's active_session.",
+            "required": [
+              "id"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "discord_channel": {
+                "type": "string",
+                "nullable": true
+              }
+            }
           },
           "book": {
             "$ref": "#/components/schemas/Book"
           },
           "due_date": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -2142,23 +2203,29 @@
             "type": "string"
           },
           "edition": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "year": {
-            "type": "integer"
+            "type": "integer",
+            "nullable": true
           },
           "isbn": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "page_count": {
-            "type": "integer"
+            "type": "integer",
+            "nullable": true
           },
           "image_url": {
             "type": "string",
+            "nullable": true,
             "description": "Cover image URL (HTTPS)"
           },
           "external_google_id": {
             "type": "string",
+            "nullable": true,
             "description": "Google Books volume ID for deduplication"
           }
         }
@@ -2188,10 +2255,15 @@
         "type": "object",
         "required": [
           "title",
+          "subtitle",
           "authors",
+          "publisher",
+          "publishedDate",
+          "description",
           "industryIdentifiers",
           "pageCount",
           "categories",
+          "language",
           "imageLinks"
         ],
         "properties": {
@@ -2275,10 +2347,15 @@
       },
       "AuthorInfo": {
         "type": "object",
+        "required": [
+          "name",
+          "description",
+          "imageUrl",
+          "extract"
+        ],
         "properties": {
           "name": {
             "type": "string",
-            "nullable": true,
             "description": "Knowledge Graph name, falling back to the matched Wikipedia page title (trailing parenthetical removed), then the author query. Always set when authorInfo is non-null"
           },
           "description": {
@@ -2303,7 +2380,9 @@
         "required": [
           "externalGoogleId",
           "title",
-          "authors"
+          "authors",
+          "imageUrl",
+          "publishedDate"
         ],
         "properties": {
           "externalGoogleId": {
@@ -2331,15 +2410,25 @@
       "BookEnrichmentResponse": {
         "type": "object",
         "required": [
+          "volumeInfo",
+          "authorInfo",
           "authorBooks"
         ],
         "properties": {
           "volumeInfo": {
-            "$ref": "#/components/schemas/BookVolumeInfo",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BookVolumeInfo"
+              }
+            ],
             "nullable": true
           },
           "authorInfo": {
-            "$ref": "#/components/schemas/AuthorInfo",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuthorInfo"
+              }
+            ],
             "nullable": true
           },
           "authorBooks": {
@@ -2356,7 +2445,8 @@
           "id",
           "session_id",
           "title",
-          "scheduled_at"
+          "scheduled_at",
+          "location"
         ],
         "properties": {
           "id": {
@@ -2376,6 +2466,7 @@
           },
           "location": {
             "type": "string",
+            "nullable": true,
             "description": "Discussion location or platform"
           }
         }
@@ -2386,10 +2477,15 @@
           "id",
           "member_id",
           "book_id",
+          "session_id",
           "progress_type",
+          "current_page",
+          "percent_complete",
           "status",
           "started_at",
-          "updated_at"
+          "updated_at",
+          "completed_at",
+          "book"
         ],
         "properties": {
           "id": {
@@ -2443,7 +2539,12 @@
             "nullable": true
           },
           "book": {
-            "$ref": "#/components/schemas/BookSummary"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BookSummary"
+              }
+            ],
+            "nullable": true
           }
         }
       },
@@ -2621,6 +2722,17 @@
       "ClubMember": {
         "type": "object",
         "description": "A member as embedded within a club response, including their per-club role.",
+        "required": [
+          "id",
+          "name",
+          "role",
+          "joined_at",
+          "books_read",
+          "handle",
+          "avatar_path",
+          "created_at",
+          "clubs"
+        ],
         "properties": {
           "id": {
             "type": "integer"
@@ -2644,13 +2756,15 @@
           },
           "books_read": {
             "type": "integer",
+            "nullable": true,
             "default": 0
           },
           "handle": {
             "type": "string"
           },
           "avatar_path": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "created_at": {
             "type": "string",
@@ -2665,48 +2779,23 @@
           }
         }
       },
-      "ClubSummary": {
-        "type": "object",
-        "description": "A lightweight club reference as embedded within a member response, including the member's role.",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "discord_channel": {
-            "type": "string"
-          },
-          "server_id": {
-            "type": "string"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "owner",
-              "admin",
-              "member"
-            ],
-            "description": "Member's role in this club"
-          },
-          "joined_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "When the member joined this club (server-set, read-only)"
-          }
-        }
-      },
       "PastSession": {
         "type": "object",
         "description": "A finished session as embedded within a club response.",
+        "required": [
+          "id",
+          "due_date",
+          "started_at",
+          "ended_at"
+        ],
         "properties": {
           "id": {
             "type": "string"
           },
           "due_date": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "nullable": true
           },
           "started_at": {
             "type": "string",
@@ -2725,6 +2814,12 @@
       "BookSummary": {
         "type": "object",
         "description": "A lightweight book reference as embedded within a reading progress entry.",
+        "required": [
+          "id",
+          "title",
+          "page_count",
+          "image_url"
+        ],
         "properties": {
           "id": {
             "type": "integer"
@@ -2822,9 +2917,36 @@
           },
           "discussions": {
             "type": "array",
+            "description": "Entries missing id, title or scheduled_at are skipped.",
             "items": {
-              "$ref": "#/components/schemas/Discussion"
+              "$ref": "#/components/schemas/ClubActiveSessionDiscussionInput"
             }
+          }
+        }
+      },
+      "ClubActiveSessionDiscussionInput": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "scheduled_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp (with timezone offset) for the discussion"
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -2882,6 +3004,11 @@
       },
       "ClubCreateResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "message",
+          "club"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -2907,14 +3034,17 @@
             "type": "string"
           },
           "discord_channel": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "founded_date": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "nullable": true
           },
           "server_id": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "join_policy": {
             "type": "string",
@@ -2934,6 +3064,13 @@
       },
       "ClubUpdateResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "message",
+          "club",
+          "club_updated",
+          "shame_list_updated"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3000,6 +3137,11 @@
       },
       "MemberCreateResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "message",
+          "member"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3008,7 +3150,26 @@
             "type": "string"
           },
           "member": {
-            "$ref": "#/components/schemas/Member"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Member"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "clubs"
+                ],
+                "properties": {
+                  "clubs": {
+                    "type": "array",
+                    "description": "Club IDs the member was added to (echo of the request's `clubs`, or [] if omitted).",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
           }
         }
       },
@@ -3086,6 +3247,10 @@
       "MemberUpdateResponse": {
         "type": "object",
         "description": "Standard update response",
+        "required": [
+          "success",
+          "message"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3107,6 +3272,11 @@
       "MemberAddToClubResponse": {
         "type": "object",
         "description": "add_to_club response",
+        "required": [
+          "success",
+          "member_id",
+          "club_id"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3122,6 +3292,11 @@
       "MemberRemoveFromClubResponse": {
         "type": "object",
         "description": "remove_from_club response",
+        "required": [
+          "success",
+          "member_id",
+          "club_id"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3153,6 +3328,11 @@
       },
       "ServerCreateResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "message",
+          "server"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
@@ -3182,6 +3362,11 @@
       },
       "ServerUpdateResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "message",
+          "server"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3232,7 +3417,11 @@
             "description": "When the session was finished. Null while the session is active."
           },
           "books": {
-            "$ref": "#/components/schemas/ServerClubLatestSessionBook",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServerClubLatestSessionBook"
+              }
+            ],
             "nullable": true
           }
         }
@@ -3245,6 +3434,10 @@
           },
           {
             "type": "object",
+            "required": [
+              "member_count",
+              "latest_session"
+            ],
             "properties": {
               "member_count": {
                 "type": "integer",
@@ -3260,6 +3453,11 @@
       "ServerGetSingleResponse": {
         "type": "object",
         "description": "Response when ID is provided (Single Server)",
+        "required": [
+          "id",
+          "name",
+          "clubs"
+        ],
         "properties": {
           "id": {
             "type": "string"
@@ -3278,6 +3476,9 @@
       "ServerGetListResponse": {
         "type": "object",
         "description": "Response when ID is omitted (List of Servers)",
+        "required": [
+          "servers"
+        ],
         "properties": {
           "servers": {
             "type": "array",
@@ -3384,6 +3585,11 @@
       },
       "SessionCreateResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "message",
+          "session"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3437,7 +3643,8 @@
           },
           "due_date": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "nullable": true
           },
           "book": {
             "$ref": "#/components/schemas/SessionBookPatchInput"
@@ -3472,6 +3679,11 @@
       "SessionFinishResponse": {
         "type": "object",
         "description": "Response when `finish` is true",
+        "required": [
+          "success",
+          "message",
+          "members_credited"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
@@ -3490,6 +3702,10 @@
       "SessionNoChangesResponse": {
         "type": "object",
         "description": "Response when no changes were applicable",
+        "required": [
+          "success",
+          "message"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
@@ -3503,6 +3719,11 @@
       },
       "SessionUpdateFlags": {
         "type": "object",
+        "required": [
+          "book",
+          "session",
+          "session_members"
+        ],
         "properties": {
           "book": {
             "type": "boolean",
@@ -3521,6 +3742,11 @@
       "SessionGeneralUpdateResponse": {
         "type": "object",
         "description": "Response for general field updates",
+        "required": [
+          "success",
+          "message",
+          "updates"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
@@ -3537,6 +3763,12 @@
       },
       "SessionReadingLogBook": {
         "type": "object",
+        "required": [
+          "id",
+          "title",
+          "author",
+          "image_url"
+        ],
         "properties": {
           "id": {
             "type": "integer"
@@ -3555,6 +3787,10 @@
       },
       "SessionReadingLogClub": {
         "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
         "properties": {
           "id": {
             "type": "string"
@@ -3566,13 +3802,22 @@
       },
       "SessionReadingLogEntry": {
         "type": "object",
+        "required": [
+          "id",
+          "book",
+          "club",
+          "due_date",
+          "started_at",
+          "ended_at"
+        ],
         "properties": {
           "id": {
             "type": "string"
           },
           "due_date": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "nullable": true
           },
           "started_at": {
             "type": "string",
@@ -3596,6 +3841,10 @@
       },
       "SessionReadingLogGroups": {
         "type": "object",
+        "required": [
+          "active",
+          "finished"
+        ],
         "properties": {
           "active": {
             "type": "array",
@@ -3614,6 +3863,10 @@
       "SessionReadingLogResponse": {
         "type": "object",
         "description": "Response when no `id` is provided (reading log grouped by session status)",
+        "required": [
+          "success",
+          "reading_log"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3626,6 +3879,13 @@
       "BookSearchResponse": {
         "type": "object",
         "description": "Response for ?q= search queries.",
+        "required": [
+          "success",
+          "books",
+          "total",
+          "offset",
+          "limit"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3639,12 +3899,24 @@
           "total": {
             "type": "integer",
             "description": "Google Books' estimated corpus count (not the number of items returned on this page — use books.length for that). Approximate; Google caps actual delivery at ~1,000 items regardless of the reported total."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "The 0-based offset applied to this page (echo of the normalized `offset` query parameter)."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The page size applied (echo of the normalized `limit` query parameter, max 40)."
           }
         }
       },
       "BookLookupResponse": {
         "type": "object",
         "description": "Response for ?isbn= or ?id= lookups.",
+        "required": [
+          "success",
+          "book"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3690,6 +3962,12 @@
       },
       "BookRegistrationResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "book",
+          "created",
+          "message"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3863,6 +4141,10 @@
       "ClubPreview": {
         "type": "object",
         "description": "Lightweight club reference returned by the invite preview endpoint.",
+        "required": [
+          "id",
+          "name"
+        ],
         "properties": {
           "id": {
             "type": "string"
@@ -3874,6 +4156,10 @@
       },
       "JoinPreviewResponse": {
         "type": "object",
+        "required": [
+          "valid",
+          "club"
+        ],
         "properties": {
           "valid": {
             "type": "boolean",
@@ -3899,6 +4185,10 @@
       },
       "JoinResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "club_id"
+        ],
         "properties": {
           "success": {
             "type": "boolean",
@@ -3911,6 +4201,10 @@
       },
       "LikeStatusResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "liked"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3934,6 +4228,10 @@
       },
       "LikeToggleResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "liked"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3955,6 +4253,12 @@
       },
       "ShelfEntry": {
         "type": "object",
+        "required": [
+          "shelf",
+          "book",
+          "source",
+          "updated_at"
+        ],
         "properties": {
           "shelf": {
             "$ref": "#/components/schemas/ShelfStatus"
@@ -3978,6 +4282,10 @@
       "ShelfListResponse": {
         "type": "object",
         "description": "Response when no book_id is provided (all shelf entries for the caller).",
+        "required": [
+          "success",
+          "shelves"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -3993,12 +4301,20 @@
       "ShelfSingleResponse": {
         "type": "object",
         "description": "Response when book_id is provided (shelf for a single book, or null).",
+        "required": [
+          "success",
+          "shelf"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
           },
           "shelf": {
-            "$ref": "#/components/schemas/ShelfStatus",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShelfStatus"
+              }
+            ],
             "nullable": true
           }
         }
@@ -4021,6 +4337,10 @@
       },
       "ShelfAssignResponse": {
         "type": "object",
+        "required": [
+          "success",
+          "shelf"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -4101,6 +4421,9 @@
       },
       "ProgressDeleteResponse": {
         "type": "object",
+        "required": [
+          "success"
+        ],
         "properties": {
           "success": {
             "type": "boolean"
@@ -4109,6 +4432,10 @@
       },
       "DiscordChannelSummary": {
         "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
         "properties": {
           "id": {
             "type": "string"
@@ -4120,6 +4447,11 @@
       },
       "DiscordGuildWithChannels": {
         "type": "object",
+        "required": [
+          "id",
+          "name",
+          "channels"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -4144,6 +4476,10 @@
           },
           {
             "type": "object",
+            "required": [
+              "role",
+              "joined_at"
+            ],
             "properties": {
               "role": {
                 "type": "string",
@@ -4153,6 +4489,11 @@
                   "member"
                 ],
                 "description": "Member's role in this specific club"
+              },
+              "joined_at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When the member joined this club (server-set, read-only)"
               }
             }
           }
@@ -4166,6 +4507,10 @@
           },
           {
             "type": "object",
+            "required": [
+              "clubs",
+              "shame_clubs"
+            ],
             "properties": {
               "clubs": {
                 "type": "array",
@@ -4184,6 +4529,46 @@
             }
           }
         ]
+      },
+      "MemberSearchResult": {
+        "type": "object",
+        "description": "A lightweight member reference returned by GET /member?search=.",
+        "required": [
+          "id",
+          "name",
+          "handle",
+          "avatar_path"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "handle": {
+            "type": "string"
+          },
+          "avatar_path": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "MemberSearchResponse": {
+        "type": "object",
+        "description": "Response when `search` is provided (up to 10 matching members).",
+        "required": [
+          "members"
+        ],
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberSearchResult"
+            }
+          }
+        }
       },
       "JsonObject": {
         "type": "object",

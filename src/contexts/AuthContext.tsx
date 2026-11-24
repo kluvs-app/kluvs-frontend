@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const memberRef = useRef<Member | null>(null)
 
   const getRoleForClub = useCallback((clubId: string): UserRole | null => {
-    return member?.clubs?.find(c => c.id === clubId)?.role ?? null
+    return member?.clubs.find(c => c.id === clubId)?.role ?? null
   }, [member])
 
   // Look up member data by user_id using Edge Function with retry logic
@@ -59,27 +59,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        if (attempt === 0) {
-          console.log('🔍 Looking up member for user_id via Edge Function:', userId)
-        } else {
-          console.log(`🔄 Member lookup attempt ${attempt + 1}/${maxRetries}`)
-        }
-
         // Wait for session to be ready
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
         if (sessionError || !session) {
-          console.log('❌ No active session for Edge Function call')
           return null
         }
-
-        console.log('✅ Session ready, calling Edge Function')
 
         const { data, error } = await invokeFunction<Member>(`member?user_id=${encodeURIComponent(userId)}`, {
           method: 'GET'
         })
-
-        console.log('📡 Edge Function response:', { data, error })
 
         if (error) {
           console.error('❌ Edge Function error:', error)
@@ -88,14 +77,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Member found
         if (data) {
-          console.log('✅ Found member via Edge Function:', data)
           return data
         }
 
         // Member not found yet - may be race condition with database trigger
         if (attempt < maxRetries - 1) {
           const delay = baseDelay * Math.pow(2, attempt)
-          console.log(`⏳ Member not found, retrying in ${delay}ms (database trigger may still be executing)...`)
           await new Promise(resolve => setTimeout(resolve, delay))
         }
       } catch (error) {
@@ -104,35 +91,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    console.log('❌ Member not found after all retry attempts')
     return null
   }
-
 
   // Refresh member data - needed for profile updates
   const refreshMemberData = async (): Promise<void> => {
     if (user) {
-      console.log('🔄 Refreshing member data...')
       const memberData = await findMemberByUserId(user.id)
-      console.log('🔄 Refreshed member:', memberData)
       setMember(memberData)
     }
   }
 
-  // Handle member lookup/creation when user changes
+  // Handle member lookup when user changes
   const handleUserChange = useCallback(async (newUser: User | null) => {
-    console.log('🚀 handleUserChange called with user:', newUser?.email)
 
     // Prevent duplicate calls - check both current user and ref immediately
     if (newUser?.id === processingUserIdRef.current) {
-      console.log('⚡ Skipping duplicate handleUserChange - already processing this user')
       return
     }
 
     setUser(newUser)
 
     if (!newUser) {
-      console.log('❌ No user, clearing member')
       setMember(null)
       memberRef.current = null
       processingUserIdRef.current = null
@@ -143,11 +123,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     processingUserIdRef.current = newUser.id
 
     try {
-      console.log('🔄 Starting member lookup...')
 
       const memberData = await findMemberByUserId(newUser.id)
 
-      console.log('🎯 Member lookup completed:', memberData)
       if (memberData !== null) {
         // Successful fetch — update member state
         setMember(memberData)
@@ -265,7 +243,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    console.log('🔓 Signing out...')
     // Clear local state immediately regardless of Supabase response,
     // since an expired session still means the user is logged out locally.
     setUser(null)
@@ -274,7 +251,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut()
       if (error) console.error('❌ Supabase sign out error (session may have already expired):', error)
-      else console.log('✅ Sign out successful')
     } catch (error) {
       console.error('❌ Sign out exception:', error)
     }
@@ -319,10 +295,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession()
         const secondsUntilExpiry = (session?.expires_at ?? 0) - Math.floor(Date.now() / 1000)
         if (!session || secondsUntilExpiry < SESSION_REFRESH_THRESHOLD_S) {
-          console.log('👁️ Tab visible — token expiring soon, refreshing')
           const { error } = await supabase.auth.refreshSession()
           if (error) {
-            console.log('❌ Session refresh failed:', error.message)
             await handleUserChange(null)
           }
           // On success: TOKEN_REFRESHED → onAuthStateChange → handleUserChange
@@ -334,11 +308,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Track network connectivity and retry the token refresh when coming back online.
     const handleOffline = () => {
-      console.log('📴 Network offline')
       setIsOnline(false)
     }
     const handleOnline = () => {
-      console.log('📶 Network online')
       setIsOnline(true)
     }
 

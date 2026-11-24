@@ -6,6 +6,7 @@ import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import DiscordIcon from '../icons/DiscordIcon'
 import Button from '../ui/Button'
+import { toLocalDateString } from '../../utils/dates'
 
 interface AddClubModalProps {
   isOpen: boolean
@@ -48,7 +49,7 @@ export default function AddClubModal({
           name: formData.name.trim(),
           server_id: selectedServer || null,
           discord_channel: formData.discord_channel.trim() || null,
-          founded_date: new Date().toISOString().split('T')[0],
+          founded_date: toLocalDateString(new Date()),
         }
       })
       if (error) throw error
@@ -57,8 +58,8 @@ export default function AddClubModal({
       onClubCreated(clubId)
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : 'Failed to create club'
       )
     } finally {
@@ -87,7 +88,7 @@ export default function AddClubModal({
         if (cancelled) return
         if (!error && Array.isArray(data)) {
           setGuilds(data)
-          if (data.length === 1) setSelectedServer(data[0].id ?? '')
+          if (data.length === 1) setSelectedServer(data[0].id)
         }
       } finally {
         if (!cancelled) setGuildsLoading(false)

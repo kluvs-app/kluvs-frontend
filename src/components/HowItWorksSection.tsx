@@ -45,7 +45,7 @@ export default function HowItWorksSection() {
           <div className="relative md:pr-[236px]">
             <div className="flex gap-3 flex-wrap">
               <div
-                className="flex-1 min-w-[136px] rounded-xl p-4 flex items-center gap-3 cursor-default transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl"
+                className="flex-1 min-w-[136px] rounded-xl p-4 flex items-center gap-3 cursor-default transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-xl"
                 style={{ background: 'rgba(88,101,242,0.18)' }}
               >
                 <div
@@ -75,7 +75,7 @@ export default function HowItWorksSection() {
               ].map(({ name, channel }, i) => (
                 <div
                   key={name}
-                  className={`${i === 1 ? 'flex' : 'hidden md:flex'} flex-1 min-w-[136px] rounded-xl p-5 items-center gap-3 cursor-default transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl`}
+                  className={`${i === 1 ? 'flex' : 'hidden md:flex'} flex-1 min-w-[136px] rounded-xl p-5 items-center gap-3 cursor-default transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-xl`}
                   style={{ background: 'rgba(209,109,48,0.18)' }}
                 >
                   <div
@@ -140,7 +140,7 @@ export default function HowItWorksSection() {
 
               {/* Active — always visible */}
               <div
-                className="rounded-xl p-4 flex items-center gap-3 cursor-default transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl relative flex-1 min-w-[136px]"
+                className="rounded-xl p-4 flex items-center gap-3 cursor-default transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-xl relative flex-1 min-w-[136px]"
                 style={{ background: 'rgba(0,103,129,0.22)' }}
               >
                 <div className="t-eyebrow absolute -top-[9px] right-3 px-2.5 py-0.5 rounded-full bg-primary text-white">
@@ -203,7 +203,7 @@ export default function HowItWorksSection() {
               ].map(({ name, date }, i) => (
                 <div
                   key={name}
-                  className={`${i === 2 ? 'hidden md:flex' : 'flex'} flex-1 min-w-[136px] rounded-xl p-4 items-center gap-3 cursor-default transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl`}
+                  className={`${i === 2 ? 'hidden md:flex' : 'flex'} flex-1 min-w-[136px] rounded-xl p-4 items-center gap-3 cursor-default transition-all duration-[180ms] hover:-translate-y-0.5 hover:shadow-xl`}
                   style={{ background: 'rgba(72,164,128,0.18)' }}
                 >
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--color-bg-raised)', color: 'var(--color-diagram-discussion)' }}>

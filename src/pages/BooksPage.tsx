@@ -12,9 +12,6 @@ import type {
   BookVolumeInfo, LikeStatusResponse, LikeToggleResponse,
   ShelfAssignResponse, ShelfEntry, ShelfListResponse, ShelfSingleResponse, ShelfValue,
 } from '../types'
-
-/** A shelf entry with the fields the shelf UI needs. Entries missing either are dropped on load. */
-type ShelvedBook = ShelfEntry & { shelf: ShelfValue; book: Book }
 import KluvsSpinner from '../components/KluvsSpinner'
 import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import BookCard from '../components/BookCard'
@@ -142,7 +139,7 @@ export default function BooksPage() {
   const [authorBooks, setAuthorBooks]       = useState<AuthorBook[]>([])
   const [liked, setLiked]           = useState(false)
   const [shelf, setShelf]           = useState<ShelfValue | null>(null)
-  const [shelvedBooks, setShelvedBooks]     = useState<ShelvedBook[]>([])
+  const [shelvedBooks, setShelvedBooks]     = useState<ShelfEntry[]>([])
   const [loadingShelves, setLoadingShelves] = useState(true)
   const [shelvesError, setShelvesError]     = useState('')
   const [searchPage, setSearchPage]         = useState(0)
@@ -172,7 +169,7 @@ export default function BooksPage() {
     invokeFunction<ShelfListResponse>('shelf', { method: 'GET' })
       .then(({ data, error }) => {
         if (error) throw error
-        setShelvedBooks((data?.shelves ?? []).filter((e): e is ShelvedBook => !!e.shelf && !!e.book))
+        setShelvedBooks(data?.shelves ?? [])
       })
       .catch(() => setShelvesError('Could not load shelves.'))
       .finally(() => setLoadingShelves(false))
@@ -290,9 +287,9 @@ export default function BooksPage() {
         .then(({ data, error }) => {
           if (id && activeId.current !== id) return
           if (!error && data) {
-            setVolumeInfo(data.volumeInfo ?? null)
-            setAuthorInfo(data.authorInfo ?? null)
-            setAuthorBooks(data.authorBooks ?? [])
+            setVolumeInfo(data.volumeInfo)
+            setAuthorInfo(data.authorInfo)
+            setAuthorBooks(data.authorBooks)
           }
         })
         .catch(() => {})
@@ -324,13 +321,13 @@ export default function BooksPage() {
             invokeFunction<LikeStatusResponse>('like?book_id=' + saved.id, { method: 'GET' })
               .then(({ data: likeData, error: likeError }) => {
                 if (!likeError && likeData) {
-                  setLiked(likeData.liked ?? false)
+                  setLiked(likeData.liked)
                 }
               }).catch(() => {})
             invokeFunction<ShelfSingleResponse>('shelf?book_id=' + saved.id, { method: 'GET' })
               .then(({ data: shelfData, error: shelfError }) => {
                 if (!shelfError && shelfData) {
-                  setShelf(shelfData.shelf ?? null)
+                  setShelf(shelfData.shelf)
                 }
               }).catch(() => {})
           }
@@ -349,7 +346,7 @@ export default function BooksPage() {
       body: { book_id: bookId },
     }).then(({ data, error }) => {
       if (!error && data) {
-        setLiked(data.liked ?? !prevLiked)
+        setLiked(data.liked)
       } else {
         setLiked(prevLiked)
       }
@@ -372,7 +369,7 @@ export default function BooksPage() {
     } else {
       setShelvedBooks(prev => {
         const idx = prev.findIndex(e => e.book.id === bookId)
-        const entry: ShelvedBook = { shelf: value, updated_at: new Date().toISOString(), source: 'manual', book: selectedBook }
+        const entry: ShelfEntry = { shelf: value, updated_at: new Date().toISOString(), source: 'manual', book: selectedBook }
         if (idx >= 0) return prev.map((e, i) => i === idx ? entry : e)
         return [...prev, entry]
       })
@@ -392,7 +389,7 @@ export default function BooksPage() {
         body: { book_id: bookId, shelf: value },
       }).then(({ data, error }) => {
         if (!error && data) {
-          setShelf(data.shelf ?? value)
+          setShelf(data.shelf)
         } else {
           setShelf(prevShelf)
           setShelvedBooks(prevShelvedBooks)
@@ -419,11 +416,11 @@ export default function BooksPage() {
 
   // ── Derived display values ─────────────────────────────────────────────────
   const vi          = volumeInfo
-  const coverUrl    = bestCoverUrl(vi?.imageLinks, selectedBook?.image_url)
+  const coverUrl    = bestCoverUrl(vi?.imageLinks, selectedBook?.image_url ?? undefined)
   const title       = selectedBook?.title ?? ''
   const subtitle    = vi?.subtitle
-  const authors     = vi?.authors?.join(', ') ?? selectedBook?.author ?? ''
-  const year        = extractYear(vi?.publishedDate, selectedBook?.year)
+  const authors     = vi?.authors.join(', ') ?? selectedBook?.author ?? ''
+  const year        = extractYear(vi?.publishedDate, selectedBook?.year ?? undefined)
   const pages       = (vi?.pageCount ?? selectedBook?.page_count)?.toLocaleString()
   const publisher   = vi?.publisher
   const isbn        = preferredIsbn(vi?.industryIdentifiers) ?? selectedBook?.isbn
@@ -460,7 +457,7 @@ export default function BooksPage() {
       <div className="relative px-[22px] lg:px-10 pt-7 lg:pt-9 pb-6 min-h-[78px] lg:min-h-[86px]">
 
         {/* My Shelf header */}
-        <div className={`flex items-start justify-between gap-4 transition-opacity duration-150 ${view === 'search' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className={`flex items-start justify-between gap-4 transition-opacity duration-[180ms] ${view === 'search' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div>
             <span className="t-eyebrow block text-[var(--color-text-secondary)] mb-2">
               Library
@@ -482,7 +479,7 @@ export default function BooksPage() {
 
         {/* Search header — slides/fades in from the search button's position */}
         <div
-          className={`absolute inset-x-[22px] lg:inset-x-10 top-7 lg:top-9 flex items-center gap-3 origin-right transition-all duration-200 ease-out ${
+          className={`absolute inset-x-[22px] lg:inset-x-10 top-7 lg:top-9 flex items-center gap-3 origin-right transition-all duration-[180ms] ease-out ${
             view === 'search' ? 'opacity-100 scale-x-100' : 'opacity-0 scale-x-0 pointer-events-none'
           }`}
         >
@@ -805,7 +802,7 @@ export default function BooksPage() {
                           {authorInfo.imageUrl && !authorPhotoFailed && (
                             <img
                               src={authorInfo.imageUrl}
-                              alt={authorInfo.name ?? ''}
+                              alt={authorInfo.name}
                               className="h-12 w-12 rounded-full object-cover shrink-0"
                               onError={() => setAuthorPhotoFailed(true)}
                             />
@@ -889,7 +886,7 @@ export default function BooksPage() {
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         aria-label="Back to top"
-        className={`fixed bottom-20 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center w-10 h-10 rounded-btn bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] text-[var(--color-text-secondary)] shadow-lg hover:text-[var(--color-text-primary)] hover:border-[var(--color-text-secondary)] transition-all duration-200 cursor-pointer ${
+        className={`fixed bottom-20 lg:bottom-8 left-1/2 -translate-x-1/2 z-40 flex items-center justify-center w-10 h-10 rounded-btn bg-[var(--color-bg-elevated)] border border-[var(--color-divider)] text-[var(--color-text-secondary)] shadow-lg hover:text-[var(--color-text-primary)] hover:border-[var(--color-text-secondary)] transition-all duration-[180ms] cursor-pointer ${
           showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >

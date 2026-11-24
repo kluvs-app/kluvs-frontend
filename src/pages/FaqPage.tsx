@@ -70,7 +70,7 @@ export default function FaqPage() {
                       </span>
                     </a>
                     <details id={item.id} className={`${card} group scroll-mt-24`}>
-                      <summary className="cursor-pointer list-none px-5 py-4 flex items-center justify-between gap-4 font-medium text-[var(--color-text-primary)]">
+                      <summary className="cursor-pointer list-none px-5 py-4 flex items-center justify-between gap-4 t-label text-[var(--color-text-primary)]">
                         <span>{item.question}</span>
                         <span
                           className="material-symbols-outlined text-[var(--color-text-meta)] transition-transform group-open:rotate-180"

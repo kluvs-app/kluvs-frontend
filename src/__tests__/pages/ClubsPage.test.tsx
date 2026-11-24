@@ -143,7 +143,8 @@ describe('ClubsPage', () => {
       await waitFor(() => screen.getByTestId('add-club-modal'))
       await user.click(screen.getByRole('button', { name: /close/i }))
       await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument(), { timeout: 5000 })
-    })
+      // Test-level timeout above the inner waitFor's 5s: this flakes on slow CI runners under coverage.
+    }, 15000)
   })
 
   describe('Member role', () => {
@@ -658,7 +659,8 @@ describe('ClubsPage', () => {
       const closeBtn = screen.getByRole('button', { name: /close/i })
       await user.click(closeBtn)
       await waitFor(() => expect(screen.queryByTestId('add-club-modal')).not.toBeInTheDocument(), { timeout: 5000 })
-    })
+      // Test-level timeout above the inner waitFor's 5s: this flakes on slow CI runners under coverage.
+    }, 15000)
 
     it('new modal prop opens modal on mount', async () => {
       renderPage({ openNewModal: true })

@@ -71,7 +71,7 @@ export default function SetNewPasswordPage() {
             <p className="text-danger t-body-m text-center">{error}</p>
           )}
           <Button
-            variant="primary" className="w-full disabled:bg-gray-400 dark:disabled:bg-gray-700 text-body-lg"
+            variant="primary" className="w-full"
             type="submit"
             disabled={submitting}
           >

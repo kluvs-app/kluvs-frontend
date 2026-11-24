@@ -129,7 +129,7 @@ describe('MemberModal', () => {
   })
 
   describe('Reading toggle — no active session', () => {
-    const clubNoSession = { ...mockClub, active_session: undefined }
+    const clubNoSession = { ...mockClub, active_session: null }
 
     it('disables the toggle when no active session', () => {
       render(<MemberModal {...defaultProps} selectedClub={clubNoSession} editingMember={mockAdminClubMember} />)
@@ -275,6 +275,66 @@ describe('MemberModal', () => {
       await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'Test')
       await user.click(screen.getByRole('button', { name: 'Add Member' }))
       await waitFor(() => expect(screen.getByText('Network error')).toBeInTheDocument())
+    })
+
+    it('falls back to a generic message when the request rejects with a non-Error', async () => {
+      mockInvoke.mockRejectedValue('boom')
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} />)
+      await user.type(screen.getByPlaceholderText('e.g., BookLover42'), 'Test')
+      await user.click(screen.getByRole('button', { name: 'Add Member' }))
+      await waitFor(() => expect(screen.getByText('Failed to add member')).toBeInTheDocument())
+    })
+
+    it('explains a Forbidden role change and keeps the modal open', async () => {
+      mockInvoke.mockResolvedValue({ data: null, error: new Error('Forbidden') })
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} editingMember={mockRegularClubMember} editorRole="owner" />)
+      await user.selectOptions(screen.getByRole('combobox'), 'admin')
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
+      await waitFor(() =>
+        expect(screen.getByText("You don't have permission to change this member's role.")).toBeInTheDocument()
+      )
+      expect(defaultProps.onMemberSaved).not.toHaveBeenCalled()
+      expect(defaultProps.onClose).not.toHaveBeenCalled()
+    })
+
+    it('shows other role-change errors as-is', async () => {
+      mockInvoke.mockResolvedValue({ data: null, error: new Error('Role update failed') })
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} editingMember={mockRegularClubMember} editorRole="owner" />)
+      await user.selectOptions(screen.getByRole('combobox'), 'admin')
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
+      await waitFor(() => expect(screen.getByText('Role update failed')).toBeInTheDocument())
+    })
+
+    it('shows a reading-status error but still reports the role change that succeeded', async () => {
+      mockInvoke.mockImplementation((fn: string) =>
+        Promise.resolve(fn === 'session'
+          ? { data: null, error: new Error('Session update failed') }
+          : { data: {}, error: null })
+      )
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} editingMember={mockAdminClubMember} editorRole="owner" />)
+      await user.selectOptions(screen.getByRole('combobox'), 'admin')
+      await user.click(screen.getByRole('switch'))
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
+      await waitFor(() => expect(screen.getByText('Session update failed')).toBeInTheDocument())
+      expect(defaultProps.onMemberSaved).toHaveBeenCalledTimes(1)
+      expect(defaultProps.onClose).not.toHaveBeenCalled()
+    })
+
+    it('combines role and reading-status errors', async () => {
+      mockInvoke.mockImplementation((fn: string) =>
+        Promise.resolve({ data: null, error: new Error(fn === 'session' ? 'Session update failed.' : 'Role update failed.') })
+      )
+      const user = userEvent.setup()
+      render(<MemberModal {...defaultProps} editingMember={mockAdminClubMember} editorRole="owner" />)
+      await user.selectOptions(screen.getByRole('combobox'), 'admin')
+      await user.click(screen.getByRole('switch'))
+      await user.click(screen.getByRole('button', { name: 'Update Member' }))
+      await waitFor(() => expect(screen.getByText('Role update failed. Session update failed.')).toBeInTheDocument())
+      expect(defaultProps.onMemberSaved).not.toHaveBeenCalled()
     })
 
     it('clears error when modal is closed and reopened', async () => {

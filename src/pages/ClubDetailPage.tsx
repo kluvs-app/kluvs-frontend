@@ -75,7 +75,7 @@ export default function ClubDetailPage() {
   const { member, getRoleForClub, refreshMemberData } = useAuth()
   const { setTopBar, resetTopBar } = useMobileTopBar()
 
-  const memberClub = member?.clubs?.find((c) => c.id === slug)
+  const memberClub = member?.clubs.find((c) => c.id === slug)
   const serverId = memberClub?.server_id ?? ''
 
   const [club, setClub] = useState<Club | null>(null)
@@ -189,8 +189,8 @@ export default function ClubDetailPage() {
       setClub(data)
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : 'Failed to fetch club details'
       )
     } finally {
@@ -210,8 +210,8 @@ export default function ClubDetailPage() {
       setClub(data)
     } catch (err: unknown) {
       setError(
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
+        err instanceof Error
+          ? err.message
           : 'Failed to refresh club details'
       )
     } finally {
@@ -284,7 +284,7 @@ export default function ClubDetailPage() {
 
   const getSortedMembers = (members: ClubMember[]) => {
     const roleOrder: Record<UserRole, number> = { owner: 0, admin: 1, member: 2 }
-    return [...members].sort((a, b) => roleOrder[a.role ?? 'member'] - roleOrder[b.role ?? 'member'])
+    return [...members].sort((a, b) => roleOrder[a.role] - roleOrder[b.role])
   }
 
   if (loading) {
@@ -310,7 +310,7 @@ export default function ClubDetailPage() {
     ) : null
   }
 
-  const clubMembers = club.members ?? []
+  const clubMembers = club.members
 
   const clubs = member?.clubs ?? []
 
@@ -345,10 +345,11 @@ export default function ClubDetailPage() {
               </span>
               <button
                 onClick={() => setShowAddClubModal(true)}
-                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-120 hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)] !text-[20px] font-light leading-none"
+                className="inline-flex items-center justify-center w-6 h-6 rounded-md transition-colors duration-[120ms] hover:bg-[var(--color-bg-elevated)] text-[var(--color-text-secondary)]"
                 title="Add club"
+                aria-label="Add club"
               >
-                +
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }} aria-hidden="true">add</span>
               </button>
             </div>
           </div>
@@ -364,7 +365,7 @@ export default function ClubDetailPage() {
                     navigate(`/clubs/${c.id}`, { replace: true })
                   }}
                   className={[
-                    'w-full text-left px-6 py-3.5 border-l-[3px] transition-colors duration-120 relative',
+                    'w-full text-left px-6 py-3.5 border-l-[3px] transition-colors duration-[120ms] relative',
                     isActive
                       ? 'border-l-primary bg-[rgba(209,109,48,0.06)]'
                       : 'border-l-transparent hover:bg-[var(--color-bg-elevated)]',
@@ -375,22 +376,22 @@ export default function ClubDetailPage() {
                     <p className="t-title-m text-[var(--color-text-primary)] truncate">
                       {c.name}
                     </p>
-                    <RoleEyebrow role={c.role ?? 'member'} />
+                    <RoleEyebrow role={c.role} />
                   </div>
 
                   {/* Book reading */}
-                  {sidebarClubs[c.id]?.active_session?.book?.title && (
+                  {sidebarClubs[c.id]?.active_session?.book.title && (
                     <p className="t-title-s t-feature text-[var(--color-text-secondary)] truncate mb-2">
-                      {sidebarClubs[c.id].active_session!.book!.title}
+                      {sidebarClubs[c.id].active_session!.book.title}
                     </p>
                   )}
 
                   {/* Members + next date */}
                   {sidebarClubs[c.id]?.members ? (
                     <div className="t-eyebrow flex items-center justify-between text-[var(--color-text-secondary)]">
-                      <div>{sidebarClubs[c.id].members?.length ?? 0} MEMBERS</div>
+                      <div>{sidebarClubs[c.id].members.length} MEMBERS</div>
                       {(() => {
-                        const next = sidebarClubs[c.id].active_session?.discussions?.find((d) => !isPast(d.scheduled_at))
+                        const next = sidebarClubs[c.id].active_session?.discussions.find((d) => !isPast(d.scheduled_at))
                         if (!next?.scheduled_at) return null
                         const parsedDate = parseScheduledAt(next.scheduled_at)
                         if (isNaN(parsedDate.getTime())) return null
@@ -494,8 +495,8 @@ export default function ClubDetailPage() {
                       <div className="grid grid-cols-[128px_1fr] gap-9 mb-6">
                         {/* Left column: cover */}
                         <BookCover
-                          imageUrl={club.active_session.book?.image_url}
-                          title={club.active_session.book?.title || 'Book cover'}
+                          imageUrl={club.active_session.book.image_url}
+                          title={club.active_session.book.title || 'Book cover'}
                           size="lg"
                         />
 
@@ -516,10 +517,10 @@ export default function ClubDetailPage() {
                               )}
                             </div>
                             <h2 className="t-headline-l t-feature text-[var(--color-text-primary)] mb-2">
-                              {club.active_session.book?.title || '(Untitled)'}
+                              {club.active_session.book.title || '(Untitled)'}
                             </h2>
                             <p className="t-body-l text-[var(--color-text-secondary)]">
-                              {club.active_session.book?.author}
+                              {club.active_session.book.author}
                             </p>
                           </div>
 
@@ -773,7 +774,7 @@ Invite
             const isActive = mobileTab === tab
             const tabCounts = {
               overview: 0,
-              discussions: club.active_session?.discussions?.length || 0,
+              discussions: club.active_session?.discussions.length || 0,
               members: clubMembers.length,
             }
             return (
@@ -781,7 +782,7 @@ Invite
                 key={tab}
                 onClick={() => setMobileTab(tab)}
                 className={[
-                  't-label flex-1 px-4 py-[14.5px] relative transition-colors duration-120',
+                  't-label flex-1 px-4 py-[14.5px] relative transition-colors duration-[120ms]',
                   isActive
                     ? 'text-[var(--color-text-primary)]'
                     : 'text-[var(--color-text-secondary)]',
@@ -839,8 +840,8 @@ Invite
                 <div>
                   <div className="grid grid-cols-[80px_1fr] gap-5 items-start">
                     <BookCover
-                      imageUrl={club.active_session.book?.image_url}
-                      title={club.active_session.book?.title || 'Book cover'}
+                      imageUrl={club.active_session.book.image_url}
+                      title={club.active_session.book.title || 'Book cover'}
                       size="md"
                     />
                     <div>
@@ -858,10 +859,10 @@ Invite
                         )}
                       </div>
                       <h3 className="t-headline-s t-feature text-[var(--color-text-primary)] mb-0.5">
-                        {club.active_session.book?.title || '(Untitled)'}
+                        {club.active_session.book.title || '(Untitled)'}
                       </h3>
                       <p className="t-caption text-[var(--color-text-secondary)] mb-2">
-                        {club.active_session.book?.author}
+                        {club.active_session.book.author}
                       </p>
                     </div>
                   </div>
@@ -1006,7 +1007,7 @@ Invite
                       const displayCount = Math.min(3, clubMembers.length)
                       const displayed = clubMembers.slice(0, displayCount)
                       const remaining = clubMembers.length - displayCount
-                      const displayedNames = displayed.map((m) => (m.name ?? '').split(' ')[0]).join(', ')
+                      const displayedNames = displayed.map((m) => m.name.split(' ')[0]).join(', ')
                       return remaining > 0 ? `${displayedNames} & ${remaining} more` : displayedNames
                     })()}
                   </p>

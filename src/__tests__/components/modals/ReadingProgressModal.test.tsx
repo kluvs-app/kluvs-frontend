@@ -70,6 +70,7 @@ describe('ReadingProgressModal', () => {
       started_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       completed_at: null,
+      book: null,
     }
 
     render(<ReadingProgressModal {...defaultProps} existing={existing} />)
@@ -178,6 +179,7 @@ describe('ReadingProgressModal', () => {
       started_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       completed_at: null,
+      book: null,
     }
 
     vi.mocked(invokeFunction).mockResolvedValue({
@@ -217,6 +219,19 @@ describe('ReadingProgressModal', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/API Error/i)).toBeInTheDocument()
+    })
+  })
+
+  it('falls back to a generic message for non-Error failures', async () => {
+    vi.mocked(invokeFunction).mockRejectedValue('boom')
+
+    render(<ReadingProgressModal {...defaultProps} />)
+    
+    fireEvent.change(screen.getByLabelText(/Current Page/i), { target: { value: '50' } })
+    fireEvent.click(screen.getByRole('button', { name: /Save Progress/i }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to save progress')).toBeInTheDocument()
     })
   })
 

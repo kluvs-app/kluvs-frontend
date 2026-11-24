@@ -44,8 +44,8 @@ export default function DiscussionNoteModal({
       .catch((err: unknown) => {
         if (cancelled) return
         onError(
-          err && typeof err === 'object' && 'message' in err
-            ? String(err.message)
+          err instanceof Error
+            ? err.message
             : 'Failed to load note'
         )
       })
@@ -81,8 +81,8 @@ export default function DiscussionNoteModal({
       }
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : `Failed to ${note ? 'update' : 'save'} note`
       )
     } finally {
@@ -107,8 +107,8 @@ export default function DiscussionNoteModal({
       setContent('')
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : 'Failed to delete note'
       )
     } finally {

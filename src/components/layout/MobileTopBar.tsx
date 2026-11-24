@@ -49,7 +49,7 @@ export default function MobileTopBar() {
   const avatarUrl = member?.avatar_path ? getAvatarUrl(member.avatar_path) : null
   const isDetail  = !!state.title
 
-  const menuItemBase = 't-label flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors duration-120'
+  const menuItemBase = 't-label flex items-center gap-3 w-full px-4 py-2.5 text-left transition-colors duration-[120ms]'
 
   const BackButton = () => {
     const inner = (

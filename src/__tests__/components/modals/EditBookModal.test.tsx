@@ -172,13 +172,23 @@ describe('EditBookModal', () => {
       })
     })
 
-    it('should handle unknown errors gracefully', async () => {
+    it('should report network errors', async () => {
       mockInvoke.mockRejectedValue(new Error('Network error'))
       const user = userEvent.setup()
       render(<EditBookModal {...defaultProps} />)
       await user.click(screen.getByRole('button', { name: /update book/i }))
       await waitFor(() => {
         expect(defaultProps.onError).toHaveBeenCalledWith('Network error')
+      })
+    })
+
+    it('should handle unknown errors gracefully', async () => {
+      mockInvoke.mockRejectedValue('boom')
+      const user = userEvent.setup()
+      render(<EditBookModal {...defaultProps} />)
+      await user.click(screen.getByRole('button', { name: /update book/i }))
+      await waitFor(() => {
+        expect(defaultProps.onError).toHaveBeenCalledWith('Failed to update book')
       })
     })
   })

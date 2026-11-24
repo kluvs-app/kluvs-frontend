@@ -46,7 +46,7 @@ const mockAuthorBook: AuthorBook = {
 let enrichment: BookEnrichmentResponse | null = null
 
 function setEnrichment(partial: Partial<BookEnrichmentResponse>) {
-  enrichment = { volumeInfo: undefined, authorInfo: undefined, authorBooks: [], ...enrichment, ...partial }
+  enrichment = { volumeInfo: null, authorInfo: null, authorBooks: [], ...enrichment, ...partial }
 }
 
 function enrichmentCalls(): string[] {

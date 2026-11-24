@@ -17,7 +17,6 @@ vi.mock('../../supabase', () => {
   }
 })
 
-vi.mock('../../components/layout/Sidebar', () => ({ default: () => null }))
 vi.mock('../../components/modals/EditBookModal', () => ({
   default: ({ isOpen, onBookUpdated, onClose }: any) => isOpen ? (
     <div role="dialog" data-testid="edit-book-modal">
@@ -57,6 +56,7 @@ vi.mock('../../components/modals/DeleteMemberModal', () => ({
     <>
       {/* Always rendered so page tests can exercise the onError wiring without opening the modal */}
       <button data-testid="delete-member-fire-error" onClick={() => onError('Forbidden')} />
+      <button data-testid="delete-member-fire-deleted" onClick={onMemberDeleted} />
       {isOpen ? (
         <div role="dialog" data-testid="delete-member-modal">
           <button onClick={onMemberDeleted} data-testid="modal-member-delete">Confirm</button>
@@ -294,12 +294,43 @@ describe('ClubDetailPage', () => {
     it('shows error message when club fetch fails', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
         if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
-        if (endpoint.includes('club?id=')) return Promise.resolve({ data: null, error: { message: 'Failed to fetch' } })
+        if (endpoint.includes('club?id=')) return Promise.resolve({ data: null, error: new Error('Failed to fetch') })
         if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
         return Promise.resolve({ data: null, error: null })
       })
       renderDetail()
       await waitFor(() => expect(screen.getByText('Failed to fetch')).toBeInTheDocument())
+    })
+
+    it('falls back to a generic message when the club fetch rejects with a non-Error', async () => {
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return Promise.reject('boom')
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      renderDetail()
+      await waitFor(() => expect(screen.getByText('Failed to fetch club details')).toBeInTheDocument())
+    })
+
+    it.each([
+      ['an Error', { data: null, error: new Error('Refresh failed') }, 'Refresh failed'],
+      ['a non-Error', 'boom', 'Failed to refresh club details'],
+    ])('shows an alert when refreshing after a modal action fails with %s', async (_label, failure, message) => {
+      const user = userEvent.setup()
+      renderDetail()
+      const fireDeleted = await screen.findByTestId('delete-member-fire-deleted')
+      await screen.findAllByText(mockClub.name)
+
+      mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
+        if (endpoint.includes('member?user_id=')) return Promise.resolve({ data: mockAdminMember, error: null })
+        if (endpoint.includes('club?id=')) return typeof failure === 'string' ? Promise.reject(failure) : Promise.resolve(failure)
+        if (endpoint === 'server') return Promise.resolve({ data: { servers: [mockServer] }, error: null })
+        return Promise.resolve({ data: null, error: null })
+      })
+      await user.click(fireDeleted)
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(message)
     })
 
     it('shows an action error from a modal while the club is loaded, and lets the user dismiss it', async () => {
@@ -1383,9 +1414,10 @@ describe('ClubDetailPage', () => {
             data: {
               ...mockClub,
               active_session: {
+                ...mockClub.active_session!,
                 discussions: [
-                  { id: '1', title: 'Discussion 1', scheduled_at: '2020-01-01T19:00:00Z' },
-                  { id: '2', title: 'Discussion 2', scheduled_at: '2026-06-15T19:00:00Z' },
+                  { id: '1', session_id: 'session-1', title: 'Discussion 1', scheduled_at: '2020-01-01T19:00:00Z', location: null },
+                  { id: '2', session_id: 'session-1', title: 'Discussion 2', scheduled_at: '2026-06-15T19:00:00Z', location: null },
                 ],
               },
             },
@@ -1409,10 +1441,11 @@ describe('ClubDetailPage', () => {
             data: {
               ...mockClub,
               active_session: {
+                ...mockClub.active_session!,
                 discussions: [
-                  { id: '1', title: 'Past', scheduled_at: '2020-01-01T19:00:00Z' },
-                  { id: '2', title: 'Next', scheduled_at: '2026-06-15T19:00:00Z' },
-                  { id: '3', title: 'Upcoming', scheduled_at: '2026-07-15T19:00:00Z' },
+                  { id: '1', session_id: 'session-1', title: 'Past', scheduled_at: '2020-01-01T19:00:00Z', location: null },
+                  { id: '2', session_id: 'session-1', title: 'Next', scheduled_at: '2026-06-15T19:00:00Z', location: null },
+                  { id: '3', session_id: 'session-1', title: 'Upcoming', scheduled_at: '2026-07-15T19:00:00Z', location: null },
                 ],
               },
             },

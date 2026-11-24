@@ -46,7 +46,7 @@ describe('MembersTable', () => {
       render(<MembersTable {...defaultProps} />)
 
       const firstMember = mockClubMembers[0]
-      expect(screen.getByText(firstMember.books_read.toString())).toBeInTheDocument()
+      expect(screen.getByText(String(firstMember.books_read))).toBeInTheDocument()
     })
   })
 
@@ -199,7 +199,7 @@ describe('MembersTable', () => {
       render(<MembersTable {...defaultProps} />)
 
       mockClubMembers.forEach(member => {
-        expect(screen.getByText(member.books_read.toString())).toBeInTheDocument()
+        expect(screen.getByText(String(member.books_read))).toBeInTheDocument()
       })
     })
   })

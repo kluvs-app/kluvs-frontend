@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run test:run:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(npm run type-check)",
+      "Bash(npm run lint)",
+      "Bash(npm run lint:fix)",
+      "Bash(npm run validate)",
+      "Bash(npm run build)",
+      "Bash(npm run api:generate)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git blame:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
+    ],
+    "deny": [
+      "Bash(npm run dev:*)",
+      "Bash(npm run test)",
+      "Bash(npm test:*)",
+      "Bash(npm run test:ui:*)",
+      "Bash(gh pr merge:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -qE '(src/types/api\\.gen\\.ts|api/openapi\\.json)$' && { echo 'Generated file: fix the backend @openapi annotation and let the codegen pipeline regenerate it (npm run api:generate).' >&2; exit 2; } || exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,18 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { invokeFunction } from '../../supabase'
-import type { Club, ClubUpdateResponse, MemberUpdateResponse } from '../../types'
+import type { Club, ClubUpdateResponse, MemberSearchResponse, MemberSearchResult, MemberUpdateResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import TriggerPill from '../ui/TriggerPill'
-
-// GET /member?search returns { members: SearchResult[] }, which the spec does not
-// document yet (it only declares the single-member lookup shape). Kept local until it does.
-interface SearchResult {
-  id: number
-  name: string
-  handle: string | null
-  avatar_path: string | null
-}
 
 interface AddMemberModalProps {
   isOpen: boolean
@@ -32,7 +23,7 @@ export default function AddMemberModal({
   onError,
 }: AddMemberModalProps) {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<SearchResult[]>([])
+  const [results, setResults] = useState<MemberSearchResult[]>([])
   const [searching, setSearching] = useState(false)
   const [addingId, setAddingId] = useState<number | null>(null)
   const [inlineError, setInlineError] = useState<string | null>(null)
@@ -71,7 +62,7 @@ export default function AddMemberModal({
 
     setSearching(true)
     debounceRef.current = setTimeout(async () => {
-      const { data, error } = await invokeFunction<{ members: SearchResult[] }>(
+      const { data, error } = await invokeFunction<MemberSearchResponse>(
         `member?search=${encodeURIComponent(query)}&exclude_club_id=${encodeURIComponent(selectedClub.id)}`,
         { method: 'GET' }
       )
@@ -88,7 +79,7 @@ export default function AddMemberModal({
     }
   }, [query, selectedClub.id])
 
-  const handleAdd = async (result: SearchResult) => {
+  const handleAdd = async (result: MemberSearchResult) => {
     setAddingId(result.id)
     setInlineError(null)
     try {
@@ -222,7 +213,7 @@ export default function AddMemberModal({
               onClick={() => handlePolicyChange('PRIVATE')}
               disabled={toggleLoading}
               className={[
-                't-label flex-1 py-[7px] transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-[7px] transition-colors duration-[120ms] disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'PRIVATE'
                   ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',
@@ -234,7 +225,7 @@ export default function AddMemberModal({
               onClick={() => handlePolicyChange('INVITE_LINK')}
               disabled={toggleLoading}
               className={[
-                't-label flex-1 py-[7px] transition-colors duration-120 disabled:opacity-60 disabled:cursor-not-allowed',
+                't-label flex-1 py-[7px] transition-colors duration-[120ms] disabled:opacity-60 disabled:cursor-not-allowed',
                 policy === 'INVITE_LINK'
                   ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]',

@@ -28,7 +28,7 @@ export default function EditBookModal({
   useEffect(() => {
     if (isOpen && selectedClub.active_session) {
       const session = selectedClub.active_session
-      setSelectedBookId(session.book?.id ?? null)
+      setSelectedBookId(session.book.id ?? null)
       setDueDate(session.due_date ? session.due_date.split('T')[0] : '')
     }
   }, [isOpen, selectedClub])
@@ -53,8 +53,8 @@ export default function EditBookModal({
       onBookUpdated()
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : 'Failed to update book'
       )
     } finally {

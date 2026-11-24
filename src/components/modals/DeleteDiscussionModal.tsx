@@ -38,8 +38,8 @@ export default function DeleteDiscussionModal({
       onDiscussionDeleted()
     } catch (err: unknown) {
       onError(
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
+        err instanceof Error
+          ? err.message
           : 'Failed to delete discussion'
       )
     } finally {

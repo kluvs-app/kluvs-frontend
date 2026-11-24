@@ -251,12 +251,12 @@ export default function LandingPage() {
                 />
               </div>
               <Button
-                variant="primary" className="text-body-lg"
+                variant="primary"
                 type="submit"
               >
                 Send Message
               </Button>
-              <p className="text-helper text-[var(--color-text-meta)]">
+              <p className="t-caption">
                 Or write us directly at{' '}
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] underline underline-offset-2 transition-colors">{CONTACT_EMAIL}</a>.
               </p>

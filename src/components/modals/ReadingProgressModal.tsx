@@ -21,8 +21,8 @@ const labelStyle = {
 }
 
 function getErrorMessage(err: unknown, fallback: string): string {
-  return err && typeof err === 'object' && 'message' in err
-    ? String((err as { message: unknown }).message)
+  return err instanceof Error
+    ? err.message
     : fallback
 }
 
@@ -173,7 +173,7 @@ export default function ReadingProgressModal({
               onClick={() => setProgressType('page')}
               disabled={loading}
               className={[
-                't-label flex-1 py-[7px] transition-colors duration-150 text-inherit',
+                't-label flex-1 py-[7px] transition-colors duration-[180ms] text-inherit',
                 progressType === 'page'
                   ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
@@ -185,7 +185,7 @@ export default function ReadingProgressModal({
               onClick={() => setProgressType('percent')}
               disabled={loading}
               className={[
-                't-label flex-1 py-[7px] transition-colors duration-150 border-l border-[var(--color-divider)] text-inherit',
+                't-label flex-1 py-[7px] transition-colors duration-[180ms] border-l border-[var(--color-divider)] text-inherit',
                 progressType === 'percent'
                   ? 'bg-primary text-[var(--color-on-primary)]'
                   : 'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)] hover:text-[var(--color-text-primary)]',
@@ -206,7 +206,7 @@ export default function ReadingProgressModal({
                 id="current-page-input"
                 type="number"
                 min={0}
-                max={pageCount}
+                max={pageCount ?? undefined}
                 value={currentPage}
                 onChange={(e) => setCurrentPage(e.target.value)}
                 placeholder="0"
@@ -254,14 +254,14 @@ export default function ReadingProgressModal({
             disabled={loading}
             onClick={() => setMarkFinished(prev => !prev)}
             className={[
-              'relative inline-flex w-9 h-5 rounded-full transition-colors duration-150 flex-shrink-0',
+              'relative inline-flex w-9 h-5 rounded-full transition-colors duration-[180ms] flex-shrink-0',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               loading ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
               markFinished ? 'bg-primary' : 'bg-[var(--color-text-disabled)]',
             ].join(' ')}
           >
             <span className={[
-              'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-150',
+              'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-[180ms]',
               markFinished ? 'translate-x-4' : 'translate-x-0',
             ].join(' ')} />
           </button>
