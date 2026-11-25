@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Kluvs API",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Supabase Edge Functions API for managing book clubs."
   },
   "servers": [
@@ -2179,7 +2179,8 @@
         "required": [
           "member_id",
           "member_name",
-          "is_reading"
+          "is_reading",
+          "joined_at"
         ],
         "properties": {
           "member_id": {
@@ -2192,6 +2193,12 @@
             "type": "boolean",
             "default": true,
             "description": "Whether the member is actively reading (vs. opted out)"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the member joined the session. Null for rows that pre-date this field and had no session start time to estimate from."
           }
         }
       },

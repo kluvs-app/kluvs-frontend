@@ -577,6 +577,11 @@ export interface components {
              * @default true
              */
             is_reading: boolean;
+            /**
+             * Format: date-time
+             * @description When the member joined the session. Null for rows that pre-date this field and had no session start time to estimate from.
+             */
+            joined_at: string | null;
         };
         Book: {
             /** @description Local DB id. Absent/null for Google Books search results that have not been registered yet. */
