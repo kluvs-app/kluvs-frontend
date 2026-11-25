@@ -47,8 +47,8 @@ describe('EndSessionModal', () => {
         active_session: {
           ...mockClub.active_session!,
           members: [
-            { member_id: 1, member_name: 'Admin User', is_reading: true },
-            { member_id: 2, member_name: 'Regular User', is_reading: true },
+            { member_id: 1, member_name: 'Admin User', is_reading: true, joined_at: '2026-01-01T00:00:00Z' },
+            { member_id: 2, member_name: 'Regular User', is_reading: true, joined_at: '2026-01-01T00:00:00Z' },
           ],
         },
       }
