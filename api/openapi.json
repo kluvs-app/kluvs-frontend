@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Kluvs API",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "description": "Supabase Edge Functions API for managing book clubs."
   },
   "servers": [
@@ -2620,7 +2620,8 @@
         "required": [
           "session_id",
           "member_id",
-          "is_reading"
+          "is_reading",
+          "joined_at"
         ],
         "properties": {
           "session_id": {
@@ -2633,6 +2634,12 @@
             "type": "boolean",
             "default": true,
             "description": "Whether the member is actively reading (vs. opted out)"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the member joined the session. Null for rows that pre-date this field and had no session start time to estimate from."
           }
         }
       },
@@ -2858,7 +2865,8 @@
           "book_id",
           "shelf",
           "source",
-          "updated_at"
+          "updated_at",
+          "finished_at"
         ],
         "properties": {
           "member_id": {
@@ -2888,6 +2896,12 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the book was moved to the `read` shelf. Null unless `shelf` is `read`."
           },
           "book": {
             "$ref": "#/components/schemas/Book"
@@ -4311,7 +4325,8 @@
           "shelf",
           "book",
           "source",
-          "updated_at"
+          "updated_at",
+          "finished_at"
         ],
         "properties": {
           "shelf": {
@@ -4320,6 +4335,12 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the book was moved to the `read` shelf. Null unless `shelf` is `read`."
           },
           "source": {
             "type": "string",
