@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path // empty' | grep -qE '(src/types/api\\.gen\\.ts|api/openapi\\.json)$' && { echo 'Generated file: fix the backend @openapi annotation and let the codegen pipeline regenerate it (npm run api:generate).' >&2; exit 2; } || exit 0"
+            "command": "jq -r '.tool_input.file_path // empty' | grep -qE '(src/types/api\\.gen\\.ts|api/openapi\\.json)$' && { echo 'Generated file: fix the spec in kluvs-api (openapi.json) and let the codegen pipeline regenerate it (npm run api:generate).' >&2; exit 2; } || exit 0"
           }
         ]
       }
