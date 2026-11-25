@@ -97,8 +97,8 @@ export const mockActiveSession: Session = {
   started_at: '2024-06-01T00:00:00Z',
   ended_at: null,
   members: [
-    { member_id: 1, member_name: 'Alice', is_reading: true },
-    { member_id: 2, member_name: 'Bob', is_reading: false },
+    { member_id: 1, member_name: 'Alice', is_reading: true, joined_at: '2026-01-01T00:00:00Z' },
+    { member_id: 2, member_name: 'Bob', is_reading: false, joined_at: '2026-01-01T00:00:00Z' },
   ],
   discussions: [mockDiscussion, mockDiscussion2],
 }
