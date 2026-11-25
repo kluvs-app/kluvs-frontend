@@ -705,6 +705,11 @@ export interface components {
              * @default true
              */
             is_reading: boolean;
+            /**
+             * Format: date-time
+             * @description When the member joined the session. Null for rows that pre-date this field and had no session start time to estimate from.
+             */
+            joined_at: string | null;
         };
         DiscussionNote: {
             id: string;
@@ -799,6 +804,11 @@ export interface components {
             source: "manual" | "session";
             /** Format: date-time */
             updated_at: string;
+            /**
+             * Format: date-time
+             * @description When the book was moved to the `read` shelf. Null unless `shelf` is `read`.
+             */
+            finished_at: string | null;
             book?: components["schemas"]["Book"];
         };
         /** @description Standard delete acknowledgement, reused across all DELETE endpoints. */
@@ -1293,6 +1303,11 @@ export interface components {
             shelf: components["schemas"]["ShelfStatus"];
             /** Format: date-time */
             updated_at: string;
+            /**
+             * Format: date-time
+             * @description When the book was moved to the `read` shelf. Null unless `shelf` is `read`.
+             */
+            finished_at: string | null;
             /** @enum {string} */
             source: "manual" | "session";
             book: components["schemas"]["Book"];
