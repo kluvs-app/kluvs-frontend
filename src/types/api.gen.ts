@@ -509,7 +509,8 @@ export interface components {
             shame_list?: number[];
         };
         /** @description Full club details as returned by GET /club, including members and sessions. */
-        ClubDetail: components["schemas"]["Club"] & {
+        ClubDetail: components["schemas"]["Club"] & components["schemas"]["ClubDetailExtras"];
+        ClubDetailExtras: {
             /** @description Club members with their per-club role. */
             members: components["schemas"]["ClubMember"][];
             /** @description The club's active session, or null if none. */
@@ -1304,7 +1305,7 @@ export interface components {
         /** @description Response when book_id is provided (shelf for a single book, or null). */
         ShelfSingleResponse: {
             success: boolean;
-            shelf: components["schemas"]["ShelfStatus"] | null;
+            shelf: (string & components["schemas"]["ShelfStatus"]) | null;
         };
         ShelfAssignRequest: {
             /** @description Local DB book ID */
