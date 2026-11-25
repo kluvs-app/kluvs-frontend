@@ -369,7 +369,10 @@ export default function BooksPage() {
     } else {
       setShelvedBooks(prev => {
         const idx = prev.findIndex(e => e.book.id === bookId)
-        const entry: ShelfEntry = { shelf: value, updated_at: new Date().toISOString(), source: 'manual', book: selectedBook }
+        const now = new Date().toISOString()
+        // Mirrors the backend: finished_at is set when a book moves to 'read' and cleared when it leaves.
+        const finished_at = value === 'read' ? (idx >= 0 && prev[idx].shelf === 'read' ? prev[idx].finished_at : now) : null
+        const entry: ShelfEntry = { shelf: value, updated_at: now, finished_at, source: 'manual', book: selectedBook }
         if (idx >= 0) return prev.map((e, i) => i === idx ? entry : e)
         return [...prev, entry]
       })
