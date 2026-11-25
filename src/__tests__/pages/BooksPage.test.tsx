@@ -216,8 +216,8 @@ describe('BooksPage', () => {
 
     it('shows shelved books grouped by shelf section with counts', async () => {
       const entries: ShelfEntry[] = [
-        { shelf: 'want_to_read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
-        { shelf: 'read', updated_at: '2026-01-02T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+        { shelf: 'want_to_read', updated_at: '2026-01-01T00:00:00Z', finished_at: null, source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
+        { shelf: 'read', updated_at: '2026-01-02T00:00:00Z', finished_at: '2026-01-02T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
       ]
       mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, shelves: entries }, error: null })
       await renderAndWait()
@@ -230,8 +230,8 @@ describe('BooksPage', () => {
 
     it('shows a Currently Reading section ahead of the other shelves', async () => {
       const entries: ShelfEntry[] = [
-        { shelf: 'want_to_read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
-        { shelf: 'currently_reading', updated_at: '2026-01-02T00:00:00Z', source: 'session', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+        { shelf: 'want_to_read', updated_at: '2026-01-01T00:00:00Z', finished_at: null, source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
+        { shelf: 'currently_reading', updated_at: '2026-01-02T00:00:00Z', finished_at: null, source: 'session', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
       ]
       mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, shelves: entries }, error: null })
       await renderAndWait()
@@ -242,8 +242,8 @@ describe('BooksPage', () => {
 
     it('shows a "Reading with Kluvs" ribbon on session-sourced shelved covers', async () => {
       const entries: ShelfEntry[] = [
-        { shelf: 'currently_reading', updated_at: '2026-01-01T00:00:00Z', source: 'session', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
-        { shelf: 'read', updated_at: '2026-01-02T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+        { shelf: 'currently_reading', updated_at: '2026-01-01T00:00:00Z', finished_at: null, source: 'session', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
+        { shelf: 'read', updated_at: '2026-01-02T00:00:00Z', finished_at: '2026-01-02T00:00:00Z', source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
       ]
       mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, shelves: entries }, error: null })
       await renderAndWait()
@@ -862,7 +862,7 @@ describe('BooksPage', () => {
 
     it('shows a "Read with Kluvs" badge in the detail panel for session-sourced entries', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', source: 'session', book: mockRegisteredBook }] }, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', finished_at: '2026-01-01T00:00:00Z', source: 'session', book: mockRegisteredBook }] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
@@ -881,7 +881,7 @@ describe('BooksPage', () => {
 
     it('does not show a "with Kluvs" badge for manually-shelved entries', async () => {
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {
-        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', source: 'manual', book: mockRegisteredBook }] }, error: null })
+        if (endpoint === 'shelf') return Promise.resolve({ data: { success: true, shelves: [{ shelf: 'read', updated_at: '2026-01-01T00:00:00Z', finished_at: '2026-01-01T00:00:00Z', source: 'manual', book: mockRegisteredBook }] }, error: null })
         if (endpoint === 'book') return Promise.resolve({ data: { success: true, book: mockRegisteredBook }, error: null })
         if (endpoint.startsWith('like?book_id=')) return Promise.resolve({ data: { success: true, liked: false }, error: null })
         if (endpoint.startsWith('shelf?book_id=')) return Promise.resolve({ data: { success: true, shelf: 'read' }, error: null })
