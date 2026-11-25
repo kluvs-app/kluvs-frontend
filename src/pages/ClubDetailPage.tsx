@@ -20,6 +20,7 @@ import EditSessionModal from '../components/modals/EditSessionModal'
 import { useAuth } from '../contexts/AuthContext'
 import { useMobileTopBar } from '../contexts/MobileTopBarContext'
 import { parseLocalDate, parseScheduledAt, isPast } from '../utils/dates'
+import { toUserRole } from '../utils/enums'
 import KluvsSpinner from '../components/KluvsSpinner'
 import BookCover from '../components/ui/BookCover'
 import RoleEyebrow from '../components/ui/RoleEyebrow'
@@ -284,7 +285,7 @@ export default function ClubDetailPage() {
 
   const getSortedMembers = (members: ClubMember[]) => {
     const roleOrder: Record<UserRole, number> = { owner: 0, admin: 1, member: 2 }
-    return [...members].sort((a, b) => roleOrder[a.role] - roleOrder[b.role])
+    return [...members].sort((a, b) => roleOrder[toUserRole(a.role)] - roleOrder[toUserRole(b.role)])
   }
 
   if (loading) {

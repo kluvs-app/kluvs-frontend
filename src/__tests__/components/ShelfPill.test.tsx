@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ShelfPill from '../../components/ShelfPill'
+import type { ShelfValue } from '../../types'
 
 describe('ShelfPill', () => {
   it('shows "Add to Shelf" when no shelf is set', () => {
@@ -73,5 +74,17 @@ describe('ShelfPill', () => {
     render(<ShelfPill shelf={null} onShelfChange={vi.fn()} disabled />)
     await user.click(screen.getByRole('button', { name: 'Add to shelf' }))
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+  })
+
+  it('shows a generic label for an unknown shelf and selects no option', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const user = userEvent.setup()
+    render(<ShelfPill shelf={'paused' as ShelfValue} onShelfChange={vi.fn()} />)
+    const trigger = screen.getByRole('button', { name: 'Shelf: Shelved' })
+    expect(trigger).toHaveTextContent('Shelved')
+    await user.click(trigger)
+    for (const option of screen.getAllByRole('option')) {
+      expect(option).toHaveAttribute('aria-selected', 'false')
+    }
   })
 })

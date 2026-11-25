@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { ShelfValue } from '../types'
-import { SHELF_OPTIONS, SHELF_LABELS } from '../constants/shelves'
+import { SHELF_OPTIONS, shelfLabel } from '../constants/shelves'
 
 export default function ShelfPill({ shelf, onShelfChange, disabled }: {
   shelf: ShelfValue | null
@@ -24,7 +24,7 @@ export default function ShelfPill({ shelf, onShelfChange, disabled }: {
       <button
         onClick={() => setOpen(o => !o)}
         disabled={disabled}
-        aria-label={shelf ? `Shelf: ${SHELF_LABELS[shelf]}` : 'Add to shelf'}
+        aria-label={shelf ? `Shelf: ${shelfLabel(shelf)}` : 'Add to shelf'}
         aria-expanded={open}
         aria-haspopup="listbox"
         className={`flex items-center gap-2 t-label h-[34px] px-4 rounded-full border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
@@ -37,7 +37,7 @@ export default function ShelfPill({ shelf, onShelfChange, disabled }: {
         <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" fill={shelf ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
         </svg>
-        <span>{shelf ? SHELF_LABELS[shelf] : 'Add to Shelf'}</span>
+        <span>{shelf ? shelfLabel(shelf) : 'Add to Shelf'}</span>
         {/* Chevron */}
         <svg
           className="w-3.5 h-3.5 shrink-0 transition-transform duration-[180ms]"

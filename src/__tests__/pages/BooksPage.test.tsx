@@ -252,6 +252,32 @@ describe('BooksPage', () => {
       expect(screen.queryByLabelText(/^read with kluvs$/i)).not.toBeInTheDocument()
     })
 
+    it('skips shelf entries with an unknown shelf value', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const entries = [
+        { shelf: 'read', updated_at: '2026-01-01T00:00:00Z', finished_at: null, source: 'manual', book: { ...mockRegisteredBook, id: 1, title: 'Book A' } },
+        { shelf: 'paused', updated_at: '2026-01-02T00:00:00Z', finished_at: null, source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+      ]
+      mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, shelves: entries }, error: null })
+      await renderAndWait()
+
+      expect(screen.getByText('Book A')).toBeInTheDocument()
+      expect(screen.queryByText('Book B')).not.toBeInTheDocument()
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('paused'))
+    })
+
+    it('shows the empty state when every shelf entry is unknown', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const entries = [
+        { shelf: 'archived', updated_at: '2026-01-02T00:00:00Z', finished_at: null, source: 'manual', book: { ...mockRegisteredBook, id: 2, title: 'Book B' } },
+      ]
+      mockSupabase.functions.invoke.mockResolvedValue({ data: { success: true, shelves: entries }, error: null })
+      await renderAndWait()
+
+      expect(screen.queryByText('Book B')).not.toBeInTheDocument()
+      expect(screen.getByText(/it'll show up here/i)).toBeInTheDocument()
+    })
+
     it('clicking a shelved book opens the detail overlay', async () => {
       const shelvedGatsby: Book = { ...mockRegisteredBook }
       mockSupabase.functions.invoke.mockImplementation((endpoint: string) => {

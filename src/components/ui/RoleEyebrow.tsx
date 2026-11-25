@@ -1,11 +1,13 @@
 import type { UserRole } from '../../types'
+import { toUserRole } from '../../utils/enums'
 
 interface RoleEyebrowProps {
   role: UserRole
   className?: string
 }
 
-export default function RoleEyebrow({ role, className = '' }: RoleEyebrowProps) {
+export default function RoleEyebrow({ role: rawRole, className = '' }: RoleEyebrowProps) {
+  const role = toUserRole(rawRole)
   const isOwner = role === 'owner'
   const isAdmin = role === 'admin'
 
