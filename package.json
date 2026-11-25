@@ -18,7 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "type-check": "tsc -b",
     "validate": "npm run lint && npm run type-check && npm run test:run",
-    "api:generate": "openapi-typescript api/openapi.json -o src/types/api.gen.ts"
+    "api:generate": "node scripts/generate-api.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",

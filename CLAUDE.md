@@ -18,7 +18,7 @@ npm run type-check                        # tsc -b (never replace with tsc --noE
 npm run lint                              # eslint (lint:fix to autofix)
 npm run validate                          # lint + type-check + test:run (what CI runs)
 npm run build                             # tsc -b && vite build
-npm run api:generate                      # regenerate src/types/api.gen.ts from api/openapi.json
+npm run api:generate                      # regenerate src/types/api.gen.ts from api/openapi.json; API_SPEC_REF=<sha|branch> to try a spec PR
 ```
 
 **For agents:** keep test output small. Pass `--reporter=dot` and read only the summary and the failures. Never run `npm run dev`, `npm run test` (watch mode) or `npm run test:ui`; the user runs those locally.
@@ -55,6 +55,7 @@ src/
 └── __tests__/         # mirrors src/; utils/ has test-utils, mocks, supabase-mock
 api/openapi.json       # committed spec snapshot (generated)
 public/                # static assets, sitemap.xml, brand assets copied from design-system
+scripts/               # generate-api.mjs (npm run api:generate)
 tools/                 # release scripts
 ```
 
