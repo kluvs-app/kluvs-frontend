@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Kluvs API",
-    "version": "0.30.0",
+    "version": "1.0.0",
     "description": "Supabase Edge Functions API for managing book clubs."
   },
   "servers": [
