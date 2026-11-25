@@ -19,15 +19,15 @@ Wire types are generated from the canonical OpenAPI spec in `kluvs-api`. They ar
 - UI-only types (props, form state, `SearchResult`, …) stay local to their components.
 
 ## When the spec is wrong
-Fix the backend `@openapi` annotation in `kluvs-backend` (generator: `kluvs-backend/tools/generate-docs.ts`) and let the fix flow through the pipeline. Don't patch the types here.
+The spec is written by hand in `kluvs-api`. Fix it there with a spec PR editing `openapi.json` (track it with `/task-create`), and let the fix flow through the pipeline. Don't patch the types here.
 
 ## The pipeline
-1. A backend release (merge to backend `main`) publishes the spec to `kluvs-api`.
-2. When a spec PR merges to `main` there, `notify-consumers.yml` dispatches `api-spec-updated` to this repo.
-3. `.github/workflows/regenerate-api-types.yml` fetches the spec at that SHA, runs `api:generate`, and opens a PR to `develop` from `chore/regenerate-api-types`.
+1. API changes start as a spec PR in `kluvs-api`. When it merges to `main` there, `notify-consumers.yml` dispatches `api-spec-updated` to this repo (and to the backend and mobile).
+2. `.github/workflows/regenerate-api-types.yml` fetches the spec at that SHA, runs `api:generate`, and opens a PR to `develop` from `chore/regenerate-api-types`.
    - That branch is a CI force-push target. Never commit manual work there.
    - The PR is opened by the `kluvs-spec-bot` GitHub App, so regular CI (lint, type-check, tests, build) runs on it automatically.
-4. A human reviews and merges it. If type-check fails, the app code needs changing in a separate PR, **stacked on the regen PR**:
+3. A human reviews and merges it. If type-check fails, the app code needs changing in a separate PR, **stacked on the regen PR**:
    - Cut the fix branch from `origin/chore/regenerate-api-types` and open it with `--base chore/regenerate-api-types`, so its diff shows only the app-code fixes.
    - Merge order: squash-merge the regen PR, retarget the fix PR to `develop`, then squash-merge it. The spec update and its fixes land as two consecutive commits.
    - Don't cut the fix branch from `develop` and merge the regen branch into it. That hides the regen PR inside the fix PR.
+4. Don't release app code that calls a new or changed operation until the backend release that implements it is in production.
