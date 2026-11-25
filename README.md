@@ -46,7 +46,7 @@ Find the Supabase values in the Supabase Dashboard under Project Settings → AP
 | `npm run test:run` | Tests once |
 | `npm run test:coverage` | Tests with coverage (thresholds: 80% lines/functions/statements, 75% branches) |
 | `npm run validate` | lint + type-check + tests (what CI runs) |
-| `npm run api:generate` | Regenerate `src/types/api.gen.ts` from `api/openapi.json` |
+| `npm run api:generate` | Regenerate `src/types/api.gen.ts` from `api/openapi.json` (`API_SPEC_REF=<sha\|branch>` to try an unreleased spec; don't commit the result) |
 
 ## Project layout
 

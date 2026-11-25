@@ -18,6 +18,18 @@ Wire types are generated from the canonical OpenAPI spec in `kluvs-api`. They ar
   - `Member` is `Omit<MemberGetResponse, 'clubs'> & { clubs?: MemberClub[] }` because openapi-typescript renders `allOf` overrides as intersections. Keep that pattern for other `allOf` redefinitions.
 - UI-only types (props, form state, `SearchResult`, …) stay local to their components.
 
+## Try an unreleased spec
+To check the app against a spec before it merges, name a kluvs-api commit or branch:
+
+```bash
+API_SPEC_REF=<sha|branch> npm run api:generate
+npm run type-check
+```
+
+`API_SPEC=<path|url>` takes any other copy of the spec (a local file, for example) and wins over `API_SPEC_REF`. Every run that uses an override prints a warning naming the spec.
+
+**Never commit the generated result.** Restore it with `git restore src/types/api.gen.ts`; the regen PR brings the real update. CI and the regen workflow never set either variable.
+
 ## When the spec is wrong
 The spec is written by hand in `kluvs-api`. Fix it there with a spec PR editing `openapi.json` (track it with `/task-create`), and let the fix flow through the pipeline. Don't patch the types here.
 
