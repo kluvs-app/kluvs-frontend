@@ -28,6 +28,9 @@ vi.mock('@supabase/supabase-js', async (importOriginal) => {
 
 // Import after mock is set up
 const { invokeFunction, getAvatarUrl } = await import('../supabase')
+const { VERSION } = await import('../version')
+
+const CLIENT_HEADER = { 'X-Kluvs-Client': `web/${VERSION}` }
 
 describe('invokeFunction', () => {
   beforeEach(() => {
@@ -57,7 +60,22 @@ describe('invokeFunction', () => {
     const options = { method: 'POST' as const, body: { id: '123' } }
     await invokeFunction('club', options)
 
-    expect(mockInvoke).toHaveBeenCalledWith('club', options)
+    expect(mockInvoke).toHaveBeenCalledWith('club', { ...options, headers: CLIENT_HEADER })
+  })
+
+  it('sends X-Kluvs-Client with the web version', async () => {
+    await invokeFunction('club', { method: 'GET' })
+
+    expect(mockInvoke.mock.calls[0][1].headers).toEqual({ 'X-Kluvs-Client': `web/${VERSION}` })
+  })
+
+  it('preserves caller-supplied headers alongside X-Kluvs-Client', async () => {
+    await invokeFunction('club', { method: 'GET', headers: { 'X-Custom': 'abc' } })
+
+    expect(mockInvoke).toHaveBeenCalledWith('club', {
+      method: 'GET',
+      headers: { 'X-Custom': 'abc', ...CLIENT_HEADER },
+    })
   })
 
   it('returns the result from functions.invoke', async () => {
@@ -78,10 +96,10 @@ describe('invokeFunction', () => {
     expect(mockInvoke).toHaveBeenCalledOnce()
   })
 
-  it('calls getSession with no options when options are omitted', async () => {
+  it('sends only the client header when options are omitted', async () => {
     await invokeFunction('server')
 
-    expect(mockInvoke).toHaveBeenCalledWith('server', undefined)
+    expect(mockInvoke).toHaveBeenCalledWith('server', { headers: CLIENT_HEADER })
   })
 
   it('retries once with a fresh session on 401', async () => {
@@ -95,6 +113,19 @@ describe('invokeFunction', () => {
     expect(mockRefreshSession).toHaveBeenCalledOnce()
     expect(mockInvoke).toHaveBeenCalledTimes(2)
     expect(result).toEqual({ data: { ok: true }, error: null })
+  })
+
+  it('sends X-Kluvs-Client and caller headers on the 401 retry', async () => {
+    const auth401 = new FunctionsHttpError({ status: 401 } as Response)
+    mockInvoke
+      .mockResolvedValueOnce({ data: null, error: auth401 })
+      .mockResolvedValueOnce({ data: { ok: true }, error: null })
+
+    await invokeFunction('book', { method: 'GET', headers: { 'X-Custom': 'abc' } })
+
+    const expected = { method: 'GET', headers: { 'X-Custom': 'abc', ...CLIENT_HEADER } }
+    expect(mockInvoke).toHaveBeenNthCalledWith(1, 'book', expected)
+    expect(mockInvoke).toHaveBeenNthCalledWith(2, 'book', expected)
   })
 
   it('does not retry on non-401 errors', async () => {

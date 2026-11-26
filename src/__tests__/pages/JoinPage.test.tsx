@@ -16,6 +16,7 @@ vi.mock('../../supabase', () => {
   return {
     supabase: mockClient,
     invokeFunction: (...args: any[]) => mockClient.functions.invoke(...args),
+    KLUVS_CLIENT_HEADERS: { 'X-Kluvs-Client': 'web/test' },
   }
 })
 
@@ -102,7 +103,10 @@ describe('JoinPage', () => {
         expect(mockFetch).toHaveBeenCalledWith(
           expect.stringContaining('test-token-abc'),
           expect.objectContaining({
-            headers: expect.objectContaining({ apikey: expect.any(String) }),
+            headers: expect.objectContaining({
+              apikey: expect.any(String),
+              'X-Kluvs-Client': 'web/test',
+            }),
           })
         )
       })

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { supabase, invokeFunction } from '../supabase'
+import { supabase, invokeFunction, KLUVS_CLIENT_HEADERS } from '../supabase'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import KluvsSpinner from '../components/KluvsSpinner'
@@ -84,6 +84,7 @@ export default function JoinPage() {
             headers: {
               apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
               'Content-Type': 'application/json',
+              ...KLUVS_CLIENT_HEADERS,
             },
           }
         )
