@@ -4,6 +4,7 @@ import type { Club, ClubUpdateResponse } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import TriggerPill from '../ui/TriggerPill'
+import { toJoinPolicy } from '../../utils/enums'
 
 interface ShareClubModalProps {
   isOpen: boolean
@@ -13,7 +14,7 @@ interface ShareClubModalProps {
 }
 
 export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: ShareClubModalProps) {
-  const [policy, setPolicy] = useState<'PRIVATE' | 'INVITE_LINK'>(club.join_policy)
+  const [policy, setPolicy] = useState<'PRIVATE' | 'INVITE_LINK'>(toJoinPolicy(club.join_policy))
   const [inviteToken, setInviteToken] = useState<string | null>(club.invite_token ?? null)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -23,7 +24,7 @@ export default function ShareClubModal({ isOpen, onClose, club, onUpdated }: Sha
   // previous open or a parent re-render never leaks in.
   useEffect(() => {
     if (isOpen) {
-      setPolicy(club.join_policy)
+      setPolicy(toJoinPolicy(club.join_policy))
       setInviteToken(club.invite_token ?? null)
       setError(null)
       setCopied(false)

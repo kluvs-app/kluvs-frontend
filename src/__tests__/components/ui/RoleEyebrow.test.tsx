@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '../../utils/test-utils'
 import RoleEyebrow from '../../../components/ui/RoleEyebrow'
+import type { UserRole } from '../../../types'
 
 describe('RoleEyebrow', () => {
   describe('Rendering', () => {
@@ -146,6 +147,16 @@ describe('RoleEyebrow', () => {
         expect(screen.getByText(role)).toBeInTheDocument()
         unmount()
       })
+    })
+  })
+
+  describe('Unknown role', () => {
+    it('renders as a member without a dot', () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const { container } = render(<RoleEyebrow role={'superuser' as UserRole} />)
+      expect(screen.getByText('member')).toBeInTheDocument()
+      expect(screen.queryByText('superuser')).not.toBeInTheDocument()
+      expect(container.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument()
     })
   })
 })

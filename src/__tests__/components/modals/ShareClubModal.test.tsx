@@ -256,4 +256,14 @@ describe('ShareClubModal', () => {
       expect(mockOnClose).toHaveBeenCalled()
     })
   })
+
+  describe('Unknown join policy', () => {
+    it('treats it as Private and hides the invite link', () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const club = { ...mockClubInvite, join_policy: 'PUBLIC' } as unknown as Club
+      render(<ShareClubModal isOpen={true} onClose={mockOnClose} club={club} />)
+      expect(screen.getByRole('button', { name: 'Private' })).toHaveClass('bg-primary')
+      expect(screen.queryByText(/abc-123-token/)).not.toBeInTheDocument()
+    })
+  })
 })

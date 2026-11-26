@@ -30,10 +30,15 @@ npm run type-check
 
 **Never commit the generated result.** Restore it with `git restore src/types/api.gen.ts`; the regen PR brings the real update. CI and the regen workflow never set either variable.
 
+## Changing the generator config
+Changing how types are generated (the `openapi-typescript` options in `scripts/generate-api.mjs`) without changing the spec is not a hand-edit. Run `npm run api:generate` against the saved `api/openapi.json` (no `API_SPEC_REF`/`API_SPEC`) and commit the regenerated `src/types/api.gen.ts` in the same PR as the config change and any app code it breaks. One PR to `develop`, no bot regen PR, no stacking. The regen workflow runs from `develop`'s config, so later bot PRs produce the same output.
+
 ## When the spec is wrong
 The spec is written by hand in `kluvs-api`. Fix it there with a spec PR editing `openapi.json` (track it with `/task-create`), and let the fix flow through the pipeline. Don't patch the types here.
 
 ## The pipeline
+This covers spec changes from `kluvs-api` arriving through the bot's regen PR. A generator config change made in this repo follows "Changing the generator config" above instead.
+
 1. API changes start as a spec PR in `kluvs-api`. When it merges to `main` there, `notify-consumers.yml` dispatches `api-spec-updated` to this repo (and to the backend and mobile).
 2. `.github/workflows/regenerate-api-types.yml` fetches the spec at that SHA, runs `api:generate`, and opens a PR to `develop` from `chore/regenerate-api-types`.
    - That branch is a CI force-push target. Never commit manual work there.

@@ -4,6 +4,7 @@ import type { Book, ProgressType, ReadingProgress } from '../../types'
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import Button from '../ui/Button'
+import { toProgressType } from '../../utils/enums'
 
 interface ReadingProgressModalProps {
   isOpen: boolean
@@ -50,7 +51,7 @@ export default function ReadingProgressModal({
   useEffect(() => {
     if (!isOpen) return
     setError('')
-    setProgressType(existing?.progress_type ?? 'page')
+    setProgressType(existing ? toProgressType(existing.progress_type) : 'page')
     setCurrentPage(existing?.current_page != null ? String(existing.current_page) : '')
     setPercentComplete(existing?.percent_complete != null ? String(existing.percent_complete) : '')
     setMarkFinished(existing?.status === 'completed')

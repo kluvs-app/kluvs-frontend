@@ -18,6 +18,7 @@ import BookCard from '../components/BookCard'
 import CoverSlot from '../components/ui/CoverSlot'
 import KluvsReadBadge from '../components/KluvsReadBadge'
 import { SHELF_SECTIONS } from '../constants/shelves'
+import { isKnownShelf } from '../utils/enums'
 import Button from '../components/ui/Button'
 import ShelfPill from '../components/ShelfPill'
 
@@ -169,7 +170,7 @@ export default function BooksPage() {
     invokeFunction<ShelfListResponse>('shelf', { method: 'GET' })
       .then(({ data, error }) => {
         if (error) throw error
-        setShelvedBooks(data?.shelves ?? [])
+        setShelvedBooks((data?.shelves ?? []).filter(e => isKnownShelf(e.shelf)))
       })
       .catch(() => setShelvesError('Could not load shelves.'))
       .finally(() => setLoadingShelves(false))

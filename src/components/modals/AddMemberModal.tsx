@@ -4,6 +4,7 @@ import type { Club, ClubUpdateResponse, MemberSearchResponse, MemberSearchResult
 import KluvsSpinner from '../KluvsSpinner'
 import BaseModal from './BaseModal'
 import TriggerPill from '../ui/TriggerPill'
+import { toJoinPolicy } from '../../utils/enums'
 
 interface AddMemberModalProps {
   isOpen: boolean
@@ -28,7 +29,7 @@ export default function AddMemberModal({
   const [addingId, setAddingId] = useState<number | null>(null)
   const [inlineError, setInlineError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [policy, setPolicy] = useState<'PRIVATE' | 'INVITE_LINK'>(selectedClub.join_policy)
+  const [policy, setPolicy] = useState<'PRIVATE' | 'INVITE_LINK'>(toJoinPolicy(selectedClub.join_policy))
   const [inviteToken, setInviteToken] = useState<string | null>(selectedClub.invite_token ?? null)
   const [toggleLoading, setToggleLoading] = useState(false)
   const [toggleError, setToggleError] = useState<string | null>(null)
@@ -46,7 +47,7 @@ export default function AddMemberModal({
     setAddingId(null)
     setInlineError(null)
     setCopied(false)
-    setPolicy(selectedClub.join_policy)
+    setPolicy(toJoinPolicy(selectedClub.join_policy))
     setInviteToken(selectedClub.invite_token ?? null)
     setToggleError(null)
   }, [isOpen, selectedClub.join_policy, selectedClub.invite_token])

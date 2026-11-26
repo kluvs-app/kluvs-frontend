@@ -250,4 +250,16 @@ describe('ReadingProgressModal', () => {
     fireEvent.click(saveBtn)
     expect(screen.getByText(/Enter the current page/i)).toBeInTheDocument()
   })
+
+  it('falls back to page tracking for an unknown progress type', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const existing = {
+      id: 'rp-2', member_id: 1, book_id: Number(mockBook.id), session_id: 'sess-1',
+      progress_type: 'chapter', current_page: 12, percent_complete: null, status: 'in_progress',
+      started_at: new Date().toISOString(), updated_at: new Date().toISOString(), completed_at: null, book: null,
+    } as unknown as ReadingProgress
+
+    render(<ReadingProgressModal {...defaultProps} existing={existing} />)
+    expect(screen.getByLabelText(/Current Page/i)).toHaveValue(12)
+  })
 })
