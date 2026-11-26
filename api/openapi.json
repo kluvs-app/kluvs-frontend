@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Kluvs API",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "Supabase Edge Functions API for managing book clubs."
   },
   "servers": [
@@ -1891,6 +1891,48 @@
           }
         },
         "operationId": "getBookEnrichment"
+      }
+    },
+    "/config": {
+      "get": {
+        "summary": "Get client configuration",
+        "description": "Returns the feature flags resolved for the calling client and the minimum supported version for its platform. No authentication required: clients call it before sign-in (force-update check, gating pre-login UI). The caller is identified only by the X-Kluvs-Client header; without a valid header every flag is false and min_supported_version is null.\n",
+        "tags": [
+          "Config"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-Kluvs-Client",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(android|ios|web|discord)/\\d+\\.\\d+\\.\\d+$",
+              "example": "android/1.4.0"
+            },
+            "description": "Client platform and app version as <platform>/<MAJOR.MINOR.PATCH>. When missing or invalid, the caller is treated as an old client: every flag is false and min_supported_version is null."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Configuration resolved for the calling client",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientConfig"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed."
+          },
+          "500": {
+            "description": "Database error"
+          }
+        },
+        "operationId": "getClientConfig"
       }
     }
   },
@@ -4657,6 +4699,31 @@
         "type": "object",
         "additionalProperties": true,
         "description": "Arbitrary JSON object. Generated as kotlinx.serialization.json.JsonObject (see schemaMappings in core/api/build.gradle.kts) instead of Map<String, Any>, which kotlinx.serialization cannot serialize."
+      },
+      "ClientConfig": {
+        "type": "object",
+        "required": [
+          "flags",
+          "min_supported_version"
+        ],
+        "properties": {
+          "flags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "description": "Every feature flag key mapped to whether it is on for the calling client. Contains only keys and booleans.",
+            "example": {
+              "new_shape": true
+            }
+          },
+          "min_supported_version": {
+            "type": "string",
+            "nullable": true,
+            "description": "Oldest supported version (MAJOR.MINOR.PATCH) for the caller's platform. Null when the caller sent no valid X-Kluvs-Client header or no minimum is configured for its platform.",
+            "example": "1.2.0"
+          }
+        }
       }
     }
   },

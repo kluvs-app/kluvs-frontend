@@ -472,6 +472,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get client configuration
+         * @description Returns the feature flags resolved for the calling client and the minimum supported version for its platform. No authentication required: clients call it before sign-in (force-update check, gating pre-login UI). The caller is identified only by the X-Kluvs-Client header; without a valid header every flag is false and min_supported_version is null.
+         */
+        get: operations["getClientConfig"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1413,6 +1433,22 @@ export interface components {
         /** @description Arbitrary JSON object. Generated as kotlinx.serialization.json.JsonObject (see schemaMappings in core/api/build.gradle.kts) instead of Map<String, Any>, which kotlinx.serialization cannot serialize. */
         JsonObject: {
             [key: string]: unknown;
+        };
+        ClientConfig: {
+            /**
+             * @description Every feature flag key mapped to whether it is on for the calling client. Contains only keys and booleans.
+             * @example {
+             *       "new_shape": true
+             *     }
+             */
+            flags: {
+                [key: string]: boolean;
+            };
+            /**
+             * @description Oldest supported version (MAJOR.MINOR.PATCH) for the caller's platform. Null when the caller sent no valid X-Kluvs-Client header or no minimum is configured for its platform.
+             * @example 1.2.0
+             */
+            min_supported_version: string | null;
         };
     };
     responses: never;
@@ -3298,6 +3334,43 @@ export interface operations {
             };
             /** @description Method not allowed. */
             405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getClientConfig: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Client platform and app version as <platform>/<MAJOR.MINOR.PATCH>. When missing or invalid, the caller is treated as an old client: every flag is false and min_supported_version is null. */
+                "X-Kluvs-Client"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Configuration resolved for the calling client */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientConfig"];
+                };
+            };
+            /** @description Method not allowed. */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Database error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };
