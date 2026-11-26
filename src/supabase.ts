@@ -1,4 +1,5 @@
 import { createClient, type FunctionInvokeOptions, FunctionsHttpError } from '@supabase/supabase-js'
+import { VERSION } from './version'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -16,6 +17,9 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   }
 })
 
+// Identifies this client and its release on every Edge Function call.
+export const KLUVS_CLIENT_HEADERS = { 'X-Kluvs-Client': `web/${VERSION}` }
+
 // Always refresh the session before invoking an edge function.
 // Supabase's auto-refresh timer can miss its window when the tab is
 // backgrounded, leaving an expired JWT in memory. getSession() silently
@@ -24,15 +28,20 @@ export async function invokeFunction<T = unknown>(
   name: string,
   options?: FunctionInvokeOptions
 ): Promise<{ data: T | null; error: Error | null }> {
+  const invokeOptions: FunctionInvokeOptions = {
+    ...options,
+    headers: { ...options?.headers, ...KLUVS_CLIENT_HEADERS },
+  }
+
   await supabase.auth.getSession()
-  const result = await supabase.functions.invoke<T>(name, options)
+  const result = await supabase.functions.invoke<T>(name, invokeOptions)
 
   // On 401, force a fresh token and retry once. Handles the brief window
   // between tab focus and the background session refresh completing.
   if (result.error instanceof FunctionsHttpError && result.error.context?.status === 401) {
     const { error: refreshError } = await supabase.auth.refreshSession()
     if (!refreshError) {
-      return supabase.functions.invoke<T>(name, options)
+      return supabase.functions.invoke<T>(name, invokeOptions)
     }
   }
 
